@@ -204,6 +204,26 @@ export const MODULES: ModuleDef[] = [
     phase: 8,
     rolesAllowed: ["aprobador", "admin"],
   },
+  {
+    id: "launchpad",
+    label: "Launchpad",
+    icon: "🚀",
+    href: "/launchpad",
+    description: "NASA mission control: boot sequence cinematográfica, countdown gigante, telemetry, waveform de tokens y launch demo con sonido",
+    status: "available",
+    phase: 8,
+    rolesAllowed: ["aprobador", "admin"],
+  },
+  {
+    id: "wallboard",
+    label: "Wallboard 4K",
+    icon: "🖥️",
+    href: "/wallboard",
+    description: "Quad-view sincronizado de las 4 visualizaciones para proyectar en TV 4K. Click para focus o auto-rotate cada 25s",
+    status: "available",
+    phase: 8,
+    rolesAllowed: ["aprobador", "admin"],
+  },
 ];
 
 export function moduleById(id: string): ModuleDef | undefined {

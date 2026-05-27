@@ -30,6 +30,15 @@ export default function Sidebar() {
           );
         })}
 
+        <div className="nav-section">Visualizaciones</div>
+        {MODULES.filter((m) => ["launchpad", "wallboard", "war-room", "brain", "terminal", "hud"].includes(m.id)).map((m) => {
+          const allowed = canAccess(role, m.rolesAllowed);
+          const active = pathname?.startsWith(m.href);
+          return (
+            <NavLink key={m.id} href={m.href} icon={m.icon} label={m.label} active={!!active} allowed={allowed} soon={m.status !== "available"} />
+          );
+        })}
+
         <div className="nav-section">AMS avanzado</div>
         {MODULES.filter((m) => ["support-desk", "knowledge", "tickets", "integrations", "sap-readonly", "meetings"].includes(m.id)).map((m) => {
           const allowed = canAccess(role, m.rolesAllowed);

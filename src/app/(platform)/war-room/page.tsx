@@ -1,13 +1,15 @@
 "use client";
 
 import { useEffect, useMemo, useRef, useState } from "react";
-import { fetchExecutive, fetchAdvanced, fetchNotifications, fetchUsage,
-  type DashboardExecutive, type DashboardAdvanced, type NotificationItem, type UsageSummary } from "@/services/dashboard.api";
+import * as THREE from "three";
+import { fetchExecutive, fetchAdvanced, fetchUsage, fetchNotifications,
+  type DashboardExecutive, type DashboardAdvanced, type UsageSummary, type NotificationItem } from "@/services/dashboard.api";
+import { useEventSounds } from "@/hooks/useEventSounds";
+import { radar } from "@/lib/sounds";
 
 const POLL_MS = 5000;
+const GLOBE_RADIUS = 1.4;
 
-// Lat/Lng aproximadas por país; se elige por heurística del nombre del cliente.
-// Si no matchea se asigna pseudo-random determinista.
 const COUNTRY_COORDS: Array<{ kw: RegExp; lat: number; lng: number; country: string }> = [
   { kw: /chile|santiago|miespejo/i,            lat: -33.45, lng:  -70.66, country: "CL" },
   { kw: /argentina|buenos|baires/i,            lat: -34.61, lng:  -58.38, country: "AR" },
@@ -31,68 +33,77 @@ function hash(s: string): number {
 function coordFor(name: string): { lat: number; lng: number; country: string } {
   for (const c of COUNTRY_COORDS) if (c.kw.test(name)) return { lat: c.lat, lng: c.lng, country: c.country };
   const h = hash(name);
-  return {
-    lat: ((h % 1200) / 10) - 60,            // -60 a 60
-    lng: (((h >> 10) % 3600) / 10) - 180,   // -180 a 180
-    country: "??",
-  };
+  return { lat: ((h % 1200) / 10) - 60, lng: (((h >> 10) % 3600) / 10) - 180, country: "??" };
 }
 
-// Equirectangular projection a viewBox 1000×500
-function project(lat: number, lng: number): { x: number; y: number } {
-  return { x: (lng + 180) * (1000 / 360), y: (90 - lat) * (500 / 180) };
+// Lat/Lng en grados → Vector3 sobre esfera
+function latLngToVec3(lat: number, lng: number, radius = GLOBE_RADIUS): THREE.Vector3 {
+  const phi   = (90 - lat) * (Math.PI / 180);
+  const theta = (lng + 180) * (Math.PI / 180);
+  return new THREE.Vector3(
+    -radius * Math.sin(phi) * Math.cos(theta),
+     radius * Math.cos(phi),
+     radius * Math.sin(phi) * Math.sin(theta),
+  );
 }
 
-// Continentes simplificados como paths SVG (silueta esquemática, no precisión cartográfica).
-// Generados a mano para look futurista, suficiente para que se vea "el mundo".
-const WORLD_PATHS = [
+// Puntos esquemáticos para sugerir tierra firme (sub-muestreado, suficiente para el efecto visual)
+const LAND_DOTS: [number, number][] = [
   // Norte américa
-  "M 130 110 L 200 90 L 260 110 L 290 150 L 270 200 L 240 220 L 210 215 L 190 240 L 170 230 L 155 200 L 140 170 Z",
-  // Centro/Sudamérica
-  "M 250 245 L 290 240 L 305 270 L 310 320 L 295 380 L 270 410 L 255 390 L 245 330 L 240 280 Z",
+  [60, -150], [60, -120], [55, -100], [50, -90], [45, -75], [40, -100], [35, -110], [30, -90], [25, -100],
+  // Sudamérica
+  [10, -75], [0, -65], [-10, -75], [-20, -60], [-30, -60], [-40, -65], [-50, -70], [-15, -45], [-25, -50],
   // Europa
-  "M 480 110 L 540 100 L 560 130 L 545 160 L 520 170 L 495 155 L 482 135 Z",
+  [60, 10], [55, 25], [50, 5], [45, 15], [42, -5], [40, 0],
   // África
-  "M 510 200 L 565 195 L 580 240 L 575 300 L 555 350 L 525 360 L 510 330 L 500 280 L 502 240 Z",
+  [30, 0], [20, 15], [10, 20], [0, 25], [-10, 30], [-20, 25], [-30, 20], [-30, 25], [5, -10], [15, -15],
   // Asia
-  "M 570 110 L 700 95 L 780 125 L 820 165 L 805 200 L 760 215 L 690 200 L 615 180 L 580 150 Z",
+  [50, 60], [50, 90], [45, 110], [40, 130], [35, 75], [30, 90], [25, 110], [20, 80], [15, 100], [10, 120], [55, 130], [60, 90],
   // India
-  "M 660 200 L 695 195 L 700 225 L 685 250 L 670 245 L 660 220 Z",
+  [22, 78], [15, 80],
   // Sudeste asiático
-  "M 760 230 L 810 235 L 820 270 L 800 285 L 770 270 Z",
+  [5, 110], [0, 120], [-5, 120],
   // Australia
-  "M 800 340 L 870 335 L 890 370 L 870 395 L 820 395 L 800 370 Z",
+  [-25, 135], [-30, 145], [-20, 130], [-35, 150],
+  // Antártida edge
+  [-65, 0], [-65, 60], [-65, -60], [-65, 120], [-65, 180], [-65, -120],
 ];
 
-interface Arc {
+interface Arc3D {
   id: string;
-  x1: number; y1: number; x2: number; y2: number;
-  color: string;
+  curve: THREE.QuadraticBezierCurve3;
+  color: number;
   bornAt: number;
-  label: string;
+  mesh?: THREE.Mesh;
+  head?: THREE.Mesh;
 }
 
-const EVENT_COLOR: Record<string, string> = {
-  incident_created: "#3b82f6",
-  ticket_escalated: "#f59e0b",
-  ticket_resolved:  "#10b981",
-  kb_approved:      "#fbbf24",
-  meeting_done:     "#a855f7",
+const EVENT_COLOR: Record<string, number> = {
+  incident_created: 0x3b82f6,
+  ticket_escalated: 0xf59e0b,
+  ticket_resolved:  0x10b981,
+  kb_approved:      0xfbbf24,
+  meeting_done:     0xa855f7,
 };
 
-// HQ ficticio = centro del mapa (Atlántico Sur), para que los arcos converjan.
-const HQ = project(0, -30);
+const HQ = latLngToVec3(0, -30, GLOBE_RADIUS + 0.05);
 
 export default function WarRoomPage() {
+  const canvasRef = useRef<HTMLDivElement | null>(null);
+  const sceneRef = useRef<{ renderer?: THREE.WebGLRenderer; scene?: THREE.Scene; camera?: THREE.PerspectiveCamera; globe?: THREE.Group; clientGroup?: THREE.Group; arcGroup?: THREE.Group; arcs: Arc3D[] }>({ arcs: [] });
   const [exec, setExec] = useState<DashboardExecutive | null>(null);
   const [adv, setAdv] = useState<DashboardAdvanced | null>(null);
   const [usage, setUsage] = useState<UsageSummary | null>(null);
-  const [feed, setFeed] = useState<NotificationItem[]>([]);
-  const [arcs, setArcs] = useState<Arc[]>([]);
   const [now, setNow] = useState(new Date());
-  const seenIds = useRef<Set<string>>(new Set());
-  const firstLoadRef = useRef(true);
+  const seen = useRef<Set<string>>(new Set());
+  const firstRef = useRef(true);
+  const { muted, toggleMute, feed } = useEventSounds();
 
+  const clients = useMemo(() => {
+    return (exec?.byClient ?? []).map((c) => ({ ...c, ...coordFor(c.name) }));
+  }, [exec]);
+
+  // Polling
   useEffect(() => {
     let alive = true;
     async function tick() {
@@ -102,16 +113,10 @@ export default function WarRoomPage() {
       if (a.ok) setAdv(a.d);
       if (u.ok) setUsage(u.u);
       if (n.ok) {
-        setFeed(n.items.slice(0, 8));
         const news: NotificationItem[] = [];
-        for (const it of n.items) {
-          if (!seenIds.current.has(it.id)) {
-            seenIds.current.add(it.id);
-            if (!firstLoadRef.current) news.push(it);
-          }
-        }
-        firstLoadRef.current = false;
-        news.slice(0, 6).forEach((ev, i) => setTimeout(() => emitArc(ev), i * 200));
+        for (const it of n.items) if (!seen.current.has(it.id)) { seen.current.add(it.id); if (!firstRef.current) news.push(it); }
+        firstRef.current = false;
+        news.slice(0, 6).forEach((ev, i) => setTimeout(() => fireArc(ev), i * 250));
       }
     }
     tick();
@@ -124,194 +129,329 @@ export default function WarRoomPage() {
     return () => clearInterval(t);
   }, []);
 
-  // Arcs cleanup (autodestroy a los 4s)
+  // Init three.js
   useEffect(() => {
-    if (arcs.length === 0) return;
-    const t = setInterval(() => {
-      setArcs((a) => a.filter((x) => Date.now() - x.bornAt < 4000));
-    }, 500);
-    return () => clearInterval(t);
-  }, [arcs.length]);
+    const container = canvasRef.current;
+    if (!container) return;
 
-  const clients = useMemo(() => {
-    const list = exec?.byClient ?? [];
-    return list.map((c) => {
-      const co = coordFor(c.name);
-      const p = project(co.lat, co.lng);
-      return { ...c, ...co, x: p.x, y: p.y, weight: c.total };
+    const W = container.clientWidth;
+    const H = container.clientHeight;
+
+    const scene = new THREE.Scene();
+    scene.background = null;
+
+    const camera = new THREE.PerspectiveCamera(45, W / H, 0.1, 100);
+    camera.position.set(0, 1.0, 4.5);
+    camera.lookAt(0, 0, 0);
+
+    const renderer = new THREE.WebGLRenderer({ antialias: true, alpha: true });
+    renderer.setPixelRatio(window.devicePixelRatio);
+    renderer.setSize(W, H);
+    container.appendChild(renderer.domElement);
+
+    // Globo group (rotamos el grupo, no la cámara)
+    const globe = new THREE.Group();
+    scene.add(globe);
+
+    // Esfera base translúcida
+    const sphere = new THREE.Mesh(
+      new THREE.SphereGeometry(GLOBE_RADIUS, 48, 32),
+      new THREE.MeshBasicMaterial({ color: 0x0a1530, transparent: true, opacity: 0.55 }),
+    );
+    globe.add(sphere);
+
+    // Wireframe meridian/parallel lines
+    const wireframe = new THREE.LineSegments(
+      new THREE.EdgesGeometry(new THREE.SphereGeometry(GLOBE_RADIUS * 1.001, 24, 16)),
+      new THREE.LineBasicMaterial({ color: 0x3b82f6, transparent: true, opacity: 0.30 }),
+    );
+    globe.add(wireframe);
+
+    // Continent dots
+    const dotGeom = new THREE.SphereGeometry(0.015, 6, 4);
+    const dotMat  = new THREE.MeshBasicMaterial({ color: 0x60a5fa });
+    LAND_DOTS.forEach(([lat, lng]) => {
+      const v = latLngToVec3(lat, lng, GLOBE_RADIUS * 1.01);
+      const dot = new THREE.Mesh(dotGeom, dotMat);
+      dot.position.copy(v);
+      globe.add(dot);
     });
-  }, [exec]);
 
-  function emitArc(ev: NotificationItem) {
-    // Si tenemos clientes con coords, elegir uno al azar como origen (preferimos mayor weight)
-    if (clients.length === 0) return;
-    const i = Math.floor(Math.random() * clients.length);
-    const src = clients[i];
-    const id = `${ev.id}-${Date.now()}`;
-    setArcs((a) => [...a, {
-      id, x1: src.x, y1: src.y, x2: HQ.x, y2: HQ.y,
-      color: EVENT_COLOR[ev.kind] ?? "#3b82f6",
-      bornAt: Date.now(),
-      label: ev.title.slice(0, 36),
-    }]);
+    // Halo / atmosphere
+    const halo = new THREE.Mesh(
+      new THREE.SphereGeometry(GLOBE_RADIUS * 1.15, 48, 32),
+      new THREE.ShaderMaterial({
+        side: THREE.BackSide,
+        transparent: true,
+        uniforms: { c: { value: 0.4 }, p: { value: 4.5 }, glowColor: { value: new THREE.Color(0x3b82f6) } },
+        vertexShader: `
+          varying vec3 vNormal;
+          void main() {
+            vNormal = normalize(normalMatrix * normal);
+            gl_Position = projectionMatrix * modelViewMatrix * vec4(position, 1.0);
+          }
+        `,
+        fragmentShader: `
+          varying vec3 vNormal;
+          uniform vec3 glowColor;
+          uniform float c;
+          uniform float p;
+          void main() {
+            float intensity = pow(c - dot(vNormal, vec3(0.0, 0.0, 1.0)), p);
+            gl_FragColor = vec4(glowColor, intensity);
+          }
+        `,
+      }),
+    );
+    scene.add(halo);
+
+    // HQ marker (fijo en el grupo globe para que rote con la tierra)
+    const hqMarker = new THREE.Group();
+    const hqDot = new THREE.Mesh(
+      new THREE.SphereGeometry(0.04, 16, 8),
+      new THREE.MeshBasicMaterial({ color: 0x60a5fa }),
+    );
+    hqDot.position.copy(HQ);
+    hqMarker.add(hqDot);
+    const hqHalo = new THREE.Mesh(
+      new THREE.SphereGeometry(0.10, 16, 8),
+      new THREE.MeshBasicMaterial({ color: 0x3b82f6, transparent: true, opacity: 0.30 }),
+    );
+    hqHalo.position.copy(HQ);
+    hqMarker.add(hqHalo);
+    globe.add(hqMarker);
+
+    // Client group (markers se llenan después)
+    const clientGroup = new THREE.Group();
+    globe.add(clientGroup);
+
+    // Arcs group
+    const arcGroup = new THREE.Group();
+    globe.add(arcGroup);
+
+    sceneRef.current = { renderer, scene, camera, globe, clientGroup, arcGroup, arcs: [] };
+
+    // Stars
+    const starsGeom = new THREE.BufferGeometry();
+    const starCount = 400;
+    const positions = new Float32Array(starCount * 3);
+    for (let i = 0; i < starCount; i++) {
+      const r = 40;
+      const phi = Math.random() * Math.PI * 2;
+      const theta = Math.acos(2 * Math.random() - 1);
+      positions[i * 3]     = r * Math.sin(theta) * Math.cos(phi);
+      positions[i * 3 + 1] = r * Math.cos(theta);
+      positions[i * 3 + 2] = r * Math.sin(theta) * Math.sin(phi);
+    }
+    starsGeom.setAttribute("position", new THREE.BufferAttribute(positions, 3));
+    const stars = new THREE.Points(starsGeom, new THREE.PointsMaterial({ color: 0xffffff, size: 0.08, transparent: true, opacity: 0.7 }));
+    scene.add(stars);
+
+    // Interacción: drag para rotar
+    let dragging = false;
+    let lastX = 0, lastY = 0;
+    let rotY = 0, rotX = 0;
+    let autoRotate = true;
+
+    function onDown(ev: PointerEvent) {
+      dragging = true;
+      lastX = ev.clientX; lastY = ev.clientY;
+      autoRotate = false;
+    }
+    function onMove(ev: PointerEvent) {
+      if (!dragging) return;
+      const dx = ev.clientX - lastX;
+      const dy = ev.clientY - lastY;
+      rotY += dx * 0.005;
+      rotX += dy * 0.005;
+      rotX = Math.max(-1.2, Math.min(1.2, rotX));
+      lastX = ev.clientX; lastY = ev.clientY;
+    }
+    function onUp() { dragging = false; setTimeout(() => { autoRotate = true; }, 3000); }
+
+    renderer.domElement.addEventListener("pointerdown", onDown);
+    window.addEventListener("pointermove", onMove);
+    window.addEventListener("pointerup", onUp);
+
+    // Animation
+    let raf = 0;
+    let last = performance.now();
+    function animate(now: number) {
+      const dt = (now - last) / 1000; last = now;
+      if (autoRotate) rotY += dt * 0.12;
+      globe.rotation.y = rotY;
+      globe.rotation.x = rotX;
+
+      // Animar arcos (head viaja por la curva, mesh fade-out)
+      const cleanup: Arc3D[] = [];
+      for (const a of sceneRef.current.arcs) {
+        const age = (Date.now() - a.bornAt) / 1500;
+        if (age >= 1) {
+          if (a.mesh) arcGroup.remove(a.mesh);
+          if (a.head) arcGroup.remove(a.head);
+          continue;
+        }
+        if (a.head) {
+          const p = a.curve.getPoint(age);
+          a.head.position.copy(p);
+          (a.head.material as THREE.MeshBasicMaterial).opacity = 1 - age;
+        }
+        if (a.mesh) {
+          ((a.mesh.material as THREE.MeshBasicMaterial).opacity) = 0.85 * (1 - age * 0.5);
+        }
+        cleanup.push(a);
+      }
+      sceneRef.current.arcs = cleanup;
+
+      renderer.render(scene, camera);
+      raf = requestAnimationFrame(animate);
+    }
+    raf = requestAnimationFrame(animate);
+
+    function onResize() {
+      if (!container) return;
+      const w = container.clientWidth, h = container.clientHeight;
+      camera.aspect = w / h; camera.updateProjectionMatrix();
+      renderer.setSize(w, h);
+    }
+    window.addEventListener("resize", onResize);
+
+    return () => {
+      cancelAnimationFrame(raf);
+      window.removeEventListener("resize", onResize);
+      window.removeEventListener("pointermove", onMove);
+      window.removeEventListener("pointerup", onUp);
+      renderer.domElement.removeEventListener("pointerdown", onDown);
+      renderer.dispose();
+      container.removeChild(renderer.domElement);
+    };
+  }, []);
+
+  // Sync clients into scene
+  useEffect(() => {
+    const s = sceneRef.current;
+    if (!s.clientGroup) return;
+    while (s.clientGroup.children.length) s.clientGroup.remove(s.clientGroup.children[0]);
+    for (const c of clients) {
+      const v = latLngToVec3(c.lat, c.lng, GLOBE_RADIUS * 1.01);
+      const dot = new THREE.Mesh(
+        new THREE.SphereGeometry(0.04, 12, 8),
+        new THREE.MeshBasicMaterial({ color: 0x10b981 }),
+      );
+      dot.position.copy(v);
+      s.clientGroup.add(dot);
+      const halo = new THREE.Mesh(
+        new THREE.SphereGeometry(0.09, 12, 8),
+        new THREE.MeshBasicMaterial({ color: 0x10b981, transparent: true, opacity: 0.25 }),
+      );
+      halo.position.copy(v);
+      s.clientGroup.add(halo);
+    }
+  }, [clients]);
+
+  function fireArc(ev: NotificationItem) {
+    const s = sceneRef.current;
+    if (!s.arcGroup || clients.length === 0) return;
+    const c = clients[Math.floor(Math.random() * clients.length)];
+    const start = latLngToVec3(c.lat, c.lng, GLOBE_RADIUS * 1.01);
+    const end = HQ.clone();
+    const mid = start.clone().add(end).multiplyScalar(0.5).normalize().multiplyScalar(GLOBE_RADIUS * 1.8);
+    const curve = new THREE.QuadraticBezierCurve3(start, mid, end);
+
+    const color = EVENT_COLOR[ev.kind] ?? 0x3b82f6;
+    const tube = new THREE.Mesh(
+      new THREE.TubeGeometry(curve, 40, 0.008, 6, false),
+      new THREE.MeshBasicMaterial({ color, transparent: true, opacity: 0.85 }),
+    );
+    s.arcGroup.add(tube);
+
+    const head = new THREE.Mesh(
+      new THREE.SphereGeometry(0.035, 12, 8),
+      new THREE.MeshBasicMaterial({ color, transparent: true, opacity: 1 }),
+    );
+    s.arcGroup.add(head);
+
+    s.arcs.push({ id: ev.id, curve, color, bornAt: Date.now(), mesh: tube, head });
   }
 
   function fireTest() {
-    const kinds = Object.keys(EVENT_COLOR);
-    const k = kinds[Math.floor(Math.random() * kinds.length)];
-    emitArc({ id: `t-${Date.now()}`, kind: k as NotificationItem["kind"], title: `🧪 test ${k}`, href: "#", createdAt: new Date().toISOString() });
+    radar();
+    fireArc({ id: `t-${Date.now()}`, kind: "incident_created", title: "test", href: "#", createdAt: new Date().toISOString() });
   }
 
-  // KPIs holo lateral
   const kpis = [
-    { label: "INCIDENTS·MES",    value: exec?.kpis.incidentsMonth ?? 0,                 unit: "",   color: "#3b82f6" },
-    { label: "RESOLVED·MES",     value: exec?.kpis.ticketsResolvedMonth ?? 0,           unit: "",   color: "#10b981" },
-    { label: "% IA",             value: Math.round(exec?.kpis.aiResolutionRate ?? 0),   unit: "%",  color: "#06b6d4" },
-    { label: "SLA",              value: Math.round(exec?.kpis.slaCompliancePct ?? 0),   unit: "%",  color: "#fbbf24" },
-    { label: "AVG RESP",         value: Math.round(exec?.kpis.avgResponseTimeMin ?? 0), unit: "m",  color: "#a855f7" },
-    { label: "TOKENS·MES",       value: usage ? Math.round(usage.totals.totalTokens / 1000) : 0, unit: "k", color: "#f59e0b" },
-    { label: "COSTO GEMINI",     value: usage ? Number(usage.totals.costUsd.toFixed(2)) : 0, unit: "USD", color: "#ef4444" },
-    { label: "SLA BREACHES",     value: adv?.sla.breaching ?? 0,                        unit: "",   color: adv?.sla.breaching ? "#ef4444" : "#6b7280" },
+    { label: "INC·MES",    value: exec?.kpis.incidentsMonth ?? 0,                color: "#3b82f6" },
+    { label: "RES·MES",    value: exec?.kpis.ticketsResolvedMonth ?? 0,          color: "#10b981" },
+    { label: "% IA",       value: `${Math.round(exec?.kpis.aiResolutionRate ?? 0)}`, color: "#06b6d4" },
+    { label: "SLA %",      value: Math.round(exec?.kpis.slaCompliancePct ?? 0),  color: "#fbbf24" },
+    { label: "TOKENS·K",   value: usage ? Math.round(usage.totals.totalTokens / 1000) : 0, color: "#a855f7" },
+    { label: "COSTO USD",  value: usage ? Number(usage.totals.costUsd.toFixed(2)) : 0, color: "#ef4444" },
   ];
 
   return (
     <div style={{
       minHeight: "calc(100vh - 80px)",
-      background: "radial-gradient(circle at 50% 40%, rgba(59,130,246,0.10), transparent 60%), #050714",
+      background: "radial-gradient(circle at 50% 40%, rgba(59,130,246,0.10), #050714 70%)",
       padding: "8px 4px",
       color: "#e2e8f0",
       position: "relative",
       overflow: "hidden",
     }}>
-      {/* Starfield decorativo */}
-      <div className="starfield" />
-
-      {/* Header */}
-      <div className="row between" style={{ marginBottom: 10, padding: "0 6px", position: "relative", zIndex: 2 }}>
+      <div className="row between" style={{ marginBottom: 10, padding: "0 6px", position: "relative", zIndex: 3 }}>
         <div>
           <h1 style={{ margin: 0, fontSize: 22, letterSpacing: 2 }}>
-            🌐 AMS GLOBAL OPS <span style={{ color: "var(--text-dim)", fontSize: 12, marginLeft: 8 }}>· War Room</span>
+            🌐 AMS GLOBAL OPS <span style={{ color: "var(--text-dim)", fontSize: 12, marginLeft: 8 }}>· War Room 3D</span>
           </h1>
           <div style={{ fontSize: 11, color: "var(--text-dim)", marginTop: 4 }}>
-            polling {POLL_MS / 1000}s · {clients.length} clientes en mapa · {arcs.length} eventos vivos
+            drag para rotar · {clients.length} clientes · {sceneRef.current.arcs.length} arcos · {muted ? "🔇" : "🔊"}
           </div>
         </div>
-        <div className="row" style={{ gap: 12 }}>
-          <button onClick={fireTest} className="btn ghost" style={{ padding: "4px 12px", fontSize: 11 }}>🧪 test arc</button>
+        <div className="row" style={{ gap: 10 }}>
+          <button onClick={toggleMute} className="btn ghost" style={{ padding: "4px 10px", fontSize: 11 }}>{muted ? "🔇 unmute" : "🔊 mute"}</button>
+          <button onClick={fireTest} className="btn ghost" style={{ padding: "4px 10px", fontSize: 11 }}>🧪 test arc</button>
           <div style={{ textAlign: "right", fontFamily: "var(--font-mono, monospace)" }}>
-            <div style={{ fontSize: 24, fontWeight: 600, letterSpacing: 3, color: "#3b82f6", textShadow: "0 0 12px rgba(59,130,246,0.6)" }}>{now.toLocaleTimeString()}</div>
-            <div style={{ fontSize: 10, color: "var(--text-dim)", letterSpacing: 2 }}>{now.toUTCString().slice(0, 25)} UTC</div>
+            <div style={{ fontSize: 22, color: "#3b82f6", textShadow: "0 0 10px rgba(59,130,246,0.6)", letterSpacing: 2 }}>{now.toLocaleTimeString()}</div>
+            <div style={{ fontSize: 10, color: "#64748b", letterSpacing: 2 }}>{now.toUTCString().slice(0, 25)} UTC</div>
           </div>
         </div>
       </div>
 
-      <div style={{
-        display: "grid",
-        gridTemplateColumns: "1fr 280px",
-        gap: 10,
-        position: "relative", zIndex: 2,
-      }}>
-        {/* MAPA */}
-        <div className="war-frame">
-          <svg viewBox="0 0 1000 500" width="100%" height="auto" style={{ display: "block" }} preserveAspectRatio="xMidYMid meet">
-            <defs>
-              <radialGradient id="hq-glow"><stop offset="0%" stopColor="#3b82f6" stopOpacity="0.9" /><stop offset="100%" stopColor="#3b82f6" stopOpacity="0" /></radialGradient>
-              <linearGradient id="cont-grad" x1="0" y1="0" x2="0" y2="1">
-                <stop offset="0%" stopColor="rgba(59,130,246,0.15)" />
-                <stop offset="100%" stopColor="rgba(59,130,246,0.05)" />
-              </linearGradient>
-              <filter id="glow"><feGaussianBlur stdDeviation="2.5" result="b" /><feMerge><feMergeNode in="b" /><feMergeNode in="SourceGraphic" /></feMerge></filter>
-            </defs>
-
-            {/* Latitudes / longitudes */}
-            {[100, 200, 300, 400].map((y) => (
-              <line key={`la-${y}`} x1="0" y1={y} x2="1000" y2={y} stroke="rgba(59,130,246,0.10)" strokeWidth="0.5" strokeDasharray="3 6" />
-            ))}
-            {[100, 200, 300, 400, 500, 600, 700, 800, 900].map((x) => (
-              <line key={`lo-${x}`} x1={x} y1="0" x2={x} y2="500" stroke="rgba(59,130,246,0.10)" strokeWidth="0.5" strokeDasharray="3 6" />
-            ))}
-
-            {/* Continentes */}
-            {WORLD_PATHS.map((d, i) => (
-              <path key={i} d={d} fill="url(#cont-grad)" stroke="rgba(59,130,246,0.55)" strokeWidth="0.8" />
-            ))}
-
-            {/* HQ */}
-            <circle cx={HQ.x} cy={HQ.y} r="34" fill="url(#hq-glow)" style={{ animation: "haloPulse 2s ease-in-out infinite" }} />
-            <circle cx={HQ.x} cy={HQ.y} r="6" fill="#3b82f6" />
-            <text x={HQ.x} y={HQ.y - 14} textAnchor="middle" fontSize="9" fill="#60a5fa" fontWeight="600" letterSpacing="1">AMS · HQ</text>
-
-            {/* Arcos animados */}
-            {arcs.map((a) => {
-              const dx = a.x2 - a.x1, dy = a.y2 - a.y1;
-              const cx = (a.x1 + a.x2) / 2 + dy * 0.25;
-              const cy = (a.y1 + a.y2) / 2 - dx * 0.25;
-              const path = `M ${a.x1} ${a.y1} Q ${cx} ${cy} ${a.x2} ${a.y2}`;
-              return (
-                <g key={a.id}>
-                  <path d={path} stroke={a.color} strokeWidth="1.6" fill="none" strokeOpacity="0.85"
-                    strokeDasharray="2000" strokeDashoffset="2000"
-                    style={{ animation: "drawArc 1.6s ease-out forwards", filter: `drop-shadow(0 0 6px ${a.color})` }} />
-                  <circle r="4" fill={a.color} style={{ filter: `drop-shadow(0 0 6px ${a.color})` }}>
-                    <animateMotion path={path} dur="1.6s" fill="freeze" />
-                  </circle>
-                </g>
-              );
-            })}
-
-            {/* Clientes */}
-            {clients.map((c) => {
-              const r = Math.max(3, Math.min(10, 3 + Math.log10((c.weight ?? 1) + 1) * 3));
-              return (
-                <g key={c.name}>
-                  <circle cx={c.x} cy={c.y} r={r + 6} fill={`rgba(16,185,129,0.10)`} style={{ animation: "haloPulse 2.6s ease-in-out infinite" }} />
-                  <circle cx={c.x} cy={c.y} r={r} fill="#10b981" filter="url(#glow)" />
-                  <text x={c.x + r + 4} y={c.y + 3} fontSize="8.5" fill="#86efac" letterSpacing="0.5">
-                    {c.name.slice(0, 18)} <tspan fill="#475569">·{c.country}</tspan>
-                  </text>
-                </g>
-              );
-            })}
-          </svg>
-
-          {/* Overlays decorativos */}
+      <div style={{ display: "grid", gridTemplateColumns: "1fr 280px", gap: 10, position: "relative", zIndex: 2 }}>
+        <div ref={canvasRef} className="war-frame" style={{ height: "70vh", minHeight: 500 }}>
           <div className="tracking-corner tl" />
           <div className="tracking-corner tr" />
           <div className="tracking-corner bl" />
           <div className="tracking-corner br" />
-          <div className="war-grid" />
         </div>
 
-        {/* LATERAL KPIs */}
         <div style={{ display: "flex", flexDirection: "column", gap: 10 }}>
           <div className="card" style={{ padding: 12, background: "rgba(15,23,42,0.7)", border: "1px solid rgba(59,130,246,0.3)" }}>
             <div className="row between" style={{ marginBottom: 8 }}>
-              <span style={{ fontSize: 10, letterSpacing: 1.5, color: "#60a5fa" }}>▼ TELEMETRY</span>
+              <span style={{ fontSize: 10, color: "#60a5fa", letterSpacing: 1.5 }}>▼ TELEMETRY</span>
               <span style={{ fontSize: 9, color: "#10b981" }}>● LIVE</span>
             </div>
             <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 8 }}>
               {kpis.map((k) => (
                 <div key={k.label} className="holo" style={{ borderColor: k.color }}>
                   <div style={{ fontSize: 9, color: "#94a3b8", letterSpacing: 1.2 }}>{k.label}</div>
-                  <div style={{ fontSize: 22, fontWeight: 700, color: k.color, lineHeight: 1.1, fontVariantNumeric: "tabular-nums" }}>
-                    {k.value.toLocaleString("es-CL")}<span style={{ fontSize: 11, color: "#64748b", marginLeft: 2 }}>{k.unit}</span>
+                  <div style={{ fontSize: 22, fontWeight: 700, color: k.color, lineHeight: 1.1 }}>
+                    {typeof k.value === "number" ? k.value.toLocaleString("es-CL") : k.value}
                   </div>
                 </div>
               ))}
             </div>
           </div>
 
-          <div className="card" style={{ padding: 12, background: "rgba(15,23,42,0.7)", border: "1px solid rgba(168,85,247,0.3)", flex: 1, display: "flex", flexDirection: "column", maxHeight: 320 }}>
+          <div className="card" style={{ padding: 12, background: "rgba(15,23,42,0.7)", border: "1px solid rgba(168,85,247,0.3)", flex: 1, display: "flex", flexDirection: "column", maxHeight: 280 }}>
             <div className="row between" style={{ marginBottom: 8 }}>
-              <span style={{ fontSize: 10, letterSpacing: 1.5, color: "#c084fc" }}>▼ EVENTS·FEED</span>
+              <span style={{ fontSize: 10, color: "#c084fc", letterSpacing: 1.5 }}>▼ EVENTS·FEED</span>
               <span style={{ fontSize: 9, color: "#10b981" }}>● {feed.length}</span>
             </div>
             <div style={{ flex: 1, overflowY: "auto", fontSize: 11, fontFamily: "var(--font-mono, monospace)" }}>
               {feed.length === 0 && <div style={{ color: "#64748b" }}>(esperando eventos)</div>}
               {feed.map((f) => (
-                <div key={f.id} className="feed-row" style={{ borderLeft: `2px solid ${EVENT_COLOR[f.kind] ?? "#60a5fa"}` }}>
+                <div key={f.id} style={{ padding: "4px 6px", marginBottom: 3, background: "rgba(255,255,255,0.02)", borderLeft: "2px solid rgba(59,130,246,0.6)", whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }}>
                   <span style={{ color: "#64748b" }}>{new Date(f.createdAt).toLocaleTimeString()}</span>{" "}
-                  <span style={{ color: EVENT_COLOR[f.kind] ?? "#60a5fa" }}>▶</span>{" "}
                   <span style={{ color: "#cbd5e1" }}>{f.title.slice(0, 40)}</span>
                 </div>
               ))}
@@ -320,7 +460,6 @@ export default function WarRoomPage() {
         </div>
       </div>
 
-      {/* Ticker inferior con clientes ordenados */}
       <div className="ticker-bar">
         <div className="ticker-content">
           {[...clients, ...clients].map((c, i) => (
@@ -337,24 +476,15 @@ export default function WarRoomPage() {
       <style jsx global>{`
         .war-frame {
           position: relative;
-          background: radial-gradient(ellipse at center, rgba(15,23,42,0.7) 0%, rgba(5,7,20,0.9) 80%);
+          background: radial-gradient(ellipse at center, rgba(15,23,42,0.7) 0%, rgba(5,7,20,0.95) 80%);
           border: 1px solid rgba(59,130,246,0.35);
           border-radius: 12px;
-          padding: 6px;
           overflow: hidden;
           box-shadow: 0 0 40px rgba(59,130,246,0.10), inset 0 0 60px rgba(59,130,246,0.05);
         }
-        .war-grid {
-          position: absolute; inset: 0; pointer-events: none;
-          background-image:
-            linear-gradient(rgba(59,130,246,0.06) 1px, transparent 1px),
-            linear-gradient(90deg, rgba(59,130,246,0.06) 1px, transparent 1px);
-          background-size: 40px 40px;
-          mix-blend-mode: screen;
-        }
         .tracking-corner {
           position: absolute; width: 22px; height: 22px;
-          border: 2px solid rgba(59,130,246,0.7); pointer-events: none;
+          border: 2px solid rgba(59,130,246,0.7); pointer-events: none; z-index: 2;
         }
         .tracking-corner.tl { top: 4px;    left: 4px;    border-right: 0; border-bottom: 0; }
         .tracking-corner.tr { top: 4px;    right: 4px;   border-left:  0; border-bottom: 0; }
@@ -366,49 +496,17 @@ export default function WarRoomPage() {
           padding: 6px 8px;
           border-radius: 3px;
         }
-        .feed-row {
-          padding: 4px 6px; margin-bottom: 3px;
-          background: rgba(255,255,255,0.02);
-          border-radius: 3px;
-          white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
-        }
-        .starfield {
-          position: absolute; inset: 0; pointer-events: none;
-          background-image:
-            radial-gradient(1px 1px at 12% 18%, white, transparent),
-            radial-gradient(1px 1px at 27% 42%, white, transparent),
-            radial-gradient(1px 1px at 38% 75%, white, transparent),
-            radial-gradient(1px 1px at 55% 22%, white, transparent),
-            radial-gradient(1px 1px at 72% 67%, white, transparent),
-            radial-gradient(1px 1px at 88% 31%, white, transparent),
-            radial-gradient(1px 1px at 15% 88%, white, transparent),
-            radial-gradient(1.4px 1.4px at 65% 12%, #93c5fd, transparent);
-          opacity: 0.4;
-        }
         .ticker-bar {
-          position: relative; z-index: 2;
           margin-top: 10px;
           background: rgba(0,0,0,0.6);
           border: 1px solid rgba(59,130,246,0.25);
           border-radius: 6px;
           overflow: hidden; height: 28px;
           display: flex; align-items: center;
+          position: relative; z-index: 2;
         }
-        .ticker-content {
-          display: inline-flex; white-space: nowrap;
-          animation: tickerSlide 60s linear infinite;
-        }
-        @keyframes tickerSlide {
-          0%   { transform: translateX(0); }
-          100% { transform: translateX(-50%); }
-        }
-        @keyframes haloPulse {
-          0%, 100% { opacity: 0.4; transform-origin: center; transform: scale(1); }
-          50%      { opacity: 0.9; transform: scale(1.3); }
-        }
-        @keyframes drawArc {
-          to { stroke-dashoffset: 0; }
-        }
+        .ticker-content { display: inline-flex; white-space: nowrap; animation: tickerSlide 60s linear infinite; }
+        @keyframes tickerSlide { 0% { transform: translateX(0); } 100% { transform: translateX(-50%); } }
       `}</style>
     </div>
   );
