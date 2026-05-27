@@ -1,0 +1,21 @@
+name: supply-chain-ams-platform
+
+services:
+  platform:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: supply-chain-ams-platform
+    restart: unless-stopped
+    ports:
+      - "6700:3000"
+    environment:
+      NODE_ENV: ${NODE_ENV:-production}
+      NEXT_PUBLIC_AGENT_API_URL: ${NEXT_PUBLIC_AGENT_API_URL:-http://localhost:6601}
+    networks:
+      - supply-chain-ams-platform-network
+
+networks:
+  supply-chain-ams-platform-network:
+    name: supply-chain-ams-platform-network
+    driver: bridge

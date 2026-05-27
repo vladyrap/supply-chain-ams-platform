@@ -1,0 +1,14 @@
+.env
+.env.local
+.env.*.local
+node_modules/
+.next/
+out/
+build/
+*.tsbuildinfo
+.vscode/
+.idea/
+.DS_Store
+Thumbs.db
+logs/
+*.log
