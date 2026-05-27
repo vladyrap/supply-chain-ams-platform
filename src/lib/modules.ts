@@ -224,6 +224,16 @@ export const MODULES: ModuleDef[] = [
     phase: 8,
     rolesAllowed: ["aprobador", "admin"],
   },
+  {
+    id: "forecast",
+    label: "Forecast IA",
+    icon: "🔮",
+    href: "/forecast",
+    description: "Proyección 7 días con regresión lineal sobre histórico real, banda de confianza 95%, anomalías detectadas y top 3 next-likely incidents",
+    status: "available",
+    phase: 8,
+    rolesAllowed: ["aprobador", "admin"],
+  },
 ];
 
 export function moduleById(id: string): ModuleDef | undefined {
