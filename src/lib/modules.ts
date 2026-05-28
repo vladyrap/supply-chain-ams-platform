@@ -95,6 +95,16 @@ export const MODULES: ModuleDef[] = [
     rolesAllowed: ["consultor", "aprobador", "admin"],
   },
   {
+    id: "voice-calls",
+    label: "Canal Telefónico",
+    icon: "☎️",
+    href: "/voice-calls",
+    description: "Llamadas entrantes atendidas por IA vía Twilio Voice. Transcripción + turnos USER/AI/SYSTEM, derivaciones a humano detectadas",
+    status: "available",
+    phase: 8,
+    rolesAllowed: ["consultor", "aprobador", "admin"],
+  },
+  {
     id: "settings",
     label: "Configuración",
     icon: "⚙️",

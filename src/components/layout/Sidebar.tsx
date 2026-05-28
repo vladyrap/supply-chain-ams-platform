@@ -40,7 +40,7 @@ export default function Sidebar() {
         })}
 
         <div className="nav-section">AMS avanzado</div>
-        {MODULES.filter((m) => ["support-desk", "knowledge", "tickets", "integrations", "sap-readonly", "meetings"].includes(m.id)).map((m) => {
+        {MODULES.filter((m) => ["support-desk", "voice-calls", "knowledge", "tickets", "integrations", "sap-readonly", "meetings"].includes(m.id)).map((m) => {
           const allowed = canAccess(role, m.rolesAllowed);
           const active = pathname?.startsWith(m.href);
           return (
