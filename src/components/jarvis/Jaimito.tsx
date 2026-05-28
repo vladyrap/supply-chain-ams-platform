@@ -32,12 +32,12 @@ const NAV_KEYWORDS: Array<{ kw: RegExp; href: string; spoken: string }> = [
   { kw: /forecast|predic|pron[oó]stico|ma[ñn]ana/i, href: "/forecast",    spoken: "Abriendo el forecast"           },
 ];
 
-interface JarvisProps {
+interface JaimitoProps {
   client?: string;
   environment?: Environment;
 }
 
-export default function Jarvis({ client = "DEMO", environment = "DEV" }: JarvisProps) {
+export default function Jaimito({ client = "DEMO", environment = "DEV" }: JaimitoProps) {
   const router = useRouter();
   const pathname = usePathname();
   const [open, setOpen] = useState(false);
@@ -73,10 +73,10 @@ export default function Jarvis({ client = "DEMO", environment = "DEV" }: JarvisP
     bodyRef.current?.scrollTo({ top: bodyRef.current.scrollHeight, behavior: "smooth" });
   }, [turns]);
 
-  // Saludo inicial al abrir
+  // Saludo inicial al abrir — siempre arranca con la frase de Jaimito
   useEffect(() => {
     if (open && turns.length === 0) {
-      const greeting = "Hola, soy Jarvis. Puedo abrir vistas, contestarte por voz y consultar al agente AMS. Habla o escribe.";
+      const greeting = "¿Qué pasa pues weón? Soy Jaimito, dime qué buscai: te abro vistas, te respondo por voz, o le pregunto al agente AMS por ti.";
       setTurns([{ id: `g-${Date.now()}`, role: "agent", text: greeting, ts: Date.now() }]);
       if (tts.isSupported) tts.speak(greeting);
     }
@@ -109,7 +109,7 @@ export default function Jarvis({ client = "DEMO", environment = "DEV" }: JarvisP
 
     setLoading(true);
     blip();
-    const r = await sendChat({ message: msg, user: "Jarvis user", module: "NO_INFORMADO", client, environment });
+    const r = await sendChat({ message: msg, user: "Jaimito user", module: "NO_INFORMADO", client, environment });
     setLoading(false);
 
     if ("success" in r && r.success) {
@@ -140,18 +140,18 @@ export default function Jarvis({ client = "DEMO", environment = "DEV" }: JarvisP
       <button
         className={`jarvis-fab ${open ? "open" : ""}`}
         onClick={() => setOpen(!open)}
-        aria-label="Asistente Jarvis"
-        title="Asistente Jarvis"
+        aria-label="Asistente Jaimito"
+        title="Jaimito · ¿qué pasa pues weón?"
       >
         <span className="jarvis-fab-ring" />
         <span className="jarvis-fab-core">{open ? "✕" : "🤖"}</span>
       </button>
 
       {/* Panel */}
-      <div className={`jarvis-panel ${open ? "open" : ""}`} role="dialog" aria-label="Jarvis">
+      <div className={`jarvis-panel ${open ? "open" : ""}`} role="dialog" aria-label="Jaimito">
         <div className="jarvis-head">
           <div>
-            <div style={{ fontSize: 13, fontWeight: 700, letterSpacing: 2, color: "#22d3ee", textShadow: "0 0 8px rgba(34,211,238,0.6)" }}>◤ JARVIS</div>
+            <div style={{ fontSize: 13, fontWeight: 700, letterSpacing: 2, color: "#22d3ee", textShadow: "0 0 8px rgba(34,211,238,0.6)" }}>◤ JAIMITO</div>
             <div style={{ fontSize: 9.5, color: "#67e8f9", letterSpacing: 1.5 }}>AMS · CONVERSATIONAL OPS</div>
           </div>
           <div className="row" style={{ gap: 6 }}>

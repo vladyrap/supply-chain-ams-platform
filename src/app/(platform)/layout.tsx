@@ -1,7 +1,7 @@
 import Sidebar from "@/components/layout/Sidebar";
 import Header from "@/components/layout/Header";
 import EventEffects from "@/components/fx/EventEffects";
-import Jarvis from "@/components/jarvis/Jarvis";
+import Jaimito from "@/components/jarvis/Jaimito";
 import TourController from "@/components/jarvis/TourController";
 
 export default function PlatformLayout({ children }: { children: React.ReactNode }) {
@@ -14,7 +14,7 @@ export default function PlatformLayout({ children }: { children: React.ReactNode
       </div>
       <EventEffects />
       <TourController />
-      <Jarvis />
+      <Jaimito />
     </div>
   );
 }
