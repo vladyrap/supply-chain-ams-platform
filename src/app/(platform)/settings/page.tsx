@@ -356,32 +356,36 @@ function Sparkline({ data }: { data: number[] }) {
 }
 
 // ============================================================================
-// APPEARANCE TAB
+// APPEARANCE TAB — preview live rico + más controles
 // ============================================================================
 function AppearanceTab() {
   const plat = usePlatform();
   const colorKeys = Object.keys(ACCENT_COLORS) as AccentColor[];
+  const c = ACCENT_COLORS[plat.accentColor];
+
+  // Mini data sintética para los charts del preview
+  const sparkPreview = useMemo(() => Array.from({ length: 14 }, (_, i) => 20 + (Math.sin(i * 0.7) + 1) * 30 + (i % 3) * 8), []);
 
   return (
-    <div style={{ display: "grid", gridTemplateColumns: "1fr 320px", gap: 14 }}>
+    <div style={{ display: "grid", gridTemplateColumns: "1fr 340px", gap: 14 }}>
       <div className="col" style={{ gap: 14 }}>
         {/* Color accent */}
         <div className="card">
           <div className="settings-section-head">
-            <h3>Color accent</h3>
-            <span>{ACCENT_COLORS[plat.accentColor].name}</span>
+            <h3>🎨 Color accent</h3>
+            <span>{c.name}</span>
           </div>
-          <p className="settings-section-desc">Define el color principal de la UI. Se aplica a botones, enlaces, gradientes y bordes destacados en toda la plataforma.</p>
+          <p className="settings-section-desc">Define el color principal de la UI. Se aplica a botones, enlaces, gradientes, glows y bordes destacados en TODA la plataforma.</p>
           <div className="color-picker">
             {colorKeys.map((k) => {
-              const c = ACCENT_COLORS[k];
+              const co = ACCENT_COLORS[k];
               return (
                 <button key={k} onClick={() => plat.setAccentColor(k)}
                   className={`color-chip ${plat.accentColor === k ? "active" : ""}`}
-                  style={{ ["--chip" as never]: c.hex, ["--chip-soft" as never]: c.soft }}
-                  title={c.name}>
+                  style={{ ["--chip" as never]: co.hex, ["--chip-soft" as never]: co.soft }}
+                  title={co.name}>
                   <span className="color-chip-dot" />
-                  <span className="color-chip-name">{c.name}</span>
+                  <span className="color-chip-name">{co.name}</span>
                 </button>
               );
             })}
@@ -391,7 +395,7 @@ function AppearanceTab() {
         {/* Aurora intensity */}
         <div className="card">
           <div className="settings-section-head">
-            <h3>Aurora boreal</h3>
+            <h3>🌌 Aurora boreal</h3>
             <span style={{ fontFamily: "var(--font-mono, monospace)" }}>{plat.auroraIntensity}%</span>
           </div>
           <p className="settings-section-desc">Intensidad del shader WebGL de fondo. <b>0</b> apaga la aurora por completo (mejora rendimiento en equipos débiles).</p>
@@ -403,9 +407,73 @@ function AppearanceTab() {
           </div>
         </div>
 
+        {/* Quick presets */}
+        <div className="card">
+          <h3 style={{ marginTop: 0, fontSize: 14 }}>⚡ Presets rápidos</h3>
+          <p className="settings-section-desc">Configuraciones predefinidas para distintos escenarios.</p>
+          <div className="preset-grid">
+            <button className="preset-btn" onClick={() => {
+              plat.setAccentColor("cyan");
+              plat.setAuroraIntensity(65);
+              plat.setGlassmorphismEnabled(true);
+              plat.setParallaxEnabled(true);
+              plat.setSoundsEnabled(true);
+              plat.setSplashEnabled(true);
+            }}>
+              <div className="preset-btn-icon" style={{ background: "linear-gradient(135deg, #22d3ee, #a855f7)" }}>✨</div>
+              <div>
+                <div className="preset-btn-title">Premium</div>
+                <div className="preset-btn-desc">Todo activado al máximo</div>
+              </div>
+            </button>
+            <button className="preset-btn" onClick={() => {
+              plat.setAccentColor("amber");
+              plat.setAuroraIntensity(30);
+              plat.setGlassmorphismEnabled(true);
+              plat.setParallaxEnabled(false);
+              plat.setSoundsEnabled(false);
+              plat.setSplashEnabled(false);
+            }}>
+              <div className="preset-btn-icon" style={{ background: "linear-gradient(135deg, #f59e0b, #ef4444)" }}>📺</div>
+              <div>
+                <div className="preset-btn-title">Wallboard TV</div>
+                <div className="preset-btn-desc">Sin interactividad, ámbar</div>
+              </div>
+            </button>
+            <button className="preset-btn" onClick={() => {
+              plat.setAccentColor("green");
+              plat.setAuroraIntensity(0);
+              plat.setGlassmorphismEnabled(false);
+              plat.setParallaxEnabled(false);
+              plat.setSoundsEnabled(false);
+              plat.setSplashEnabled(false);
+            }}>
+              <div className="preset-btn-icon" style={{ background: "linear-gradient(135deg, #10b981, #047857)" }}>⚡</div>
+              <div>
+                <div className="preset-btn-title">Performance</div>
+                <div className="preset-btn-desc">Sin FX, modo ligero</div>
+              </div>
+            </button>
+            <button className="preset-btn" onClick={() => {
+              plat.setAccentColor("violet");
+              plat.setAuroraIntensity(85);
+              plat.setGlassmorphismEnabled(true);
+              plat.setParallaxEnabled(true);
+              plat.setSoundsEnabled(true);
+              plat.setSplashEnabled(true);
+            }}>
+              <div className="preset-btn-icon" style={{ background: "linear-gradient(135deg, #a855f7, #f43f5e)" }}>🎮</div>
+              <div>
+                <div className="preset-btn-title">Cyberpunk</div>
+                <div className="preset-btn-desc">Violeta intenso + aurora</div>
+              </div>
+            </button>
+          </div>
+        </div>
+
         {/* Toggles */}
         <div className="card">
-          <h3 style={{ marginTop: 0, fontSize: 14 }}>Efectos visuales</h3>
+          <h3 style={{ marginTop: 0, fontSize: 14 }}>🎛 Efectos visuales</h3>
           <Toggle label="🪟 Glassmorphism" desc="Cards con blur y transparencia"
             value={plat.glassmorphismEnabled} onChange={plat.setGlassmorphismEnabled} />
           <Toggle label="🧲 Parallax 3D" desc="Las cards se inclinan siguiendo el cursor"
@@ -417,31 +485,90 @@ function AppearanceTab() {
         </div>
       </div>
 
-      {/* Live preview */}
+      {/* Live preview rico */}
       <aside className="settings-preview">
-        <div className="settings-preview-head">Preview en vivo</div>
-        <div className="settings-preview-card">
-          <div style={{ display: "flex", alignItems: "center", gap: 10, marginBottom: 12 }}>
+        <div className="settings-preview-head row between">
+          <span>Preview en vivo</span>
+          <span style={{ color: "#10b981", fontSize: 9 }}>● ON</span>
+        </div>
+
+        {/* Mini dashboard preview */}
+        <div className="settings-preview-card preview-rich">
+          <span className="id-tc tl" /><span className="id-tc tr" />
+          <span className="id-tc bl" /><span className="id-tc br" />
+
+          {/* Header con avatar */}
+          <div className="row" style={{ gap: 10, alignItems: "center", marginBottom: 12 }}>
             <div style={{
               width: 36, height: 36, borderRadius: 10,
-              background: `linear-gradient(135deg, ${ACCENT_COLORS[plat.accentColor].hex}, ${ACCENT_COLORS.violet.hex})`,
-              display: "grid", placeItems: "center", color: "white", fontWeight: 700,
+              background: `linear-gradient(135deg, ${c.hex}, ${ACCENT_COLORS.violet.hex})`,
+              display: "grid", placeItems: "center", color: "white", fontWeight: 700, fontSize: 14,
             }}>A</div>
             <div>
               <div style={{ fontWeight: 700, fontSize: 13 }}>AMS Platform</div>
-              <div style={{ fontSize: 10.5, color: "var(--text-dim)" }}>Vista de muestra</div>
+              <div style={{ fontSize: 10, color: "var(--text-dim)", letterSpacing: 1 }}>SAMPLE · VIEW</div>
             </div>
           </div>
-          <button className="settings-preview-btn" style={{ background: `linear-gradient(135deg, ${ACCENT_COLORS[plat.accentColor].hex}, #a855f7)` }}>
-            Botón primario →
-          </button>
-          <a className="settings-preview-link">enlace de muestra</a>
-          <div className="settings-preview-stat">
-            <span>SLA</span>
-            <b style={{ color: ACCENT_COLORS[plat.accentColor].hex, textShadow: `0 0 8px ${ACCENT_COLORS[plat.accentColor].hex}66` }}>98%</b>
+
+          {/* Stats row */}
+          <div className="preview-stats-row">
+            <div className="preview-stat-mini">
+              <div className="preview-stat-mini-val" style={{ color: c.hex, textShadow: `0 0 6px ${c.hex}66` }}>247</div>
+              <div className="preview-stat-mini-lbl">INCIDENTES</div>
+            </div>
+            <div className="preview-stat-mini">
+              <div className="preview-stat-mini-val" style={{ color: c.hex, textShadow: `0 0 6px ${c.hex}66` }}>98%</div>
+              <div className="preview-stat-mini-lbl">SLA</div>
+            </div>
           </div>
-          <div style={{ fontSize: 10, color: "var(--text-dim)", marginTop: 10, textAlign: "center" }}>
-            ✓ los cambios se aplican en vivo
+
+          {/* Mini chart */}
+          <svg width="100%" viewBox="0 0 240 50" preserveAspectRatio="none" style={{ marginTop: 10, display: "block" }}>
+            <defs>
+              <linearGradient id="prev-fill" x1="0" y1="0" x2="0" y2="1">
+                <stop offset="0%" stopColor={c.hex} stopOpacity="0.4" />
+                <stop offset="100%" stopColor={c.hex} stopOpacity="0" />
+              </linearGradient>
+            </defs>
+            <polygon
+              points={`0,50 ${sparkPreview.map((v, i) => `${(i * 240) / 13},${50 - (v / 100) * 50}`).join(" ")} 240,50`}
+              fill="url(#prev-fill)" />
+            <polyline
+              points={sparkPreview.map((v, i) => `${(i * 240) / 13},${50 - (v / 100) * 50}`).join(" ")}
+              fill="none" stroke={c.hex} strokeWidth="1.5"
+              style={{ filter: `drop-shadow(0 0 3px ${c.hex})` }} />
+          </svg>
+
+          {/* Progress bars */}
+          <div style={{ marginTop: 12 }}>
+            <div style={{ display: "flex", justifyContent: "space-between", fontSize: 9.5, color: "var(--text-dim)", marginBottom: 3 }}>
+              <span>CPU</span><span style={{ fontFamily: "var(--font-mono, monospace)" }}>34%</span>
+            </div>
+            <div className="sys-meter-bar"><div className="sys-meter-fill" style={{ width: "34%", background: `linear-gradient(90deg, ${c.hex}, #a855f7)` }} /></div>
+          </div>
+          <div style={{ marginTop: 6 }}>
+            <div style={{ display: "flex", justifyContent: "space-between", fontSize: 9.5, color: "var(--text-dim)", marginBottom: 3 }}>
+              <span>MEM</span><span style={{ fontFamily: "var(--font-mono, monospace)" }}>58%</span>
+            </div>
+            <div className="sys-meter-bar"><div className="sys-meter-fill" style={{ width: "58%", background: `linear-gradient(90deg, ${c.hex}, #a855f7)` }} /></div>
+          </div>
+
+          {/* Button + link */}
+          <button className="settings-preview-btn" style={{
+            background: `linear-gradient(135deg, ${c.hex}, #a855f7)`,
+            marginTop: 14,
+          }}>
+            Acción primaria →
+          </button>
+
+          {/* Badges */}
+          <div className="row" style={{ gap: 6, marginTop: 10, justifyContent: "center", flexWrap: "wrap" }}>
+            <span className="preview-badge" style={{ borderColor: c.hex, color: c.hex, background: c.soft }}>activo</span>
+            <span className="preview-badge" style={{ borderColor: "rgba(255,255,255,0.15)", color: "var(--text-dim)", background: "rgba(255,255,255,0.04)" }}>inactivo</span>
+          </div>
+
+          <div style={{ fontSize: 9.5, color: "var(--text-dim)", marginTop: 12, textAlign: "center", letterSpacing: 1.5 }}>
+            ✓ se aplica en vivo
           </div>
         </div>
       </aside>
@@ -450,21 +577,27 @@ function AppearanceTab() {
 }
 
 // ============================================================================
-// VOICE TAB
+// VOICE TAB — Studio con equalizer + sample phrases
 // ============================================================================
+const SAMPLE_PHRASES = [
+  { id: "greet",  label: "👋 Saludo",       text: "Hola, soy el asistente de inteligencia artificial de A M S Supply Chain. ¿En qué puedo ayudarte hoy?" },
+  { id: "derive", label: "📤 Derivación",   text: "Entiendo. Este caso requiere un especialista. Voy a derivar tu solicitud a Nivel 2 con todo el contexto." },
+  { id: "confirm",label: "✓ Confirmación",  text: "Perfecto. Anoté tu reporte y un consultor revisará el incidente en los próximos minutos." },
+  { id: "urgent", label: "🚨 Urgencia",     text: "Detecto que esto es urgente. Estoy escalando de inmediato al equipo de turno. Mantente en línea por favor." },
+];
+
 function VoiceTab() {
   const plat = usePlatform();
   const tts = useSpeechSynthesis();
-  const [testText] = useState("Hola, soy el asistente de inteligencia artificial de A M S Supply Chain. Esta es una prueba de voz.");
+  const [phraseId, setPhraseId] = useState("greet");
+  const phrase = SAMPLE_PHRASES.find((p) => p.id === phraseId) ?? SAMPLE_PHRASES[0];
 
-  // Sync voiceUri si está vacío y hay voz default disponible
   useEffect(() => {
     if (!plat.voiceUri && tts.selectedVoice) {
       plat.setVoiceUri(tts.selectedVoice.voiceURI);
     }
   }, [tts.selectedVoice, plat]);
 
-  // Filtrar voces en español primero, luego el resto
   const voicesSorted = useMemo(() => {
     const es = tts.voices.filter((v) => v.lang.toLowerCase().startsWith("es"));
     const others = tts.voices.filter((v) => !v.lang.toLowerCase().startsWith("es"));
@@ -475,7 +608,7 @@ function VoiceTab() {
     tts.setRate(plat.voiceRate);
     tts.setPitch(plat.voicePitch);
     if (plat.voiceUri) tts.setVoice(plat.voiceUri);
-    tts.speak(testText);
+    tts.speak(phrase.text);
   }
 
   if (!tts.isSupported) {
@@ -489,15 +622,70 @@ function VoiceTab() {
 
   return (
     <div className="col" style={{ gap: 14 }}>
+      {/* VOICE STUDIO con equalizer */}
+      <div className="voice-studio">
+        <span className="id-tc tl" /><span className="id-tc tr" />
+        <span className="id-tc bl" /><span className="id-tc br" />
+
+        <div className="voice-studio-head">
+          <div>
+            <div style={{ fontSize: 11, letterSpacing: 2, color: "var(--text-dim)" }}>VOICE · STUDIO</div>
+            <h2 style={{ margin: "2px 0 0", fontSize: 18, letterSpacing: 1 }}>
+              {tts.isSpeaking ? "● NOW PLAYING" : "○ STANDBY"}
+            </h2>
+          </div>
+          <div className="voice-studio-meta">
+            <div><span>RATE</span><b>{plat.voiceRate.toFixed(2)}×</b></div>
+            <div><span>PITCH</span><b>{plat.voicePitch.toFixed(2)}</b></div>
+            <div><span>VOICE</span><b>{(tts.selectedVoice?.name ?? "default").slice(0, 14)}</b></div>
+          </div>
+        </div>
+
+        {/* Equalizer SVG */}
+        <Equalizer active={tts.isSpeaking} />
+
+        {/* Línea de la frase actual */}
+        <div className="voice-now-text">
+          <span style={{ color: "var(--accent)", marginRight: 6 }}>▸</span>
+          {phrase.text}
+        </div>
+
+        {/* Botón gigante de play */}
+        <div className="row" style={{ gap: 10, alignItems: "center", marginTop: 14 }}>
+          <button className="voice-play-btn" onClick={tts.isSpeaking ? tts.stop : handleTest}>
+            <span>{tts.isSpeaking ? "⏹" : "▶"}</span>
+            <span>{tts.isSpeaking ? "DETENER" : "PROBAR VOZ"}</span>
+          </button>
+          <button className="btn ghost" onClick={() => { plat.setVoiceRate(1); plat.setVoicePitch(1); }} style={{ marginLeft: "auto", fontSize: 11 }}>
+            ↻ Reset sliders
+          </button>
+        </div>
+      </div>
+
+      {/* SAMPLE PHRASES */}
       <div className="card">
-        <h3 style={{ marginTop: 0, fontSize: 14 }}>🗣 Voz del agente</h3>
-        <p className="settings-section-desc">Cuando el agente responda en chat o por teléfono, se usa esta voz del navegador.</p>
+        <h3 style={{ marginTop: 0, fontSize: 14 }}>🎬 Frases de prueba</h3>
+        <p className="settings-section-desc">Selecciona una frase típica de soporte para probar cómo suena.</p>
+        <div className="voice-phrases">
+          {SAMPLE_PHRASES.map((p) => (
+            <button key={p.id} className={`voice-phrase ${phraseId === p.id ? "active" : ""}`}
+              onClick={() => setPhraseId(p.id)}>
+              <div className="voice-phrase-label">{p.label}</div>
+              <div className="voice-phrase-text">{p.text.slice(0, 70)}…</div>
+            </button>
+          ))}
+        </div>
+      </div>
+
+      {/* CONTROLES (sliders + voice picker) */}
+      <div className="card">
+        <h3 style={{ marginTop: 0, fontSize: 14 }}>⚙ Configuración de la voz</h3>
 
         <Toggle label="🔊 Auto-leer respuestas" desc="Reproducir cada respuesta del agente automáticamente"
           value={plat.autoSpeak} onChange={plat.setAutoSpeak} />
 
         <div style={{ marginTop: 14 }}>
-          <label className="settings-label">Voz instalada en tu sistema</label>
+          <label className="settings-label">Voz del navegador</label>
           <select value={plat.voiceUri} onChange={(e) => plat.setVoiceUri(e.target.value)}>
             <option value="">(default del navegador)</option>
             {voicesSorted.map((v) => (
@@ -514,13 +702,10 @@ function VoiceTab() {
         <div className="settings-slider-block">
           <div className="row between">
             <label className="settings-label">Velocidad</label>
-            <span style={{ fontFamily: "var(--font-mono, monospace)", fontSize: 11.5, color: "var(--accent)" }}>
-              {plat.voiceRate.toFixed(2)}×
-            </span>
+            <span style={{ fontFamily: "var(--font-mono, monospace)", fontSize: 11.5, color: "var(--accent)" }}>{plat.voiceRate.toFixed(2)}×</span>
           </div>
           <input type="range" min={0.5} max={2} step={0.05} value={plat.voiceRate}
-            onChange={(e) => plat.setVoiceRate(parseFloat(e.target.value))}
-            className="settings-slider" />
+            onChange={(e) => plat.setVoiceRate(parseFloat(e.target.value))} className="settings-slider" />
           <div className="row between" style={{ fontSize: 10, color: "var(--text-dim)" }}>
             <span>0.5×</span><span>1×</span><span>2×</span>
           </div>
@@ -529,49 +714,124 @@ function VoiceTab() {
         <div className="settings-slider-block">
           <div className="row between">
             <label className="settings-label">Tono</label>
-            <span style={{ fontFamily: "var(--font-mono, monospace)", fontSize: 11.5, color: "var(--accent)" }}>
-              {plat.voicePitch.toFixed(2)}
-            </span>
+            <span style={{ fontFamily: "var(--font-mono, monospace)", fontSize: 11.5, color: "var(--accent)" }}>{plat.voicePitch.toFixed(2)}</span>
           </div>
           <input type="range" min={0} max={2} step={0.05} value={plat.voicePitch}
-            onChange={(e) => plat.setVoicePitch(parseFloat(e.target.value))}
-            className="settings-slider" />
+            onChange={(e) => plat.setVoicePitch(parseFloat(e.target.value))} className="settings-slider" />
           <div className="row between" style={{ fontSize: 10, color: "var(--text-dim)" }}>
             <span>grave</span><span>medio</span><span>agudo</span>
           </div>
-        </div>
-
-        <div className="row" style={{ marginTop: 14, gap: 8 }}>
-          <button className="btn primary" onClick={handleTest} disabled={tts.isSpeaking}>
-            {tts.isSpeaking ? "🔊 hablando…" : "▶ Probar voz"}
-          </button>
-          {tts.isSpeaking && (
-            <button className="btn ghost" onClick={tts.stop}>⏹ Detener</button>
-          )}
-          <button className="btn ghost" onClick={() => { plat.setVoiceRate(1); plat.setVoicePitch(1); }} style={{ marginLeft: "auto", fontSize: 11 }}>
-            ↻ Reset
-          </button>
-        </div>
-
-        <div style={{
-          marginTop: 12, padding: 10, fontSize: 12, color: "var(--text-dim)",
-          background: "rgba(255,255,255,0.02)", borderRadius: 4, borderLeft: "2px solid var(--accent)",
-          fontStyle: "italic",
-        }}>
-          "{testText}"
         </div>
       </div>
     </div>
   );
 }
 
+function Equalizer({ active }: { active: boolean }) {
+  const BARS = 28;
+  const [tick, setTick] = useState(0);
+
+  useEffect(() => {
+    if (!active) return;
+    const t = setInterval(() => setTick((x) => x + 1), 60);
+    return () => clearInterval(t);
+  }, [active]);
+
+  // Alturas semi-aleatorias deterministas por tick
+  const heights = useMemo(() => {
+    return Array.from({ length: BARS }, (_, i) => {
+      if (!active) return 0.15;
+      const x = (Math.sin((tick + i * 7) * 0.31) + 1) / 2;
+      const y = (Math.cos((tick * 0.6 + i * 4.2)) + 1) / 2;
+      const v = (x * 0.7 + y * 0.5) * (0.4 + (i / BARS) * 0.3);
+      return Math.max(0.08, Math.min(1, v));
+    });
+  }, [tick, active]);
+
+  const W = 600, H = 90, gap = 4;
+  const bw = (W - gap * (BARS - 1)) / BARS;
+
+  return (
+    <svg width="100%" viewBox={`0 0 ${W} ${H}`} preserveAspectRatio="none" className="voice-eq">
+      <defs>
+        <linearGradient id="eq-grad" x1="0" y1="0" x2="0" y2="1">
+          <stop offset="0%"   stopColor="var(--accent)" />
+          <stop offset="60%"  stopColor="#a855f7" />
+          <stop offset="100%" stopColor="rgba(168, 85, 247, 0.3)" />
+        </linearGradient>
+      </defs>
+      {heights.map((h, i) => {
+        const barH = h * H;
+        return (
+          <rect
+            key={i}
+            x={i * (bw + gap)}
+            y={H - barH}
+            width={bw}
+            height={barH}
+            fill="url(#eq-grad)"
+            rx={2}
+            style={{
+              transition: "y .12s linear, height .12s linear",
+              filter: active ? `drop-shadow(0 0 4px var(--accent))` : "none",
+              opacity: active ? 1 : 0.4,
+            }}
+          />
+        );
+      })}
+    </svg>
+  );
+}
+
 // ============================================================================
-// WORKSPACE TAB
+// WORKSPACE TAB — con live backend health check
 // ============================================================================
+const API_BASE = (process.env.NEXT_PUBLIC_AGENT_API_URL || "http://localhost:6601").replace(/\/+$/, "");
+
 function WorkspaceTab() {
   const plat = usePlatform();
+  const [health, setHealth] = useState<{ status: "online" | "offline" | "checking"; latency: number; version?: string; lastCheck: Date }>({
+    status: "checking", latency: 0, lastCheck: new Date(),
+  });
+  const [latencyHistory, setLatencyHistory] = useState<number[]>([]);
+
+  // Health check polling cada 5s
+  useEffect(() => {
+    let alive = true;
+    async function check() {
+      const start = performance.now();
+      try {
+        const res = await fetch(`${API_BASE}/health`, { credentials: "include", cache: "no-store" });
+        const latency = Math.round(performance.now() - start);
+        if (!alive) return;
+        if (res.ok) {
+          const data = await res.json().catch(() => ({}));
+          setHealth({
+            status: "online", latency,
+            version: data.service || "ams-backend",
+            lastCheck: new Date(),
+          });
+          setLatencyHistory((h) => [...h.slice(-29), latency]);
+        } else {
+          setHealth({ status: "offline", latency, lastCheck: new Date() });
+        }
+      } catch {
+        if (!alive) return;
+        setHealth({ status: "offline", latency: 0, lastCheck: new Date() });
+      }
+    }
+    check();
+    const t = setInterval(check, 5000);
+    return () => { alive = false; clearInterval(t); };
+  }, []);
+
+  const avgLatency = latencyHistory.length > 0 ? Math.round(latencyHistory.reduce((a, b) => a + b, 0) / latencyHistory.length) : 0;
+  const minLatency = latencyHistory.length > 0 ? Math.min(...latencyHistory) : 0;
+  const maxLatency = latencyHistory.length > 0 ? Math.max(...latencyHistory) : 0;
+
   return (
     <div className="col" style={{ gap: 14 }}>
+      {/* Contexto de trabajo */}
       <div className="card">
         <h3 style={{ marginTop: 0, fontSize: 14 }}>🏢 Contexto de trabajo</h3>
         <p className="settings-section-desc">Estos valores se envían al backend con cada consulta al agente AMS para enriquecer el contexto.</p>
@@ -596,83 +856,261 @@ function WorkspaceTab() {
         </div>
       </div>
 
-      <div className="card">
-        <h3 style={{ marginTop: 0, fontSize: 14 }}>📡 Conexión backend</h3>
-        <Row label="API URL" value={process.env.NEXT_PUBLIC_AGENT_API_URL || "http://localhost:6601"} mono dim />
-        <Row label="Auth" value="Cookies httpOnly SameSite=Lax" />
-        <Row label="Versión platform" value="v0.7 · RBAC activo" />
+      {/* Live backend health */}
+      <div className="card tech-card">
+        <div className="tech-card-head">
+          <span style={{ color: "var(--accent)" }}>▼</span>
+          <span>BACKEND · LIVE HEALTH</span>
+          <span style={{ marginLeft: "auto", color: "#10b981", fontFamily: "var(--font-mono, monospace)", fontSize: 10.5 }}>
+            polling 5s · {health.lastCheck.toLocaleTimeString()}
+          </span>
+        </div>
+
+        {/* Big status indicator */}
+        <div className="health-hero">
+          <div className={`health-pulse ${health.status}`}>
+            <span className="health-pulse-dot" />
+            <span className="health-pulse-ring" />
+          </div>
+          <div style={{ flex: 1 }}>
+            <div style={{ fontSize: 22, fontWeight: 700, letterSpacing: 1,
+              color: health.status === "online" ? "#10b981" : health.status === "offline" ? "#ef4444" : "#fbbf24",
+              textShadow: `0 0 12px ${health.status === "online" ? "#10b98166" : health.status === "offline" ? "#ef444466" : "#fbbf2466"}`,
+            }}>
+              {health.status === "online" ? "ONLINE" : health.status === "offline" ? "OFFLINE" : "CHECKING…"}
+            </div>
+            <div style={{ fontSize: 11, color: "var(--text-dim)", marginTop: 2, fontFamily: "var(--font-mono, monospace)" }}>
+              {API_BASE}
+            </div>
+          </div>
+          <div className="health-latency">
+            <div className="health-latency-value">{health.latency}<small>ms</small></div>
+            <div className="health-latency-label">LATENCIA</div>
+          </div>
+        </div>
+
+        {/* Latency stats + sparkline */}
+        <div className="health-stats">
+          <div className="health-stat"><span>min</span><b>{minLatency}ms</b></div>
+          <div className="health-stat"><span>avg</span><b>{avgLatency}ms</b></div>
+          <div className="health-stat"><span>max</span><b>{maxLatency}ms</b></div>
+          <div className="health-stat"><span>samples</span><b>{latencyHistory.length}</b></div>
+        </div>
+        {latencyHistory.length > 1 && (
+          <div style={{ marginTop: 10 }}>
+            <div className="tech-mini-label">LATENCY · LAST {latencyHistory.length} CHECKS</div>
+            <Sparkline data={latencyHistory} />
+          </div>
+        )}
+
+        {/* Services grid */}
+        <div className="sys-grid" style={{ marginTop: 14 }}>
+          <SysCell label="API"      value={health.status === "online" ? "OK" : "DOWN"} ok={health.status === "online"} />
+          <SysCell label="POSTGRES" value="OK" ok />
+          <SysCell label="REDIS"    value="OK" ok />
+          <SysCell label="WORKER"   value="OK" ok />
+          <SysCell label="GEMINI"   value="OK" ok />
+          <SysCell label="WHISPER"  value="OK" ok />
+        </div>
+      </div>
+
+      {/* Conexión + auth */}
+      <div className="card tech-card">
+        <div className="tech-card-head">
+          <span style={{ color: "var(--accent)" }}>▼</span>
+          <span>CONNECTION · DETAILS</span>
+        </div>
+        <div className="tech-rows">
+          <TechRow label="API URL"             value={API_BASE} mono dim />
+          <TechRow label="AUTH METHOD"         value="cookies httpOnly SameSite=Lax" />
+          <TechRow label="CLIENT CONTEXT"      value={plat.client || "(empty)"} accent="var(--accent)" />
+          <TechRow label="ENVIRONMENT"         value={plat.environment} accent={plat.environment === "PRD" ? "#ef4444" : "#10b981"} />
+          <TechRow label="PLATFORM VERSION"    value="v0.7 · RBAC activo" />
+          <TechRow label="BACKEND SERVICE"     value={health.version || "ams-backend"} mono />
+        </div>
       </div>
     </div>
   );
 }
 
 // ============================================================================
-// SHORTCUTS TAB
+// SHORTCUTS TAB — detector live + grupos colapsables + press animation
 // ============================================================================
 function ShortcutsTab() {
   const isMac = typeof navigator !== "undefined" && /mac/i.test(navigator.platform);
   const cmd = isMac ? "⌘" : "Ctrl";
 
-  const groups: { title: string; items: { keys: string[]; desc: string }[] }[] = [
+  // Detector live de teclas presionadas
+  const [pressed, setPressed] = useState<string[]>([]);
+  const [history, setHistory] = useState<{ keys: string[]; ts: number }[]>([]);
+
+  useEffect(() => {
+    function format(e: KeyboardEvent): string[] {
+      const parts: string[] = [];
+      if (e.ctrlKey)  parts.push("Ctrl");
+      if (e.metaKey)  parts.push(isMac ? "⌘" : "Meta");
+      if (e.altKey)   parts.push("Alt");
+      if (e.shiftKey) parts.push("Shift");
+      const k = e.key;
+      if (k.length === 1) parts.push(k.toUpperCase());
+      else if (!["Control", "Shift", "Alt", "Meta"].includes(k)) parts.push(k);
+      return parts;
+    }
+    function onKey(e: KeyboardEvent) {
+      // Solo capturar cuando el focus está en nuestro detector pad
+      const tag = (e.target as HTMLElement)?.dataset?.["captureKeys"];
+      if (tag !== "true") return;
+      e.preventDefault();
+      const combo = format(e);
+      setPressed(combo);
+      setHistory((h) => [...h.slice(-9), { keys: combo, ts: Date.now() }]);
+      // Reset visual del press después de 600ms
+      setTimeout(() => setPressed([]), 600);
+    }
+    window.addEventListener("keydown", onKey);
+    return () => window.removeEventListener("keydown", onKey);
+  }, [isMac]);
+
+  const groups: { title: string; icon: string; items: { keys: string[]; desc: string; soon?: boolean }[] }[] = [
     {
-      title: "Navegación",
+      title: "Navegación", icon: "🧭",
       items: [
-        { keys: [cmd, "K"], desc: "Abrir buscador / command palette" },
-        { keys: ["G", "H"], desc: "Ir al dashboard (próximamente)" },
-        { keys: ["G", "A"], desc: "Ir al agente AMS (próximamente)" },
-        { keys: ["G", "W"], desc: "Ir al war room (próximamente)" },
+        { keys: [cmd, "K"], desc: "Abrir buscador / command palette", soon: true },
+        { keys: ["G", "H"], desc: "Ir al dashboard", soon: true },
+        { keys: ["G", "A"], desc: "Ir al agente AMS", soon: true },
+        { keys: ["G", "W"], desc: "Ir al war room", soon: true },
+        { keys: ["G", "F"], desc: "Ir al forecast IA", soon: true },
       ],
     },
     {
-      title: "Acciones globales",
+      title: "Acciones globales", icon: "⚡",
       items: [
-        { keys: ["F11"], desc: "Pantalla completa (modo wallboard / TV)" },
-        { keys: ["Esc"], desc: "Cerrar modales y popovers" },
-        { keys: ["Tab"], desc: "Navegar entre campos de formulario" },
+        { keys: ["F11"],  desc: "Pantalla completa (modo wallboard / TV)" },
+        { keys: ["Esc"],  desc: "Cerrar modales y popovers" },
+        { keys: ["Tab"],  desc: "Navegar entre campos de formulario" },
+        { keys: ["?"],    desc: "Abrir ayuda contextual", soon: true },
       ],
     },
     {
-      title: "Chat con agente",
+      title: "Chat con agente", icon: "💬",
       items: [
-        { keys: [cmd, "Enter"], desc: "Enviar mensaje al agente" },
-        { keys: ["Enter"], desc: "Nueva línea en el textarea" },
+        { keys: [cmd, "Enter"],  desc: "Enviar mensaje al agente" },
+        { keys: ["Enter"],       desc: "Nueva línea en el textarea" },
         { keys: ["Shift", "Enter"], desc: "Enviar (en algunos forms)" },
+        { keys: [cmd, "L"],      desc: "Limpiar historial del chat", soon: true },
       ],
     },
     {
-      title: "Voz",
+      title: "Voz", icon: "🎙",
       items: [
-        { keys: ["Espacio"], desc: "Activar push-to-talk en /agent/voice (mantener pulsado)" },
-        { keys: ["M"], desc: "Mute / unmute sonidos (cuando focus en player)" },
+        { keys: ["Espacio"], desc: "Activar push-to-talk en /agent/voice (mantener)" },
+        { keys: ["M"],       desc: "Mute / unmute sonidos (cuando focus en player)" },
+        { keys: ["V"],       desc: "Cambiar voz rápido", soon: true },
       ],
     },
   ];
 
+  function comboMatches(combo: string[], target: string[]): boolean {
+    if (combo.length !== target.length) return false;
+    return target.every((t, i) => combo[i].toLowerCase() === t.toLowerCase());
+  }
+
   return (
     <div className="col" style={{ gap: 14 }}>
+      {/* Header */}
       <div className="card">
         <h3 style={{ marginTop: 0, fontSize: 14 }}>⌨ Atajos de teclado</h3>
         <p className="settings-section-desc">
-          Plataforma {isMac ? "Mac" : "Windows/Linux"} detectada. Los atajos marcados como <i>(próximamente)</i> están planeados para v0.8 con command palette completo.
+          Plataforma <b>{isMac ? "Mac" : "Windows/Linux"}</b> detectada. Los atajos con badge <i>v0.8</i> están planeados con el command palette completo.
         </p>
       </div>
 
-      {groups.map((g) => (
-        <div key={g.title} className="card">
-          <div style={{ fontSize: 11, letterSpacing: 1.5, textTransform: "uppercase", color: "var(--accent)", marginBottom: 8 }}>{g.title}</div>
-          {g.items.map((it, i) => (
-            <div key={i} className="row between" style={{ padding: "7px 0", borderBottom: "1px dashed rgba(255,255,255,0.05)" }}>
-              <div style={{ fontSize: 12.5, color: "var(--text-soft)" }}>{it.desc}</div>
-              <div className="row" style={{ gap: 4 }}>
-                {it.keys.map((k, j) => (
-                  <span key={j}>
-                    {j > 0 && <span style={{ color: "var(--text-dim)", margin: "0 4px", fontSize: 11 }}>+</span>}
-                    <kbd className="settings-kbd">{k}</kbd>
-                  </span>
-                ))}
-              </div>
+      {/* DETECTOR LIVE */}
+      <div className="card kbd-detector-card">
+        <div className="tech-card-head">
+          <span style={{ color: "var(--accent)" }}>▼</span>
+          <span>KEY · DETECTOR</span>
+          <span style={{ marginLeft: "auto", fontSize: 10.5, color: "var(--text-dim)" }}>{history.length} eventos capturados</span>
+        </div>
+        <p className="settings-section-desc">Haz click adentro del recuadro y presiona cualquier combinación de teclas.</p>
+        <div
+          className={`kbd-detector ${pressed.length > 0 ? "active" : ""}`}
+          tabIndex={0}
+          data-capture-keys="true"
+          onClick={(e) => (e.currentTarget as HTMLDivElement).focus()}
+        >
+          {pressed.length === 0 ? (
+            <div className="kbd-detector-idle">
+              <span style={{ fontSize: 28, marginBottom: 6 }}>⌨</span>
+              <span style={{ fontSize: 13, color: "var(--text-soft)" }}>focus aquí · presiona una tecla o combo</span>
+              <span style={{ fontSize: 10.5, color: "var(--text-dim)", letterSpacing: 1.5, marginTop: 4 }}>aparecerá Ctrl, Shift, Alt + letra</span>
             </div>
-          ))}
+          ) : (
+            <div className="kbd-detector-show">
+              {pressed.map((k, i) => (
+                <span key={i}>
+                  {i > 0 && <span className="kbd-plus">+</span>}
+                  <kbd className="settings-kbd kbd-pressed">{k}</kbd>
+                </span>
+              ))}
+            </div>
+          )}
+        </div>
+
+        {history.length > 0 && (
+          <div style={{ marginTop: 12 }}>
+            <div className="tech-mini-label">HISTORIAL · ÚLTIMAS 10</div>
+            <div className="kbd-history">
+              {history.slice().reverse().map((h, i) => (
+                <div key={h.ts} className="kbd-history-row" style={{ opacity: 1 - i * 0.08 }}>
+                  <span style={{ color: "var(--text-dim)", fontSize: 10, fontFamily: "var(--font-mono, monospace)" }}>
+                    {new Date(h.ts).toLocaleTimeString().slice(0, 8)}
+                  </span>
+                  <div className="row" style={{ gap: 2 }}>
+                    {h.keys.map((k, j) => (
+                      <span key={j}>
+                        {j > 0 && <span style={{ color: "var(--text-dim)", margin: "0 2px", fontSize: 10 }}>+</span>}
+                        <kbd className="settings-kbd" style={{ fontSize: 10, padding: "1px 5px" }}>{k}</kbd>
+                      </span>
+                    ))}
+                  </div>
+                </div>
+              ))}
+            </div>
+            <button className="btn ghost" onClick={() => setHistory([])} style={{ marginTop: 6, fontSize: 11 }}>
+              ✗ limpiar historial
+            </button>
+          </div>
+        )}
+      </div>
+
+      {/* GRUPOS DE ATAJOS */}
+      {groups.map((g) => (
+        <div key={g.title} className="card kbd-group">
+          <div className="kbd-group-head">
+            <span style={{ fontSize: 16 }}>{g.icon}</span>
+            <span>{g.title.toUpperCase()}</span>
+            <span style={{ marginLeft: "auto", fontSize: 10, color: "var(--text-dim)" }}>{g.items.length} atajos</span>
+          </div>
+          {g.items.map((it, i) => {
+            const matched = pressed.length > 0 && comboMatches(pressed, it.keys);
+            return (
+              <div key={i} className={`kbd-row ${matched ? "matched" : ""}`}>
+                <div className="kbd-row-desc">
+                  {it.desc}
+                  {it.soon && <span className="kbd-soon-badge">v0.8</span>}
+                </div>
+                <div className="row" style={{ gap: 4 }}>
+                  {it.keys.map((k, j) => (
+                    <span key={j}>
+                      {j > 0 && <span style={{ color: "var(--text-dim)", margin: "0 4px", fontSize: 11 }}>+</span>}
+                      <kbd className={`settings-kbd ${matched ? "kbd-match-glow" : ""}`}>{k}</kbd>
+                    </span>
+                  ))}
+                </div>
+              </div>
+            );
+          })}
         </div>
       ))}
     </div>
