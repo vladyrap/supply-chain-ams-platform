@@ -15,6 +15,16 @@ export default function BrandSplash() {
 
   useEffect(() => {
     if (typeof window === "undefined") return;
+    // Respetar preferencia del usuario: si splashEnabled=false en PlatformContext, no mostrar.
+    // BrandSplash vive fuera del PlatformProvider (root layout), por eso leemos
+    // directo de localStorage. Si la clave no existe, asumimos enabled=true.
+    try {
+      const raw = localStorage.getItem("ams-platform-state-v3");
+      if (raw) {
+        const parsed = JSON.parse(raw);
+        if (parsed && parsed.splashEnabled === false) return;
+      }
+    } catch { /* ignore */ }
     // Sólo primera vez por sesión del browser
     if (sessionStorage.getItem(STORAGE_KEY) === "1") return;
 

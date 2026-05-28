@@ -5,23 +5,56 @@ import type { Environment, Role } from "@/types";
 import { useAuth } from "./AuthContext";
 
 export type Theme = "default" | "cyberpunk";
+export type AccentColor = "cyan" | "violet" | "amber" | "green" | "rose";
+
+// Mapeo de chip de color → triplete RGB para CSS vars (--accent + glow color).
+// Estos se aplican como variables CSS al :root para que toda la plataforma respete el accent.
+export const ACCENT_COLORS: Record<AccentColor, { name: string; hex: string; rgb: string; soft: string }> = {
+  cyan:   { name: "Cyan",    hex: "#22d3ee", rgb: "34, 211, 238", soft: "rgba(34, 211, 238, 0.14)" },
+  violet: { name: "Violeta", hex: "#a855f7", rgb: "168, 85, 247", soft: "rgba(168, 85, 247, 0.16)" },
+  amber:  { name: "Ámbar",   hex: "#fbbf24", rgb: "251, 191, 36", soft: "rgba(251, 191, 36, 0.16)" },
+  green:  { name: "Verde",   hex: "#10b981", rgb: "16, 185, 129", soft: "rgba(16, 185, 129, 0.16)" },
+  rose:   { name: "Rosa",    hex: "#f43f5e", rgb: "244, 63, 94",  soft: "rgba(244, 63, 94, 0.16)" },
+};
 
 interface PlatformState {
-  role: Role;             // ahora viene del usuario autenticado (fallback "viewer" si no hay user)
+  role: Role;
   client: string;
   environment: Environment;
   autoSpeak: boolean;
   theme: Theme;
-  fxEnabled: boolean;     // confetti + audio reactivo
+  fxEnabled: boolean;
+
+  // NUEVO: preferencias de apariencia / FX globales
+  accentColor: AccentColor;
+  auroraIntensity: number;       // 0..100
+  parallaxEnabled: boolean;
+  glassmorphismEnabled: boolean;
+  soundsEnabled: boolean;
+  splashEnabled: boolean;
+  voiceRate: number;             // 0.5..2.0
+  voicePitch: number;            // 0..2
+  voiceUri: string;              // SpeechSynthesisVoice.voiceURI
+
   setClient: (c: string) => void;
   setEnvironment: (e: Environment) => void;
   setAutoSpeak: (v: boolean) => void;
   setTheme: (t: Theme) => void;
   setFxEnabled: (v: boolean) => void;
+
+  setAccentColor: (c: AccentColor) => void;
+  setAuroraIntensity: (v: number) => void;
+  setParallaxEnabled: (v: boolean) => void;
+  setGlassmorphismEnabled: (v: boolean) => void;
+  setSoundsEnabled: (v: boolean) => void;
+  setSplashEnabled: (v: boolean) => void;
+  setVoiceRate: (v: number) => void;
+  setVoicePitch: (v: number) => void;
+  setVoiceUri: (uri: string) => void;
 }
 
 const PlatformContext = createContext<PlatformState | null>(null);
-const STORAGE_KEY = "ams-platform-state-v2";
+const STORAGE_KEY = "ams-platform-state-v3";
 
 interface PersistedState {
   client: string;
@@ -29,6 +62,15 @@ interface PersistedState {
   autoSpeak: boolean;
   theme: Theme;
   fxEnabled: boolean;
+  accentColor: AccentColor;
+  auroraIntensity: number;
+  parallaxEnabled: boolean;
+  glassmorphismEnabled: boolean;
+  soundsEnabled: boolean;
+  splashEnabled: boolean;
+  voiceRate: number;
+  voicePitch: number;
+  voiceUri: string;
 }
 
 const DEFAULTS: PersistedState = {
@@ -37,13 +79,29 @@ const DEFAULTS: PersistedState = {
   autoSpeak: false,
   theme: "default",
   fxEnabled: false,
+  accentColor: "cyan",
+  auroraIntensity: 65,
+  parallaxEnabled: true,
+  glassmorphismEnabled: true,
+  soundsEnabled: true,
+  splashEnabled: true,
+  voiceRate: 1.0,
+  voicePitch: 1.0,
+  voiceUri: "",
 };
 
 function loadFromStorage(): PersistedState {
   if (typeof window === "undefined") return DEFAULTS;
   try {
     const raw = window.localStorage.getItem(STORAGE_KEY);
-    if (!raw) return DEFAULTS;
+    if (!raw) {
+      // Migración suave: si existe la clave v2 vieja, importamos sus campos
+      const old = window.localStorage.getItem("ams-platform-state-v2");
+      if (old) {
+        return { ...DEFAULTS, ...(JSON.parse(old) as Partial<PersistedState>) };
+      }
+      return DEFAULTS;
+    }
     return { ...DEFAULTS, ...(JSON.parse(raw) as Partial<PersistedState>) };
   } catch {
     return DEFAULTS;
@@ -67,24 +125,55 @@ export function PlatformProvider({ children }: { children: React.ReactNode }) {
     } catch { /* ignore */ }
   }, [state, hydrated]);
 
-  // Aplicar tema al <html> para que CSS global pueda usar [data-theme="cyberpunk"]
+  // Aplicar tema al <html>
   useEffect(() => {
     if (typeof document === "undefined") return;
     document.documentElement.setAttribute("data-theme", state.theme);
   }, [state.theme]);
 
+  // Aplicar accent color y flags como CSS variables / data-attributes globales
+  useEffect(() => {
+    if (typeof document === "undefined") return;
+    const root = document.documentElement;
+    const color = ACCENT_COLORS[state.accentColor];
+    root.style.setProperty("--accent",      color.hex);
+    root.style.setProperty("--accent-rgb",  color.rgb);
+    root.style.setProperty("--accent-soft", color.soft);
+    root.setAttribute("data-glassmorphism", state.glassmorphismEnabled ? "on" : "off");
+    root.setAttribute("data-parallax",      state.parallaxEnabled ? "on" : "off");
+    root.style.setProperty("--aurora-opacity", String(state.auroraIntensity / 100));
+  }, [state.accentColor, state.glassmorphismEnabled, state.parallaxEnabled, state.auroraIntensity]);
+
   const value: PlatformState = {
     role: (user?.role ?? "viewer") as Role,
-    client:        state.client,
-    environment:   state.environment,
-    autoSpeak:     state.autoSpeak,
-    theme:         state.theme,
-    fxEnabled:     state.fxEnabled,
-    setClient:      (client)      => setState((s) => ({ ...s, client })),
-    setEnvironment: (environment) => setState((s) => ({ ...s, environment })),
-    setAutoSpeak:   (autoSpeak)   => setState((s) => ({ ...s, autoSpeak })),
-    setTheme:       (theme)       => setState((s) => ({ ...s, theme })),
-    setFxEnabled:   (fxEnabled)   => setState((s) => ({ ...s, fxEnabled })),
+    client:               state.client,
+    environment:          state.environment,
+    autoSpeak:            state.autoSpeak,
+    theme:                state.theme,
+    fxEnabled:            state.fxEnabled,
+    accentColor:          state.accentColor,
+    auroraIntensity:      state.auroraIntensity,
+    parallaxEnabled:      state.parallaxEnabled,
+    glassmorphismEnabled: state.glassmorphismEnabled,
+    soundsEnabled:        state.soundsEnabled,
+    splashEnabled:        state.splashEnabled,
+    voiceRate:            state.voiceRate,
+    voicePitch:           state.voicePitch,
+    voiceUri:             state.voiceUri,
+    setClient:               (client)      => setState((s) => ({ ...s, client })),
+    setEnvironment:          (environment) => setState((s) => ({ ...s, environment })),
+    setAutoSpeak:            (autoSpeak)   => setState((s) => ({ ...s, autoSpeak })),
+    setTheme:                (theme)       => setState((s) => ({ ...s, theme })),
+    setFxEnabled:            (fxEnabled)   => setState((s) => ({ ...s, fxEnabled })),
+    setAccentColor:          (accentColor) => setState((s) => ({ ...s, accentColor })),
+    setAuroraIntensity:      (v)           => setState((s) => ({ ...s, auroraIntensity: Math.max(0, Math.min(100, v)) })),
+    setParallaxEnabled:      (parallaxEnabled)      => setState((s) => ({ ...s, parallaxEnabled })),
+    setGlassmorphismEnabled: (glassmorphismEnabled) => setState((s) => ({ ...s, glassmorphismEnabled })),
+    setSoundsEnabled:        (soundsEnabled)        => setState((s) => ({ ...s, soundsEnabled })),
+    setSplashEnabled:        (splashEnabled)        => setState((s) => ({ ...s, splashEnabled })),
+    setVoiceRate:            (v)                    => setState((s) => ({ ...s, voiceRate: Math.max(0.5, Math.min(2, v)) })),
+    setVoicePitch:           (v)                    => setState((s) => ({ ...s, voicePitch: Math.max(0, Math.min(2, v)) })),
+    setVoiceUri:             (voiceUri)             => setState((s) => ({ ...s, voiceUri })),
   };
 
   return <PlatformContext.Provider value={value}>{children}</PlatformContext.Provider>;

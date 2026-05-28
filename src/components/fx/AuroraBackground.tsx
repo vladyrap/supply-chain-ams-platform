@@ -2,6 +2,7 @@
 
 import { useEffect, useRef } from "react";
 import { useEventSounds } from "@/hooks/useEventSounds";
+import { usePlatform } from "@/context/PlatformContext";
 
 // WebGL fragment-shader noise para aurora boreal procedural.
 // Sin libs, todo WebGL 1.0 nativo. Z-index negativo para quedar detrás
@@ -107,6 +108,7 @@ function compile(gl: WebGLRenderingContext, type: number, src: string): WebGLSha
 export default function AuroraBackground() {
   const ref = useRef<HTMLCanvasElement | null>(null);
   const { feed } = useEventSounds({ enabled: true });
+  const { auroraIntensity } = usePlatform();
   const intensityRef = useRef(0);
   const lastFeedLen = useRef(0);
 
@@ -181,6 +183,9 @@ export default function AuroraBackground() {
     };
   }, []);
 
+  // Si la intensidad del usuario es 0, no rendereamos el canvas (off total).
+  if (auroraIntensity === 0) return null;
+
   return (
     <canvas
       ref={ref}
@@ -192,8 +197,9 @@ export default function AuroraBackground() {
         height: "100vh",
         pointerEvents: "none",
         zIndex: 0,
-        opacity: 0.65,
+        opacity: 0.18 + (auroraIntensity / 100) * 0.65,  // 0.18 .. 0.83
         mixBlendMode: "screen",
+        transition: "opacity 0.3s ease",
       }}
     />
   );
