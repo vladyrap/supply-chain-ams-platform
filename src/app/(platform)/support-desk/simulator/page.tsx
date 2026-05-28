@@ -134,6 +134,40 @@ export default function SimulatorPage() {
     setError(null);
   }
 
+  async function manualEscalate() {
+    if (!conv) return;
+    if (conv.status === "escalated") { toast.warn("Ya esta escalada"); return; }
+    if (conv.status === "resolved" || conv.status === "closed") {
+      toast.error(`No se puede escalar una conversacion ${conv.status}`); return;
+    }
+    const reason = window.prompt(
+      "Razon de la escalacion (opcional). Aparecera en el ticket como evidencia.",
+      "Cliente solicita atencion humana"
+    );
+    if (reason === null) return; // canceled
+    setSending(true);
+    setError(null);
+    try {
+      const r = await supportApi.escalateConversation(conv.id, reason.trim() || undefined);
+      if ("success" in r && r.success) {
+        setEscalatedCode(r.ticket.code);
+        setConv({ ...conv, status: "escalated", escalated_to_ticket: r.ticket.id });
+        // Append mensaje system local (refresca al recargar; aqui solo es visual)
+        setMessages((ms) => [...ms, {
+          id: uid(), role: "system",
+          text: `Caso escalado manualmente a Nivel 2: ${r.ticket.code}.${reason.trim() ? ` Razon: ${reason.trim()}` : ""}`,
+        }]);
+        toast.warn(`Escalado a ${r.ticket.code} (Nivel 2)`);
+      } else {
+        const err = "error" in r ? r.error : "No se pudo escalar";
+        setError(err);
+        toast.error(err);
+      }
+    } finally {
+      setSending(false);
+    }
+  }
+
   function handleKey(e: React.KeyboardEvent<HTMLTextAreaElement>) {
     if (e.key === "Enter" && !e.shiftKey) {
       e.preventDefault();
@@ -189,6 +223,24 @@ export default function SimulatorPage() {
               </div>
             </div>
             {conv && <Badge variant={conv.status === "escalated" ? "warn" : conv.status === "resolved" ? "ok" : "info"}>{conv.status}</Badge>}
+            {conv && conv.status !== "escalated" && conv.status !== "resolved" && conv.status !== "closed" && (
+              <button
+                className="btn"
+                onClick={manualEscalate}
+                disabled={sending}
+                title="Crear ticket MESA-NNNN sin esperar a la IA"
+                style={{
+                  padding: "4px 10px",
+                  background: "linear-gradient(135deg, #f59e0b, #ef4444)",
+                  color: "white",
+                  fontWeight: 600,
+                  fontSize: 12,
+                  border: 0,
+                }}
+              >
+                📤 Escalar a N2
+              </button>
+            )}
             {conv && <button className="btn ghost" onClick={reset} style={{ padding: "4px 10px" }}>nueva</button>}
           </div>
 

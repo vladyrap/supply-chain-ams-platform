@@ -162,6 +162,11 @@ export const supportApi = {
     { method: "POST", body: JSON.stringify({ resolved }) }
   ),
 
+  escalateConversation: (id: string, reason?: string) => call<{ success: true; ticket: SupportTicket }>(
+    `/api/support/conversations/${id}/escalate`,
+    { method: "POST", body: JSON.stringify({ reason: reason ?? "" }) }
+  ),
+
   // tickets de mesa
   listTickets: (filters?: { status?: TicketStatus; priority?: Priority }) => {
     const params = new URLSearchParams();
