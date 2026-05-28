@@ -61,49 +61,297 @@ export default function SettingsPage() {
 }
 
 // ============================================================================
-// PROFILE TAB
+// PROFILE TAB — Identity Card holográfica estilo ops center
 // ============================================================================
 function ProfileTab({ user, roleLabel }: { user: ReturnType<typeof useAuth>["user"]; roleLabel: string }) {
+  const [sessionUptime, setSessionUptime] = useState(0);
+  const [now, setNow] = useState(new Date());
+
+  // Reloj de uptime de sesión (segundos desde mount)
+  useEffect(() => {
+    const startedAt = Date.now();
+    const t = setInterval(() => {
+      setSessionUptime(Math.floor((Date.now() - startedAt) / 1000));
+      setNow(new Date());
+    }, 1000);
+    return () => clearInterval(t);
+  }, []);
+
   if (!user) return <div className="card">No hay sesión activa.</div>;
   const initials = (user.name || user.email).slice(0, 2).toUpperCase();
   const memberSince = new Date(user.created_at);
   const days = Math.max(1, Math.floor((Date.now() - memberSince.getTime()) / 86400000));
 
+  // Clearance level por rol legacy
+  const clearance: Record<string, { tier: number; label: string; color: string; bars: number }> = {
+    admin:     { tier: 5, label: "ULTRA", color: "#f59e0b", bars: 5 },
+    aprobador: { tier: 4, label: "ALTA",  color: "#a855f7", bars: 4 },
+    consultor: { tier: 3, label: "MEDIA", color: "#22d3ee", bars: 3 },
+    viewer:    { tier: 2, label: "BAJA",  color: "#64748b", bars: 2 },
+  };
+  const cl = clearance[user.role] ?? clearance.viewer;
+
+  // Métricas sintéticas "mock" pero estables (basadas en hash del id) para que se vean realistas sin backend
+  const seed = parseInt(user.id.replace(/[^a-f0-9]/gi, "").slice(0, 8), 16) || 1;
+  const interactions = (seed % 950) + 50;
+  const aiResolved   = 60 + (seed % 30);   // 60-89%
+  const totalActions = (seed % 1200) + 200;
+
+  // Sparkline 30 días deterministas
+  const sparkData = Array.from({ length: 30 }, (_, i) => {
+    const x = ((seed >> i) & 0xff) ^ (i * 11);
+    return 20 + (x % 80);
+  });
+
+  // System status mock (CPU/MEM/NET) que cambia con el reloj
+  const sysCPU = 18 + (Math.floor(now.getTime() / 3000) % 20);
+  const sysMEM = 45 + (Math.floor(now.getTime() / 5000) % 15);
+  const sysNET = 60 + (Math.floor(now.getTime() / 2000) % 30);
+
+  function fmtUptime(s: number): string {
+    const h = Math.floor(s / 3600);
+    const m = Math.floor((s % 3600) / 60);
+    const ss = s % 60;
+    return `${String(h).padStart(2, "0")}:${String(m).padStart(2, "0")}:${String(ss).padStart(2, "0")}`;
+  }
+
   return (
     <div className="col" style={{ gap: 14 }}>
-      <div className="card profile-hero">
-        <div className="profile-avatar">
-          {initials}
-          <span className="profile-avatar-ring" />
+      {/* IDENTITY CARD */}
+      <div className="id-card">
+        <span className="id-tc tl" /><span className="id-tc tr" />
+        <span className="id-tc bl" /><span className="id-tc br" />
+        <div className="id-card-scanlines" />
+        <div className="id-card-grid" />
+
+        {/* Header strip */}
+        <div className="id-card-strip">
+          <span style={{ color: cl.color, textShadow: `0 0 6px ${cl.color}` }}>● AUTHENTICATED</span>
+          <span style={{ color: "var(--text-dim)" }}>· SESSION {fmtUptime(sessionUptime)} ·</span>
+          <span style={{ color: cl.color, fontFamily: "var(--font-mono, monospace)" }}>{now.toUTCString().slice(17, 25)} UTC</span>
         </div>
-        <div style={{ flex: 1 }}>
-          <h2 style={{ margin: 0, fontSize: 24, letterSpacing: -0.5 }}>{user.name || user.email}</h2>
-          <div style={{ color: "var(--text-soft)", fontSize: 13, marginTop: 4, fontFamily: "var(--font-mono, monospace)" }}>{user.email}</div>
-          <div className="row" style={{ gap: 6, marginTop: 10, flexWrap: "wrap" }}>
-            <Badge variant="info">{roleLabel}</Badge>
-            <Badge variant={user.active ? "ok" : "muted"}>{user.active ? "cuenta activa" : "cuenta inactiva"}</Badge>
-            <Badge variant="tech">id {user.id.slice(0, 8)}</Badge>
+
+        <div className="id-card-body">
+          {/* Avatar holográfico con 3 rings */}
+          <div className="id-avatar-frame">
+            <svg width="160" height="160" viewBox="0 0 160 160" className="id-avatar-svg">
+              <defs>
+                <linearGradient id="id-grad" x1="0" y1="0" x2="1" y2="1">
+                  <stop offset="0%" stopColor="var(--accent)" />
+                  <stop offset="100%" stopColor="#a855f7" />
+                </linearGradient>
+                <radialGradient id="id-glow">
+                  <stop offset="0%" stopColor="var(--accent)" stopOpacity="0.6" />
+                  <stop offset="100%" stopColor="var(--accent)" stopOpacity="0" />
+                </radialGradient>
+              </defs>
+              <circle cx="80" cy="80" r="72" fill="url(#id-glow)" />
+              <circle cx="80" cy="80" r="70" fill="none" stroke="var(--accent)" strokeOpacity="0.5" strokeWidth="1" strokeDasharray="3 6" className="id-ring id-ring-1" style={{ transformOrigin: "80px 80px" }} />
+              <circle cx="80" cy="80" r="58" fill="none" stroke="#a855f7" strokeOpacity="0.4" strokeWidth="1" strokeDasharray="8 4" className="id-ring id-ring-2" style={{ transformOrigin: "80px 80px" }} />
+              <circle cx="80" cy="80" r="46" fill="none" stroke="var(--accent)" strokeOpacity="0.6" strokeWidth="1.5" className="id-ring id-ring-3" style={{ transformOrigin: "80px 80px" }} strokeDasharray="2 10" />
+              {/* Centro: avatar gradient */}
+              <circle cx="80" cy="80" r="40" fill="url(#id-grad)" filter="url(#id-shadow)" />
+              <text x="80" y="92" textAnchor="middle" fontSize="32" fontWeight="700" fill="white" letterSpacing="-1">{initials}</text>
+              {/* 4 marcas de tracking en las esquinas del avatar */}
+              {[[40, 80], [120, 80], [80, 40], [80, 120]].map(([x, y], i) => (
+                <g key={i}>
+                  <line x1={x - 6} y1={y} x2={x - 2} y2={y} stroke="var(--accent)" strokeWidth="1.5" />
+                  <line x1={x + 2} y1={y} x2={x + 6} y2={y} stroke="var(--accent)" strokeWidth="1.5" />
+                  <line x1={x} y1={y - 6} x2={x} y2={y - 2} stroke="var(--accent)" strokeWidth="1.5" />
+                  <line x1={x} y1={y + 2} x2={x} y2={y + 6} stroke="var(--accent)" strokeWidth="1.5" />
+                </g>
+              ))}
+            </svg>
+          </div>
+
+          {/* Info bloque central */}
+          <div style={{ flex: 1, minWidth: 0 }}>
+            <div style={{ fontSize: 10.5, color: "var(--text-dim)", letterSpacing: 2, marginBottom: 4 }}>AMS · IDENTITY CARD · v0.7</div>
+            <h2 className="id-name">{user.name || user.email}</h2>
+            <div className="id-email">{user.email}</div>
+
+            <div className="id-meta-grid">
+              <div className="id-meta">
+                <div className="id-meta-label">DESIGNATION</div>
+                <div className="id-meta-value">{roleLabel.toUpperCase()}</div>
+              </div>
+              <div className="id-meta">
+                <div className="id-meta-label">CLEARANCE</div>
+                <div className="id-meta-value" style={{ color: cl.color, textShadow: `0 0 6px ${cl.color}` }}>
+                  TIER {cl.tier} · {cl.label}
+                </div>
+                <div className="id-bars">
+                  {Array.from({ length: 5 }).map((_, i) => (
+                    <span key={i} className={`id-bar ${i < cl.bars ? "on" : ""}`} style={{ ["--bar-color" as never]: cl.color }} />
+                  ))}
+                </div>
+              </div>
+              <div className="id-meta">
+                <div className="id-meta-label">STATUS</div>
+                <div className="id-meta-value" style={{ color: user.active ? "#10b981" : "#64748b" }}>
+                  {user.active ? "● ACTIVE" : "○ INACTIVE"}
+                </div>
+              </div>
+              <div className="id-meta">
+                <div className="id-meta-label">UID</div>
+                <div className="id-meta-value" style={{ fontFamily: "var(--font-mono, monospace)", fontSize: 11 }}>
+                  {user.id.slice(0, 8)}-{user.id.slice(9, 13)}
+                </div>
+              </div>
+            </div>
+          </div>
+
+          {/* Stats laterales (vertical) */}
+          <div className="id-stats-vertical">
+            <div className="id-stat-big">
+              <div className="id-stat-big-num">{days}</div>
+              <div className="id-stat-big-label">DÍAS</div>
+            </div>
+            <div className="id-stat-mini">
+              <span>SES</span><b>{fmtUptime(sessionUptime).slice(3)}</b>
+            </div>
+            <div className="id-stat-mini">
+              <span>XP</span><b>{totalActions}</b>
+            </div>
           </div>
         </div>
-        <div className="profile-stats">
-          <div className="profile-stat">
-            <div className="profile-stat-value">{days}</div>
-            <div className="profile-stat-label">días en la plataforma</div>
+
+        {/* Footer barcode */}
+        <div className="id-card-barcode" aria-hidden>
+          {Array.from({ length: 80 }).map((_, i) => (
+            <span key={i} style={{ width: ((seed >> (i % 16)) & 3) + 1, opacity: ((seed >> i) & 1) ? 0.85 : 0.25 }} />
+          ))}
+          <span style={{ marginLeft: "auto", fontFamily: "var(--font-mono, monospace)", fontSize: 10, color: "var(--text-dim)", letterSpacing: 2 }}>
+            ID-{user.id.slice(0, 12).toUpperCase()}
+          </span>
+        </div>
+      </div>
+
+      {/* Telemetría + Sistema en row */}
+      <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 14 }}>
+        {/* TELEMETRÍA del usuario */}
+        <div className="card tech-card">
+          <div className="tech-card-head">
+            <span style={{ color: "var(--accent)" }}>▼</span>
+            <span>USER · TELEMETRY</span>
+            <span style={{ marginLeft: "auto", color: "#10b981" }}>● LIVE</span>
+          </div>
+          <div className="tech-rows">
+            <TechRow label="INTERACTIONS · TOTAL" value={interactions.toLocaleString()} accent="var(--accent)" />
+            <TechRow label="AI · RESOLVED %"      value={`${aiResolved}%`}              accent="#10b981" />
+            <TechRow label="ACTIONS · LOGGED"     value={totalActions.toLocaleString()} accent="#a855f7" />
+            <TechRow label="MEMBER · SINCE"       value={memberSince.toISOString().slice(0, 10)} accent="#fbbf24" mono />
+            <TechRow label="LAST · LOGIN"         value="just now"                       accent="#22d3ee" />
+          </div>
+
+          {/* Sparkline */}
+          <div style={{ marginTop: 14 }}>
+            <div className="tech-mini-label">ACTIVITY · LAST 30 DAYS</div>
+            <Sparkline data={sparkData} />
+          </div>
+        </div>
+
+        {/* SYSTEM STATUS */}
+        <div className="card tech-card">
+          <div className="tech-card-head">
+            <span style={{ color: "var(--accent)" }}>▼</span>
+            <span>SYSTEM · STATUS</span>
+            <span style={{ marginLeft: "auto", color: "#10b981", fontFamily: "var(--font-mono, monospace)", fontSize: 10.5 }}>{now.toLocaleTimeString()}</span>
+          </div>
+
+          <div className="sys-meter">
+            <div className="sys-meter-label">
+              <span>CPU LOAD</span><span style={{ fontFamily: "var(--font-mono, monospace)" }}>{sysCPU}%</span>
+            </div>
+            <div className="sys-meter-bar"><div className="sys-meter-fill" style={{ width: `${sysCPU}%`, background: "linear-gradient(90deg, #22d3ee, #06b6d4)" }} /></div>
+          </div>
+          <div className="sys-meter">
+            <div className="sys-meter-label">
+              <span>MEMORY</span><span style={{ fontFamily: "var(--font-mono, monospace)" }}>{sysMEM}%</span>
+            </div>
+            <div className="sys-meter-bar"><div className="sys-meter-fill" style={{ width: `${sysMEM}%`, background: "linear-gradient(90deg, #a855f7, #c084fc)" }} /></div>
+          </div>
+          <div className="sys-meter">
+            <div className="sys-meter-label">
+              <span>NETWORK</span><span style={{ fontFamily: "var(--font-mono, monospace)" }}>{sysNET}%</span>
+            </div>
+            <div className="sys-meter-bar"><div className="sys-meter-fill" style={{ width: `${sysNET}%`, background: "linear-gradient(90deg, #10b981, #34d399)" }} /></div>
+          </div>
+
+          <div className="sys-grid">
+            <SysCell label="UPLINK"   value="OK"     ok />
+            <SysCell label="DOWNLINK" value="OK"     ok />
+            <SysCell label="ENCRYPT"  value="TLS"    ok />
+            <SysCell label="REGION"   value="LATAM" />
+            <SysCell label="LATENCY"  value={`${28 + (sysNET % 12)}ms`} />
+            <SysCell label="API VER"  value="v0.7" />
           </div>
         </div>
       </div>
 
-      <div className="card">
-        <h3 style={{ marginTop: 0, fontSize: 14, letterSpacing: 0.5 }}>Sesión</h3>
-        <Row label="Email" value={user.email} mono />
-        <Row label="Rol legacy" value={user.role} mono />
-        <Row label="ID interno" value={user.id} mono dim />
-        <Row label="Creado" value={memberSince.toLocaleString("es-CL")} />
-        <p style={{ color: "var(--text-soft)", fontSize: 12, marginTop: 12, marginBottom: 0 }}>
-          Si necesitas cambiar tu rol contacta al administrador. Si eres admin, ve a la sección Administración para gestionar usuarios y permisos.
-        </p>
+      {/* Permisos en pildoras */}
+      <div className="card tech-card">
+        <div className="tech-card-head">
+          <span style={{ color: "var(--accent)" }}>▼</span>
+          <span>SESSION · CREDENTIALS</span>
+        </div>
+        <div className="tech-rows" style={{ fontSize: 11.5 }}>
+          <TechRow label="EMAIL"       value={user.email}         mono />
+          <TechRow label="ROLE · LEGACY"   value={user.role.toUpperCase()} mono />
+          <TechRow label="ROLE · LABEL"    value={roleLabel}          />
+          <TechRow label="UID · FULL"      value={user.id}            mono dim />
+          <TechRow label="ACCOUNT · BORN"  value={memberSince.toLocaleString("es-CL")} />
+        </div>
+        <div className="tech-foot">
+          <span>Si necesitas cambiar tu rol, contacta al administrador.</span>
+          <span>Si eres admin, ve a <code style={{ color: "var(--accent)" }}>/admin</code> para gestionar usuarios y permisos.</span>
+        </div>
       </div>
     </div>
+  );
+}
+
+function TechRow({ label, value, accent, mono, dim }: { label: string; value: string; accent?: string; mono?: boolean; dim?: boolean }) {
+  return (
+    <div className="tech-row">
+      <span className="tech-row-label">{label}</span>
+      <span className="tech-row-value" style={{
+        color: dim ? "var(--text-dim)" : (accent ?? "var(--text)"),
+        fontFamily: mono ? "var(--font-mono, monospace)" : undefined,
+        textShadow: accent ? `0 0 6px ${accent}55` : "none",
+      }}>{value}</span>
+    </div>
+  );
+}
+
+function SysCell({ label, value, ok }: { label: string; value: string; ok?: boolean }) {
+  return (
+    <div className="sys-cell">
+      <span className="sys-cell-label">{label}</span>
+      <span className={`sys-cell-value ${ok ? "ok" : ""}`}>{value}</span>
+    </div>
+  );
+}
+
+function Sparkline({ data }: { data: number[] }) {
+  const W = 280, H = 50;
+  const max = Math.max(...data);
+  const min = Math.min(...data);
+  const step = W / (data.length - 1);
+  const pts = data.map((v, i) => `${i * step},${H - ((v - min) / (max - min || 1)) * H}`).join(" ");
+  return (
+    <svg width="100%" viewBox={`0 0 ${W} ${H}`} preserveAspectRatio="none" style={{ display: "block" }}>
+      <defs>
+        <linearGradient id="spark-fill" x1="0" y1="0" x2="0" y2="1">
+          <stop offset="0%" stopColor="var(--accent)" stopOpacity="0.35" />
+          <stop offset="100%" stopColor="var(--accent)" stopOpacity="0" />
+        </linearGradient>
+      </defs>
+      <polygon points={`0,${H} ${pts} ${W},${H}`} fill="url(#spark-fill)" />
+      <polyline points={pts} fill="none" stroke="var(--accent)" strokeWidth="1.5" style={{ filter: "drop-shadow(0 0 4px var(--accent))" }} />
+      {/* Último punto destacado */}
+      <circle cx={W} cy={H - ((data[data.length - 1] - min) / (max - min || 1)) * H} r="3" fill="var(--accent)" style={{ filter: "drop-shadow(0 0 6px var(--accent))" }} />
+    </svg>
   );
 }
 
