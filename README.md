@@ -265,6 +265,70 @@ supply-chain-ams-platform/
 | Auth | Cookies httpOnly del backend |
 | Deploy | Docker (Node 20 Alpine, multi-stage, standalone build) |
 
+## 🛡️ Administración de usuarios, roles y permisos
+
+> Panel visual de RBAC accesible en `/admin` (requiere rol `admin` real del backend).
+
+### Lo que puedes hacer desde `/admin`
+
+| Tab | Para qué |
+|---|---|
+| **Usuarios** | Crear, editar, activar/desactivar, asignar rol + nivel de servicio, **simular como X** (cambia el filtro del sidebar en vivo) |
+| **Roles** | Crear, editar, duplicar (sugiere `ORIGINAL_COPY`), eliminar (solo los no-sistema), ver # de usuarios por rol |
+| **Matriz de permisos** | Tabla `pantallas × acciones` con checkboxes. Aplicar toda una fila con un click. Selector de rol arriba |
+| **Vista previa** | Selecciona un usuario y ve exactamente qué módulos del sidebar verá, qué acciones puede hacer, y un menú lateral simulado |
+
+### Cómo crear un rol
+
+1. Ve a `/admin` → Tab **Roles** → **+ Nuevo rol**
+2. Completa nombre, código (UPPER_SNAKE_CASE, mín 3 chars, único) y descripción
+3. Save → el rol queda creado con permisos vacíos
+4. Cambia a tab **Matriz de permisos**, selecciona el rol y activa los checkboxes que corresponda
+
+### Cómo crear usuarios demo
+
+Tab **Usuarios** → **+ Nuevo usuario demo** → nombre, email, rol, nivel.
+
+> No requiere contraseña: estos usuarios viven en `localStorage` del browser. La auth real con backend solo aplica al login del admin.
+
+### Cómo cambiar el usuario activo (simular)
+
+En la tabla de usuarios, click 👁 **simular** sobre cualquier user. El sidebar
+se filtra como si fueras ese user, los módulos sin `view` desaparecen. Para
+volver a tu sesión real, click 🛑 **dejar de simular** o ve a Vista previa →
+botón **Volver a mi sesión real**.
+
+### Cómo restaurar la configuración demo
+
+Tab **Administración** (esquina superior derecha) → **↻ Restaurar configuración demo**.
+Borra las 3 claves de `localStorage` y vuelve a poblar con los 5 roles y 5 usuarios seed.
+
+### Persistencia
+
+Las tres claves de `localStorage`:
+
+```
+supply-chain-ams-platform-roles
+supply-chain-ams-platform-users
+supply-chain-ams-platform-current-user
+```
+
+Los cambios disparan un `CustomEvent("ams-rbac-changed")` para que el Sidebar
+se refresque en el mismo tab.
+
+### Limitaciones actuales
+
+- **Sin backend RBAC todavía.** Todo vive en el browser. Limpiar localStorage borra todo.
+- **No es seguridad real:** un usuario malicioso podría editar permisos desde DevTools. Para producción, los endpoints del backend deben validar permisos server-side. Esto está documentado como roadmap en [`docs/access-control.md`](docs/access-control.md).
+- **El admin real del backend (`role: "admin"`)** es el único que ve el panel `/admin`. Los demás reciben `AccessLockedCard`.
+- **Roles legacy se mapean automáticamente** al code RBAC: `admin→ADMIN`, `aprobador→SERVICE_LEAD`, `consultor→AMS_CONSULTANT`, `viewer→GENERAL_USER`.
+
+### Cómo se integrará a backend en fase futura
+
+Ver [`docs/access-control.md`](docs/access-control.md) sección "Roadmap hacia backend real".
+
+Resumen: el modelo (`types/rbac.ts`) y la lógica (`utils/rbac.ts`) están desacoplados de `localStorage`. Migrar a backend implica solo cambiar la fuente de datos del hook `useAccessAdmin` — los componentes de UI no cambian.
+
 ## 📜 Licencia
 
 MIT — ver [LICENSE](LICENSE).

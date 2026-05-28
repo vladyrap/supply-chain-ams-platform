@@ -456,6 +456,117 @@ button { font-family: inherit; }
 }
 .auth-footer-link a:hover { border-bottom-style: solid; }
 
+/* =====================================================
+   ADMIN ACCESS PANEL
+   ===================================================== */
+.admin-tabs {
+  display: flex; gap: 4px;
+  border-bottom: 1px solid var(--border-soft);
+  margin-top: 8px;
+}
+.admin-tab {
+  display: inline-flex; align-items: center; gap: 8px;
+  padding: 10px 16px;
+  background: transparent;
+  border: 0; border-bottom: 2px solid transparent;
+  color: var(--text-soft);
+  font-size: 13px; font-weight: 500;
+  cursor: pointer;
+  transition: color .15s, border-color .15s, background .15s;
+  font-family: inherit;
+  position: relative;
+}
+.admin-tab:hover { color: var(--text); background: rgba(255, 255, 255, 0.03); }
+.admin-tab.active {
+  color: #22d3ee;
+  border-bottom-color: #22d3ee;
+  text-shadow: 0 0 8px rgba(34, 211, 238, 0.4);
+}
+
+/* Roles grid */
+.admin-roles-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+  gap: 12px;
+}
+.admin-role-card { padding: 16px; }
+
+/* Matriz de permisos */
+.permission-matrix { width: 100%; border-collapse: collapse; font-size: 12.5px; }
+.permission-matrix th {
+  position: sticky; top: 0;
+  background: rgba(15, 23, 42, 0.95);
+  text-align: center;
+  padding: 10px 8px;
+  color: var(--text-soft);
+  letter-spacing: 0.4px;
+  border-bottom: 1px solid var(--border-soft);
+  font-size: 11px; text-transform: uppercase;
+}
+.permission-matrix th:first-child { text-align: left; }
+.permission-matrix td {
+  padding: 10px 8px;
+  border-bottom: 1px solid var(--border-soft);
+}
+.permission-matrix td:first-child { min-width: 200px; }
+
+.perm-cell { position: relative; display: inline-block; cursor: pointer; width: 22px; height: 22px; }
+.perm-cell input { position: absolute; opacity: 0; inset: 0; cursor: pointer; }
+.perm-cell span {
+  position: absolute; inset: 0;
+  border-radius: 5px;
+  border: 1.5px solid rgba(255, 255, 255, 0.18);
+  background: rgba(255, 255, 255, 0.02);
+  transition: all .15s;
+}
+.perm-cell:hover span { border-color: #22d3ee; }
+.perm-cell input:checked + span {
+  background: linear-gradient(135deg, #06b6d4, #a855f7);
+  border-color: #22d3ee;
+  box-shadow: 0 0 8px rgba(34, 211, 238, 0.5);
+}
+.perm-cell input:checked + span::after {
+  content: "✓"; color: white; position: absolute; inset: 0;
+  display: grid; place-items: center; font-size: 13px; font-weight: 700;
+}
+
+/* Modal */
+.admin-modal-overlay {
+  position: fixed; inset: 0; z-index: 9500;
+  background: rgba(0, 0, 0, 0.65);
+  backdrop-filter: blur(4px);
+  display: grid; place-items: center;
+  padding: 20px;
+  animation: modalFadeIn .15s ease-out;
+}
+@keyframes modalFadeIn { from { opacity: 0; } to { opacity: 1; } }
+.admin-modal {
+  width: 100%; max-width: 480px;
+  background: linear-gradient(180deg, rgba(15, 23, 42, 0.97), rgba(2, 6, 23, 0.97));
+  border: 1px solid rgba(34, 211, 238, 0.3);
+  border-radius: 10px;
+  box-shadow: 0 30px 70px rgba(0, 0, 0, 0.65), 0 0 40px rgba(34, 211, 238, 0.1);
+  overflow: hidden;
+  animation: modalUp .2s ease-out;
+}
+@keyframes modalUp { from { opacity: 0; transform: translateY(20px) scale(0.96); } to { opacity: 1; transform: translateY(0) scale(1); } }
+.admin-modal-head {
+  display: flex; justify-content: space-between; align-items: center;
+  padding: 14px 18px;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+}
+.admin-modal-close {
+  background: transparent; border: 0; color: var(--text-dim);
+  font-size: 22px; line-height: 1; cursor: pointer;
+  padding: 0 6px; transition: color .15s;
+}
+.admin-modal-close:hover { color: var(--text); }
+.admin-modal-body { padding: 18px; display: flex; flex-direction: column; gap: 12px; }
+
+.admin-form-row { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+.admin-form-col { display: flex; flex-direction: column; gap: 4px; }
+.admin-form-label { font-size: 11px; color: var(--text-soft); letter-spacing: 0.5px; }
+
 .row { display: flex; gap: 10px; align-items: center; }
 .col { display: flex; flex-direction: column; gap: 10px; }
 .between { justify-content: space-between; }
