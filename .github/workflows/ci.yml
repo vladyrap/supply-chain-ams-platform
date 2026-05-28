@@ -1,0 +1,49 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+  workflow_dispatch:
+
+jobs:
+  typecheck:
+    name: Next.js · typecheck
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+      - name: Install (no scripts)
+        run: npm install --no-audit --no-fund --ignore-scripts
+      - name: TypeScript check
+        run: npx tsc --noEmit
+
+  build:
+    name: Next.js · build
+    runs-on: ubuntu-latest
+    needs: typecheck
+    env:
+      NEXT_PUBLIC_AGENT_API_URL: http://localhost:6601
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+      - name: Install
+        run: npm install --no-audit --no-fund
+      - name: Next.js build
+        run: npm run build
+
+  docker-config:
+    name: Docker · compose config
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Render docker-compose.yml
+        run: |
+          cp .env.example .env
+          docker compose -f docker-compose.yml config --quiet
+          rm .env

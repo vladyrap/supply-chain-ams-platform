@@ -1,237 +1,270 @@
 # supply-chain-ams-platform
 
-> Plataforma SaaS multi-módulo que consume el backend `supply-chain-ams-agent`. Sidebar con navegación de módulos, roles mock, layout premium dark, y **modo voz nativo del navegador** integrado en el módulo Agente AMS.
+[![CI](https://github.com/vladyrap/supply-chain-ams-platform/actions/workflows/ci.yml/badge.svg)](https://github.com/vladyrap/supply-chain-ams-platform/actions/workflows/ci.yml)
+[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE)
+[![Status](https://img.shields.io/badge/Status-Active-success)]()
+[![Next.js](https://img.shields.io/badge/Next.js-14.2-000000?logo=next.js&logoColor=white)](https://nextjs.org)
+[![TypeScript](https://img.shields.io/badge/TypeScript-5.6-3178C6?logo=typescript&logoColor=white)](https://www.typescriptlang.org)
+[![React](https://img.shields.io/badge/React-18-61DAFB?logo=react&logoColor=black)](https://react.dev)
+[![Three.js](https://img.shields.io/badge/Three.js-0.169-000000?logo=three.js&logoColor=white)](https://threejs.org)
+[![WebGL](https://img.shields.io/badge/WebGL-Aurora_Shader-990000?logo=webgl)](https://webgl.org)
+[![Web Speech API](https://img.shields.io/badge/Voice-Web_Speech_API-4285F4?logo=googlechrome&logoColor=white)](https://developer.mozilla.org/en-US/docs/Web/API/Web_Speech_API)
+[![Docker](https://img.shields.io/badge/Docker-Compose-2496ED?logo=docker&logoColor=white)](https://www.docker.com)
+[![Made with Claude Code](https://img.shields.io/badge/Made_with-Claude_Code-D97757?logo=anthropic&logoColor=white)](https://claude.com/claude-code)
+
+> **Plataforma SaaS multi-módulo** que consume el backend `supply-chain-ams-agent`. **23 módulos funcionales** incluyendo war-room 3D, asistente flotante "Jaimito" con voz, tour autopilot, forecast IA, aurora boreal WebGL global y wallboard 4K.
+
+## 🧭 Repos relacionados
+
+| Repo | Rol |
+|---|---|
+| [`supply-chain-ams-agent`](https://github.com/vladyrap/supply-chain-ams-agent) | Backend Fastify + LLM + DB + workers + Twilio Voice |
+| [`supply-chain-ams-platform`](https://github.com/vladyrap/supply-chain-ams-platform) **← estás aquí** | UI Next.js 14, App Router, Three.js |
+| [`supply-chain-ams-stack`](https://github.com/vladyrap/supply-chain-ams-stack) | Orquestador `docker compose up` |
+
+## 🚀 Quickstart
+
+```bash
+git clone https://github.com/vladyrap/supply-chain-ams-platform
+cd supply-chain-ams-platform
+cp .env.example .env   # default apunta al backend en :6601
+docker compose up -d
+# Abrir http://localhost:6700
+```
+
+Para todo el stack en un solo comando:
+
+```bash
+git clone https://github.com/vladyrap/supply-chain-ams-stack
+cd supply-chain-ams-stack
+docker compose up -d   # levanta los 13 contenedores
+```
 
 ---
 
 ## ¿Qué es esto?
 
-Una capa de UX por encima del agente AMS. Mientras el `supply-chain-ams-agent` expone una API REST (puerto 6601), esta plataforma:
+Una **capa premium de UX** sobre el agente AMS. El `supply-chain-ams-agent` expone una API REST (puerto 6601); esta plataforma:
 
-- Da una experiencia de usuario general (no solo de consultor técnico).
-- Organiza la operación por módulos: Dashboard, **Agente AMS**, Conocimiento, Tickets, Integraciones, SAP Read-Only, Reuniones AMS, Configuración.
-- Aplica roles (mock por ahora, sin login): **viewer / consultor / aprobador / admin**.
-- Persiste preferencias en `localStorage` (rol, cliente, ambiente, autoSpeak).
-- Incluye **modo voz local** usando Web Speech API: STT para dictar incidentes y TTS para escuchar la respuesta.
+- 23 módulos funcionales organizados por sección (Operación, Visualizaciones, AMS avanzado, Sistema).
+- **Auth real** con cookies HttpOnly + roles (viewer / consultor / aprobador / admin).
+- **Asistente flotante "Jaimito"** con voz en todas las páginas — habla, navega, consulta al agente.
+- **Tour autopilot** que recorre 6 vistas narrando con TTS (~2 min, ideal para demos a cliente).
+- **Aurora boreal WebGL** procedural de fondo global que reacciona a eventos en vivo.
+- **Glassmorphism + parallax 3D** en todas las cards (siguen el cursor sutilmente).
+- **Modo voz local** en `/agent/voice` con Web Speech API.
 
 No reemplaza al `agent`; lo consume. El agent puede seguir levantado sin la plataforma.
 
 ## Arquitectura
 
 ```
-Navegador  ──HTTP──►  supply-chain-ams-platform  ──HTTP──►  supply-chain-ams-agent  ──►  Gemini API
-:6700                  Next.js 14, contenedor :3000          backend Fastify :8000 host :6601
+Navegador  ──HTTP──►  supply-chain-ams-platform  ──HTTP──►  supply-chain-ams-agent  ──►  Gemini / Twilio / Whisper
+:6700                  Next.js 14, contenedor :3000          Fastify host :6601
 ```
 
-- Puerto host de la plataforma: **6700** (→ 3000 dentro del contenedor).
-- Variable `NEXT_PUBLIC_AGENT_API_URL` apunta al backend del agent.
-- No comparte red Docker con el agent — se comunica a través del puerto host expuesto.
-- Cero impacto en el agent ni en agendamiento.
+- Puerto host: **6700** → 3000 interno.
+- `NEXT_PUBLIC_AGENT_API_URL=http://localhost:6601`.
+- No comparte red Docker con el agent — se comunica vía puerto host.
+- Cookies `ams_session` httpOnly + SameSite=Lax. Todos los fetch llevan `credentials: "include"`.
 
-## Módulos
+## Módulos (23)
 
-| Módulo | Estado | Fase | Roles |
-|---|---|---|---|
-| 📊 Dashboard | ✅ activo | 1 | todos |
-| 🤖 Agente AMS (chat + voz) | ✅ activo | 1 | todos |
-| 📚 Conocimiento (RAG) | placeholder | 2 | consultor+ |
-| 🎫 Tickets (Jira/SNOW/CALM) | placeholder | 3 | consultor+ |
-| 🔌 Integraciones | placeholder | 3 | aprobador+ |
-| 🏭 SAP Read-Only | placeholder | 4 | aprobador+ |
-| 🎙️ Reuniones AMS | placeholder | 5 | consultor+ |
-| ⚙️ Configuración | ✅ activo | 1 | todos |
+### 🎬 Operación
 
-## Funcionalidad de voz
+| Módulo | Ruta | Rol mínimo |
+|---|---|---|
+| 📊 Dashboard | `/dashboard` | viewer |
+| 🤖 Agente AMS (chat) | `/agent` | viewer |
+| 🎙 Agente AMS (modo voz) | `/agent/voice` | viewer |
+| 🧠 Modo think | `/agent/think` | viewer |
+| 📜 Historial de incidentes | `/history` | viewer |
+| 🎮 Mission Control | `/mission-control` | viewer |
+| 🌍 Topology (sistema nervioso) | `/topology` | viewer |
+| 🌊 Data Flow (río de eventos) | `/flow` | viewer |
+| 🎬 TV Mode | `/tv` | aprobador |
+| 🎬 Demo en vivo | `/demo` | consultor |
 
-> Esta sección cubre el contrato del prompt de voz: APIs nativas, sin servicios externos.
+### 🌐 Visualizaciones wow
 
-### Cómo funciona
+| Módulo | Ruta | Tech |
+|---|---|---|
+| 🚀 Mission Launchpad | `/launchpad` | Boot seq + countdown + telemetry |
+| 🖥️ Wallboard 4K | `/wallboard` | Quad-view de 4 vistas sincronizadas |
+| 🌐 War Room 3D | `/war-room` | **Three.js** globo terráqueo real |
+| 🧠 Agent Brain | `/brain` | Red neuronal 5 capas + firings |
+| 📟 Bloomberg Terminal | `/terminal` | Grid 4×3 + log Matrix |
+| ⚛️ Arc Reactor HUD | `/hud` | 4 anillos + ArcGauges Iron Man |
+| 🔮 Forecast IA | `/forecast` | Regresión lineal + banda 95% |
 
-1. La voz usa **APIs nativas del navegador**: `SpeechRecognition` (con fallback a `webkitSpeechRecognition`) para STT y `SpeechSynthesis` para TTS.
-2. **No se guarda audio en disco, memoria persistente ni storage del navegador.** El audio existe solo durante la captura en vivo.
-3. **El audio no se envía al backend.** Solo el texto transcrito se envía como JSON a `POST /api/ams/chat`.
-4. Solo se envía texto transcrito al backend del agente AMS.
-5. La compatibilidad **depende del navegador**:
-   - ✅ Chrome / Edge / Brave (escritorio) → STT y TTS funcionan.
-   - ⚠️ Firefox escritorio → TTS funciona; STT no soportado (Web Speech API no implementada).
-   - ⚠️ Safari → soporte parcial, depende de versión.
-   - ✅ Chrome Android → ambos funcionan.
-6. **Idiomas**: STT y TTS configurados en `es-CL` por defecto, con fallback a `es-ES` o cualquier voz `es-*` disponible. La constante está en `src/hooks/useSpeechRecognition.ts` → `DEFAULT_VOICE_LANG`.
+### 📞 AMS avanzado
 
-### Cómo probarla
+| Módulo | Ruta | Rol mínimo |
+|---|---|---|
+| 📞 Mesa de Soporte | `/support-desk` | consultor |
+| ☎️ Canal Telefónico IA | `/voice-calls` | consultor |
+| 📚 Conocimiento (RAG) | `/knowledge` | consultor |
+| 🌳 Graph KB | `/knowledge/graph` | consultor |
+| 🎫 Tickets | `/tickets` | consultor |
+| 🔌 Integraciones | `/integrations` | aprobador |
+| 🏭 SAP Read-Only | `/sap-readonly` | aprobador |
+| 🎙️ Reuniones AMS | `/meetings` | consultor |
 
-1. Asegurate de tener el backend del agente arriba en :6601 (`docker compose ps` desde `supply-chain-ams-agent/`).
-2. Levanta la plataforma (ver sección "Cómo levantar").
-3. Abre **<http://localhost:6700>** en Chrome o Edge.
-4. Click en el módulo **Agente AMS** (sidebar).
-5. En la columna derecha, click **🎤 Iniciar voz**.
-6. La primera vez Chrome te pedirá permiso de micrófono → permitir.
-7. Habla: "No puedo contabilizar una entrada de mercancía contra una orden de compra."
-8. La transcripción aparece tanto en la card de Modo voz como en el campo "Incidente o pregunta".
-9. Corrige manualmente si quieres y click **Enviar al agente →**.
-10. Cuando llegue la respuesta, click **🔊 Leer respuesta** (o activa el toggle "Leer automáticamente").
-11. Detén la lectura con **⏹ Detener lectura**.
+### 🛡️ Sistema
 
-### Privacidad
+| Módulo | Ruta | Rol mínimo |
+|---|---|---|
+| 🏢 Ejecutivo (C-level) | `/executive` | aprobador |
+| 🛡️ Administración | `/admin` | admin |
+| 📈 Eval del agente | `/admin/eval` | admin |
+| ⚙️ Configuración | `/settings` | viewer |
 
-> "La voz se convierte a texto en el navegador. Esta versión no guarda audio."
+## ✨ Highlights técnicos
 
-El procesamiento STT puede involucrar al motor del navegador (Chrome usa Google Speech bajo el capó cuando hay conexión, Edge usa Microsoft); ese audio temporal lo maneja el navegador, no esta plataforma. Si necesitas STT 100% on-device sin tocar la nube, la Fase 5 contempla Whisper local.
+### 🤖 Jaimito · asistente flotante global
 
-### Errores manejados
+Botón FAB esquina inferior derecha presente en **todas las vistas**. Click → abre chat con voz integrada.
 
-- Permiso de micrófono denegado → mensaje claro + fallback a texto.
-- Navegador sin soporte SpeechRecognition → warning + fallback a texto.
-- Navegador sin soporte SpeechSynthesis → respuesta sigue disponible en texto.
-- "No se detectó voz" → mensaje suave, no rompe el flujo.
-- Errores de red del STT → mensaje + opción de reintento.
+- Detecta 17 keywords de navegación (*"ir al war room"*, *"muestra el brain"*) y enruta automáticamente
+- Si no es comando, envía al agente AMS real
+- TTS lee la respuesta automáticamente
+- Saludo inicial: *"¿Qué pasa pues weón?"* (configurable)
+- Quick chips para accesos rápidos
 
-## Cómo levantar
+### 🌌 Aurora WebGL global
+
+Shader procedural fragment con 3 cintas (verde / violeta / cyan) ondulando como aurora boreal real. Detrás de todo el contenido (`z-index: 0`, `mix-blend-mode: screen`).
+
+Cuando entra una notificación nueva del backend, `u_intensity` boostea durante ~2s creando un "flash" de actividad. Decay multiplicativo 0.985/frame.
+
+### 🪟 Glassmorphism + parallax 3D
+
+Todas las `.card` tienen:
+- `backdrop-filter: blur(14px) saturate(140%)`
+- Borde luz interior + box-shadow doble
+- `transform: perspective(1400px) rotateX/Y(*.45deg)` con CSS vars `--mx --my`
+
+El componente `GlobalParallax` escucha `pointermove` y publica las vars normalizadas (`-1..+1`). Lerp 0.08 para suavidad. Las cards siguen al cursor.
+
+### 🌐 War Room 3D
+
+Globo terráqueo real con Three.js. SphereGeometry + atmósfera con shader custom (vertex/fragment), starfield, clientes geolocalizados como esferas 3D, arcos curvos `QuadraticBezierCurve3` + `TubeGeometry` animados cuando entra un evento.
+
+Drag con mouse para rotar. Auto-rotación cuando idle.
+
+### 🧠 Brain Visualizer
+
+Red neuronal 5 capas (input → triage → decision → resolver → output) con edges densos. Cada notificación real dispara una signal que se propaga capa por capa con colores por tipo de evento. RPM windowed 60s.
+
+### 🚀 Mission Launchpad
+
+Boot sequence cinematográfica de 21 líneas con fade-in escalonado + tonos `boot()` Web Audio. Countdown gigante T-MINUS hasta próxima hora redonda. **Alert mode** con flash rojo cuando hay SLA breach.
+
+### 🔮 Forecast IA
+
+Regresión lineal por mínimos cuadrados sobre incidentes / tickets / tokens. Proyección 7 días con banda de confianza 95%. Detector de anomalías por z-score ≥ 1.8 con halos rojos pulsantes.
+
+### 🔊 Sonidos procedurales
+
+`lib/sounds.ts` genera blip / beep / radar / alert / boot / launch usando Web Audio API. Cero assets externos. Hook `useEventSounds` escucha notifications y reproduce automáticamente según `kind`. Toggle 🔊/🔇 persistido en localStorage.
+
+## 🎙 Modo voz nativo (`/agent/voice`)
+
+APIs nativas del navegador:
+- **STT**: `SpeechRecognition` (con fallback `webkitSpeechRecognition`)
+- **TTS**: `SpeechSynthesis`
+
+**No se guarda audio en disco, memoria persistente ni storage del navegador.** El audio existe solo durante la captura en vivo. Solo se envía el texto transcrito al backend.
+
+Idioma default `es-CL` con fallback `es-ES`. Constante en `src/hooks/useSpeechRecognition.ts` → `DEFAULT_VOICE_LANG`.
+
+### Navegadores soportados
+
+| Navegador | STT | TTS |
+|---|---|---|
+| Chrome / Edge / Brave escritorio | ✅ | ✅ |
+| Chrome Android | ✅ | ✅ |
+| Firefox | ❌ | ✅ |
+| Safari | ⚠️ versiones recientes | ✅ |
+
+## 🚀 Levantar el proyecto
 
 ### Opción A — Docker (recomendado)
 
 ```bash
-cd "/c/Users/VMATTA/Desktop/supply-chain-ams-platform"
-
-# 1) Configurar entorno
 cp .env.example .env
-# .env apunta a NEXT_PUBLIC_AGENT_API_URL=http://localhost:6601 por defecto
-
-# 2) Validar y levantar
-docker compose config --quiet && echo "OK"
 docker compose up --build -d
-
-# 3) Estado
 docker compose ps
 ```
 
-Primer build: 3–5 min (npm install + next build).
+Primer build: 3–5 min. Abre http://localhost:6700.
 
-Abre <http://localhost:6700>. Te redirige a `/dashboard`.
-
-### Opción B — Local sin Docker (dev mode)
+### Opción B — Dev mode local
 
 ```bash
-cd "/c/Users/VMATTA/Desktop/supply-chain-ams-platform"
 npm install
 cp .env.example .env
-npm run dev
+npm run dev   # http://localhost:3000
 ```
 
-Abre <http://localhost:3000>.
+## 👤 Usuarios demo
 
-## Cómo detener
+Después de levantar el stack, hay 4 perfiles seed en la DB del agent:
 
-```bash
-docker compose stop          # mantiene la imagen
-docker compose down          # elimina contenedor (sin volúmenes)
-```
+| Email | Password | Rol |
+|---|---|---|
+| `viewer@demo.cl` | `Viewer2026!` | viewer |
+| `consultor@demo.cl` | `Consultor2026!` | consultor |
+| `aprobador@demo.cl` | `Aprobador2026!` | aprobador |
+| `admin@demo.cl` | `Admin2026!` | admin |
 
-## Cómo probar el chat por texto
+> Si tu DB es nueva, créalos con `docker exec -it supply-chain-ams-backend node scripts/seed-demo-users.js` (cuando exista) o vía signup desde `/signup` (el primero queda como admin automáticamente).
 
-1. <http://localhost:6700/agent>
-2. Escribe en el textarea: "El pedido de venta no determina precio. Material XYZ, organización de ventas 1000."
-3. Selecciona módulo SD y click **Enviar al agente →** (o `Ctrl+Enter`).
-4. La respuesta aparece en el feed con badge de confianza y modelo usado.
-
-## Cómo cambiar de rol (sin login)
-
-- En el **header**, selector "Rol" cambia entre viewer / consultor / aprobador / admin.
-- O en **Configuración** (sidebar inferior).
-- Los módulos restringidos por rol aparecen con badge "rol insuficiente" en el sidebar.
-
-## Estructura
+## 📁 Estructura
 
 ```
 supply-chain-ams-platform/
-├── docker-compose.yml
-├── Dockerfile
-├── package.json
-├── tsconfig.json
-├── next.config.js
-├── .env.example
-├── README.md
-└── src/
-    ├── app/
-    │   ├── layout.tsx           # root + PlatformProvider
-    │   ├── page.tsx             # redirige a /dashboard
-    │   └── (platform)/
-    │       ├── layout.tsx       # sidebar + header
-    │       ├── dashboard/page.tsx
-    │       ├── agent/page.tsx
-    │       ├── knowledge/page.tsx
-    │       ├── tickets/page.tsx
-    │       ├── integrations/page.tsx
-    │       ├── sap-readonly/page.tsx
-    │       ├── meetings/page.tsx
-    │       └── settings/page.tsx
-    ├── components/
-    │   ├── layout/{Sidebar,Header,ComingSoon}.tsx
-    │   ├── agent/{ChatPanel,MessageList,MessageItem}.tsx
-    │   ├── voice/{VoiceControls,SpeechPlayer}.tsx
-    │   └── ui/Badge.tsx
-    ├── hooks/
-    │   ├── useSpeechRecognition.ts
-    │   └── useSpeechSynthesis.ts
-    ├── context/PlatformContext.tsx
-    ├── services/agent.api.ts
-    ├── lib/{modules,roles}.ts
-    ├── types/index.ts
-    └── styles/globals.css
+├── docker-compose.yml · Dockerfile · package.json · next.config.js
+├── src/
+│   ├── app/
+│   │   ├── layout.tsx                     # root layout
+│   │   ├── (platform)/
+│   │   │   ├── layout.tsx                 # sidebar + header + Jaimito + TourController + Aurora + Parallax
+│   │   │   └── [23 módulos]/page.tsx
+│   │   ├── login/page.tsx
+│   │   └── signup/page.tsx
+│   ├── components/
+│   │   ├── jarvis/{Jaimito,TourController}.tsx
+│   │   ├── fx/{AuroraBackground,GlobalParallax,EventEffects}.tsx
+│   │   ├── layout/{Sidebar,Header}.tsx
+│   │   ├── voice/{VoiceControls,SpeechPlayer}.tsx
+│   │   └── ui/Badge.tsx
+│   ├── hooks/
+│   │   ├── useSpeechRecognition.ts
+│   │   ├── useSpeechSynthesis.ts
+│   │   └── useEventSounds.ts
+│   ├── context/{PlatformContext,AuthContext,ToastContext}.tsx
+│   ├── services/{auth,agent,dashboard,support,voice,...}.api.ts
+│   ├── lib/{modules,roles,sounds,tts}.ts
+│   ├── types/index.ts
+│   └── styles/globals.css
 ```
 
-## Reglas de la Fase 1
+## 🛠 Stack
 
-- ❌ Sin autenticación.
-- ❌ Sin RAG productivo.
-- ❌ Sin conexión real a SAP.
-- ❌ Sin servicios pagados de voz.
-- ❌ Sin envío de audio al backend.
-- ✅ Chat funcional contra el agente.
-- ✅ Voz local con Web Speech API.
-- ✅ Roles mock para validar UX antes del login real (Fase 6).
-- ✅ Módulos visibles con roadmap honesto.
+| Capa | Tech |
+|---|---|
+| Framework | Next.js 14.2 (App Router) |
+| Lenguaje | TypeScript 5.6 |
+| UI | React 18 |
+| 3D | Three.js 0.169 |
+| Render efectos | WebGL 1.0 puro (shader procedural) |
+| Markdown | react-markdown + remark-gfm |
+| Voz | Web Speech API nativa |
+| Audio | Web Audio API procedural |
+| Auth | Cookies httpOnly del backend |
+| Deploy | Docker (Node 20 Alpine, multi-stage, standalone build) |
 
-## Próximo paso recomendado para voz profesional (Fase 5)
+## 📜 Licencia
 
-> Sustituir Web Speech API por servicios profesionales cuando la calidad y compatibilidad del navegador no alcancen.
-
-1. **STT profesional**: integrar **Deepgram** (streaming, español-CL bien soportado) o **Whisper** (local, sin enviar audio a la nube).
-   - Sigue siendo opcional: el modo navegador queda como fallback gratis.
-2. **TTS profesional**: integrar **ElevenLabs** o **Azure Neural Voices** para voces naturales.
-3. **Modo reunión AMS**: captura de audio de Zoom/Teams/Meet, diarización, resumen y extracción de acciones.
-4. **Backend**: agregar `POST /api/voice/stream` (WebSocket) y `POST /api/voice/synthesize` al `supply-chain-ams-agent` cuando se active la Fase 5 — el contrato actual de `/api/ams/chat` no cambia.
-
-## Limitaciones actuales
-
-- **Firefox**: STT no funciona (TTS sí). Mostramos warning amigable.
-- **Sin historial persistente del chat**: el feed se pierde al recargar. Fase 2 agregará persistencia por usuario.
-- **Roles son mock**: el header los cambia, pero no hay verificación de identidad. Diseñado para que la transición a Fase 6 (login real) sea solo cambiar la fuente del rol.
-- **Sin tests automatizados** en Fase 1.
-- **Sin internacionalización**: español únicamente.
-
-## Comando rápido para verificar todo
-
-```bash
-# Backend agent saludable
-curl http://localhost:6601/health
-
-# Plataforma saludable
-curl -s -o /dev/null -w "HTTP %{http_code}\n" http://localhost:6700
-
-# Test end-to-end (chat por texto, sin voz)
-curl -X POST http://localhost:6601/api/ams/chat \
-  -H "Content-Type: application/json" \
-  -d '{"message":"MRP no genera propuestas para material X centro Y","module":"PP","environment":"DEV"}'
-```
-
-## Navegadores recomendados
-
-| Navegador | STT | TTS | Notas |
-|---|---|---|---|
-| Chrome (escritorio) | ✅ | ✅ | Recomendado. Pide permiso de micrófono la primera vez. |
-| Edge (escritorio) | ✅ | ✅ | Recomendado. Voces Microsoft Neural disponibles si están instaladas. |
-| Brave (escritorio) | ✅ | ✅ | Funciona igual que Chrome. |
-| Chrome Android | ✅ | ✅ | Voz funciona bien; ojo con HTTPS si lo expones públicamente. |
-| Firefox | ❌ | ✅ | STT no implementado. Fallback a texto automático. |
-| Safari | ⚠️ | ✅ | STT solo en versiones recientes. Probar antes de promesa. |
+MIT — ver [LICENSE](LICENSE).
