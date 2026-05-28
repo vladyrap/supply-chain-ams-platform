@@ -8,6 +8,7 @@ import { sendChat } from "@/services/agent.api";
 import { beep, blip } from "@/lib/sounds";
 import { shortenForTTS } from "@/lib/tts";
 import type { Environment } from "@/types";
+import { useMagnetic } from "@/hooks/useMagnetic";
 
 interface Turn { id: string; role: "user" | "agent"; text: string; ts: number; nav?: string }
 
@@ -46,6 +47,7 @@ export default function Jaimito({ client = "DEMO", environment = "DEV" }: Jaimit
   const [loading, setLoading] = useState(false);
   const sr = useSpeechRecognition({ lang: "es-CL", continuous: false, interimResults: true });
   const tts = useSpeechSynthesis();
+  const fabRef = useMagnetic<HTMLButtonElement>(12);
   const wasListeningRef = useRef(false);
   const bodyRef = useRef<HTMLDivElement | null>(null);
 
@@ -138,6 +140,7 @@ export default function Jaimito({ client = "DEMO", environment = "DEV" }: Jaimit
     <>
       {/* Botón flotante */}
       <button
+        ref={fabRef}
         className={`jarvis-fab ${open ? "open" : ""}`}
         onClick={() => setOpen(!open)}
         aria-label="Asistente Jaimito"

@@ -5,6 +5,8 @@ import { useRouter } from "next/navigation";
 import Link from "next/link";
 import { signup } from "@/services/auth.api";
 import { useAuth } from "@/context/AuthContext";
+import AuthShowcase from "@/components/auth/AuthShowcase";
+import { useMagnetic } from "@/hooks/useMagnetic";
 
 export default function SignupPage() {
   const [email, setEmail] = useState("");
@@ -15,6 +17,7 @@ export default function SignupPage() {
   const [error, setError] = useState<string | null>(null);
   const router = useRouter();
   const { refresh } = useAuth();
+  const submitRef = useMagnetic<HTMLButtonElement>(14);
 
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
@@ -39,50 +42,53 @@ export default function SignupPage() {
   }
 
   return (
-    <main style={{ minHeight: "100vh", display: "grid", placeItems: "center", padding: 20 }}>
-      <div className="card elev" style={{ width: "100%", maxWidth: 420 }}>
-        <div className="row" style={{ gap: 10, marginBottom: 14 }}>
-          <div style={{
-            width: 36, height: 36, display: "grid", placeItems: "center",
-            background: "linear-gradient(135deg, var(--accent), var(--magenta))",
-            borderRadius: 10, color: "white", fontWeight: 700,
-          }}>A</div>
-          <div>
-            <div style={{ fontWeight: 700, fontSize: 15 }}>AMS Platform</div>
-            <div style={{ fontSize: 11.5, color: "var(--text-dim)" }}>Crear cuenta</div>
+    <main className="auth-shell">
+      <AuthShowcase />
+
+      <section className="auth-panel">
+        <div className="auth-form-wrap">
+          <div className="auth-form-head">
+            <h1>Crea tu cuenta</h1>
+            <p>El primer usuario registrado queda como <b>admin</b>. Los siguientes empiezan como <b>consultor</b>.</p>
+          </div>
+
+          <form onSubmit={handleSubmit} className="auth-form">
+            <div className="float-field">
+              <input id="name" value={name} onChange={(e) => setName(e.target.value)} placeholder=" " />
+              <label htmlFor="name">Nombre (opcional)</label>
+            </div>
+
+            <div className="float-field">
+              <input id="email" type="email" autoComplete="email" required value={email} onChange={(e) => setEmail(e.target.value)} placeholder=" " />
+              <label htmlFor="email">Email</label>
+            </div>
+
+            <div className="float-field">
+              <input id="pw" type="password" autoComplete="new-password" required minLength={8} value={password} onChange={(e) => setPassword(e.target.value)} placeholder=" " />
+              <label htmlFor="pw">Contraseña (mín. 8 caracteres)</label>
+            </div>
+
+            <div className="float-field">
+              <input id="pw2" type="password" autoComplete="new-password" required minLength={8} value={confirm} onChange={(e) => setConfirm(e.target.value)} placeholder=" " />
+              <label htmlFor="pw2">Confirmar contraseña</label>
+            </div>
+
+            {error && (
+              <div className="auth-error" role="alert">
+                <span style={{ marginRight: 6 }}>⚠</span>{error}
+              </div>
+            )}
+
+            <button ref={submitRef} type="submit" className="auth-submit" disabled={loading}>
+              {loading ? <><span className="spinner" /> creando…</> : <>Crear cuenta <span style={{ marginLeft: 8 }}>→</span></>}
+            </button>
+          </form>
+
+          <div className="auth-footer-link">
+            ¿Ya tienes cuenta? <Link href="/login">Inicia sesión</Link>
           </div>
         </div>
-
-        <form onSubmit={handleSubmit} className="col" style={{ gap: 12 }}>
-          <div>
-            <label className="lab" htmlFor="name">Nombre</label>
-            <input id="name" value={name} onChange={(e) => setName(e.target.value)} placeholder="Tu nombre" />
-          </div>
-          <div>
-            <label className="lab" htmlFor="email">Email</label>
-            <input id="email" type="email" autoComplete="email" required value={email} onChange={(e) => setEmail(e.target.value)} placeholder="tu@empresa.com" />
-          </div>
-          <div>
-            <label className="lab" htmlFor="pw">Contraseña</label>
-            <input id="pw" type="password" autoComplete="new-password" required minLength={8} value={password} onChange={(e) => setPassword(e.target.value)} />
-          </div>
-          <div>
-            <label className="lab" htmlFor="pw2">Confirmar contraseña</label>
-            <input id="pw2" type="password" autoComplete="new-password" required minLength={8} value={confirm} onChange={(e) => setConfirm(e.target.value)} />
-          </div>
-          {error && <div className="alert error" style={{ fontSize: 12.5 }}>{error}</div>}
-          <button type="submit" className="btn primary" disabled={loading}>
-            {loading ? <><span className="spinner" /> creando…</> : "Crear cuenta"}
-          </button>
-          <div style={{ fontSize: 11.5, color: "var(--text-dim)", textAlign: "center" }}>
-            El primer usuario registrado queda como <b>admin</b>. Los siguientes empiezan como <b>consultor</b>.
-          </div>
-        </form>
-
-        <div style={{ marginTop: 14, fontSize: 12.5, color: "var(--text-soft)", textAlign: "center" }}>
-          ¿Ya tienes cuenta? <Link href="/login">Inicia sesión</Link>
-        </div>
-      </div>
+      </section>
     </main>
   );
 }

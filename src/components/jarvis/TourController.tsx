@@ -4,6 +4,7 @@ import { useEffect, useRef, useState } from "react";
 import { useRouter, usePathname } from "next/navigation";
 import { useSpeechSynthesis } from "@/hooks/useSpeechSynthesis";
 import { boot, beep, launch } from "@/lib/sounds";
+import { useMagnetic } from "@/hooks/useMagnetic";
 
 interface TourStep {
   href: string;
@@ -60,6 +61,7 @@ export default function TourController() {
   const [remaining, setRemaining] = useState(0);
   const stepStartRef = useRef<number>(0);
   const tts = useSpeechSynthesis();
+  const triggerRef = useMagnetic<HTMLButtonElement>(10);
   const timerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const tickRef = useRef<ReturnType<typeof setInterval> | null>(null);
 
@@ -143,6 +145,7 @@ export default function TourController() {
   if (!running) {
     return (
       <button
+        ref={triggerRef}
         className="tour-trigger"
         onClick={startTour}
         title="Iniciar tour guiado con voz"

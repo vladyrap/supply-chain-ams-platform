@@ -4,6 +4,7 @@ import { AuthProvider } from "@/context/AuthContext";
 import { PlatformProvider } from "@/context/PlatformContext";
 import { ToastProvider } from "@/context/ToastContext";
 import { CommandPaletteProvider } from "@/context/CommandPaletteContext";
+import BrandSplash from "@/components/fx/BrandSplash";
 
 export const metadata: Metadata = {
   title: "AMS Platform — Supply Chain SAP",
@@ -15,6 +16,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
   return (
     <html lang="es">
       <body>
+        <BrandSplash />
         <ToastProvider>
           <AuthProvider>
             <PlatformProvider>

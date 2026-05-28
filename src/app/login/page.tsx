@@ -5,6 +5,8 @@ import { useRouter, useSearchParams } from "next/navigation";
 import Link from "next/link";
 import { login } from "@/services/auth.api";
 import { useAuth } from "@/context/AuthContext";
+import AuthShowcase from "@/components/auth/AuthShowcase";
+import { useMagnetic } from "@/hooks/useMagnetic";
 
 export default function LoginPage() {
   return (
@@ -22,6 +24,7 @@ function LoginInner() {
   const router = useRouter();
   const search = useSearchParams();
   const { refresh } = useAuth();
+  const submitRef = useMagnetic<HTMLButtonElement>(14);
 
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
@@ -38,40 +41,84 @@ function LoginInner() {
     }
   }
 
+  function quickFill(email: string, pass: string) {
+    setEmail(email);
+    setPassword(pass);
+  }
+
   return (
-    <main style={{ minHeight: "100vh", display: "grid", placeItems: "center", padding: 20 }}>
-      <div className="card elev" style={{ width: "100%", maxWidth: 380 }}>
-        <div className="row" style={{ gap: 10, marginBottom: 14 }}>
-          <div style={{
-            width: 36, height: 36, display: "grid", placeItems: "center",
-            background: "linear-gradient(135deg, var(--accent), var(--magenta))",
-            borderRadius: 10, color: "white", fontWeight: 700,
-          }}>A</div>
-          <div>
-            <div style={{ fontWeight: 700, fontSize: 15 }}>AMS Platform</div>
-            <div style={{ fontSize: 11.5, color: "var(--text-dim)" }}>Iniciar sesión</div>
+    <main className="auth-shell">
+      <AuthShowcase />
+
+      <section className="auth-panel">
+        <div className="auth-form-wrap">
+          <div className="auth-form-head">
+            <h1>Bienvenido de vuelta</h1>
+            <p>Ingresa con tu cuenta para acceder a la plataforma AMS.</p>
+          </div>
+
+          <form onSubmit={handleSubmit} className="auth-form">
+            <div className="float-field">
+              <input
+                id="email"
+                type="email"
+                autoComplete="email"
+                required
+                value={email}
+                onChange={(e) => setEmail(e.target.value)}
+                placeholder=" "
+              />
+              <label htmlFor="email">Email</label>
+            </div>
+
+            <div className="float-field">
+              <input
+                id="pw"
+                type="password"
+                autoComplete="current-password"
+                required
+                value={password}
+                onChange={(e) => setPassword(e.target.value)}
+                placeholder=" "
+              />
+              <label htmlFor="pw">Contraseña</label>
+            </div>
+
+            {error && (
+              <div className="auth-error" role="alert">
+                <span style={{ marginRight: 6 }}>⚠</span>{error}
+              </div>
+            )}
+
+            <button ref={submitRef} type="submit" className="auth-submit" disabled={loading}>
+              {loading ? <><span className="spinner" /> entrando…</> : <>Entrar <span style={{ marginLeft: 8 }}>→</span></>}
+            </button>
+          </form>
+
+          {/* Demo creds quick fill */}
+          <div className="auth-demo">
+            <div className="auth-demo-label">Acceso demo rápido:</div>
+            <div className="auth-demo-grid">
+              <button type="button" className="auth-demo-btn" onClick={() => quickFill("viewer@demo.cl", "Viewer2026!")}>
+                <span>👁</span> Viewer
+              </button>
+              <button type="button" className="auth-demo-btn" onClick={() => quickFill("consultor@demo.cl", "Consultor2026!")}>
+                <span>🧠</span> Consultor
+              </button>
+              <button type="button" className="auth-demo-btn" onClick={() => quickFill("aprobador@demo.cl", "Aprobador2026!")}>
+                <span>✓</span> Aprobador
+              </button>
+              <button type="button" className="auth-demo-btn" onClick={() => quickFill("admin@demo.cl", "Admin2026!")}>
+                <span>🛡</span> Admin
+              </button>
+            </div>
+          </div>
+
+          <div className="auth-footer-link">
+            ¿No tienes cuenta? <Link href="/signup">Crear una</Link>
           </div>
         </div>
-
-        <form onSubmit={handleSubmit} className="col" style={{ gap: 12 }}>
-          <div>
-            <label className="lab" htmlFor="email">Email</label>
-            <input id="email" type="email" autoComplete="email" required value={email} onChange={(e) => setEmail(e.target.value)} placeholder="tu@empresa.com" />
-          </div>
-          <div>
-            <label className="lab" htmlFor="pw">Contraseña</label>
-            <input id="pw" type="password" autoComplete="current-password" required value={password} onChange={(e) => setPassword(e.target.value)} />
-          </div>
-          {error && <div className="alert error" style={{ fontSize: 12.5 }}>{error}</div>}
-          <button type="submit" className="btn primary" disabled={loading}>
-            {loading ? <><span className="spinner" /> entrando…</> : "Entrar"}
-          </button>
-        </form>
-
-        <div style={{ marginTop: 14, fontSize: 12.5, color: "var(--text-soft)", textAlign: "center" }}>
-          ¿No tienes cuenta? <Link href="/signup">Crear una</Link>
-        </div>
-      </div>
+      </section>
     </main>
   );
 }
