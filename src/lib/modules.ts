@@ -234,6 +234,16 @@ export const MODULES: ModuleDef[] = [
     phase: 8,
     rolesAllowed: ["aprobador", "admin"],
   },
+  {
+    id: "flow",
+    label: "Data Flow",
+    icon: "🌊",
+    href: "/flow",
+    description: "Río de partículas en vivo: cada evento real fluye por uno de 3 carriles (resolved/escalated/info), velocidad según RPM. Hover para aislar carril",
+    status: "available",
+    phase: 8,
+    rolesAllowed: ["consultor", "aprobador", "admin"],
+  },
 ];
 
 export function moduleById(id: string): ModuleDef | undefined {

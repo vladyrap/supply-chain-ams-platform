@@ -141,12 +141,37 @@ button { font-family: inherit; }
 
 /* ============== UI primitives ============== */
 .card {
-  background: var(--bg-card);
-  border: 1px solid var(--border-soft);
+  /* Glassmorphism global: alpha + blur + borde luz interior */
+  background: rgba(19, 26, 48, 0.55);
+  border: 1px solid rgba(91, 141, 239, 0.16);
   border-radius: var(--radius);
   padding: 18px;
+  backdrop-filter: blur(14px) saturate(140%);
+  -webkit-backdrop-filter: blur(14px) saturate(140%);
+  box-shadow:
+    0 8px 32px rgba(0, 0, 0, 0.35),
+    inset 0 1px 0 rgba(255, 255, 255, 0.05);
+  /* Parallax 3D: los CSS vars --mx --my los actualiza GlobalParallax */
+  transform: perspective(1400px)
+             rotateX(calc(var(--my, 0) * 0.45deg))
+             rotateY(calc(var(--mx, 0) * -0.45deg));
+  transform-style: preserve-3d;
+  transition: transform 0.18s ease-out, border-color 0.18s, box-shadow 0.18s;
+  position: relative;
+}
+.card:hover {
+  border-color: rgba(91, 141, 239, 0.36);
+  box-shadow:
+    0 14px 42px rgba(0, 0, 0, 0.45),
+    0 0 28px rgba(91, 141, 239, 0.10),
+    inset 0 1px 0 rgba(255, 255, 255, 0.08);
 }
 .card.elev { box-shadow: var(--shadow); }
+.card.flat {
+  /* opt-out del parallax cuando es contraproducente (ej. canvas adentro) */
+  transform: none !important;
+  backdrop-filter: none;
+}
 
 .row { display: flex; gap: 10px; align-items: center; }
 .col { display: flex; flex-direction: column; gap: 10px; }

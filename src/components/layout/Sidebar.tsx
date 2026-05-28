@@ -31,7 +31,7 @@ export default function Sidebar() {
         })}
 
         <div className="nav-section">Visualizaciones</div>
-        {MODULES.filter((m) => ["launchpad", "wallboard", "war-room", "brain", "terminal", "hud", "forecast"].includes(m.id)).map((m) => {
+        {MODULES.filter((m) => ["launchpad", "wallboard", "war-room", "brain", "terminal", "hud", "forecast", "flow"].includes(m.id)).map((m) => {
           const allowed = canAccess(role, m.rolesAllowed);
           const active = pathname?.startsWith(m.href);
           return (
