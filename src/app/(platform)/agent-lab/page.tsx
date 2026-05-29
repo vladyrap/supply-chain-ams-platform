@@ -6,8 +6,10 @@ import {
   listFeedback, fetchFeedbackStats, fetchConversationTrace,
   fetchConvertibleTickets, generateWizardDraft, commitWizardArticle,
   runPlaygroundQuery,
+  adoptPlaygroundPrompt, fetchActivePrompt,
   type AiFeedback, type FeedbackStats, type FeedbackSource, type FeedbackKind, type ConversationTrace,
   type ConvertibleTicket, type KbDraft, type DraftResult, type PlaygroundRunResult,
+  type PromptVersion,
 } from "@/services/agent-lab.api";
 import { supportApi, type SupportConversation } from "@/services/support.api";
 import MarkdownView from "@/components/agent/MarkdownView";
@@ -803,9 +805,43 @@ function PlaygroundTab() {
     { id: "a", label: "Variante A · ES corta", systemPrompt: DEFAULT_SYSTEM_A, temperature: 0.4, loading: false, result: null, error: null },
     { id: "b", label: "Variante B · ES estructurada", systemPrompt: DEFAULT_SYSTEM_B, temperature: 0.4, loading: false, result: null, error: null },
   ]);
+  const [activePrompt, setActivePrompt] = useState<PromptVersion | null>(null);
+  const [adoptingSlot, setAdoptingSlot] = useState<"a" | "b" | null>(null);
+  const [adoptNotice, setAdoptNotice] = useState<string | null>(null);
+
+  useEffect(() => {
+    fetchActivePrompt().then((r) => { if (r.ok) setActivePrompt(r.version); });
+  }, []);
 
   function patchSlot(id: "a" | "b", patch: Partial<Slot>) {
     setSlots((ss) => ss.map((s) => s.id === id ? { ...s, ...patch } : s));
+  }
+
+  async function adoptSlot(id: "a" | "b") {
+    const slot = slots.find((s) => s.id === id);
+    if (!slot) return;
+    const notes = window.prompt(
+      "Notas de adopción (opcional). Quedan en el historial de versiones.",
+      `Adoptado desde Playground el ${new Date().toLocaleString("es-CL")}`
+    );
+    if (notes === null) return;
+    setAdoptingSlot(id);
+    const r = await adoptPlaygroundPrompt({
+      label: slot.label,
+      systemPrompt: slot.systemPrompt,
+      temperature: slot.temperature,
+      maxTokens: 1024,
+      adoptionNotes: notes,
+    });
+    setAdoptingSlot(null);
+    if (r.ok) {
+      setActivePrompt(r.version);
+      setAdoptNotice(`✓ Adoptado: "${slot.label}". Ahora es el prompt activo del agente.`);
+      setTimeout(() => setAdoptNotice(null), 4000);
+    } else {
+      setAdoptNotice(`⚠ ${r.error}`);
+      setTimeout(() => setAdoptNotice(null), 4500);
+    }
   }
 
   async function runOne(id: "a" | "b") {
@@ -829,6 +865,33 @@ function PlaygroundTab() {
 
   return (
     <div className="col" style={{ gap: 14 }}>
+      {/* Banner del prompt activo */}
+      <div className="card" style={{ borderLeft: "3px solid #10b981" }}>
+        <div className="row" style={{ gap: 10, alignItems: "center", flexWrap: "wrap" }}>
+          <span style={{ fontSize: 11, letterSpacing: 1.5, color: "#10b981", fontFamily: "var(--font-mono, monospace)" }}>
+            ▸ PROMPT ACTIVO EN PRODUCCIÓN
+          </span>
+          {activePrompt ? (
+            <>
+              <span style={{ fontWeight: 700, fontSize: 13 }}>{activePrompt.label}</span>
+              <span style={{ fontSize: 11, color: "var(--text-dim)" }}>
+                · temp {activePrompt.temperature.toFixed(2)} · {activePrompt.max_tokens} tok ·
+                adoptado {new Date(activePrompt.created_at).toLocaleString("es-CL")} por <b>{activePrompt.created_by}</b>
+              </span>
+            </>
+          ) : (
+            <span style={{ fontSize: 12, color: "var(--text-dim)", fontStyle: "italic" }}>
+              ninguna versión adoptada todavía — el agente sigue usando su prompt por default
+            </span>
+          )}
+        </div>
+        {adoptNotice && (
+          <div className={adoptNotice.startsWith("✓") ? "alert ok" : "alert error"} style={{ marginTop: 8, fontSize: 12 }}>
+            {adoptNotice}
+          </div>
+        )}
+      </div>
+
       <div className="card">
         <div className="ticket-section-head">
           <span style={{ color: "var(--accent)" }}>🎛</span> QUERY DEL USUARIO
@@ -856,6 +919,8 @@ function PlaygroundTab() {
             onChangeSystem={(v) => patchSlot(slot.id, { systemPrompt: v })}
             onChangeTemp={(v) => patchSlot(slot.id, { temperature: v })}
             onRun={() => runOne(slot.id)}
+            onAdopt={() => adoptSlot(slot.id)}
+            adopting={adoptingSlot === slot.id}
             disabled={!queryText.trim()}
           />
         ))}
@@ -865,12 +930,14 @@ function PlaygroundTab() {
 }
 
 function PlaygroundSlot({
-  slot, onChangeSystem, onChangeTemp, onRun, disabled,
+  slot, onChangeSystem, onChangeTemp, onRun, onAdopt, adopting, disabled,
 }: {
   slot: Slot;
   onChangeSystem: (v: string) => void;
   onChangeTemp: (v: number) => void;
   onRun: () => void;
+  onAdopt: () => void;
+  adopting: boolean;
   disabled: boolean;
 }) {
   return (
@@ -920,6 +987,13 @@ function PlaygroundSlot({
               <MarkdownView text={slot.result.text} />
             </div>
           </div>
+
+          <button className="btn primary" onClick={onAdopt} disabled={adopting}
+            style={{ width: "100%", background: "linear-gradient(135deg, #10b981, #059669)", borderColor: "#10b981" }}>
+            {adopting
+              ? <><span className="spinner" /> adoptando…</>
+              : "✓ Adoptar como prompt activo del agente"}
+          </button>
         </div>
       )}
     </div>

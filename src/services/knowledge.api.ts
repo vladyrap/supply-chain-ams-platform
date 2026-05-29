@@ -120,6 +120,25 @@ export async function ingestText(p: { title?: string; content: string; module?: 
   }
 }
 
+// Ingest desde URL pública (HTML, MD o TXT)
+export async function ingestUrl(p: { url: string; title?: string; module?: string; client?: string }): Promise<
+  { ok: true; document: KnowledgeDocument } | { ok: false; error: string }
+> {
+  try {
+    const res = await fetch(`${API_BASE}/api/knowledge/ingest-url`, {
+      method: "POST",
+      credentials: "include",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(p),
+    });
+    const data = (await res.json().catch(() => null)) as { success: boolean; document?: KnowledgeDocument; error?: string } | null;
+    if (!data || !data.success || !data.document) return { ok: false, error: data?.error || `HTTP ${res.status}` };
+    return { ok: true, document: data.document };
+  } catch (err) {
+    return { ok: false, error: err instanceof Error ? err.message : "error de red" };
+  }
+}
+
 // =====================================================
 // Chunks de un documento (para auditar calidad RAG)
 // =====================================================

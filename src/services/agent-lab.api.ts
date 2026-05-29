@@ -276,3 +276,88 @@ export async function runPlaygroundQuery(input: PlaygroundRunInput): Promise<
     return { ok: false, error: err instanceof Error ? err.message : "error de red" };
   }
 }
+
+// ============================================================================
+// PROMPT VERSIONING — adoptar como activo / listar / activar
+// ============================================================================
+export interface PromptVersion {
+  id: string;
+  label: string;
+  system_prompt: string;
+  temperature: number;
+  max_tokens: number;
+  active: boolean;
+  created_by: string;
+  adoption_notes: string | null;
+  created_at: string;
+}
+
+export interface AdoptPromptInput {
+  label: string;
+  systemPrompt: string;
+  temperature?: number;
+  maxTokens?: number;
+  adoptionNotes?: string;
+}
+
+export async function adoptPlaygroundPrompt(input: AdoptPromptInput): Promise<
+  { ok: true; version: PromptVersion } | { ok: false; error: string }
+> {
+  try {
+    const res = await fetch(`${API_BASE}/api/agent-lab/playground/adopt`, {
+      method: "POST", credentials: "include",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(input),
+    });
+    const data = (await res.json().catch(() => null)) as { success: boolean; version?: PromptVersion; error?: string } | null;
+    if (!data || !data.success || !data.version) return { ok: false, error: data?.error || `HTTP ${res.status}` };
+    return { ok: true, version: data.version };
+  } catch (err) {
+    return { ok: false, error: err instanceof Error ? err.message : "error de red" };
+  }
+}
+
+export async function fetchActivePrompt(): Promise<
+  { ok: true; version: PromptVersion | null } | { ok: false; error: string }
+> {
+  try {
+    const res = await fetch(`${API_BASE}/api/agent-lab/playground/active`, {
+      credentials: "include", cache: "no-store",
+    });
+    const data = (await res.json().catch(() => null)) as { success: boolean; version?: PromptVersion | null; error?: string } | null;
+    if (!data || !data.success) return { ok: false, error: data?.error || `HTTP ${res.status}` };
+    return { ok: true, version: data.version ?? null };
+  } catch (err) {
+    return { ok: false, error: err instanceof Error ? err.message : "error de red" };
+  }
+}
+
+export async function fetchPromptVersions(): Promise<
+  { ok: true; versions: PromptVersion[] } | { ok: false; error: string }
+> {
+  try {
+    const res = await fetch(`${API_BASE}/api/agent-lab/playground/versions`, {
+      credentials: "include", cache: "no-store",
+    });
+    const data = (await res.json().catch(() => null)) as { success: boolean; versions?: PromptVersion[]; error?: string } | null;
+    if (!data || !data.success || !data.versions) return { ok: false, error: data?.error || `HTTP ${res.status}` };
+    return { ok: true, versions: data.versions };
+  } catch (err) {
+    return { ok: false, error: err instanceof Error ? err.message : "error de red" };
+  }
+}
+
+export async function activatePromptVersion(id: string): Promise<
+  { ok: true; version: PromptVersion } | { ok: false; error: string }
+> {
+  try {
+    const res = await fetch(`${API_BASE}/api/agent-lab/playground/versions/${id}/activate`, {
+      method: "POST", credentials: "include",
+    });
+    const data = (await res.json().catch(() => null)) as { success: boolean; version?: PromptVersion; error?: string } | null;
+    if (!data || !data.success || !data.version) return { ok: false, error: data?.error || `HTTP ${res.status}` };
+    return { ok: true, version: data.version };
+  } catch (err) {
+    return { ok: false, error: err instanceof Error ? err.message : "error de red" };
+  }
+}

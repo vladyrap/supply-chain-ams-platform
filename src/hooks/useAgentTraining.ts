@@ -13,8 +13,20 @@ import {
   buildDefaultGaps, buildDefaultSettings,
 } from "@/lib/training/demoData";
 import { recomputeScore, generateQAFromItem } from "@/lib/training/scoring";
+import {
+  fetchTrainingSnapshot,
+  apiCreateItem, apiUpdateItem, apiDeleteItem,
+  apiCreateQA, apiUpdateQA, apiDeleteQA,
+  apiCreateVersion, apiSetVersionStatus,
+  apiCreateGap, apiUpdateGap, apiDeleteGap,
+  apiUpdateSettings,
+} from "@/services/training.api";
 
 const TRAINING_EVT = "ams-training-changed";
+
+// La fuente de datos: "backend" si el endpoint /api/training/snapshot
+// respondió alguna vez en esta sesión, sino "local" (localStorage).
+type Source = "backend" | "local" | "loading";
 
 function safe<T>(raw: string | null): T | null {
   if (!raw) return null;
@@ -71,6 +83,8 @@ export interface CreateKnowledgeInput {
 }
 
 export interface UseAgentTraining {
+  // fuente de datos activa
+  source: Source;
   // estado
   knowledge: KnowledgeItem[];
   qa: TrainingQA[];
@@ -134,15 +148,37 @@ export interface UseAgentTraining {
 // HOOK
 // ============================================================================
 export function useAgentTraining(): UseAgentTraining {
+  const [source,    setSource   ] = useState<Source>("loading");
   const [knowledge, setKnowledge] = useState<KnowledgeItem[]>(() => loadState().knowledge);
   const [qa,        setQA       ] = useState<TrainingQA[]>(() => loadState().qa);
   const [versions,  setVersions ] = useState<TrainingVersion[]>(() => loadState().versions);
   const [gaps,      setGaps     ] = useState<KnowledgeGap[]>(() => loadState().gaps);
   const [settings,  setSettings ] = useState<TrainingSettings>(() => loadState().settings);
 
-  // sincronizar entre tabs / componentes
+  // bootstrap: intentar backend, sino localStorage
+  useEffect(() => {
+    let cancelled = false;
+    fetchTrainingSnapshot().then((r) => {
+      if (cancelled) return;
+      if (r.ok) {
+        setKnowledge(r.snapshot.knowledge);
+        setQA(r.snapshot.qa);
+        setVersions(r.snapshot.versions);
+        setGaps(r.snapshot.gaps);
+        setSettings(r.snapshot.settings);
+        setSource("backend");
+      } else {
+        // backend no responde → quedamos con localStorage
+        setSource("local");
+      }
+    });
+    return () => { cancelled = true; };
+  }, []);
+
+  // sincronizar entre tabs / componentes (solo modo local)
   useEffect(() => {
     function reload() {
+      if (source !== "local") return;
       const s = loadState();
       setKnowledge(s.knowledge);
       setQA(s.qa);
@@ -159,7 +195,7 @@ export function useAgentTraining(): UseAgentTraining {
       window.removeEventListener("storage", onStorage);
       window.removeEventListener(TRAINING_EVT, reload);
     };
-  }, []);
+  }, [source]);
 
   // ----- métricas derivadas -----
   const metrics = useMemo<UseAgentTraining["metrics"]>(() => {
@@ -236,10 +272,24 @@ export function useAgentTraining(): UseAgentTraining {
       rejectionReason: null,
     };
     item.score = recomputeScore(item);
+    // optimista local
     const next = [item, ...knowledge];
     persistKnowledge(next);
+    // si hay backend, sincronizar (reemplaza la fila optimista por la real)
+    if (source === "backend") {
+      apiCreateItem({
+        title: item.title, content: item.content, summary: item.summary,
+        module: item.module, process: item.process, type: item.type,
+        source: item.source, tags: item.tags, priority: item.priority,
+        status: item.status, author: item.author,
+      }).then((r) => {
+        if (r.ok) {
+          setKnowledge((cur) => cur.map((k) => k.id === item.id ? r.item : k));
+        }
+      });
+    }
     return item;
-  }, [knowledge, persistKnowledge]);
+  }, [knowledge, persistKnowledge, source]);
 
   const updateKnowledgeItem: UseAgentTraining["updateKnowledgeItem"] = useCallback((id, patch) => {
     const next = knowledge.map((k) => {
@@ -249,15 +299,25 @@ export function useAgentTraining(): UseAgentTraining {
       return merged;
     });
     persistKnowledge(next);
-  }, [knowledge, persistKnowledge]);
+    if (source === "backend") {
+      // solo enviar al backend si el id es uuid real (no kn_xxx local)
+      if (/^[0-9a-f]{8}-/.test(id)) {
+        apiUpdateItem(id, patch as never).then((r) => {
+          if (r.ok) setKnowledge((cur) => cur.map((k) => k.id === id ? r.item : k));
+        });
+      }
+    }
+  }, [knowledge, persistKnowledge, source]);
 
   const deleteKnowledgeItem: UseAgentTraining["deleteKnowledgeItem"] = useCallback((id) => {
     persistKnowledge(knowledge.filter((k) => k.id !== id));
-    // limpiar Q&A asociadas
     const nextQA = qa.filter((q) => q.knowledgeItemId !== id);
     setQA(nextQA);
     persist(TRAINING_STORAGE.qa, nextQA);
-  }, [knowledge, qa, persistKnowledge]);
+    if (source === "backend" && /^[0-9a-f]{8}-/.test(id)) {
+      apiDeleteItem(id);
+    }
+  }, [knowledge, qa, persistKnowledge, source]);
 
   const duplicateKnowledgeItem: UseAgentTraining["duplicateKnowledgeItem"] = useCallback((id) => {
     const orig = knowledge.find((k) => k.id === id);
@@ -456,8 +516,18 @@ export function useAgentTraining(): UseAgentTraining {
       resolvedAt: null,
     };
     persistGaps([gap, ...gaps]);
+    if (source === "backend") {
+      apiCreateGap({
+        title: gap.title, description: gap.description,
+        module: gap.module, process: gap.process,
+        priority: gap.priority, suggestedAction: gap.suggestedAction,
+        status: gap.status,
+      }).then((r) => {
+        if (r.ok) setGaps((cur) => cur.map((g) => g.id === gap.id ? r.gap : g));
+      });
+    }
     return gap;
-  }, [gaps, persistGaps]);
+  }, [gaps, persistGaps, source]);
 
   const updateGap: UseAgentTraining["updateGap"] = useCallback((id, patch) => {
     persistGaps(gaps.map((g) => g.id === id ? { ...g, ...patch } : g));
@@ -476,7 +546,12 @@ export function useAgentTraining(): UseAgentTraining {
     const next = { ...settings, ...patch };
     setSettings(next);
     persist(TRAINING_STORAGE.settings, next);
-  }, [settings]);
+    if (source === "backend") {
+      apiUpdateSettings(patch).then((r) => {
+        if (r.ok) setSettings(r.settings);
+      });
+    }
+  }, [settings, source]);
 
   // ----- demo reset -----
   const resetDemoTrainingData: UseAgentTraining["resetDemoTrainingData"] = useCallback(() => {
@@ -491,6 +566,7 @@ export function useAgentTraining(): UseAgentTraining {
   }, []);
 
   return {
+    source,
     knowledge, qa, versions, gaps, settings, metrics,
     createKnowledgeItem, updateKnowledgeItem, deleteKnowledgeItem, duplicateKnowledgeItem,
     validateKnowledgeItem, approveKnowledgeItem, publishKnowledgeItem,

@@ -4,7 +4,7 @@ import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import Link from "next/link";
 import { usePlatform } from "@/context/PlatformContext";
 import {
-  ingestDocument, ingestText,
+  ingestDocument, ingestText, ingestUrl,
   listKnowledgeDocuments, deleteKnowledgeDocument, fetchKnowledgeOverview,
   fetchDocumentChunks, searchKnowledge,
   type KnowledgeDocument, type KnowledgeStats, type KnowledgeChunk, type RagSearchHit,
@@ -587,6 +587,13 @@ function QuickAddTab({ onRefresh }: { onRefresh: () => Promise<void> }) {
   const [submitting, setSubmitting] = useState(false);
   const [result, setResult] = useState<{ ok: boolean; msg: string } | null>(null);
 
+  // URL ingest state
+  const [url, setUrl] = useState("");
+  const [urlTitle, setUrlTitle] = useState("");
+  const [urlMod, setUrlMod] = useState<SapModule>("NO_INFORMADO");
+  const [urlSubmitting, setUrlSubmitting] = useState(false);
+  const [urlResult, setUrlResult] = useState<{ ok: boolean; msg: string } | null>(null);
+
   async function submit() {
     setResult(null);
     if (content.trim().length < 20) {
@@ -607,6 +614,30 @@ function QuickAddTab({ onRefresh }: { onRefresh: () => Promise<void> }) {
       await onRefresh();
     } else {
       setResult({ ok: false, msg: r.error });
+    }
+  }
+
+  async function submitUrl() {
+    setUrlResult(null);
+    const u = url.trim();
+    if (!/^https?:\/\//i.test(u)) {
+      setUrlResult({ ok: false, msg: "Ingresá una URL http(s) válida" });
+      return;
+    }
+    setUrlSubmitting(true);
+    const r = await ingestUrl({
+      url: u,
+      title: urlTitle.trim() || undefined,
+      module: urlMod !== "NO_INFORMADO" ? urlMod : undefined,
+      client: client || undefined,
+    });
+    setUrlSubmitting(false);
+    if (r.ok) {
+      setUrlResult({ ok: true, msg: `✓ Descargado e indexando "${r.document.title}" (${r.document.id.slice(0, 8)}). Aparecerá en Documentos en pocos segundos.` });
+      setUrl(""); setUrlTitle("");
+      await onRefresh();
+    } else {
+      setUrlResult({ ok: false, msg: r.error });
     }
   }
 
@@ -665,6 +696,53 @@ function QuickAddTab({ onRefresh }: { onRefresh: () => Promise<void> }) {
               {submitting ? <><span className="spinner" /> indexando…</> : "📤 Indexar como knowledge"}
             </button>
             <button className="btn ghost" onClick={() => { setTitle(""); setContent(""); setResult(null); }}>↻ limpiar</button>
+          </div>
+        </div>
+      </div>
+
+      {/* URL ingest */}
+      <div className="card">
+        <div className="ticket-section-head">
+          <span style={{ color: "var(--accent)" }}>🔗</span> QUICK-ADD · DESDE URL
+        </div>
+        <p className="settings-section-desc">
+          Descargá una nota OSS, una página de wiki interna, un manual público o un FAQ.
+          Backend extrae el texto (HTML/MD/TXT, hasta 8 MB), genera chunks y los indexa con embeddings.
+          PDF público todavía no — fase siguiente.
+        </p>
+
+        <div className="col" style={{ gap: 10 }}>
+          <div>
+            <label className="settings-label">URL (http o https)</label>
+            <input value={url} onChange={(e) => setUrl(e.target.value)}
+              placeholder="https://wiki.empresa.com/sap/mm/migo-checklist"
+              style={{ fontFamily: "var(--font-mono, monospace)", fontSize: 12.5 }} />
+          </div>
+          <div className="row" style={{ gap: 10, flexWrap: "wrap" }}>
+            <div style={{ flex: 1, minWidth: 200 }}>
+              <label className="settings-label">Título (opcional, se detecta del &lt;title&gt;)</label>
+              <input value={urlTitle} onChange={(e) => setUrlTitle(e.target.value)}
+                placeholder="Checklist MIGO contra OC" />
+            </div>
+            <div style={{ width: 200 }}>
+              <label className="settings-label">Módulo SAP</label>
+              <select value={urlMod} onChange={(e) => setUrlMod(e.target.value as SapModule)}>
+                {SAP_MODULES.map((m) => <option key={m} value={m}>{m}</option>)}
+              </select>
+            </div>
+          </div>
+
+          {urlResult && (
+            <div className={urlResult.ok ? "alert ok" : "alert error"} style={{ fontSize: 12.5 }}>
+              {urlResult.msg}
+            </div>
+          )}
+
+          <div className="row" style={{ gap: 8 }}>
+            <button className="btn primary" onClick={submitUrl} disabled={urlSubmitting || !url.trim()}>
+              {urlSubmitting ? <><span className="spinner" /> descargando…</> : "🌐 Descargar e indexar"}
+            </button>
+            <button className="btn ghost" onClick={() => { setUrl(""); setUrlTitle(""); setUrlResult(null); }}>↻ limpiar</button>
           </div>
         </div>
       </div>
