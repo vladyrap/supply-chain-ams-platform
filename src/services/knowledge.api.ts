@@ -98,3 +98,88 @@ export async function fetchKnowledgeOverview(): Promise<
     return { ok: false, error: err instanceof Error ? err.message : "error de red" };
   }
 }
+
+// =====================================================
+// Quick-add: ingest text directo (sin archivo)
+// =====================================================
+export async function ingestText(p: { title?: string; content: string; module?: string; client?: string }): Promise<
+  { ok: true; document: KnowledgeDocument } | { ok: false; error: string }
+> {
+  try {
+    const res = await fetch(`${API_BASE}/api/knowledge/ingest-text`, {
+      method: "POST",
+      credentials: "include",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(p),
+    });
+    const data = (await res.json().catch(() => null)) as { success: boolean; document?: KnowledgeDocument; error?: string } | null;
+    if (!data || !data.success || !data.document) return { ok: false, error: data?.error || `HTTP ${res.status}` };
+    return { ok: true, document: data.document };
+  } catch (err) {
+    return { ok: false, error: err instanceof Error ? err.message : "error de red" };
+  }
+}
+
+// =====================================================
+// Chunks de un documento (para auditar calidad RAG)
+// =====================================================
+export interface KnowledgeChunk {
+  id: string;
+  document_id: string;
+  chunk_index: number;
+  content: string;
+  module: string | null;
+  client: string | null;
+  source_file: string;
+  source_type: string;
+  estimated_tokens: number;
+}
+
+export async function fetchDocumentChunks(documentId: string, limit = 200): Promise<
+  { ok: true; chunks: KnowledgeChunk[] } | { ok: false; error: string }
+> {
+  try {
+    const res = await fetch(`${API_BASE}/api/knowledge/documents/${documentId}/chunks?limit=${limit}`, {
+      cache: "no-store", credentials: "include",
+    });
+    const data = (await res.json().catch(() => null)) as { success: boolean; chunks?: KnowledgeChunk[]; error?: string } | null;
+    if (!data || !data.success || !data.chunks) return { ok: false, error: data?.error || `HTTP ${res.status}` };
+    return { ok: true, chunks: data.chunks };
+  } catch (err) {
+    return { ok: false, error: err instanceof Error ? err.message : "error de red" };
+  }
+}
+
+// =====================================================
+// RAG search playground
+// =====================================================
+export interface RagSearchHit {
+  id: string;
+  documentId: string;
+  title: string;
+  sourceType: string;
+  sourceFile: string;
+  module: string | null;
+  client: string | null;
+  chunkIndex: number;
+  content: string;
+  score: number;
+}
+
+export async function searchKnowledge(query: string, filters: { module?: string; client?: string } = {}): Promise<
+  { ok: true; chunks: RagSearchHit[]; query: string } | { ok: false; error: string }
+> {
+  try {
+    const res = await fetch(`${API_BASE}/api/knowledge/search`, {
+      method: "POST",
+      credentials: "include",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ query, module: filters.module, client: filters.client }),
+    });
+    const data = (await res.json().catch(() => null)) as { success: boolean; chunks?: RagSearchHit[]; query?: string; error?: string } | null;
+    if (!data || !data.success || !data.chunks) return { ok: false, error: data?.error || `HTTP ${res.status}` };
+    return { ok: true, chunks: data.chunks, query: data.query || query };
+  } catch (err) {
+    return { ok: false, error: err instanceof Error ? err.message : "error de red" };
+  }
+}
