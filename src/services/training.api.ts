@@ -420,3 +420,110 @@ export async function apiGetEvalRunDetail(id: string): Promise<{ ok: true; run: 
   if (!r.ok) return r;
   return { ok: true, run: r.data.run };
 }
+
+// ============================================================================
+// A/B TEST
+// ============================================================================
+export interface AbTestReport {
+  runA: EvalRunReport;
+  runB: EvalRunReport;
+  winner: "A" | "B" | "tie";
+  scoreDelta: number;
+  passDelta: number;
+  improvedQas: string[];
+  degradedQas: string[];
+  unchangedQas: string[];
+}
+
+export async function apiRunAbTest(input: {
+  promptA?: { systemPrompt: string; label: string };
+  promptB: { systemPrompt: string; label: string };
+  limit?: number;
+}): Promise<{ ok: true; report: AbTestReport } | { ok: false; error: string }> {
+  const r = await call<{ report: AbTestReport }>("/api/training/eval/ab", {
+    method: "POST", body: JSON.stringify(input),
+  });
+  if (!r.ok) return r;
+  return { ok: true, report: r.data.report };
+}
+
+// ============================================================================
+// AUTO-PROMOTE
+// ============================================================================
+export interface AutoPromoteResult {
+  decision: "adopted" | "skipped" | "no_change_needed";
+  reason: string;
+  abTest: AbTestReport;
+  newActiveVersionId?: string;
+}
+
+export async function apiAutoPromote(input: {
+  candidate: { systemPrompt: string; label: string; temperature?: number; maxTokens?: number };
+  minDelta?: number;
+  limit?: number;
+  apply?: boolean;
+}): Promise<{ ok: true; result: AutoPromoteResult } | { ok: false; error: string }> {
+  const r = await call<AutoPromoteResult>("/api/training/eval/auto-promote", {
+    method: "POST", body: JSON.stringify(input),
+  });
+  if (!r.ok) return r;
+  return { ok: true, result: r.data };
+}
+
+// ============================================================================
+// DIFF RUNS
+// ============================================================================
+export interface RunDiffResult {
+  qaId: string;
+  question: string;
+  scoreA: number; scoreB: number; delta: number;
+  verdictA: "pass" | "partial" | "fail";
+  verdictB: "pass" | "partial" | "fail";
+  status: "improved" | "degraded" | "unchanged" | "only_a" | "only_b";
+}
+
+export interface RunDiffReport {
+  runA: EvalRunSummary;
+  runB: EvalRunSummary;
+  scoreDelta: number;
+  passDelta: number;
+  improved: RunDiffResult[];
+  degraded: RunDiffResult[];
+  unchanged: RunDiffResult[];
+  onlyA: RunDiffResult[];
+  onlyB: RunDiffResult[];
+}
+
+export async function apiDiffRuns(idA: string, idB: string): Promise<{ ok: true; diff: RunDiffReport } | { ok: false; error: string }> {
+  const r = await call<{ diff: RunDiffReport }>(`/api/training/eval/diff?a=${encodeURIComponent(idA)}&b=${encodeURIComponent(idB)}`);
+  if (!r.ok) return r;
+  return { ok: true, diff: r.data.diff };
+}
+
+// ============================================================================
+// TICKETS -> Q&A
+// ============================================================================
+export interface TicketToQaReport {
+  scannedAt: string;
+  ticketsScanned: number;
+  qasProposed: number;
+  itemsCreated: number;
+  skipped: number;
+  byTicket: {
+    ticketCode: string;
+    ticketTitle: string;
+    proposedQas: number;
+    newItemCreated: boolean;
+    error: string | null;
+  }[];
+}
+
+export async function apiProposeQasFromTickets(input: { limit?: number; daysBack?: number } = {}): Promise<
+  { ok: true; report: TicketToQaReport } | { ok: false; error: string }
+> {
+  const r = await call<{ report: TicketToQaReport }>("/api/training/qa/propose-from-tickets", {
+    method: "POST", body: JSON.stringify(input),
+  });
+  if (!r.ok) return r;
+  return { ok: true, report: r.data.report };
+}

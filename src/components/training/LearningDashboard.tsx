@@ -4,7 +4,9 @@ import { useCallback, useEffect, useState } from "react";
 import type { UseAgentTraining } from "@/hooks/useAgentTraining";
 import {
   apiRunQaEval, apiListEvalRuns, apiGetEvalRunDetail,
+  apiRunAbTest, apiAutoPromote, apiDiffRuns, apiProposeQasFromTickets,
   type EvalRunReport, type EvalRunSummary, type EvalRunDetail,
+  type AbTestReport, type RunDiffReport, type TicketToQaReport,
 } from "@/services/training.api";
 
 interface Props { ctx: UseAgentTraining }
@@ -25,6 +27,31 @@ export default function LearningDashboard({ ctx }: Props) {
   const [detailLoading, setDetailLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [limit, setLimit] = useState(10);
+
+  // A/B testing
+  const [showAb, setShowAb] = useState(false);
+  const [abPromptLabel, setAbPromptLabel] = useState("Variante experimental");
+  const [abPrompt, setAbPrompt] = useState("Sos un agente AMS Supply Chain SAP. Respondé en español con pasos numerados y mencionando transacciones SAP específicas en **bold**. Sé conciso y directo.");
+  const [abLimit, setAbLimit] = useState(5);
+  const [abRunning, setAbRunning] = useState(false);
+  const [abReport, setAbReport] = useState<AbTestReport | null>(null);
+
+  // Auto-promote
+  const [autoMinDelta, setAutoMinDelta] = useState(5);
+  const [autoApply, setAutoApply] = useState(false);
+  const [autoRunning, setAutoRunning] = useState(false);
+  const [autoMsg, setAutoMsg] = useState<string | null>(null);
+
+  // Tickets -> Q&A
+  const [ticketsLimit, setTicketsLimit] = useState(3);
+  const [ticketsRunning, setTicketsRunning] = useState(false);
+  const [ticketsReport, setTicketsReport] = useState<TicketToQaReport | null>(null);
+
+  // Diff
+  const [diffA, setDiffA] = useState<string>("");
+  const [diffB, setDiffB] = useState<string>("");
+  const [diffLoading, setDiffLoading] = useState(false);
+  const [diffReport, setDiffReport] = useState<RunDiffReport | null>(null);
 
   const refresh = useCallback(async () => {
     setLoading(true);
@@ -54,6 +81,61 @@ export default function LearningDashboard({ ctx }: Props) {
     const r = await apiGetEvalRunDetail(id);
     setDetailLoading(false);
     if (r.ok) setDetail(r.run);
+  }
+
+  async function runAb() {
+    if (!abPrompt.trim() || !abPromptLabel.trim()) return;
+    setAbRunning(true);
+    setAbReport(null);
+    setError(null);
+    const r = await apiRunAbTest({
+      promptB: { systemPrompt: abPrompt, label: abPromptLabel },
+      limit: abLimit,
+    });
+    setAbRunning(false);
+    if (r.ok) {
+      setAbReport(r.report);
+      await refresh();
+    } else {
+      setError(r.error);
+    }
+  }
+
+  async function runAutoPromote(applyChange: boolean) {
+    if (!abPrompt.trim() || !abPromptLabel.trim()) return;
+    setAutoRunning(true);
+    setAutoMsg(null);
+    const r = await apiAutoPromote({
+      candidate: { systemPrompt: abPrompt, label: abPromptLabel },
+      minDelta: autoMinDelta,
+      limit: abLimit,
+      apply: applyChange,
+    });
+    setAutoRunning(false);
+    if (r.ok) {
+      setAutoMsg(`${r.result.decision === "adopted" ? "🎉" : "ℹ"} ${r.result.decision.toUpperCase()} · ${r.result.reason}`);
+      if (r.result.decision === "adopted") await refresh();
+    } else {
+      setAutoMsg(`⚠ ${r.error}`);
+    }
+  }
+
+  async function runTicketsToQa() {
+    setTicketsRunning(true);
+    setTicketsReport(null);
+    const r = await apiProposeQasFromTickets({ limit: ticketsLimit, daysBack: 30 });
+    setTicketsRunning(false);
+    if (r.ok) setTicketsReport(r.report);
+    else setError(r.error);
+  }
+
+  async function loadDiff() {
+    if (!diffA || !diffB || diffA === diffB) return;
+    setDiffLoading(true);
+    setDiffReport(null);
+    const r = await apiDiffRuns(diffA, diffB);
+    setDiffLoading(false);
+    if (r.ok) setDiffReport(r.diff);
   }
 
   // Métricas derivadas
@@ -202,6 +284,201 @@ export default function LearningDashboard({ ctx }: Props) {
                 ))}
               </tbody>
             </table>
+          </div>
+        )}
+      </div>
+
+      {/* ============================================================== */}
+      {/* TICKETS -> Q&A                                                   */}
+      {/* ============================================================== */}
+      <div className="card" style={{ borderLeft: "3px solid #fbbf24" }}>
+        <div className="ticket-section-head">
+          <span style={{ color: "#fbbf24" }}>🎫</span> TICKETS RESUELTOS → Q&amp;A PROPUESTAS
+        </div>
+        <p className="settings-section-desc">
+          Tomamos tickets cerrados sin Q&amp;A. Gemini lee la conversación, crea un knowledge item base
+          en estado DRAFT y propone 3-6 Q&amp;A en estado <b>pending</b>. Vos revisás y aprobás.
+        </p>
+        <div className="row" style={{ gap: 10, alignItems: "center", flexWrap: "wrap" }}>
+          <label style={{ display: "flex", alignItems: "center", gap: 6, fontSize: 12 }}>
+            <span>Tickets a procesar:</span>
+            <input type="range" min={1} max={10} step={1} value={ticketsLimit}
+              onChange={(e) => setTicketsLimit(Number(e.target.value))} style={{ width: 120 }} />
+            <span style={{ fontFamily: "var(--font-mono, monospace)", fontWeight: 700, minWidth: 22 }}>{ticketsLimit}</span>
+          </label>
+          <button className="btn primary" onClick={runTicketsToQa} disabled={ticketsRunning}
+            style={{ background: "linear-gradient(135deg, #fbbf24, #f59e0b)", borderColor: "#fbbf24", marginLeft: "auto" }}>
+            {ticketsRunning ? <><span className="spinner" /> Gemini proponiendo…</> : "🤖 Generar Q&A desde tickets"}
+          </button>
+        </div>
+        {ticketsReport && (
+          <div className="alert ok" style={{ marginTop: 10, fontSize: 12.5 }}>
+            ✓ Procesados <b>{ticketsReport.ticketsScanned}</b> tickets ·
+            <b> {ticketsReport.itemsCreated}</b> items DRAFT creados ·
+            <b> {ticketsReport.qasProposed}</b> Q&amp;A propuestas (pending de aprobación) ·
+            <b> {ticketsReport.skipped}</b> saltados.
+            <div style={{ marginTop: 6, fontSize: 11, color: "var(--text-dim)" }}>
+              {ticketsReport.byTicket.map((t) => (
+                <div key={t.ticketCode}>
+                  · <b>{t.ticketCode}</b>: {t.error ? `⚠ ${t.error}` : `${t.proposedQas} Q&A${t.newItemCreated ? ", item creado" : ""}`}
+                </div>
+              ))}
+            </div>
+          </div>
+        )}
+      </div>
+
+      {/* ============================================================== */}
+      {/* A/B TEST + AUTO-PROMOTE                                          */}
+      {/* ============================================================== */}
+      <div className="card" style={{ borderLeft: "3px solid #22d3ee" }}>
+        <div className="ticket-section-head" style={{ cursor: "pointer" }} onClick={() => setShowAb(!showAb)}>
+          <span style={{ color: "#67e8f9" }}>🆎</span> A/B TEST · COMPARAR PROMPT CANDIDATO VS ACTIVO
+          <span style={{ marginLeft: "auto", fontSize: 11, color: "var(--text-dim)" }}>{showAb ? "▼" : "▶"}</span>
+        </div>
+        {showAb && (
+          <div className="col" style={{ gap: 10 }}>
+            <div className="row" style={{ gap: 8, flexWrap: "wrap" }}>
+              <div className="lab-fb-block" style={{ flex: 1, minWidth: 220 }}>
+                <div className="lab-fb-block-head">▸ NOMBRE DE LA VARIANTE</div>
+                <input value={abPromptLabel} onChange={(e) => setAbPromptLabel(e.target.value)}
+                  placeholder="ej. ES con bullet points + transacciones bold" style={{ fontSize: 12.5 }} />
+              </div>
+            </div>
+            <div className="lab-fb-block">
+              <div className="lab-fb-block-head">▸ SYSTEM PROMPT CANDIDATO</div>
+              <textarea value={abPrompt} onChange={(e) => setAbPrompt(e.target.value)}
+                style={{ width: "100%", minHeight: 120, fontSize: 11.5, fontFamily: "var(--font-mono, monospace)", resize: "vertical" }} />
+            </div>
+            <div className="row" style={{ gap: 10, alignItems: "center", flexWrap: "wrap" }}>
+              <label style={{ display: "flex", alignItems: "center", gap: 6, fontSize: 12 }}>
+                <span>Q&A por variante:</span>
+                <input type="range" min={1} max={30} step={1} value={abLimit}
+                  onChange={(e) => setAbLimit(Number(e.target.value))} style={{ width: 100 }} />
+                <span style={{ fontFamily: "var(--font-mono, monospace)", fontWeight: 700, minWidth: 22 }}>{abLimit}</span>
+              </label>
+              <label style={{ display: "flex", alignItems: "center", gap: 6, fontSize: 12 }}>
+                <span>min delta:</span>
+                <input type="number" min={1} max={50} value={autoMinDelta}
+                  onChange={(e) => setAutoMinDelta(Number(e.target.value))} style={{ width: 60 }} />
+              </label>
+              <label style={{ display: "flex", alignItems: "center", gap: 6, fontSize: 12 }}>
+                <input type="checkbox" checked={autoApply} onChange={(e) => setAutoApply(e.target.checked)} />
+                <span>aplicar si gana</span>
+              </label>
+              <button className="btn ghost" onClick={runAb} disabled={abRunning || autoRunning || !abPrompt.trim()}>
+                {abRunning ? <><span className="spinner" /> A/B…</> : "▶ Solo comparar"}
+              </button>
+              <button className="btn primary" onClick={() => runAutoPromote(autoApply)} disabled={abRunning || autoRunning || !abPrompt.trim()}
+                style={{ background: "linear-gradient(135deg, #22d3ee, #06b6d4)", borderColor: "#22d3ee" }}>
+                {autoRunning
+                  ? <><span className="spinner" /> auto-promote…</>
+                  : autoApply ? "✓ Comparar + adoptar si gana" : "📊 Solo evaluar promoción"}
+              </button>
+            </div>
+
+            {autoMsg && (
+              <div className={autoMsg.startsWith("🎉") ? "alert ok" : autoMsg.startsWith("ℹ") ? "alert info" : "alert error"} style={{ fontSize: 12 }}>
+                {autoMsg}
+              </div>
+            )}
+
+            {abReport && (
+              <div className="lab-fb-card" style={{ ["--fb-color" as never]: abReport.winner === "B" ? "#10b981" : abReport.winner === "A" ? "#ef4444" : "#64748b" }}>
+                <div style={{ fontSize: 12, fontWeight: 700, letterSpacing: 1, marginBottom: 8 }}>
+                  RESULTADO A/B · GANADOR{" "}
+                  <span style={{ color: abReport.winner === "B" ? "#10b981" : abReport.winner === "A" ? "#ef4444" : "#94a3b8" }}>
+                    {abReport.winner === "tie" ? "EMPATE" : `VARIANTE ${abReport.winner}`}
+                  </span>
+                  {" "}· delta <b>{abReport.scoreDelta > 0 ? "+" : ""}{abReport.scoreDelta}</b> pts
+                </div>
+                <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 10 }}>
+                  <div className="lab-fb-block" style={{ borderLeft: "3px solid #ef4444" }}>
+                    <div className="lab-fb-block-head">A · {abReport.runA.promptLabel ?? "(activo)"}</div>
+                    <div>score <b>{abReport.runA.avgScore}</b> · pass <b>{abReport.runA.passed}/{abReport.runA.totalQas}</b></div>
+                  </div>
+                  <div className="lab-fb-block" style={{ borderLeft: "3px solid #10b981" }}>
+                    <div className="lab-fb-block-head">B · {abReport.runB.promptLabel}</div>
+                    <div>score <b>{abReport.runB.avgScore}</b> · pass <b>{abReport.runB.passed}/{abReport.runB.totalQas}</b></div>
+                  </div>
+                </div>
+                <div className="row" style={{ gap: 8, fontSize: 11, color: "var(--text-soft)", marginTop: 8 }}>
+                  <span>📈 {abReport.improvedQas.length} mejoraron</span>
+                  <span>📉 {abReport.degradedQas.length} empeoraron</span>
+                  <span>= {abReport.unchangedQas.length} sin cambio</span>
+                </div>
+              </div>
+            )}
+          </div>
+        )}
+      </div>
+
+      {/* ============================================================== */}
+      {/* DIFF entre 2 runs                                                */}
+      {/* ============================================================== */}
+      <div className="card" style={{ borderLeft: "3px solid #a855f7" }}>
+        <div className="ticket-section-head">
+          <span style={{ color: "#c084fc" }}>🔍</span> COMPARAR DOS EVAL RUNS
+        </div>
+        <p className="settings-section-desc">
+          Elegí 2 runs del historial → te mostramos qué Q&amp;A mejoraron, cuáles empeoraron y cuáles quedaron igual.
+        </p>
+        <div className="row" style={{ gap: 8, alignItems: "center", flexWrap: "wrap" }}>
+          <select value={diffA} onChange={(e) => setDiffA(e.target.value)} style={{ minWidth: 220 }}>
+            <option value="">A · seleccionar run...</option>
+            {runs.map((r) => (
+              <option key={r.id} value={r.id}>
+                {new Date(r.started_at).toLocaleString("es-CL").slice(0, 16)} · {r.prompt_label ?? "(default)"} · {r.avg_score}
+              </option>
+            ))}
+          </select>
+          <span style={{ color: "var(--text-dim)" }}>↔</span>
+          <select value={diffB} onChange={(e) => setDiffB(e.target.value)} style={{ minWidth: 220 }}>
+            <option value="">B · seleccionar run...</option>
+            {runs.map((r) => (
+              <option key={r.id} value={r.id}>
+                {new Date(r.started_at).toLocaleString("es-CL").slice(0, 16)} · {r.prompt_label ?? "(default)"} · {r.avg_score}
+              </option>
+            ))}
+          </select>
+          <button className="btn ghost" onClick={loadDiff} disabled={!diffA || !diffB || diffA === diffB || diffLoading}>
+            {diffLoading ? <><span className="spinner" /> comparando…</> : "🔍 Comparar"}
+          </button>
+        </div>
+
+        {diffReport && (
+          <div className="col" style={{ gap: 10, marginTop: 10 }}>
+            <div className="row" style={{ gap: 10, flexWrap: "wrap", fontSize: 12 }}>
+              <span>Score delta: <b style={{ color: diffReport.scoreDelta > 0 ? "#10b981" : diffReport.scoreDelta < 0 ? "#ef4444" : "#94a3b8" }}>
+                {diffReport.scoreDelta > 0 ? "+" : ""}{diffReport.scoreDelta} pts
+              </b></span>
+              <span>Pass delta: <b>{diffReport.passDelta > 0 ? "+" : ""}{diffReport.passDelta}</b></span>
+              <span>📈 <b style={{ color: "#10b981" }}>{diffReport.improved.length}</b> mejoraron</span>
+              <span>📉 <b style={{ color: "#ef4444" }}>{diffReport.degraded.length}</b> empeoraron</span>
+              <span>= <b>{diffReport.unchanged.length}</b> sin cambio</span>
+            </div>
+
+            {diffReport.improved.slice(0, 5).length > 0 && (
+              <div className="lab-fb-block" style={{ borderLeft: "3px solid #10b981" }}>
+                <div className="lab-fb-block-head" style={{ color: "#10b981" }}>▸ TOP 5 MEJORADAS</div>
+                {diffReport.improved.slice(0, 5).map((r) => (
+                  <div key={r.qaId} style={{ fontSize: 12, padding: "4px 0", borderBottom: "1px solid var(--border-soft)" }}>
+                    <b style={{ color: "#10b981" }}>+{r.delta}</b> · {r.scoreA} → {r.scoreB} · {r.question.slice(0, 100)}…
+                  </div>
+                ))}
+              </div>
+            )}
+
+            {diffReport.degraded.slice(0, 5).length > 0 && (
+              <div className="lab-fb-block" style={{ borderLeft: "3px solid #ef4444" }}>
+                <div className="lab-fb-block-head" style={{ color: "#ef4444" }}>▸ TOP 5 DEGRADADAS</div>
+                {diffReport.degraded.slice(0, 5).map((r) => (
+                  <div key={r.qaId} style={{ fontSize: 12, padding: "4px 0", borderBottom: "1px solid var(--border-soft)" }}>
+                    <b style={{ color: "#ef4444" }}>{r.delta}</b> · {r.scoreA} → {r.scoreB} · {r.question.slice(0, 100)}…
+                  </div>
+                ))}
+              </div>
+            )}
           </div>
         )}
       </div>
