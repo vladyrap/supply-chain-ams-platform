@@ -1,12 +1,15 @@
 "use client";
 
+import type React from "react";
 import { useCallback, useEffect, useState } from "react";
 import type { UseAgentTraining } from "@/hooks/useAgentTraining";
 import {
   apiRunQaEval, apiListEvalRuns, apiGetEvalRunDetail,
   apiRunAbTest, apiAutoPromote, apiDiffRuns, apiProposeQasFromTickets,
+  apiAutoGenerateQas, apiLoadExpandedCorpus, apiRunSelfTraining,
   type EvalRunReport, type EvalRunSummary, type EvalRunDetail,
   type AbTestReport, type RunDiffReport, type TicketToQaReport,
+  type SelfTrainingReport, type CorpusLoadResult, type AutoQaReport,
 } from "@/services/training.api";
 
 interface Props { ctx: UseAgentTraining }
@@ -52,6 +55,17 @@ export default function LearningDashboard({ ctx }: Props) {
   const [diffB, setDiffB] = useState<string>("");
   const [diffLoading, setDiffLoading] = useState(false);
   const [diffReport, setDiffReport] = useState<RunDiffReport | null>(null);
+
+  // Self-training
+  const [stRunning, setStRunning] = useState(false);
+  const [stReport, setStReport] = useState<SelfTrainingReport | null>(null);
+  const [stCurrentStage, setStCurrentStage] = useState<string | null>(null);
+
+  // Corpus loader
+  const [corpusLoading, setCorpusLoading] = useState(false);
+  const [corpusResult, setCorpusResult] = useState<CorpusLoadResult | null>(null);
+  const [autoQaLoading, setAutoQaLoading] = useState(false);
+  const [autoQaResult, setAutoQaResult] = useState<AutoQaReport | null>(null);
 
   const refresh = useCallback(async () => {
     setLoading(true);
@@ -138,6 +152,53 @@ export default function LearningDashboard({ ctx }: Props) {
     if (r.ok) setDiffReport(r.diff);
   }
 
+  async function runSelfTrain() {
+    setStRunning(true);
+    setStReport(null);
+    setStCurrentStage("Iniciando ciclo de auto-pulido…");
+    // animacion fake de etapas mientras el backend trabaja
+    const stages = [
+      "Detectar brechas",
+      "Tickets → Q&A propuestas",
+      "Auto-aprobar Q&A (juez Gemini)",
+      "Auto-Q&A para items sin Q&A",
+      "Evaluación contra agente activo",
+    ];
+    let idx = 0;
+    const timer = setInterval(() => {
+      idx = (idx + 1) % stages.length;
+      setStCurrentStage(stages[idx]);
+    }, 2500);
+    const r = await apiRunSelfTraining({ evalLimit: 10, ticketsLimit: 3, autoApproveLimit: 6 });
+    clearInterval(timer);
+    setStCurrentStage(null);
+    setStRunning(false);
+    if (r.ok) {
+      setStReport(r.report);
+      await refresh();
+    } else {
+      setError(r.error);
+    }
+  }
+
+  async function loadCorpus() {
+    setCorpusLoading(true);
+    setCorpusResult(null);
+    const r = await apiLoadExpandedCorpus();
+    setCorpusLoading(false);
+    if (r.ok) setCorpusResult(r.result);
+    else setError(r.error);
+  }
+
+  async function autoGen() {
+    setAutoQaLoading(true);
+    setAutoQaResult(null);
+    const r = await apiAutoGenerateQas(50);
+    setAutoQaLoading(false);
+    if (r.ok) setAutoQaResult(r.report);
+    else setError(r.error);
+  }
+
   // Métricas derivadas
   const totalQAsApproved = ctx.qa.filter((q) => q.approved).length;
   const totalQAs = ctx.qa.length;
@@ -152,6 +213,137 @@ export default function LearningDashboard({ ctx }: Props) {
 
   return (
     <div className="col" style={{ gap: 14 }}>
+      {/* ============================================================== */}
+      {/* SELF-TRAINING · pulido del agente en un click                    */}
+      {/* ============================================================== */}
+      <div className="card" style={{
+        background: "linear-gradient(135deg, rgba(168,85,247,0.15) 0%, rgba(34,211,238,0.10) 100%)",
+        borderLeft: "3px solid #a855f7",
+        position: "relative", overflow: "hidden",
+      }}>
+        <div className="ticket-section-head">
+          <span style={{ color: "#c084fc" }}>⚡</span> AUTO-PULIDO DEL AGENTE · self-training cycle
+        </div>
+        <p className="settings-section-desc">
+          Un click corre el ciclo completo: <b>detecta brechas</b> → <b>convierte tickets en Q&amp;A</b>
+          → <b>Gemini aprueba Q&amp;A de alta calidad</b> → <b>genera Q&amp;A para items sin entrenamiento</b>
+          → <b>evalúa al agente</b>. El corpus crece y el few-shot se enriquece sin esfuerzo humano.
+        </p>
+
+        {/* Pipeline visual */}
+        {(stRunning || stReport) && (
+          <div style={{ marginTop: 12, display: "grid", gridTemplateColumns: "repeat(5, 1fr)", gap: 6 }}>
+            {["Brechas", "Tickets→Q&A", "Auto-aprobar", "Auto-Q&A", "Evaluación"].map((label, i) => {
+              const stageData = stReport?.stages[i];
+              const color = !stageData ? "#64748b"
+                          : stageData.status === "ok" ? "#10b981"
+                          : stageData.status === "skipped" ? "#94a3b8"
+                          : "#ef4444";
+              const active = stCurrentStage && stCurrentStage.toLowerCase().includes(label.toLowerCase().split("→")[0].trim());
+              return (
+                <div key={i} style={{
+                  padding: "10px 8px",
+                  background: "rgba(15,23,42,0.55)",
+                  border: `1px solid ${color}55`,
+                  borderRadius: 6,
+                  textAlign: "center",
+                  position: "relative",
+                  boxShadow: active ? `0 0 16px ${color}88` : "none",
+                  animation: active ? "tc-pulse 1.8s ease-in-out infinite" : "none",
+                }}>
+                  <div style={{ fontSize: 16, marginBottom: 4 }}>
+                    {!stageData ? "⏳" : stageData.status === "ok" ? "✓" : stageData.status === "skipped" ? "−" : "✕"}
+                  </div>
+                  <div style={{ fontSize: 10, color, fontWeight: 700, letterSpacing: 0.5 }}>
+                    {label}
+                  </div>
+                  {stageData && (
+                    <div style={{ fontSize: 9, color: "var(--text-dim)", marginTop: 3 }}>
+                      {(stageData.durationMs / 1000).toFixed(1)}s
+                    </div>
+                  )}
+                </div>
+              );
+            })}
+          </div>
+        )}
+
+        {stRunning && stCurrentStage && (
+          <div style={{ marginTop: 10, fontSize: 12, color: "#c084fc", fontFamily: "var(--font-mono, monospace)" }}>
+            <span className="spinner" /> {stCurrentStage}…
+          </div>
+        )}
+
+        <div className="row" style={{ gap: 8, marginTop: 12, flexWrap: "wrap" }}>
+          <button className="btn primary" onClick={runSelfTrain} disabled={stRunning}
+            style={{
+              background: "linear-gradient(135deg, #a855f7 0%, #22d3ee 100%)",
+              borderColor: "#a855f7",
+              minWidth: 220, fontWeight: 700,
+            }}>
+            {stRunning ? <><span className="spinner" /> Pulido en curso…</> : "⚡ Pulir agente ahora"}
+          </button>
+
+          <button className="btn ghost" onClick={loadCorpus} disabled={corpusLoading}>
+            {corpusLoading ? <><span className="spinner" /> cargando corpus…</> : "🌱 Cargar corpus expandido (26 items)"}
+          </button>
+
+          <button className="btn ghost" onClick={autoGen} disabled={autoQaLoading} style={{ marginLeft: "auto" }}>
+            {autoQaLoading ? <><span className="spinner" /> generando…</> : "🪄 Auto-Q&A items sin entrenamiento"}
+          </button>
+        </div>
+
+        {corpusResult && (
+          <div className="alert ok" style={{ marginTop: 10, fontSize: 12.5 }}>
+            ✓ Corpus cargado: <b>{corpusResult.itemsCreated}</b> items nuevos ·
+            <b> {corpusResult.itemsSkipped}</b> ya existían ·
+            <b> {corpusResult.qasCreated}</b> Q&amp;A aprobadas ·
+            <b> {corpusResult.publishedCount}</b> publicados (de {corpusResult.corpusSize} en el corpus total)
+          </div>
+        )}
+
+        {autoQaResult && (
+          <div className="alert ok" style={{ marginTop: 10, fontSize: 12.5 }}>
+            ✓ Auto-Q&amp;A generadas: <b>{autoQaResult.itemsScanned}</b> items procesados ·
+            <b> {autoQaResult.qasCreated}</b> Q&amp;A creadas ·
+            <b> {autoQaResult.qasApproved}</b> aprobadas automáticamente
+            {autoQaResult.byModule.length > 0 && (
+              <div style={{ marginTop: 4, fontSize: 11, color: "var(--text-dim)" }}>
+                Por módulo: {autoQaResult.byModule.map((m) => `${m.module}=${m.qas}`).join(" · ")}
+              </div>
+            )}
+          </div>
+        )}
+
+        {/* Before/After del self-train */}
+        {stReport && (
+          <div style={{ marginTop: 14, display: "grid", gridTemplateColumns: "1fr 1fr", gap: 10 }}>
+            <div className="lab-fb-block" style={{ borderLeft: "3px solid #64748b" }}>
+              <div className="lab-fb-block-head">▸ ANTES</div>
+              <div style={{ fontSize: 12, lineHeight: 1.7 }}>
+                <div>📚 <b>{stReport.before.itemsTotal}</b> items · <b>{stReport.before.itemsPublished}</b> publicados</div>
+                <div>💬 <b>{stReport.before.qasApproved}</b> Q&amp;A aprobadas (de {stReport.before.qasTotal})</div>
+                <div>🚧 <b>{stReport.before.openGaps}</b> brechas abiertas</div>
+              </div>
+            </div>
+            <div className="lab-fb-block" style={{ borderLeft: "3px solid #10b981" }}>
+              <div className="lab-fb-block-head" style={{ color: "#10b981" }}>▸ DESPUÉS</div>
+              <div style={{ fontSize: 12, lineHeight: 1.7 }}>
+                <div>📚 <b>{stReport.after.itemsTotal}</b> items {delta(stReport.before.itemsTotal, stReport.after.itemsTotal)} · <b>{stReport.after.itemsPublished}</b> publicados</div>
+                <div>💬 <b>{stReport.after.qasApproved}</b> aprobadas {delta(stReport.before.qasApproved, stReport.after.qasApproved)}</div>
+                <div>🚧 <b>{stReport.after.openGaps}</b> brechas {delta(stReport.before.openGaps, stReport.after.openGaps, true)}</div>
+                {stReport.after.evalAvgScore !== null && (
+                  <div>🎯 score eval <b>{stReport.after.evalAvgScore}</b> · pass <b>{stReport.after.evalPassRate}%</b></div>
+                )}
+              </div>
+            </div>
+            <div style={{ gridColumn: "1 / -1", fontSize: 10.5, color: "var(--text-dim)", textAlign: "center", marginTop: 4 }}>
+              ciclo completado en <b>{(stReport.totalMs / 1000).toFixed(1)}s</b> · {stReport.stages.length} etapas
+            </div>
+          </div>
+        )}
+      </div>
+
       {/* Hero metric cards */}
       <div className="tc-metric-grid">
         <div className="tc-metric" style={{ ["--tc-acc" as never]: "#22d3ee" }}>
@@ -548,4 +740,14 @@ export default function LearningDashboard({ ctx }: Props) {
       )}
     </div>
   );
+}
+
+/** Render visual del delta entre 2 valores. `invert=true` para casos donde menos es mejor (brechas). */
+function delta(before: number, after: number, invert = false): React.ReactNode {
+  const d = after - before;
+  if (d === 0) return null;
+  const positive = invert ? d < 0 : d > 0;
+  const color = positive ? "#10b981" : "#ef4444";
+  const sign = d > 0 ? "+" : "";
+  return <span style={{ color, fontSize: 10.5, marginLeft: 4 }}>({sign}{d})</span>;
 }

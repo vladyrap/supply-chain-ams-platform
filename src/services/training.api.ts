@@ -527,3 +527,76 @@ export async function apiProposeQasFromTickets(input: { limit?: number; daysBack
   if (!r.ok) return r;
   return { ok: true, report: r.data.report };
 }
+
+// ============================================================================
+// SELF-TRAINING + CORPUS LOADER
+// ============================================================================
+export interface AutoQaReport {
+  itemsScanned: number;
+  itemsSkipped: number;
+  qasCreated: number;
+  qasApproved: number;
+  byModule: { module: string; items: number; qas: number }[];
+}
+
+export async function apiAutoGenerateQas(limit = 100): Promise<{ ok: true; report: AutoQaReport } | { ok: false; error: string }> {
+  const r = await call<{ report: AutoQaReport }>("/api/training/qa/auto-generate", {
+    method: "POST", body: JSON.stringify({ limit }),
+  });
+  if (!r.ok) return r;
+  return { ok: true, report: r.data.report };
+}
+
+export interface CorpusLoadResult {
+  itemsCreated: number;
+  itemsSkipped: number;
+  qasCreated: number;
+  publishedCount: number;
+  corpusSize: number;
+}
+
+export async function apiLoadExpandedCorpus(): Promise<{ ok: true; result: CorpusLoadResult } | { ok: false; error: string }> {
+  const r = await call<CorpusLoadResult>("/api/training/seed/expand", { method: "POST" });
+  if (!r.ok) return r;
+  return { ok: true, result: r.data };
+}
+
+export type StageStatus = "ok" | "skipped" | "error";
+
+export interface StageResult {
+  name: string;
+  status: StageStatus;
+  durationMs: number;
+  detail: string;
+}
+
+export interface SelfTrainingReport {
+  startedAt: string;
+  finishedAt: string;
+  totalMs: number;
+  stages: StageResult[];
+  before: {
+    itemsTotal: number; itemsPublished: number;
+    qasTotal: number; qasApproved: number; openGaps: number;
+  };
+  after: {
+    itemsTotal: number; itemsPublished: number;
+    qasTotal: number; qasApproved: number; openGaps: number;
+    evalAvgScore: number | null;
+    evalPassRate: number | null;
+  };
+}
+
+export async function apiRunSelfTraining(input: {
+  evalLimit?: number;
+  ticketsLimit?: number;
+  autoApproveLimit?: number;
+  autoApproveMinScore?: number;
+  runEval?: boolean;
+} = {}): Promise<{ ok: true; report: SelfTrainingReport } | { ok: false; error: string }> {
+  const r = await call<{ report: SelfTrainingReport }>("/api/training/self/run", {
+    method: "POST", body: JSON.stringify(input),
+  });
+  if (!r.ok) return r;
+  return { ok: true, report: r.data.report };
+}
