@@ -70,6 +70,7 @@ export function buildDefaultRoles(): PlatformRole[] {
         integraciones:    fullPerm(),
         usuarios:         fullPerm(),
         roles:            fullPerm(),
+        entrenamiento_ia: fullPerm(),
       }),
     },
     {
@@ -94,6 +95,8 @@ export function buildDefaultRoles(): PlatformRole[] {
         integraciones:    { ...viewCreateEdit(), approve: true },
         usuarios:         viewOnly(),
         roles:            viewOnly(),
+        // SERVICE_LEAD: view + create + edit + export + approve
+        entrenamiento_ia: { ...viewCreateEdit(), export: true, approve: true },
       }),
     },
     {
@@ -118,6 +121,8 @@ export function buildDefaultRoles(): PlatformRole[] {
         integraciones:    viewOnly(),
         usuarios:         noPerm(),
         roles:            noPerm(),
+        // AMS_CONSULTANT: view + create + edit
+        entrenamiento_ia: viewCreateEdit(),
       }),
     },
     {
@@ -142,6 +147,7 @@ export function buildDefaultRoles(): PlatformRole[] {
         integraciones:    noPerm(),
         usuarios:         noPerm(),
         roles:            noPerm(),
+        entrenamiento_ia: noPerm(),
       }),
     },
     {
@@ -166,9 +172,32 @@ export function buildDefaultRoles(): PlatformRole[] {
         integraciones:    noPerm(),
         usuarios:         noPerm(),
         roles:            noPerm(),
+        entrenamiento_ia: noPerm(),
       }),
     },
   ];
+}
+
+// ============================================================
+// Migración lazy: roles persistidos en localStorage podrían no
+// tener las nuevas screens. Esta función rellena las screens
+// faltantes con noPerm() para evitar crashes — sin alterar
+// los permisos que ya tenía el usuario.
+// ============================================================
+
+export function migrateRolesAddingMissingScreens(roles: PlatformRole[]): PlatformRole[] {
+  const screens = ALL_SCREENS;
+  return roles.map((r) => {
+    const fixed = { ...r.permissions };
+    let changed = false;
+    for (const s of screens) {
+      if (!fixed[s]) {
+        fixed[s] = noPerm();
+        changed = true;
+      }
+    }
+    return changed ? { ...r, permissions: fixed } : r;
+  });
 }
 
 // ============================================================

@@ -329,6 +329,40 @@ Ver [`docs/access-control.md`](docs/access-control.md) sección "Roadmap hacia b
 
 Resumen: el modelo (`types/rbac.ts`) y la lógica (`utils/rbac.ts`) están desacoplados de `localStorage`. Migrar a backend implica solo cambiar la fuente de datos del hook `useAccessAdmin` — los componentes de UI no cambian.
 
+## 🎓 Centro de Entrenamiento del Agente
+
+**Qué es** — un módulo premium para que un líder AMS, consultor senior o admin pueda gobernar el conocimiento del Agente AMS Supply Chain sin escribir código. Ruta: **`/training`** (menú lateral: *Entrenamiento IA*).
+
+**Qué permite hacer**
+
+1. **Cargar conocimiento** con formulario rico, pegado rápido (minutas/tickets), plantillas para 10 tipos y dropzone de archivos (simulado en Fase 1).
+2. **Clasificarlo** por módulo SAP, proceso, tipo, prioridad y tags.
+3. **Generar Q&A** automáticamente a partir de un ítem (algoritmo determinístico hoy, con LLM en Fase 5).
+4. **Doble validación** funcional + técnica antes de publicar.
+5. **Publicar** respetando reglas (umbral de score, validaciones requeridas, no-rechazado). Cada publicación pide confirmación.
+6. **Simular** la respuesta del agente contra el corpus actual y detectar brechas automáticamente.
+7. **Versionar** el conocimiento: crear → publicar → rollback simulado → comparar A↔B.
+8. **Detectar brechas** de cobertura por módulo + accionarlas hacia nuevos ítems.
+9. **Configurar políticas**: umbral, modo estricto anti-alucinación, idioma, formato de respuesta.
+
+**Datos** — todo se guarda en 5 claves `localStorage` (`supply-chain-ams-training-*`). El botón **Restaurar demo** en *Configuración* los resetea sin tocar usuarios, roles ni el chat del agente.
+
+**Acceso por rol** — la screen RBAC se llama `entrenamiento_ia`:
+
+| Rol             | Permisos por defecto                          |
+|---              |---                                            |
+| ADMIN           | view + create + edit + delete + export + configure + approve |
+| SERVICE_LEAD    | view + create + edit + export + approve       |
+| AMS_CONSULTANT  | view + create + edit                          |
+| CLIENT_USER     | sin acceso                                    |
+| GENERAL_USER    | sin acceso                                    |
+
+Los roles ya guardados en `localStorage` se migran automáticamente: las pantallas nuevas se rellenan con permisos cerrados sin alterar las pantallas previas (ver `migrateRolesAddingMissingScreens` en `utils/rbac.ts`).
+
+**Catálogo de servicios** — *Entrenamiento del Agente* aparece en `PREMIUM`. *Gobierno avanzado de entrenamiento* (versionado + rollback + aprobación) aparece en `ENTERPRISE`.
+
+**Documentación completa**: [`docs/agent-training.md`](docs/agent-training.md) — arquitectura, modelo de datos, flujo, reglas, roadmap por fases.
+
 ## 📜 Licencia
 
 MIT — ver [LICENSE](LICENSE).

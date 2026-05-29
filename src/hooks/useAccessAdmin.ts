@@ -8,6 +8,7 @@ import {
 import {
   buildDefaultRoles, buildDefaultUsers, getRoleByCode,
   normalizeRoleCode, suggestDuplicatedCode, validateRoleCode,
+  migrateRolesAddingMissingScreens,
 } from "@/utils/rbac";
 
 const now = () => new Date().toISOString();
@@ -22,7 +23,11 @@ function loadFromLocalStorage(): { roles: PlatformRole[]; users: PlatformUser[];
   if (typeof window === "undefined") {
     return { roles: buildDefaultRoles(), users: buildDefaultUsers(), currentUserId: null };
   }
-  const roles = safeJsonParse<PlatformRole[]>(localStorage.getItem(RBAC_STORAGE.roles)) ?? buildDefaultRoles();
+  const rawRoles = safeJsonParse<PlatformRole[]>(localStorage.getItem(RBAC_STORAGE.roles)) ?? buildDefaultRoles();
+  // Migración lazy: si el localStorage trae roles viejos sin las nuevas
+  // screens (p.ej. "entrenamiento_ia"), las rellenamos con noPerm() para
+  // que el lookup nunca devuelva undefined y no rompa Sidebar/AccessPreview.
+  const roles = migrateRolesAddingMissingScreens(rawRoles);
   const users = safeJsonParse<PlatformUser[]>(localStorage.getItem(RBAC_STORAGE.users)) ?? buildDefaultUsers();
   const currentUserId = localStorage.getItem(RBAC_STORAGE.currentUser);
   return { roles, users, currentUserId };

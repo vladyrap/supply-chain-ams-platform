@@ -31,7 +31,8 @@ export type PlatformScreen =
   | "conocimiento_rag"
   | "integraciones"
   | "usuarios"
-  | "roles";
+  | "roles"
+  | "entrenamiento_ia";
 
 export interface RolePermission {
   view: boolean;
@@ -84,6 +85,7 @@ export const SCREEN_LABELS: Record<PlatformScreen, string> = {
   integraciones:    "Integraciones",
   usuarios:         "Usuarios",
   roles:            "Roles",
+  entrenamiento_ia: "Entrenamiento IA",
 };
 
 export const ACTION_LABELS: Record<PermissionAction, string> = {
@@ -100,7 +102,7 @@ export const ALL_SCREENS: PlatformScreen[] = [
   "dashboard", "agente_ams", "incidentes", "modulos_sap", "servicios",
   "reportes", "auditoria", "administracion", "configuracion",
   "canal_telefonico", "conocimiento_rag", "integraciones",
-  "usuarios", "roles",
+  "usuarios", "roles", "entrenamiento_ia",
 ];
 
 export const ALL_ACTIONS: PermissionAction[] = [

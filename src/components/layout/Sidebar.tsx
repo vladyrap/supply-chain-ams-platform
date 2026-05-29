@@ -7,7 +7,7 @@ import { MODULES } from "@/lib/modules";
 import { usePlatform } from "@/context/PlatformContext";
 import { useAuth } from "@/context/AuthContext";
 import { canAccess } from "@/lib/roles";
-import { hasPermission, buildDefaultRoles, buildDefaultUsers, legacyRoleToCode } from "@/utils/rbac";
+import { hasPermission, buildDefaultRoles, buildDefaultUsers, legacyRoleToCode, migrateRolesAddingMissingScreens } from "@/utils/rbac";
 import { screenForModule } from "@/utils/permissions";
 import { RBAC_STORAGE, type PlatformRole, type PlatformUser } from "@/types/rbac";
 import type { ModuleDef } from "@/types";
@@ -29,6 +29,9 @@ function readRbacState(): { roles: PlatformRole[]; users: PlatformUser[]; curren
     const rawU = localStorage.getItem(RBAC_STORAGE.users);
     if (rawU) users = JSON.parse(rawU);
   } catch { /* ignore */ }
+  // Migración lazy: si vienen roles viejos sin las nuevas screens
+  // (p.ej. "entrenamiento_ia"), las rellenamos con permisos cerrados.
+  roles = migrateRolesAddingMissingScreens(roles);
   const currentUserId = localStorage.getItem(RBAC_STORAGE.currentUser);
   return { roles, users, currentUserId };
 }
@@ -118,7 +121,7 @@ export default function Sidebar() {
       <nav className="nav" aria-label="Módulos">
         {renderSection("Operación", ["mission-control", "topology", "tv", "demo", "dashboard", "agent", "history"])}
         {renderSection("Visualizaciones", ["launchpad", "wallboard", "war-room", "brain", "terminal", "hud", "forecast", "flow"])}
-        {renderSection("AMS avanzado", ["support-desk", "agent-lab", "voice-calls", "knowledge", "tickets", "integrations", "sap-readonly", "meetings"])}
+        {renderSection("AMS avanzado", ["support-desk", "agent-lab", "agent-training", "voice-calls", "knowledge", "tickets", "integrations", "sap-readonly", "meetings"])}
         {renderSection("Sistema", ["executive", "settings", "admin"])}
       </nav>
 

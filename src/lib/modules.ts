@@ -264,6 +264,16 @@ export const MODULES: ModuleDef[] = [
     phase: 7,
     rolesAllowed: ["consultor", "aprobador", "admin"],
   },
+  {
+    id: "agent-training",
+    label: "Entrenamiento IA",
+    icon: "🎓",
+    href: "/training",
+    description: "Centro de Entrenamiento del Agente: carga, valida, versiona y mejora el conocimiento del Agente AMS Supply Chain. Pipeline completo + simulador + brechas + Q&A",
+    status: "available",
+    phase: 7,
+    rolesAllowed: ["consultor", "aprobador", "admin"],
+  },
 ];
 
 export function moduleById(id: string): ModuleDef | undefined {

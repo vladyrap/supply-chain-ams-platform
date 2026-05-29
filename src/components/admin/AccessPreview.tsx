@@ -16,8 +16,18 @@ interface Props { admin: UseAccessAdmin }
 const SERVICE_FEATURES: Record<string, string[]> = {
   BASIC:      ["Chat con agente", "Dashboard simple"],
   STANDARD:   ["Chat con agente", "Dashboard simple", "Reuniones AMS", "Mesa de soporte"],
-  PREMIUM:    ["Chat con agente", "Dashboard simple", "Reuniones AMS", "Mesa de soporte", "Conocimiento RAG", "Integraciones", "Forecast IA"],
-  ENTERPRISE: ["Todo Premium", "SAP Read-Only", "Auditoría completa", "Canal telefónico IA", "Vistas premium (war room, brain, HUD)", "Soporte SLA dedicado"],
+  PREMIUM:    [
+    "Chat con agente", "Dashboard simple", "Reuniones AMS", "Mesa de soporte",
+    "Conocimiento RAG", "Integraciones", "Forecast IA",
+    "Entrenamiento del Agente — carga de conocimiento + Q&A + simulador + validación",
+  ],
+  ENTERPRISE: [
+    "Todo Premium",
+    "SAP Read-Only", "Auditoría completa", "Canal telefónico IA",
+    "Vistas premium (war room, brain, HUD)",
+    "Gobierno avanzado de entrenamiento — versionado + aprobación + rollback + control de publicación",
+    "Soporte SLA dedicado",
+  ],
 };
 
 export default function AccessPreview({ admin }: Props) {
