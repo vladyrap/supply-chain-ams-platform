@@ -338,3 +338,22 @@ export async function apiUpdateSettings(patch: Partial<TrainingSettings>): Promi
   if (!r.ok) return r;
   return { ok: true, settings: mapSettings(r.data.settings) };
 }
+
+// ============================================================================
+// GAP AUTO-DETECTION
+// ============================================================================
+export interface GapDetectionReport {
+  scannedAt: string;
+  candidates: number;
+  created: number;
+  skipped: number;
+  bySource: { source: string; count: number }[];
+}
+
+export async function apiRunGapDetection(daysBack = 14): Promise<{ ok: true; report: GapDetectionReport } | { ok: false; error: string }> {
+  const r = await call<{ report: GapDetectionReport }>("/api/training/gaps/detect", {
+    method: "POST", body: JSON.stringify({ daysBack }),
+  });
+  if (!r.ok) return r;
+  return { ok: true, report: r.data.report };
+}

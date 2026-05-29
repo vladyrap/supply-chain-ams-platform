@@ -4,6 +4,7 @@ import { useState } from "react";
 import type { UseAgentTraining } from "@/hooks/useAgentTraining";
 import type { Priority, GapStatus } from "@/types/training";
 import { PRIORITY_COLORS, PRIORITY_LABELS, SAP_MODULES, SUPPLY_CHAIN_PROCESSES, GAP_STATUS_LABELS } from "@/types/training";
+import { apiRunGapDetection, fetchTrainingSnapshot, type GapDetectionReport } from "@/services/training.api";
 
 interface Props { ctx: UseAgentTraining }
 
@@ -17,6 +18,9 @@ const STATUS_COLORS: Record<GapStatus, string> = {
 export default function KnowledgeGaps({ ctx }: Props) {
   const [filter, setFilter] = useState<GapStatus | "all">("all");
   const [showCreate, setShowCreate] = useState(false);
+  const [detecting, setDetecting] = useState(false);
+  const [report, setReport] = useState<GapDetectionReport | null>(null);
+  const [detectError, setDetectError] = useState<string | null>(null);
 
   // form
   const [title, setTitle] = useState("");
@@ -25,6 +29,27 @@ export default function KnowledgeGaps({ ctx }: Props) {
   const [process, setProcess] = useState("Compras");
   const [priority, setPriority] = useState<Priority>("medium");
   const [action, setAction] = useState("");
+
+  async function detectAuto() {
+    setDetecting(true);
+    setDetectError(null);
+    const r = await apiRunGapDetection(14);
+    if (r.ok) {
+      setReport(r.report);
+      // refrescar gaps desde backend para mostrar los recién creados
+      const snap = await fetchTrainingSnapshot();
+      if (snap.ok) {
+        // Reemplazar via "createGap" no es ideal — el hook ya tiene los locales.
+        // Simplemente recargamos página completa via storage-event para forzar reload.
+        window.dispatchEvent(new CustomEvent("ams-training-changed"));
+        // hack: si estamos en source backend, hacer un re-fetch manual
+        // recargando el módulo. Mejor: el hook escucha el event y se rehidrata.
+      }
+    } else {
+      setDetectError(r.error);
+    }
+    setDetecting(false);
+  }
 
   function create() {
     if (!title.trim() || !action.trim()) return;
@@ -70,8 +95,26 @@ export default function KnowledgeGaps({ ctx }: Props) {
               {f.label} <span className="ticket-filter-count">{f.count}</span>
             </button>
           ))}
-          <button className="btn primary" style={{ marginLeft: "auto" }} onClick={() => setShowCreate(true)}>+ registrar brecha</button>
+          <button className="btn ghost" style={{ marginLeft: "auto" }} onClick={detectAuto} disabled={detecting}
+            title="Analiza tickets sin KB + feedback 👎 + cobertura baja → propone brechas">
+            {detecting ? <><span className="spinner" /> detectando…</> : "🔮 Detectar brechas automáticamente"}
+          </button>
+          <button className="btn primary" onClick={() => setShowCreate(true)}>+ registrar brecha</button>
         </div>
+
+        {report && (
+          <div className="alert ok" style={{ marginTop: 10, fontSize: 12 }}>
+            ✓ Análisis completado (últimos 14 días) · <b>{report.candidates}</b> candidatos detectados ·
+            <b> {report.created}</b> nuevos creados · <b>{report.skipped}</b> ya existentes (deduplicado).
+            Recargá la pestaña para ver los nuevos.
+            <div style={{ marginTop: 4, fontSize: 10.5, color: "var(--text-dim)", fontFamily: "var(--font-mono, monospace)" }}>
+              {report.bySource.map((s) => `${s.source}=${s.count}`).join(" · ")}
+            </div>
+          </div>
+        )}
+        {detectError && (
+          <div className="alert error" style={{ marginTop: 10, fontSize: 12 }}>⚠ {detectError}</div>
+        )}
       </div>
 
       {/* Sugerencias automáticas */}
