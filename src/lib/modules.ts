@@ -254,6 +254,16 @@ export const MODULES: ModuleDef[] = [
     phase: 8,
     rolesAllowed: ["consultor", "aprobador", "admin"],
   },
+  {
+    id: "agent-lab",
+    label: "Agent Lab",
+    icon: "🧪",
+    href: "/agent-lab",
+    description: "Enseñá al agente: 👍/👎 a respuestas, replay & debug de conversaciones y casos por curar. Cada feedback humano alimenta la mejora continua del agente",
+    status: "available",
+    phase: 7,
+    rolesAllowed: ["consultor", "aprobador", "admin"],
+  },
 ];
 
 export function moduleById(id: string): ModuleDef | undefined {

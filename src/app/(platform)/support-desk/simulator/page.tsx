@@ -4,6 +4,7 @@ import { useEffect, useRef, useState } from "react";
 import Link from "next/link";
 import Badge from "@/components/ui/Badge";
 import MarkdownView from "@/components/agent/MarkdownView";
+import FeedbackButtons from "@/components/agent-lab/FeedbackButtons";
 import { useToast } from "@/context/ToastContext";
 import { supportApi, type SupportConversation, type SupportMessage, type SupportChannel } from "@/services/support.api";
 
@@ -251,9 +252,23 @@ export default function SimulatorPage() {
                 Escribe el primer mensaje del cliente abajo para iniciar la conversación.
               </div>
             )}
-            {messages.map((m) => (
-              <Bubble key={m.id} msg={m} />
-            ))}
+            {messages.map((m, i) => {
+              // last user message ANTES de este, para enviarlo como "query" si es AI
+              let lastUser: string | undefined;
+              if (m.role === "ai" && !m.pending) {
+                for (let k = i - 1; k >= 0; k--) {
+                  if (messages[k].role === "user") { lastUser = messages[k].text; break; }
+                }
+              }
+              return (
+                <Bubble
+                  key={m.id}
+                  msg={m}
+                  conversationId={conv?.id}
+                  lastUserQuery={lastUser}
+                />
+              );
+            })}
             <div ref={endRef} />
           </div>
 
@@ -359,7 +374,11 @@ function toPending(m: SupportMessage): PendingMsg {
   return { id: m.id, role: (m.role === "agent" ? "ai" : (m.role as "user" | "ai" | "system")), text: m.text ?? "" };
 }
 
-function Bubble({ msg }: { msg: PendingMsg }) {
+function Bubble({ msg, conversationId, lastUserQuery }: {
+  msg: PendingMsg;
+  conversationId?: string;
+  lastUserQuery?: string;
+}) {
   if (msg.role === "system") {
     return (
       <div style={{
@@ -378,6 +397,7 @@ function Bubble({ msg }: { msg: PendingMsg }) {
     );
   }
   const isUser = msg.role === "user";
+  const showFeedback = !isUser && !msg.pending && msg.text.length > 0;
   return (
     <div style={{
       alignSelf: isUser ? "flex-end" : "flex-start",
@@ -395,6 +415,18 @@ function Bubble({ msg }: { msg: PendingMsg }) {
         {msg.pending ? <span style={{ opacity: 0.7 }}><span className="spinner" /> escribiendo…</span> :
           isUser ? msg.text : <MarkdownView text={msg.text} />}
       </div>
+      {showFeedback && (
+        <div style={{ marginTop: 4, paddingLeft: 4 }}>
+          <FeedbackButtons
+            source="support"
+            compact
+            conversationId={conversationId}
+            messageId={msg.id}
+            query={lastUserQuery}
+            response={msg.text}
+          />
+        </div>
+      )}
     </div>
   );
 }

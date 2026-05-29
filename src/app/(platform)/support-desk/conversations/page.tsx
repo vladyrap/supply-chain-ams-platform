@@ -3,6 +3,7 @@
 import { useEffect, useState, useCallback, useMemo, useRef } from "react";
 import Link from "next/link";
 import MarkdownView from "@/components/agent/MarkdownView";
+import FeedbackButtons from "@/components/agent-lab/FeedbackButtons";
 import { supportApi, type SupportConversation, type SupportMessage, type SupportStatus, type SupportChannel } from "@/services/support.api";
 
 const STATUS_META: Record<SupportStatus, { color: string; label: string; icon: string }> = {
@@ -406,6 +407,16 @@ function ConversationDetail({ detail, messagesEndRef }: { detail: { conv: Suppor
               );
             }
             const isUser = m.role === "user";
+            // last user message before this AI msg (para enviarlo como query del feedback)
+            let lastUserQuery: string | undefined;
+            if (!isUser) {
+              for (let k = i - 1; k >= 0; k--) {
+                if (messages[k].role === "user") {
+                  lastUserQuery = messages[k].text ?? undefined;
+                  break;
+                }
+              }
+            }
             return (
               <div key={m.id}>
                 {showDate && <DateDivider date={m.created_at} />}
@@ -420,6 +431,18 @@ function ConversationDetail({ detail, messagesEndRef }: { detail: { conv: Suppor
                     <div className={`conv-msg-bubble ${isUser ? "user" : "ai"}`}>
                       {isUser ? <span style={{ whiteSpace: "pre-wrap" }}>{m.text}</span> : <MarkdownView text={m.text ?? ""} />}
                     </div>
+                    {!isUser && m.text && m.text.length > 0 && (
+                      <div style={{ marginTop: 4, marginLeft: 2 }}>
+                        <FeedbackButtons
+                          source="support"
+                          compact
+                          conversationId={conv.id}
+                          messageId={m.id}
+                          query={lastUserQuery}
+                          response={m.text}
+                        />
+                      </div>
+                    )}
                   </div>
                   {isUser && (
                     <span className="conv-msg-avatar" style={{ background: avatarColor(name), color: "white" }}>

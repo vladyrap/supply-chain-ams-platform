@@ -2944,3 +2944,157 @@ html[data-theme="cyberpunk"] .brand .title {
   100% { background-position: 200% 50%; }
 }
 
+/* ============================================================================
+   AGENT LAB · feedback cards + timeline replay
+   ============================================================================ */
+
+/* Botones inline 👍 / 👎 sobre los bubbles de chat */
+.lab-fb-btns {
+  display: inline-flex;
+  gap: 4px;
+  align-items: center;
+}
+.lab-fb-btns.compact {
+  opacity: 0.55;
+  transition: opacity 0.2s ease;
+}
+.lab-fb-btns.compact:hover { opacity: 1; }
+
+.lab-fb-btn {
+  appearance: none;
+  border: 1px solid var(--border-soft);
+  background: var(--bg-elev);
+  color: var(--text-soft);
+  padding: 2px 7px;
+  font-size: 12px;
+  line-height: 1;
+  border-radius: 999px;
+  cursor: pointer;
+  transition: transform 0.12s ease, background 0.2s ease, border-color 0.2s ease;
+}
+.lab-fb-btn:hover:not(:disabled) {
+  transform: scale(1.18) translateY(-1px);
+}
+.lab-fb-btn.ok:hover:not(:disabled) {
+  background: rgba(16, 185, 129, 0.18);
+  border-color: rgba(16, 185, 129, 0.55);
+}
+.lab-fb-btn.bad:hover:not(:disabled) {
+  background: rgba(239, 68, 68, 0.18);
+  border-color: rgba(239, 68, 68, 0.55);
+}
+.lab-fb-btn:disabled { opacity: 0.4; cursor: not-allowed; }
+
+.lab-fb-tag {
+  display: inline-block;
+  font-size: 10.5px;
+  letter-spacing: 0.5px;
+  padding: 2px 8px;
+  border-radius: 999px;
+  font-weight: 600;
+}
+.lab-fb-tag.ok  { background: rgba(16, 185, 129, 0.18); color: #34d399; border: 1px solid rgba(16, 185, 129, 0.4); }
+.lab-fb-tag.bad { background: rgba(239, 68, 68, 0.18); color: #fca5a5; border: 1px solid rgba(239, 68, 68, 0.4); }
+.lab-fb-tag.err { background: rgba(251, 191, 36, 0.18); color: #fcd34d; border: 1px solid rgba(251, 191, 36, 0.4); }
+
+/* Cards de feedback en la lista del Lab */
+.lab-fb-card {
+  background: linear-gradient(180deg, rgba(15, 23, 42, 0.55), rgba(15, 23, 42, 0.30));
+  border: 1px solid var(--border-soft);
+  border-left: 3px solid var(--fb-color, var(--accent));
+  border-radius: 8px;
+  padding: 12px 14px;
+  transition: border-color 0.25s ease, box-shadow 0.25s ease, transform 0.25s ease;
+}
+.lab-fb-card:hover {
+  border-color: var(--fb-color, var(--accent));
+  box-shadow: 0 0 0 1px var(--fb-color, var(--accent)), 0 6px 24px -10px var(--fb-color, var(--accent));
+  transform: translateY(-1px);
+}
+
+.lab-fb-icon {
+  display: inline-grid;
+  place-items: center;
+  width: 30px;
+  height: 30px;
+  border-radius: 50%;
+  font-size: 16px;
+  flex-shrink: 0;
+}
+
+.lab-fb-block {
+  margin-top: 8px;
+  padding: 8px 10px;
+  background: rgba(15, 23, 42, 0.45);
+  border: 1px solid var(--border-soft);
+  border-radius: 6px;
+}
+.lab-fb-block-head {
+  font-size: 9.5px;
+  letter-spacing: 1.5px;
+  color: var(--text-dim);
+  margin-bottom: 4px;
+  font-family: var(--font-mono, monospace);
+}
+
+/* Timeline de replay */
+.lab-timeline {
+  padding: 14px;
+  background: linear-gradient(180deg, rgba(168, 85, 247, 0.05), transparent);
+  border: 1px solid rgba(168, 85, 247, 0.18);
+  border-radius: 10px;
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+  position: relative;
+}
+.lab-timeline::before {
+  content: "";
+  position: absolute;
+  left: 24px;
+  top: 56px;
+  bottom: 18px;
+  width: 1px;
+  background: linear-gradient(180deg, rgba(168, 85, 247, 0.45), rgba(168, 85, 247, 0.05));
+  z-index: 0;
+}
+
+.lab-stage {
+  display: flex;
+  gap: 12px;
+  align-items: flex-start;
+  position: relative;
+  z-index: 1;
+}
+.lab-stage-dot {
+  width: 14px;
+  height: 14px;
+  border-radius: 50%;
+  margin-top: 4px;
+  flex-shrink: 0;
+  box-shadow: 0 0 0 3px var(--bg);
+  background: #64748b;
+}
+.lab-stage-dot.ok   { background: #10b981; box-shadow: 0 0 0 3px var(--bg), 0 0 12px rgba(16, 185, 129, 0.6); }
+.lab-stage-dot.warn { background: #f59e0b; box-shadow: 0 0 0 3px var(--bg), 0 0 12px rgba(245, 158, 11, 0.6); animation: lab-pulse 2s ease-in-out infinite; }
+.lab-stage-dot.info { background: #22d3ee; box-shadow: 0 0 0 3px var(--bg), 0 0 12px rgba(34, 211, 238, 0.6); }
+
+@keyframes lab-pulse {
+  0%, 100% { transform: scale(1);    opacity: 1; }
+  50%      { transform: scale(1.18); opacity: 0.75; }
+}
+
+.lab-stage-title {
+  font-size: 12px;
+  font-weight: 700;
+  letter-spacing: 1.5px;
+  color: var(--text);
+  font-family: var(--font-mono, monospace);
+}
+.lab-stage-meta {
+  font-size: 11.5px;
+  color: var(--text-soft);
+  margin-top: 2px;
+  line-height: 1.5;
+}
+

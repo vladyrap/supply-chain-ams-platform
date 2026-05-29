@@ -34,6 +34,7 @@ const MODULE_TO_SCREEN: Record<string, PlatformScreen> = {
 
   // AMS avanzado
   "support-desk":   "servicios",
+  "agent-lab":      "servicios",
   "voice-calls":    "canal_telefonico",
   knowledge:        "conocimiento_rag",
   tickets:          "servicios",
