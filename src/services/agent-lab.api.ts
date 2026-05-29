@@ -130,3 +130,149 @@ export async function fetchConversationTrace(id: string): Promise<
     return { ok: false, error: err instanceof Error ? err.message : "error de red" };
   }
 }
+
+// ============================================================================
+// WIZARD ticket → KB
+// ============================================================================
+export interface ConvertibleTicket {
+  id: string;
+  code: string;
+  title: string;
+  summary: string;
+  status: string;
+  priority: string;
+  conversation_id: string | null;
+  resolved_at: string | null;
+  has_kb: boolean;
+  client: string | null;
+  sap_module: string | null;
+}
+
+export interface KbDraft {
+  title: string;
+  problem: string;
+  solution: string;
+  category: string | null;
+  system: string | null;
+  tags: string[];
+  sourceSummary: string;
+}
+
+export interface DraftResult {
+  draft: KbDraft;
+  ticket: {
+    id: string; code: string; title: string; summary: string; client: string | null;
+    sap_module: string | null; priority: string;
+  };
+  conversationMessages: number;
+  model: string;
+  latencyMs: number;
+  tokens: { prompt: number; completion: number; total: number };
+}
+
+export async function fetchConvertibleTickets(): Promise<
+  { ok: true; tickets: ConvertibleTicket[] } | { ok: false; error: string }
+> {
+  try {
+    const res = await fetch(`${API_BASE}/api/agent-lab/wizard/tickets`, { cache: "no-store", credentials: "include" });
+    const data = (await res.json().catch(() => null)) as { success: boolean; tickets?: ConvertibleTicket[]; error?: string } | null;
+    if (!data || !data.success || !data.tickets) return { ok: false, error: data?.error || `HTTP ${res.status}` };
+    return { ok: true, tickets: data.tickets };
+  } catch (err) {
+    return { ok: false, error: err instanceof Error ? err.message : "error de red" };
+  }
+}
+
+export async function generateWizardDraft(ticketId: string): Promise<
+  { ok: true; result: DraftResult } | { ok: false; error: string }
+> {
+  try {
+    const res = await fetch(`${API_BASE}/api/agent-lab/wizard/draft/${ticketId}`, {
+      method: "POST", credentials: "include",
+    });
+    const data = (await res.json().catch(() => null)) as { success: boolean; error?: string } & Partial<DraftResult> | null;
+    if (!data || !data.success || !data.draft) return { ok: false, error: data?.error || `HTTP ${res.status}` };
+    return {
+      ok: true,
+      result: {
+        draft: data.draft,
+        ticket: data.ticket!,
+        conversationMessages: data.conversationMessages ?? 0,
+        model: data.model ?? "gemini-2.5-flash",
+        latencyMs: data.latencyMs ?? 0,
+        tokens: data.tokens ?? { prompt: 0, completion: 0, total: 0 },
+      },
+    };
+  } catch (err) {
+    return { ok: false, error: err instanceof Error ? err.message : "error de red" };
+  }
+}
+
+export interface WizardCommitInput {
+  ticketId?: string;
+  title: string;
+  problem: string;
+  solution: string;
+  category?: string | null;
+  system?: string | null;
+  tags?: string[];
+}
+
+export async function commitWizardArticle(input: WizardCommitInput): Promise<
+  { ok: true; article: { id: string; title: string; status: string } } | { ok: false; error: string }
+> {
+  try {
+    const res = await fetch(`${API_BASE}/api/agent-lab/wizard/commit`, {
+      method: "POST", credentials: "include",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(input),
+    });
+    const data = (await res.json().catch(() => null)) as { success: boolean; article?: { id: string; title: string; status: string }; error?: string } | null;
+    if (!data || !data.success || !data.article) return { ok: false, error: data?.error || `HTTP ${res.status}` };
+    return { ok: true, article: data.article };
+  } catch (err) {
+    return { ok: false, error: err instanceof Error ? err.message : "error de red" };
+  }
+}
+
+// ============================================================================
+// PLAYGROUND
+// ============================================================================
+export interface PlaygroundRunInput {
+  systemPrompt: string;
+  query: string;
+  temperature?: number;
+  maxOutputTokens?: number;
+}
+
+export interface PlaygroundRunResult {
+  text: string;
+  model: string;
+  latencyMs: number;
+  tokens: { prompt: number; completion: number; total: number };
+}
+
+export async function runPlaygroundQuery(input: PlaygroundRunInput): Promise<
+  { ok: true; result: PlaygroundRunResult } | { ok: false; error: string }
+> {
+  try {
+    const res = await fetch(`${API_BASE}/api/agent-lab/playground/run`, {
+      method: "POST", credentials: "include",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(input),
+    });
+    const data = (await res.json().catch(() => null)) as { success: boolean; error?: string } & Partial<PlaygroundRunResult> | null;
+    if (!data || !data.success || typeof data.text !== "string") return { ok: false, error: data?.error || `HTTP ${res.status}` };
+    return {
+      ok: true,
+      result: {
+        text: data.text,
+        model: data.model ?? "gemini-2.5-flash",
+        latencyMs: data.latencyMs ?? 0,
+        tokens: data.tokens ?? { prompt: 0, completion: 0, total: 0 },
+      },
+    };
+  } catch (err) {
+    return { ok: false, error: err instanceof Error ? err.message : "error de red" };
+  }
+}
