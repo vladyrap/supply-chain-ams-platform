@@ -2438,6 +2438,111 @@ button { font-family: inherit; }
 .rag-score-bar { width: 80px; height: 4px; background: rgba(255, 255, 255, 0.08); border-radius: 2px; overflow: hidden; }
 .rag-score-fill { height: 100%; transition: width 0.4s ease; }
 
+/* =====================================================
+   KB CURADA — templates, stats, problem/solution blocks
+   ===================================================== */
+.kb-create-card { margin-bottom: 14px; padding: 14px !important; }
+
+.kb-templates {
+  display: grid; grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+  gap: 8px;
+}
+.kb-template {
+  text-align: left;
+  background: rgba(34, 211, 238, 0.05);
+  border: 1px solid rgba(34, 211, 238, 0.20);
+  border-radius: 6px;
+  padding: 10px 12px;
+  cursor: pointer; font-family: inherit;
+  color: var(--text); transition: all .15s;
+}
+.kb-template:hover {
+  background: rgba(34, 211, 238, 0.12);
+  border-color: var(--accent);
+  transform: translateY(-1px);
+}
+
+/* Module tag color block en lugar de avatar */
+.kb-module-tag {
+  display: inline-flex; align-items: center; justify-content: center;
+  font-size: 11px; font-weight: 700;
+  letter-spacing: 0.5px;
+  padding: 6px 8px;
+  border-radius: 6px;
+  min-width: 56px;
+  flex-shrink: 0;
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.3);
+  font-family: var(--font-mono, monospace);
+}
+
+.kb-row {
+  align-items: center !important;
+}
+
+/* Stats grid en el detail */
+.kb-stats-grid {
+  display: grid; grid-template-columns: repeat(4, 1fr); gap: 6px;
+}
+.kb-stat {
+  text-align: center;
+  padding: 10px 6px;
+  background: rgba(255, 255, 255, 0.02);
+  border: 1px solid rgba(255, 255, 255, 0.05);
+  border-radius: 6px;
+}
+.kb-stat-val {
+  font-size: 22px; font-weight: 700; line-height: 1.1;
+  font-variant-numeric: tabular-nums;
+}
+.kb-stat-lbl {
+  font-size: 9px; letter-spacing: 1.2px; color: var(--text-dim);
+  text-transform: uppercase; margin-top: 4px;
+}
+
+/* Problem / Solution blocks */
+.kb-block {
+  border-radius: 8px; padding: 14px;
+  border: 1px solid;
+}
+.kb-block-problem {
+  background: rgba(239, 68, 68, 0.05);
+  border-color: rgba(239, 68, 68, 0.25);
+  border-left: 3px solid #ef4444;
+}
+.kb-block-solution {
+  background: rgba(16, 185, 129, 0.05);
+  border-color: rgba(16, 185, 129, 0.25);
+  border-left: 3px solid #10b981;
+}
+.kb-block-solution :global(p)   { margin: 6px 0; }
+.kb-block-solution :global(ol),
+.kb-block-solution :global(ul)  { margin: 6px 0; padding-left: 22px; }
+.kb-block-solution :global(li)  { margin: 2px 0; }
+.kb-block-solution :global(code) {
+  background: rgba(34, 211, 238, 0.10);
+  color: #67e8f9;
+  padding: 1px 6px; border-radius: 3px;
+  font-size: 12px;
+}
+
+.kb-test-link {
+  display: inline-flex; align-items: center; gap: 6px;
+  align-self: flex-start;
+  padding: 7px 14px;
+  background: linear-gradient(135deg, rgba(168, 85, 247, 0.12), rgba(34, 211, 238, 0.12));
+  border: 1px dashed rgba(168, 85, 247, 0.4);
+  color: #c084fc;
+  border-radius: 8px;
+  font-size: 12px;
+  text-decoration: none;
+  transition: all .15s;
+}
+.kb-test-link:hover {
+  background: linear-gradient(135deg, rgba(168, 85, 247, 0.20), rgba(34, 211, 238, 0.20));
+  border-style: solid;
+  transform: translateX(3px);
+}
+
 .row { display: flex; gap: 10px; align-items: center; }
 .col { display: flex; flex-direction: column; gap: 10px; }
 .between { justify-content: space-between; }
