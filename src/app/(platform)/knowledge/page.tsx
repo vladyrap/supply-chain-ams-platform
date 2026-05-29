@@ -136,7 +136,10 @@ export default function KnowledgePage() {
               <span>{t.label}</span>
             </button>
           ))}
-          <Link href="/knowledge/graph" className="btn ghost" style={{ marginLeft: "auto", padding: "5px 12px", fontSize: 12 }}>
+          <Link href="/knowledge/training" className="btn primary" style={{ marginLeft: "auto", padding: "5px 12px", fontSize: 12 }}>
+            🎓 Entrenamiento IA
+          </Link>
+          <Link href="/knowledge/graph" className="btn ghost" style={{ padding: "5px 12px", fontSize: 12 }}>
             🌳 Knowledge Graph
           </Link>
           <button onClick={refresh} className="btn ghost" disabled={loading} style={{ padding: "5px 12px", fontSize: 12 }}>

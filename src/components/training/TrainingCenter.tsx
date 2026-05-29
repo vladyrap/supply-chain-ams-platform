@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import Link from "next/link";
 import { useAgentTraining } from "@/hooks/useAgentTraining";
 import TrainingSummary from "./TrainingSummary";
 import KnowledgeUpload from "./KnowledgeUpload";
@@ -53,7 +54,11 @@ export default function TrainingCenter({ currentUserName }: Props) {
         <div className="sd-hero-grid" />
         <div className="row between" style={{ flexWrap: "wrap", gap: 14, alignItems: "center", position: "relative", zIndex: 2 }}>
           <div>
-            <div style={{ fontSize: 11, letterSpacing: 3, color: "var(--text-dim)" }}>AGENT · TRAINING · OPERATIONS</div>
+            <div style={{ fontSize: 11, letterSpacing: 2, color: "var(--text-dim)", display: "flex", gap: 6, alignItems: "center" }}>
+              <Link href="/knowledge" style={{ color: "var(--text-dim)", textDecoration: "none" }}>📚 Conocimiento</Link>
+              <span style={{ opacity: 0.55 }}>›</span>
+              <span style={{ color: "var(--accent)" }}>AGENT · TRAINING · OPERATIONS</span>
+            </div>
             <h1 style={{ margin: "2px 0 0", fontSize: 24, letterSpacing: 0.5 }}>🎓 Centro de Entrenamiento del Agente</h1>
             <p style={{ margin: "4px 0 0", color: "var(--text-soft)", fontSize: 12.5 }}>
               Carga, valida, versiona y mejora el conocimiento del Agente AMS Supply Chain.

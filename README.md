@@ -331,7 +331,7 @@ Resumen: el modelo (`types/rbac.ts`) y la lógica (`utils/rbac.ts`) están desac
 
 ## 🎓 Centro de Entrenamiento del Agente
 
-**Qué es** — un módulo premium para que un líder AMS, consultor senior o admin pueda gobernar el conocimiento del Agente AMS Supply Chain sin escribir código. Ruta: **`/training`** (menú lateral: *Entrenamiento IA*).
+**Qué es** — un módulo premium para que un líder AMS, consultor senior o admin pueda gobernar el conocimiento del Agente AMS Supply Chain sin escribir código. Vive bajo **Conocimiento**: ruta **`/knowledge/training`**, accesible desde el botón **🎓 Entrenamiento IA** del header de Conocimiento.
 
 **Qué permite hacer**
 

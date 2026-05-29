@@ -13,7 +13,7 @@ Módulo de gobernanza del conocimiento del Agente AMS Supply Chain. Permite a l�
    Pegado rápido  │                          │
    Plantillas     │   Centro de              │
    Formulario  ──►│   Entrenamiento del      │── publica ──► Agente AMS (RAG futuro)
-   Upload PDF     │   Agente (/training)     │
+   Upload PDF     │   Agente                 │
    Wizard ticket→│                          │
                   └──────────┬───────────────┘
                              │
@@ -38,7 +38,7 @@ Capas:
 | Scoring/match  | Búsqueda léxica, recompute de score, generador Q&A determinístico               | `src/lib/training/scoring.ts` |
 | Hook           | CRUD + persistencia + métricas derivadas + reset demo                           | `src/hooks/useAgentTraining.ts` |
 | UI             | 12 componentes en `src/components/training/`                                    | `TrainingCenter.tsx` orquesta los 9 tabs |
-| Ruta           | Gate RBAC y bootstrap                                                           | `src/app/(platform)/training/page.tsx` |
+| Ruta           | Gate RBAC y bootstrap. Vive bajo Conocimiento.                                  | `src/app/(platform)/knowledge/training/page.tsx` (URL: `/knowledge/training`) |
 
 ---
 
@@ -186,7 +186,7 @@ Pull automático de incidentes recurrentes para detectar brechas y proponer íte
 ## 10. Cómo probar manualmente
 
 1. Iniciar sesión como `admin@demo.cl` (rol ADMIN) o `lider@demo.cl` (SERVICE_LEAD).
-2. Sidebar → **Entrenamiento IA**.
+2. Sidebar → **Conocimiento** → botón **🎓 Entrenamiento IA** en el header (o navegar directo a `/knowledge/training`).
 3. Tab *Cargar conocimiento* → escribí un título y contenido → "Enviar a revisión".
 4. Tab *Validación* → aprobá funcional y técnica.
 5. Tab *Base de conocimiento* → click en 🚀 para publicar.

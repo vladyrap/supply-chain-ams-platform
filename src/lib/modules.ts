@@ -268,7 +268,7 @@ export const MODULES: ModuleDef[] = [
     id: "agent-training",
     label: "Entrenamiento IA",
     icon: "🎓",
-    href: "/training",
+    href: "/knowledge/training",
     description: "Centro de Entrenamiento del Agente: carga, valida, versiona y mejora el conocimiento del Agente AMS Supply Chain. Pipeline completo + simulador + brechas + Q&A",
     status: "available",
     phase: 7,
