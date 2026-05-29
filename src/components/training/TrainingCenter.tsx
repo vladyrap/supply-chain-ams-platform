@@ -12,8 +12,9 @@ import AgentSimulator from "./AgentSimulator";
 import TrainingVersions from "./TrainingVersions";
 import KnowledgeGaps from "./KnowledgeGaps";
 import TrainingSettingsPanel from "./TrainingSettingsPanel";
+import LearningDashboard from "./LearningDashboard";
 
-type Tab = "summary" | "upload" | "base" | "qa" | "validation" | "simulator" | "versions" | "gaps" | "settings";
+type Tab = "summary" | "upload" | "base" | "qa" | "validation" | "simulator" | "versions" | "gaps" | "learning" | "settings";
 
 const TABS: { id: Tab; label: string; icon: string }[] = [
   { id: "summary",    label: "Resumen",            icon: "📊" },
@@ -22,6 +23,7 @@ const TABS: { id: Tab; label: string; icon: string }[] = [
   { id: "qa",         label: "Generador Q&A",       icon: "🪄" },
   { id: "validation", label: "Validación",          icon: "✓" },
   { id: "simulator",  label: "Simulador",           icon: "🧪" },
+  { id: "learning",   label: "Aprendizaje",        icon: "🧠" },
   { id: "versions",   label: "Versiones",           icon: "🏷" },
   { id: "gaps",       label: "Brechas",             icon: "🚧" },
   { id: "settings",   label: "Configuración",       icon: "⚙" },
@@ -101,6 +103,7 @@ export default function TrainingCenter({ currentUserName }: Props) {
       {tab === "qa"         && <QAGenerator ctx={ctx} focusItemId={focusItemId} />}
       {tab === "validation" && <ValidationQueue ctx={ctx} currentUserName={currentUserName} />}
       {tab === "simulator"  && <AgentSimulator ctx={ctx} presetItemId={focusItemId} />}
+      {tab === "learning"   && <LearningDashboard ctx={ctx} />}
       {tab === "versions"   && <TrainingVersions ctx={ctx} currentUserName={currentUserName} />}
       {tab === "gaps"       && <KnowledgeGaps ctx={ctx} />}
       {tab === "settings"   && <TrainingSettingsPanel ctx={ctx} />}

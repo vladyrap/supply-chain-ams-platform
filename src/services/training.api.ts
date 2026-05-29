@@ -357,3 +357,66 @@ export async function apiRunGapDetection(daysBack = 14): Promise<{ ok: true; rep
   if (!r.ok) return r;
   return { ok: true, report: r.data.report };
 }
+
+// ============================================================================
+// QA EVAL — regression tests del agente contra Q&A aprobadas
+// ============================================================================
+export interface EvalSingleResult {
+  qaId: string;
+  itemId: string | null;
+  question: string;
+  expected: string;
+  actual: string;
+  score: number;
+  verdict: "pass" | "partial" | "fail";
+  notes: string;
+  latencyMs: number;
+}
+
+export interface EvalRunReport {
+  runId: string;
+  totalQas: number;
+  passed: number;
+  failed: number;
+  partial: number;
+  avgScore: number;
+  promptLabel: string | null;
+  durationMs: number;
+  results: EvalSingleResult[];
+}
+
+export interface EvalRunSummary {
+  id: string;
+  triggered_by: string;
+  total_qas: number;
+  passed: number;
+  failed: number;
+  avg_score: number;
+  prompt_label: string | null;
+  started_at: string;
+  finished_at: string | null;
+}
+
+export interface EvalRunDetail extends EvalRunSummary {
+  results: EvalSingleResult[];
+}
+
+export async function apiRunQaEval(limit = 20): Promise<{ ok: true; report: EvalRunReport } | { ok: false; error: string }> {
+  const r = await call<{ report: EvalRunReport }>("/api/training/eval/run", {
+    method: "POST", body: JSON.stringify({ limit }),
+  });
+  if (!r.ok) return r;
+  return { ok: true, report: r.data.report };
+}
+
+export async function apiListEvalRuns(): Promise<{ ok: true; runs: EvalRunSummary[] } | { ok: false; error: string }> {
+  const r = await call<{ runs: EvalRunSummary[] }>("/api/training/eval/runs");
+  if (!r.ok) return r;
+  return { ok: true, runs: r.data.runs };
+}
+
+export async function apiGetEvalRunDetail(id: string): Promise<{ ok: true; run: EvalRunDetail } | { ok: false; error: string }> {
+  const r = await call<{ run: EvalRunDetail }>(`/api/training/eval/runs/${id}`);
+  if (!r.ok) return r;
+  return { ok: true, run: r.data.run };
+}
