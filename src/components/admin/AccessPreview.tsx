@@ -18,6 +18,7 @@ const SERVICE_FEATURES: Record<string, string[]> = {
   STANDARD:   [
     "Chat con agente", "Dashboard simple", "Reuniones AMS", "Mesa de soporte",
     "Convertir incidente en conocimiento — wizard de captura",
+    "Escalamiento Nivel 2 — bandeja + matriz responsables (canal manual)",
   ],
   PREMIUM:    [
     "Chat con agente", "Dashboard simple", "Reuniones AMS", "Mesa de soporte",
@@ -26,6 +27,7 @@ const SERVICE_FEATURES: Record<string, string[]> = {
     "Playbooks AMS — biblioteca de procedimientos operativos + checklist",
     "Document Factory — RCA, minutas, specs, manuales, hypercare",
     "Modo Demo Cliente — escenarios guiados para presentar la plataforma",
+    "Escalamiento Nivel 2 — Jira/ServiceNow demo + reglas + SLA + payloads visibles",
   ],
   ENTERPRISE: [
     "Todo Premium",
@@ -35,6 +37,7 @@ const SERVICE_FEATURES: Record<string, string[]> = {
     "Quality Evaluator — evaluación humana de calidad + detección de alucinaciones",
     "Gobierno de IA — roles, permisos, auditoría y versionado del agente",
     "Madurez del agente — score, drift detection, embeddings semánticos",
+    "Escalamiento Nivel 2 REAL — backend con credenciales Jira/ServiceNow + aprobación dual + SAP Cloud ALM (futuro)",
     "Soporte SLA dedicado",
   ],
 };

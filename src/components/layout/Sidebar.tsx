@@ -121,7 +121,7 @@ export default function Sidebar() {
       <nav className="nav" aria-label="Módulos">
         {renderSection("Operación", ["mission-control", "topology", "tv", "demo", "dashboard", "agent", "history"])}
         {renderSection("Visualizaciones", ["launchpad", "wallboard", "war-room", "brain", "terminal", "hud", "forecast", "flow"])}
-        {renderSection("AMS avanzado", ["support-desk", "agent-lab", "voice-calls", "knowledge", "playbooks", "document-factory", "quality-evaluator", "tickets", "integrations", "sap-readonly", "meetings"])}
+        {renderSection("AMS avanzado", ["support-desk", "agent-lab", "voice-calls", "knowledge", "playbooks", "document-factory", "quality-evaluator", "escalation-n2", "tickets", "integrations", "sap-readonly", "meetings"])}
         {renderSection("Sistema", ["executive", "settings", "admin"])}
       </nav>
 

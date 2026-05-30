@@ -39,6 +39,7 @@ const MODULE_TO_SCREEN: Record<string, PlatformScreen> = {
   "playbooks":      "playbooks_ams",
   "document-factory":"document_factory",
   "quality-evaluator":"quality_evaluator",
+  "escalation-n2":  "escalamiento_n2",
   "voice-calls":    "canal_telefonico",
   knowledge:        "conocimiento_rag",
   tickets:          "servicios",

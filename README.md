@@ -365,7 +365,7 @@ Los roles ya guardados en `localStorage` se migran automáticamente: las pantall
 
 ## 🏭 Módulos AMS Enterprise (Fase 7+)
 
-Cinco capacidades premium que convierten la plataforma en una solución AMS real:
+Seis capacidades premium que convierten la plataforma en una solución AMS real:
 
 | Módulo | Ruta | Descripción |
 |---|---|---|
@@ -373,6 +373,7 @@ Cinco capacidades premium que convierten la plataforma en una solución AMS real
 | **📕 Playbooks AMS** | `/playbooks` | Biblioteca de 10 procedimientos operativos ejecutables como checklist con evidencia |
 | **🏭 Document Factory** | `/document-factory` | Generador de 14 tipos de documentos AMS (RCA, minutas, specs, manuales, hypercare, cutover...) con export Markdown |
 | **🏅 Quality Evaluator** | `/quality-evaluator` | Evaluación humana de cada respuesta del agente: precisión, utilidad, claridad, riesgo de alucinación + dashboard |
+| **🚨 Escalamiento Nivel 2** | `/escalation-n2` | Motor de derivación a N2: reglas + matriz responsables + payloads Jira/ServiceNow + SLA + aprobación humana |
 | **🎬 Modo Demo Cliente** | botón global en Header | 5 escenarios guiados (AMS Supply Chain, Ejecutivo, Entrenamiento IA, Gobierno IA, Documentación) con tour paso a paso |
 
 Cada módulo tiene su screen RBAC propia y documentación dedicada:
@@ -380,13 +381,14 @@ Cada módulo tiene su screen RBAC propia y documentación dedicada:
 - [`docs/playbooks-ams.md`](docs/playbooks-ams.md)
 - [`docs/document-factory.md`](docs/document-factory.md)
 - [`docs/quality-evaluator.md`](docs/quality-evaluator.md)
+- [`docs/escalation-n2.md`](docs/escalation-n2.md)
 - [`docs/demo-mode.md`](docs/demo-mode.md)
 
 ### Niveles de servicio actualizados
 
-- **STANDARD** ahora incluye *Convertir incidente en conocimiento*
-- **PREMIUM** suma *Playbooks AMS + Document Factory + Modo Demo Cliente*
-- **ENTERPRISE** agrega *Quality Evaluator + Gobierno de IA + Madurez del agente*
+- **STANDARD** incluye *Convertir incidente en conocimiento* + *Escalamiento Nivel 2 (canal manual)*
+- **PREMIUM** suma *Playbooks AMS + Document Factory + Modo Demo Cliente* + *Escalamiento N2 con Jira/ServiceNow demo*
+- **ENTERPRISE** agrega *Quality Evaluator + Gobierno de IA + Madurez del agente* + *Escalamiento N2 con backend real Jira/ServiceNow + SAP Cloud ALM*
 
 ## 📜 Licencia
 

@@ -304,6 +304,16 @@ export const MODULES: ModuleDef[] = [
     phase: 7,
     rolesAllowed: ["consultor", "aprobador", "admin"],
   },
+  {
+    id: "escalation-n2",
+    label: "Escalamiento N2",
+    icon: "🚨",
+    href: "/escalation-n2",
+    description: "Centro de Escalamiento Nivel 2: deriva incidentes críticos al especialista correcto, con trazabilidad, SLA y preparación para Jira o ServiceNow",
+    status: "available",
+    phase: 7,
+    rolesAllowed: ["viewer", "consultor", "aprobador", "admin"],
+  },
 ];
 
 export function moduleById(id: string): ModuleDef | undefined {

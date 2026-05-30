@@ -74,6 +74,7 @@ export function buildDefaultRoles(): PlatformRole[] {
         playbooks_ams:    fullPerm(),
         document_factory: fullPerm(),
         quality_evaluator:fullPerm(),
+        escalamiento_n2:  fullPerm(),
       }),
     },
     {
@@ -103,6 +104,8 @@ export function buildDefaultRoles(): PlatformRole[] {
         playbooks_ams:    { ...viewCreateEdit(), export: true, approve: true },
         document_factory: { ...viewCreateEdit(), export: true, approve: true },
         quality_evaluator:{ ...viewCreateEdit(), export: true, approve: true },
+        // SERVICE_LEAD: view + create + edit + export + configure + approve sobre escalamiento
+        escalamiento_n2:  { ...viewCreateEdit(), export: true, configure: true, approve: true },
       }),
     },
     {
@@ -132,6 +135,8 @@ export function buildDefaultRoles(): PlatformRole[] {
         playbooks_ams:    { ...viewCreateEdit(), export: true },
         document_factory: { ...viewCreateEdit(), export: true },
         quality_evaluator:viewCreateEdit(),
+        // AMS_CONSULTANT: view + create + edit + export sobre escalamiento (sin configure ni approve)
+        escalamiento_n2:  { ...viewCreateEdit(), export: true },
       }),
     },
     {
@@ -160,6 +165,8 @@ export function buildDefaultRoles(): PlatformRole[] {
         playbooks_ams:    viewOnly(),     // CLIENT_USER puede ver playbooks (gate por nivel servicio en UI)
         document_factory: viewOnly(),     // idem (gate por ENTERPRISE en UI)
         quality_evaluator:noPerm(),
+        // CLIENT_USER ve sus propios casos escalados (filtro en UI por cliente). Sin configurar.
+        escalamiento_n2:  viewOnly(),
       }),
     },
     {

@@ -17,6 +17,7 @@ import { usePlaybooks } from "@/hooks/usePlaybooks";
 import { useDocumentFactory } from "@/hooks/useDocumentFactory";
 import { useQualityEvaluator } from "@/hooks/useQualityEvaluator";
 import { useAgentTraining } from "@/hooks/useAgentTraining";
+import { useEscalation } from "@/hooks/useEscalation";
 
 const MODULE_COLORS: Record<string, string> = {
   MM: "#5b8def", SD: "#c780f0", PP: "#4dd0c5", WM: "#f0b66c",
@@ -60,6 +61,7 @@ export default function DashboardPage() {
   const df = useDocumentFactory();
   const qe = useQualityEvaluator();
   const tr = useAgentTraining();
+  const es = useEscalation();
 
   const amsKnowledgeFromIncidents = tr.knowledge.filter((k) =>
     k.source?.toLowerCase().includes("incidente") || k.tags?.includes("from-incident")
@@ -123,6 +125,19 @@ export default function DashboardPage() {
         <KPI label="Brechas abiertas"              value={amsOpenGaps}             accent={amsOpenGaps > 5 ? "warn" : "info"} />
         <KPI label="Versiones publicadas"          value={amsPublishedVersions}    accent="ok" />
         <KPI label="Módulos con cobertura"         value={amsScopeItemsCoverage}   accent="tech" />
+      </div>
+
+      {/* KPIs Escalamiento N2 */}
+      <div style={{ marginBottom: 8, fontSize: 11, letterSpacing: 2, color: "var(--text-dim)", fontFamily: "var(--font-mono, monospace)" }}>
+        ▸ AMS · ESCALAMIENTO NIVEL 2
+      </div>
+      <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(170px, 1fr))", gap: 12, marginBottom: 18 }}>
+        <KPI label="Casos escalados N2"             value={es.metrics.total}                                accent="info" />
+        <KPI label="Pendientes aprobación"          value={es.metrics.pendingApproval}                      accent={es.metrics.pendingApproval > 0 ? "warn" : "ok"} />
+        <KPI label="Activos en N2"                  value={es.metrics.assignedActive}                       accent="info" />
+        <KPI label="Tiempo a asignación"            value={es.metrics.avgTimeToAssignMinutes > 0 ? `${es.metrics.avgTimeToAssignMinutes}min` : "—"} accent="tech" />
+        <KPI label="Responsable más cargado"        value={es.metrics.topResponsible?.[0] || "—"}            accent="ok" hint={es.metrics.topResponsible ? `${es.metrics.topResponsible[1]} casos` : ""} />
+        <KPI label="Canal más usado"                value={Object.entries(es.metrics.byChannel).sort((a, b) => b[1] - a[1])[0]?.[0] || "—"} accent="tech" />
       </div>
 
       {/* Heatmap actividad */}

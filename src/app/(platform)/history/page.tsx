@@ -5,6 +5,8 @@ import Badge from "@/components/ui/Badge";
 import MarkdownView from "@/components/agent/MarkdownView";
 import { listIncidents, getIncident, type IncidentSummary, type IncidentDetail } from "@/services/agent.api";
 import KnowledgeQuickActions from "@/components/knowledge/KnowledgeQuickActions";
+import EscalationQuickAction from "@/components/escalation/EscalationQuickAction";
+import { useAuth } from "@/context/AuthContext";
 import type { SapModule, Environment } from "@/types";
 
 const SAP_MODULES: ("ALL" | SapModule)[] = [
@@ -25,6 +27,7 @@ function fmt(ts: string) {
 }
 
 export default function HistoryPage() {
+  const { user: authUser } = useAuth();
   const [filterModule, setFilterModule] = useState<("ALL" | SapModule)>("ALL");
   const [filterEnv, setFilterEnv] = useState<("ALL" | Environment)>("ALL");
   const [filterClient, setFilterClient] = useState("");
@@ -205,7 +208,15 @@ export default function HistoryPage() {
                   <Badge variant="muted">{detail.environment ?? "—"}</Badge>
                   {detail.client_name && <Badge variant="muted">{detail.client_name}</Badge>}
                 </div>
-                <KnowledgeQuickActions incident={detail} variant="full" />
+                <div className="row" style={{ gap: 8, flexWrap: "wrap" }}>
+                  <EscalationQuickAction
+                    incident={detail}
+                    actingUserId={authUser?.id || "anonymous"}
+                    canApprove={authUser?.role === "admin" || authUser?.role === "aprobador"}
+                    variant="full"
+                  />
+                  <KnowledgeQuickActions incident={detail} variant="full" />
+                </div>
               </div>
               <div className="row" style={{ gap: 8, flexWrap: "wrap", display: "none" }}>
                 <Badge variant="info">{detail.sap_module ?? "—"}</Badge>
