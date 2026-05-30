@@ -9,11 +9,13 @@ import {
   apiAutoGenerateQas, apiLoadExpandedCorpus, apiRunSelfTraining,
   apiGetSelfTrainingConfig, apiUpdateSelfTrainingConfig, apiGetSelfTrainingHistory,
   apiBackfillEmbeddings, apiGetEvalTimeline, apiDetectFeedbackPatterns,
+  apiGetHallucinationReport, apiGetBorderlineQAs,
   type EvalRunReport, type EvalRunSummary, type EvalRunDetail,
   type AbTestReport, type RunDiffReport, type TicketToQaReport,
   type SelfTrainingReport, type CorpusLoadResult, type AutoQaReport,
   type SelfTrainingCronConfig, type TimelineResponse,
   type FeedbackPatternReport, type EmbeddingsBackfillReport,
+  type HallucinationReport, type BorderlineQA,
 } from "@/services/training.api";
 
 interface Props { ctx: UseAgentTraining }
@@ -86,10 +88,25 @@ export default function LearningDashboard({ ctx }: Props) {
   const [patternsLoading, setPatternsLoading] = useState(false);
   const [patternsReport, setPatternsReport] = useState<FeedbackPatternReport | null>(null);
 
+  // Hallucination
+  const [hallucination, setHallucination] = useState<HallucinationReport | null>(null);
+
+  // Borderline Q&A (active learning)
+  const [borderline, setBorderline] = useState<BorderlineQA[]>([]);
+  const [borderlineLoading, setBorderlineLoading] = useState(false);
+
   useEffect(() => {
     apiGetSelfTrainingConfig().then((r) => { if (r.ok) setCron(r.config); });
     apiGetEvalTimeline(30, 10).then((r) => { if (r.ok) setTimeline(r.data); });
+    apiGetHallucinationReport().then((r) => { if (r.ok) setHallucination(r.report); });
   }, []);
+
+  async function loadBorderline() {
+    setBorderlineLoading(true);
+    const r = await apiGetBorderlineQAs(20);
+    setBorderlineLoading(false);
+    if (r.ok) setBorderline(r.items);
+  }
 
   const refresh = useCallback(async () => {
     setLoading(true);
@@ -626,6 +643,120 @@ export default function LearningDashboard({ ctx }: Props) {
                 ))}
               </div>
             )}
+          </div>
+        )}
+      </div>
+
+      {/* ============================================================== */}
+      {/* HALLUCINATION DETECTION                                          */}
+      {/* ============================================================== */}
+      {hallucination && (
+        <div className="card" style={{
+          borderLeft: hallucination.avgRisk7d >= 50 ? "3px solid #ef4444"
+                    : hallucination.avgRisk7d >= 25 ? "3px solid #fbbf24"
+                    : "3px solid #10b981",
+        }}>
+          <div className="ticket-section-head">
+            <span style={{ color: hallucination.avgRisk7d >= 50 ? "#ef4444" : hallucination.avgRisk7d >= 25 ? "#fbbf24" : "#10b981" }}>
+              {hallucination.avgRisk7d >= 50 ? "🚨" : hallucination.avgRisk7d >= 25 ? "⚠" : "✓"}
+            </span> HALLUCINATION DETECTOR · transacciones SAP fuera del corpus
+          </div>
+          <p className="settings-section-desc">
+            Si el agente menciona transacciones SAP que NO están en el corpus de entrenamiento, las flag.
+            Custom Z* o Y* siempre suspechosas. Riesgo promedio 7d &lt;25% = sano; ≥50% = el agente inventa código.
+          </p>
+          <div className="tc-metric-grid" style={{ gridTemplateColumns: "repeat(auto-fit, minmax(150px, 1fr))" }}>
+            <div className="tc-metric" style={{ ["--tc-acc" as never]: "#ef4444" }}>
+              <div className="tc-metric-head"><span className="tc-metric-icon">🎯</span><span className="tc-metric-label">Risk score 7d</span></div>
+              <div className="tc-metric-value">{hallucination.avgRisk7d}</div>
+              <div className="tc-metric-foot">{hallucination.last7d} respuestas con flags</div>
+            </div>
+            <div className="tc-metric" style={{ ["--tc-acc" as never]: "#fbbf24" }}>
+              <div className="tc-metric-head"><span className="tc-metric-icon">🔍</span><span className="tc-metric-label">Total logueadas</span></div>
+              <div className="tc-metric-value">{hallucination.totalLogged}</div>
+              <div className="tc-metric-foot">histórico completo</div>
+            </div>
+            <div className="tc-metric" style={{ ["--tc-acc" as never]: "#c084fc" }}>
+              <div className="tc-metric-head"><span className="tc-metric-icon">⚡</span><span className="tc-metric-label">Top sospechosas</span></div>
+              <div className="tc-metric-value">{hallucination.topSuspicious.length}</div>
+              <div className="tc-metric-foot">distintas TX flageadas</div>
+            </div>
+          </div>
+          {hallucination.topSuspicious.length > 0 && (
+            <div className="lab-fb-block" style={{ marginTop: 10 }}>
+              <div className="lab-fb-block-head">▸ TOP 10 TRANSACCIONES SOSPECHOSAS (30d)</div>
+              <div className="row" style={{ gap: 6, flexWrap: "wrap" }}>
+                {hallucination.topSuspicious.map((t) => (
+                  <span key={t.tx} className="kanban-tag" style={{
+                    borderColor: "rgba(239,68,68,0.4)", color: "#fca5a5",
+                    background: "rgba(239,68,68,0.08)", fontFamily: "var(--font-mono, monospace)",
+                  }}>
+                    {t.tx} <b style={{ marginLeft: 4 }}>×{t.count}</b>
+                  </span>
+                ))}
+              </div>
+              <div style={{ fontSize: 10.5, color: "var(--text-dim)", marginTop: 6 }}>
+                Tip: si una TX legítima aparece flageada, agregala al corpus para que el detector la apruebe.
+              </div>
+            </div>
+          )}
+        </div>
+      )}
+
+      {/* ============================================================== */}
+      {/* ACTIVE LEARNING · Q&A borderline                                 */}
+      {/* ============================================================== */}
+      <div className="card" style={{ borderLeft: "3px solid #06b6d4" }}>
+        <div className="ticket-section-head">
+          <span style={{ color: "#22d3ee" }}>🎯</span> ACTIVE LEARNING · Q&amp;A borderline (score 40-69)
+        </div>
+        <p className="settings-section-desc">
+          Las Q&amp;A más valiosas para que el humano revise: las que el agente ni acierta ni falla claramente.
+          Una pequeña edición acá puede mover una "partial" a "pass" y mejorar el corpus entero.
+        </p>
+        <button className="btn primary" onClick={loadBorderline} disabled={borderlineLoading}
+          style={{ background: "linear-gradient(135deg, #06b6d4, #0891b2)", borderColor: "#06b6d4" }}>
+          {borderlineLoading ? <><span className="spinner" /> buscando…</> : "🎯 Buscar Q&A borderline ahora"}
+        </button>
+
+        {borderline.length > 0 && (
+          <div className="col" style={{ gap: 8, marginTop: 10 }}>
+            <div style={{ fontSize: 11, color: "var(--text-dim)" }}>
+              {borderline.length} Q&amp;A en zona gris · ordenadas por cercanía al borde (50)
+            </div>
+            {borderline.slice(0, 10).map((q) => {
+              const color = q.avgScore >= 60 ? "#fbbf24" : q.avgScore >= 50 ? "#f59e0b" : "#ef4444";
+              return (
+                <div key={q.qaId} className="lab-fb-block" style={{ borderLeft: `3px solid ${color}` }}>
+                  <div className="row" style={{ gap: 8, alignItems: "center", marginBottom: 4, flexWrap: "wrap" }}>
+                    <span style={{ fontFamily: "var(--font-mono, monospace)", fontSize: 11, color, fontWeight: 700 }}>
+                      score {q.avgScore}/100
+                    </span>
+                    {q.module && (
+                      <span className="kanban-tag" style={{ borderColor: "rgba(34,211,238,0.4)", color: "#67e8f9", background: "rgba(34,211,238,0.08)" }}>
+                        {q.module}
+                      </span>
+                    )}
+                    <span className="tc-pill" style={{
+                      background: `${color}20`, border: `1px solid ${color}66`, color, fontSize: 10,
+                    }}>
+                      {q.latestVerdict}
+                    </span>
+                    <span style={{ marginLeft: "auto", fontSize: 10.5, color: "var(--text-dim)" }}>
+                      evaluada {q.evalCount}× · uncertainty {q.uncertainty}
+                    </span>
+                  </div>
+                  <div style={{ fontSize: 12.5, fontWeight: 600, marginBottom: 4 }}>
+                    {q.question.slice(0, 200)}
+                  </div>
+                  {q.latestNotes && (
+                    <div style={{ fontSize: 11, color: "var(--text-soft)", fontStyle: "italic" }}>
+                      📝 {q.latestNotes.slice(0, 200)}
+                    </div>
+                  )}
+                </div>
+              );
+            })}
           </div>
         )}
       </div>

@@ -723,3 +723,80 @@ export async function apiDetectFeedbackPatterns(daysBack = 14): Promise<
   if (!r.ok) return r;
   return { ok: true, report: r.data.report };
 }
+
+// ============================================================================
+// HALLUCINATION REPORT
+// ============================================================================
+export interface HallucinationReport {
+  totalLogged: number;
+  last7d: number;
+  avgRisk7d: number;
+  topSuspicious: { tx: string; count: number }[];
+  recentSamples: {
+    id: string; created_at: string;
+    suspicious: string[]; custom_z_y: string[];
+    risk_score: number; user_query: string | null;
+  }[];
+}
+
+export async function apiGetHallucinationReport(): Promise<{ ok: true; report: HallucinationReport } | { ok: false; error: string }> {
+  const r = await call<{ report: HallucinationReport }>("/api/training/hallucinations/report");
+  if (!r.ok) return r;
+  return { ok: true, report: r.data.report };
+}
+
+export async function apiGetHallucinationWhitelist(): Promise<{ ok: true; count: number; transactions: string[] } | { ok: false; error: string }> {
+  const r = await call<{ count: number; transactions: string[] }>("/api/training/hallucinations/whitelist");
+  if (!r.ok) return r;
+  return { ok: true, count: r.data.count, transactions: r.data.transactions };
+}
+
+// ============================================================================
+// BORDERLINE Q&A · active learning
+// ============================================================================
+export interface BorderlineQA {
+  qaId: string;
+  question: string;
+  expectedAnswer: string;
+  module: string | null;
+  itemTitle: string | null;
+  itemStatus: string | null;
+  latestScore: number;
+  latestVerdict: string;
+  latestNotes: string | null;
+  evalCount: number;
+  avgScore: number;
+  uncertainty: number;
+  approved: boolean;
+}
+
+export async function apiGetBorderlineQAs(limit = 20): Promise<
+  { ok: true; items: BorderlineQA[] } | { ok: false; error: string }
+> {
+  const r = await call<{ items: BorderlineQA[] }>(`/api/training/active/borderline?limit=${limit}`);
+  if (!r.ok) return r;
+  return { ok: true, items: r.data.items };
+}
+
+// ============================================================================
+// REASONING TRACE
+// ============================================================================
+export interface ReasoningTrace {
+  responseId: string;
+  userQuery: string | null;
+  module: string | null;
+  createdAt: string;
+  fewShotQas: { id: string; question: string; expected_answer: string; module: string | null }[];
+  fewShotItems: { id: string; title: string; module: string; status: string; score: number }[];
+  ragDocs: { id: string; title: string | null; source_file: string | null }[];
+  feedback: { kind: string; reason: string | null; created_at: string }[];
+  hallucination: { suspicious: string[]; custom_z_y: string[]; risk_score: number } | null;
+}
+
+export async function apiGetReasoningTrace(responseId: string): Promise<
+  { ok: true; trace: ReasoningTrace } | { ok: false; error: string }
+> {
+  const r = await call<{ trace: ReasoningTrace }>(`/api/training/reasoning/${responseId}`);
+  if (!r.ok) return r;
+  return { ok: true, trace: r.data.trace };
+}
