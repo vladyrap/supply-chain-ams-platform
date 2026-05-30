@@ -6,7 +6,7 @@ import { useSpeechRecognition } from "@/hooks/useSpeechRecognition";
 import { useSpeechSynthesis } from "@/hooks/useSpeechSynthesis";
 import { sendChat } from "@/services/agent.api";
 import { beep, blip } from "@/lib/sounds";
-import { shortenForTTS } from "@/lib/tts";
+import { shortenForTTS, cleanForTTS } from "@/lib/tts";
 import type { Environment } from "@/types";
 import { useMagnetic } from "@/hooks/useMagnetic";
 
@@ -80,7 +80,7 @@ export default function Jaimito({ client = "DEMO", environment = "DEV" }: Jaimit
     if (open && turns.length === 0) {
       const greeting = "¿Qué pasa pues weón? Soy Jaimito, dime qué buscai: te abro vistas, te respondo por voz, o le pregunto al agente AMS por ti.";
       setTurns([{ id: `g-${Date.now()}`, role: "agent", text: greeting, ts: Date.now() }]);
-      if (tts.isSupported) tts.speak(greeting);
+      if (tts.isSupported) tts.speak(cleanForTTS(greeting));
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [open]);
@@ -103,7 +103,7 @@ export default function Jaimito({ client = "DEMO", environment = "DEV" }: Jaimit
     if (nav && /(ir a|abr[ie]|muestra|mu[ée]strame|ll[eé]vame|navega a|ve a)/i.test(msg)) {
       const reply = nav.spoken;
       setTurns((t) => [...t, { id: uid(), role: "agent", text: reply, ts: Date.now(), nav: nav.href }]);
-      if (tts.isSupported) tts.speak(reply);
+      if (tts.isSupported) tts.speak(cleanForTTS(reply));
       beep();
       setTimeout(() => router.push(nav.href), 500);
       return;

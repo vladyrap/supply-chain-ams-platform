@@ -45,20 +45,50 @@ export function useSpeechSynthesis(): UseSpeechSynthesisResult {
         // Si el usuario ya tiene una voz local válida elegida, respetar.
         const currentVoice = all.find((v) => v.voiceURI === current);
         if (currentVoice && currentVoice.localService) return current;
-        // Prioridad: voces locales del SO en español (las remotas tipo "Google..."
-        // suelen dar `not-allowed` en algunos contextos de Chrome). Buscamos en
-        // este orden: local es-CL, local es-ES, cualquier local es-*, cualquier
-        // local, remota es-CL, remota es-ES, remota es-*, cualquiera.
-        const localEs   = all.filter((v) => v.localService && v.lang.toLowerCase().startsWith("es"));
-        const remoteEs  = all.filter((v) => !v.localService && v.lang.toLowerCase().startsWith("es"));
-        const anyLocal  = all.filter((v) => v.localService);
+        // Estrategia de prioridad:
+        //  1) Microsoft Online * Spanish neural (Windows 11+) — naturales
+        //  2) Microsoft local en es-* — bien pronunciadas
+        //  3) Apple (Mónica, Paulina) en local es-*
+        //  4) Cualquier local es-* (mejor que Google remota que lee signos literal)
+        //  5) Cualquier local
+        //  6) Remota es-* (Google) como último recurso
+        const isMicrosoft = (v: SpeechSynthesisVoice) => /microsoft/i.test(v.name);
+        const isAppleNice = (v: SpeechSynthesisVoice) =>
+          /m[oó]nica|paulina|jorge|juan|diego/i.test(v.name);
+        const isGoogle    = (v: SpeechSynthesisVoice) => /google/i.test(v.name);
+        const esCL  = (v: SpeechSynthesisVoice) => v.lang.toLowerCase() === DEFAULT_VOICE_LANG.toLowerCase();
+        const esES  = (v: SpeechSynthesisVoice) => v.lang.toLowerCase() === FALLBACK_VOICE_LANG.toLowerCase();
+        const esAny = (v: SpeechSynthesisVoice) => v.lang.toLowerCase().startsWith("es");
+
+        const microsoftEs   = all.filter((v) => isMicrosoft(v) && esAny(v));
+        const microsoftEsLocal = microsoftEs.filter((v) => v.localService);
+        const appleEsLocal  = all.filter((v) => v.localService && esAny(v) && isAppleNice(v));
+        const otherEsLocal  = all.filter((v) => v.localService && esAny(v) && !isGoogle(v));
+        const anyLocal      = all.filter((v) => v.localService);
+        const remoteEs      = all.filter((v) => !v.localService && esAny(v));
+
         const pick =
-          localEs.find((v) => v.lang === DEFAULT_VOICE_LANG) ??
-          localEs.find((v) => v.lang === FALLBACK_VOICE_LANG) ??
-          localEs[0] ??
+          // 1) Microsoft local es-CL → es-ES → cualquier es
+          microsoftEsLocal.find(esCL) ??
+          microsoftEsLocal.find(esES) ??
+          microsoftEsLocal[0] ??
+          // 2) Microsoft remoto/online en es (mejor que Google igual)
+          microsoftEs.find(esCL) ??
+          microsoftEs.find(esES) ??
+          microsoftEs[0] ??
+          // 3) Apple
+          appleEsLocal.find(esCL) ??
+          appleEsLocal.find(esES) ??
+          appleEsLocal[0] ??
+          // 4) Cualquier local es-*
+          otherEsLocal.find(esCL) ??
+          otherEsLocal.find(esES) ??
+          otherEsLocal[0] ??
+          // 5) Cualquier local (aunque no sea es)
           anyLocal[0] ??
-          remoteEs.find((v) => v.lang === DEFAULT_VOICE_LANG) ??
-          remoteEs.find((v) => v.lang === FALLBACK_VOICE_LANG) ??
+          // 6) Remota es-* (Google) como último recurso
+          remoteEs.find(esCL) ??
+          remoteEs.find(esES) ??
           remoteEs[0] ??
           all[0];
         return pick?.voiceURI ?? "";

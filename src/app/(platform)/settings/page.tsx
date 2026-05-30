@@ -4,6 +4,7 @@ import { useEffect, useMemo, useState } from "react";
 import { usePlatform, ACCENT_COLORS, type AccentColor } from "@/context/PlatformContext";
 import { useAuth } from "@/context/AuthContext";
 import { useSpeechSynthesis } from "@/hooks/useSpeechSynthesis";
+import { cleanForTTS } from "@/lib/tts";
 import { ROLES } from "@/lib/roles";
 import Badge from "@/components/ui/Badge";
 import type { Environment } from "@/types";
@@ -580,10 +581,13 @@ function AppearanceTab() {
 // VOICE TAB — Studio con equalizer + sample phrases
 // ============================================================================
 const SAMPLE_PHRASES = [
-  { id: "greet",  label: "👋 Saludo",       text: "Hola, soy el asistente de inteligencia artificial de A M S Supply Chain. ¿En qué puedo ayudarte hoy?" },
-  { id: "derive", label: "📤 Derivación",   text: "Entiendo. Este caso requiere un especialista. Voy a derivar tu solicitud a Nivel 2 con todo el contexto." },
-  { id: "confirm",label: "✓ Confirmación",  text: "Perfecto. Anoté tu reporte y un consultor revisará el incidente en los próximos minutos." },
-  { id: "urgent", label: "🚨 Urgencia",     text: "Detecto que esto es urgente. Estoy escalando de inmediato al equipo de turno. Mantente en línea por favor." },
+  { id: "greet",   label: "👋 Saludo",       text: "Hola, soy el asistente de inteligencia artificial de A M S Supply Chain. ¿En qué puedo ayudarte hoy?" },
+  { id: "derive",  label: "📤 Derivación",   text: "Entiendo. Este caso requiere un especialista. Voy a derivar tu solicitud a Nivel 2 con todo el contexto." },
+  { id: "confirm", label: "✓ Confirmación",  text: "Perfecto. Anoté tu reporte y un consultor revisará el incidente en los próximos minutos." },
+  { id: "urgent",  label: "🚨 Urgencia",     text: "Detecto que esto es urgente. Estoy escalando de inmediato al equipo de turno. Mantente en línea por favor." },
+  // Frase con puntuación rica para probar que el TTS no la lea literalmente.
+  { id: "punct",   label: "📝 Test puntuación",
+    text: "Para resolver el caso de MIGO en módulo MM: primero revisá ME23N (liberación), después XK03 (estado del proveedor) y, si todo está bien, ejecutá MIGO con movimiento 101. Si falla; comprobá las tolerancias en OMR6. ¿Necesitás más ayuda?" },
 ];
 
 function VoiceTab() {
@@ -608,7 +612,8 @@ function VoiceTab() {
     tts.setRate(plat.voiceRate);
     tts.setPitch(plat.voicePitch);
     if (plat.voiceUri) tts.setVoice(plat.voiceUri);
-    tts.speak(phrase.text);
+    // Pasar por el cleaner para reproducir el mismo flujo del agente real.
+    tts.speak(cleanForTTS(phrase.text));
   }
 
   if (!tts.isSupported) {

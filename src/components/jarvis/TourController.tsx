@@ -82,7 +82,10 @@ export default function TourController() {
     stepStartRef.current = Date.now();
     // Pequeño retraso para que la página cargue antes de narrar
     setTimeout(() => {
-      if (tts.isSupported) tts.speak(step.narration);
+      if (tts.isSupported) {
+        // Limpiar puntuación antes de hablar para que no se lea literal
+        import("@/lib/tts").then(({ cleanForTTS }) => tts.speak(cleanForTTS(step.narration)));
+      }
       beep();
     }, 500);
     timerRef.current = setTimeout(() => startStep(i + 1), step.duration);
