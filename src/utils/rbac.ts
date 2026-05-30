@@ -71,6 +71,9 @@ export function buildDefaultRoles(): PlatformRole[] {
         usuarios:         fullPerm(),
         roles:            fullPerm(),
         entrenamiento_ia: fullPerm(),
+        playbooks_ams:    fullPerm(),
+        document_factory: fullPerm(),
+        quality_evaluator:fullPerm(),
       }),
     },
     {
@@ -97,6 +100,9 @@ export function buildDefaultRoles(): PlatformRole[] {
         roles:            viewOnly(),
         // SERVICE_LEAD: view + create + edit + export + approve
         entrenamiento_ia: { ...viewCreateEdit(), export: true, approve: true },
+        playbooks_ams:    { ...viewCreateEdit(), export: true, approve: true },
+        document_factory: { ...viewCreateEdit(), export: true, approve: true },
+        quality_evaluator:{ ...viewCreateEdit(), export: true, approve: true },
       }),
     },
     {
@@ -123,6 +129,9 @@ export function buildDefaultRoles(): PlatformRole[] {
         roles:            noPerm(),
         // AMS_CONSULTANT: view + create + edit
         entrenamiento_ia: viewCreateEdit(),
+        playbooks_ams:    { ...viewCreateEdit(), export: true },
+        document_factory: { ...viewCreateEdit(), export: true },
+        quality_evaluator:viewCreateEdit(),
       }),
     },
     {
@@ -148,6 +157,9 @@ export function buildDefaultRoles(): PlatformRole[] {
         usuarios:         noPerm(),
         roles:            noPerm(),
         entrenamiento_ia: noPerm(),
+        playbooks_ams:    viewOnly(),     // CLIENT_USER puede ver playbooks (gate por nivel servicio en UI)
+        document_factory: viewOnly(),     // idem (gate por ENTERPRISE en UI)
+        quality_evaluator:noPerm(),
       }),
     },
     {
@@ -173,6 +185,9 @@ export function buildDefaultRoles(): PlatformRole[] {
         usuarios:         noPerm(),
         roles:            noPerm(),
         entrenamiento_ia: noPerm(),
+        playbooks_ams:    noPerm(),
+        document_factory: noPerm(),
+        quality_evaluator:noPerm(),
       }),
     },
   ];

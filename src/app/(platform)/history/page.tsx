@@ -4,6 +4,7 @@ import { useEffect, useMemo, useState } from "react";
 import Badge from "@/components/ui/Badge";
 import MarkdownView from "@/components/agent/MarkdownView";
 import { listIncidents, getIncident, type IncidentSummary, type IncidentDetail } from "@/services/agent.api";
+import KnowledgeQuickActions from "@/components/knowledge/KnowledgeQuickActions";
 import type { SapModule, Environment } from "@/types";
 
 const SAP_MODULES: ("ALL" | SapModule)[] = [
@@ -198,7 +199,15 @@ export default function HistoryPage() {
           )}
           {detail && (
             <div className="col" style={{ gap: 12 }}>
-              <div className="row" style={{ gap: 8, flexWrap: "wrap" }}>
+              <div className="row between" style={{ alignItems: "center", flexWrap: "wrap", gap: 8 }}>
+                <div className="row" style={{ gap: 8, flexWrap: "wrap" }}>
+                  <Badge variant="info">{detail.sap_module ?? "—"}</Badge>
+                  <Badge variant="muted">{detail.environment ?? "—"}</Badge>
+                  {detail.client_name && <Badge variant="muted">{detail.client_name}</Badge>}
+                </div>
+                <KnowledgeQuickActions incident={detail} variant="full" />
+              </div>
+              <div className="row" style={{ gap: 8, flexWrap: "wrap", display: "none" }}>
                 <Badge variant="info">{detail.sap_module ?? "—"}</Badge>
                 <Badge variant="muted">{detail.environment ?? "—"}</Badge>
                 {detail.client_name && <Badge variant="muted">{detail.client_name}</Badge>}

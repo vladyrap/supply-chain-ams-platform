@@ -274,6 +274,36 @@ export const MODULES: ModuleDef[] = [
     phase: 7,
     rolesAllowed: ["consultor", "aprobador", "admin"],
   },
+  {
+    id: "playbooks",
+    label: "Playbooks AMS",
+    icon: "📕",
+    href: "/playbooks",
+    description: "Biblioteca de procedimientos operativos AMS: incidentes P1, hypercare, RCA, escalamiento, integraciones — checklist en vivo y export",
+    status: "available",
+    phase: 7,
+    rolesAllowed: ["viewer", "consultor", "aprobador", "admin"],
+  },
+  {
+    id: "document-factory",
+    label: "Document Factory",
+    icon: "🏭",
+    href: "/document-factory",
+    description: "Generador de documentos AMS: RCA, minutas, specs funcionales, manuales, hypercare, planes de cutover, informes ejecutivos",
+    status: "available",
+    phase: 7,
+    rolesAllowed: ["consultor", "aprobador", "admin"],
+  },
+  {
+    id: "quality-evaluator",
+    label: "Quality Evaluator",
+    icon: "🏅",
+    href: "/quality-evaluator",
+    description: "Evaluación humana de la calidad de cada respuesta del agente: precisión, utilidad, claridad, riesgo de alucinación, fit técnico",
+    status: "available",
+    phase: 7,
+    rolesAllowed: ["consultor", "aprobador", "admin"],
+  },
 ];
 
 export function moduleById(id: string): ModuleDef | undefined {

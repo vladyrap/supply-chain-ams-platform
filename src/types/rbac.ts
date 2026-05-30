@@ -32,7 +32,10 @@ export type PlatformScreen =
   | "integraciones"
   | "usuarios"
   | "roles"
-  | "entrenamiento_ia";
+  | "entrenamiento_ia"
+  | "playbooks_ams"
+  | "document_factory"
+  | "quality_evaluator";
 
 export interface RolePermission {
   view: boolean;
@@ -86,6 +89,9 @@ export const SCREEN_LABELS: Record<PlatformScreen, string> = {
   usuarios:         "Usuarios",
   roles:            "Roles",
   entrenamiento_ia: "Entrenamiento IA",
+  playbooks_ams:    "Playbooks AMS",
+  document_factory: "Document Factory",
+  quality_evaluator:"Quality Evaluator",
 };
 
 export const ACTION_LABELS: Record<PermissionAction, string> = {
@@ -103,6 +109,7 @@ export const ALL_SCREENS: PlatformScreen[] = [
   "reportes", "auditoria", "administracion", "configuracion",
   "canal_telefonico", "conocimiento_rag", "integraciones",
   "usuarios", "roles", "entrenamiento_ia",
+  "playbooks_ams", "document_factory", "quality_evaluator",
 ];
 
 export const ALL_ACTIONS: PermissionAction[] = [

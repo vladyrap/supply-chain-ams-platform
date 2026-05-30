@@ -363,6 +363,31 @@ Los roles ya guardados en `localStorage` se migran automáticamente: las pantall
 
 **Documentación completa**: [`docs/agent-training.md`](docs/agent-training.md) — arquitectura, modelo de datos, flujo, reglas, roadmap por fases.
 
+## 🏭 Módulos AMS Enterprise (Fase 7+)
+
+Cinco capacidades premium que convierten la plataforma en una solución AMS real:
+
+| Módulo | Ruta | Descripción |
+|---|---|---|
+| **🎓 Convertir incidente en conocimiento** | acción en `/history` | Wizard que transforma un incidente del agente en KnowledgeItem listo para entrenamiento |
+| **📕 Playbooks AMS** | `/playbooks` | Biblioteca de 10 procedimientos operativos ejecutables como checklist con evidencia |
+| **🏭 Document Factory** | `/document-factory` | Generador de 14 tipos de documentos AMS (RCA, minutas, specs, manuales, hypercare, cutover...) con export Markdown |
+| **🏅 Quality Evaluator** | `/quality-evaluator` | Evaluación humana de cada respuesta del agente: precisión, utilidad, claridad, riesgo de alucinación + dashboard |
+| **🎬 Modo Demo Cliente** | botón global en Header | 5 escenarios guiados (AMS Supply Chain, Ejecutivo, Entrenamiento IA, Gobierno IA, Documentación) con tour paso a paso |
+
+Cada módulo tiene su screen RBAC propia y documentación dedicada:
+- [`docs/incident-to-knowledge.md`](docs/incident-to-knowledge.md)
+- [`docs/playbooks-ams.md`](docs/playbooks-ams.md)
+- [`docs/document-factory.md`](docs/document-factory.md)
+- [`docs/quality-evaluator.md`](docs/quality-evaluator.md)
+- [`docs/demo-mode.md`](docs/demo-mode.md)
+
+### Niveles de servicio actualizados
+
+- **STANDARD** ahora incluye *Convertir incidente en conocimiento*
+- **PREMIUM** suma *Playbooks AMS + Document Factory + Modo Demo Cliente*
+- **ENTERPRISE** agrega *Quality Evaluator + Gobierno de IA + Madurez del agente*
+
 ## 📜 Licencia
 
 MIT — ver [LICENSE](LICENSE).

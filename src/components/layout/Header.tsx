@@ -10,6 +10,7 @@ import { ROLES } from "@/lib/roles";
 import type { Environment } from "@/types";
 import Badge from "@/components/ui/Badge";
 import NotificationsBell from "./NotificationsBell";
+import { useDemoMode } from "@/hooks/useDemoMode";
 
 const ENVS: Environment[] = ["NO_INFORMADO", "DEV", "QA", "PRD", "SANDBOX"];
 
@@ -29,6 +30,7 @@ export default function Header() {
 
   const active = MODULES.find((m) => pathname?.startsWith(m.href));
   const roleDef = ROLES.find((r) => r.id === user?.role);
+  const demo = useDemoMode();
 
   return (
     <header className="header">
@@ -96,6 +98,20 @@ export default function Header() {
           title={fxEnabled ? "Desactivar efectos" : "Activar efectos (confetti + audio)"}
         >
           {fxEnabled ? "🔊" : "🔇"}
+        </button>
+
+        <button
+          onClick={demo.toggle}
+          className="btn ghost btn-icon"
+          aria-label="Modo demo cliente"
+          title={demo.state.enabled ? "Modo Demo Cliente activo · click para desactivar" : "Activar Modo Demo Cliente"}
+          style={demo.state.enabled ? {
+            background: "linear-gradient(135deg, rgba(168,85,247,0.25), rgba(34,211,238,0.20))",
+            borderColor: "rgba(168,85,247,0.55)",
+            color: "#c084fc",
+          } : undefined}
+        >
+          🎬
         </button>
 
         <NotificationsBell />

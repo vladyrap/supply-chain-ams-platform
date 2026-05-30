@@ -15,17 +15,26 @@ interface Props { admin: UseAccessAdmin }
 
 const SERVICE_FEATURES: Record<string, string[]> = {
   BASIC:      ["Chat con agente", "Dashboard simple"],
-  STANDARD:   ["Chat con agente", "Dashboard simple", "Reuniones AMS", "Mesa de soporte"],
+  STANDARD:   [
+    "Chat con agente", "Dashboard simple", "Reuniones AMS", "Mesa de soporte",
+    "Convertir incidente en conocimiento — wizard de captura",
+  ],
   PREMIUM:    [
     "Chat con agente", "Dashboard simple", "Reuniones AMS", "Mesa de soporte",
     "Conocimiento RAG", "Integraciones", "Forecast IA",
     "Entrenamiento del Agente — carga de conocimiento + Q&A + simulador + validación",
+    "Playbooks AMS — biblioteca de procedimientos operativos + checklist",
+    "Document Factory — RCA, minutas, specs, manuales, hypercare",
+    "Modo Demo Cliente — escenarios guiados para presentar la plataforma",
   ],
   ENTERPRISE: [
     "Todo Premium",
     "SAP Read-Only", "Auditoría completa", "Canal telefónico IA",
     "Vistas premium (war room, brain, HUD)",
     "Gobierno avanzado de entrenamiento — versionado + aprobación + rollback + control de publicación",
+    "Quality Evaluator — evaluación humana de calidad + detección de alucinaciones",
+    "Gobierno de IA — roles, permisos, auditoría y versionado del agente",
+    "Madurez del agente — score, drift detection, embeddings semánticos",
     "Soporte SLA dedicado",
   ],
 };

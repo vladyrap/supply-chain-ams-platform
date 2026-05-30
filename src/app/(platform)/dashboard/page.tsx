@@ -13,6 +13,10 @@ import { fetchAdvanced, type DashboardAdvanced } from "@/services/dashboard.api"
 import { usePlatform } from "@/context/PlatformContext";
 import { useAuth } from "@/context/AuthContext";
 import { ROLES } from "@/lib/roles";
+import { usePlaybooks } from "@/hooks/usePlaybooks";
+import { useDocumentFactory } from "@/hooks/useDocumentFactory";
+import { useQualityEvaluator } from "@/hooks/useQualityEvaluator";
+import { useAgentTraining } from "@/hooks/useAgentTraining";
 
 const MODULE_COLORS: Record<string, string> = {
   MM: "#5b8def", SD: "#c780f0", PP: "#4dd0c5", WM: "#f0b66c",
@@ -51,6 +55,25 @@ export default function DashboardPage() {
     setLoading(false);
   }, []);
 
+  // KPIs nuevos AMS (localStorage)
+  const pb = usePlaybooks();
+  const df = useDocumentFactory();
+  const qe = useQualityEvaluator();
+  const tr = useAgentTraining();
+
+  const amsKnowledgeFromIncidents = tr.knowledge.filter((k) =>
+    k.source?.toLowerCase().includes("incidente") || k.tags?.includes("from-incident")
+  ).length;
+  const amsActivePlaybooks = pb.playbooks.filter((p) => p.status === "ACTIVE").length;
+  const amsDocsGenerated = df.documents.length;
+  const amsAvgScore = qe.metrics.count > 0
+    ? (qe.metrics.avgAccuracy + qe.metrics.avgUsefulness + qe.metrics.avgClarity + qe.metrics.avgCompleteness) / 4
+    : 0;
+  const amsHallucination = qe.metrics.pctHighRisk;
+  const amsOpenGaps = tr.gaps.filter((g) => g.status === "OPEN" || g.status === "IN_PROGRESS").length;
+  const amsPublishedVersions = tr.versions.filter((v) => v.status === "PUBLISHED").length;
+  const amsScopeItemsCoverage = tr.metrics.coverageByModule.length;
+
   useEffect(() => { load(); }, [load, tick]);
 
   return (
@@ -85,6 +108,21 @@ export default function DashboardPage() {
         <KPI label="SLA vencido" value={d?.totals.supportTicketsSlaBreaches ?? "—"} accent={d && d.totals.supportTicketsSlaBreaches > 0 ? "warn" : "ok"} />
         <KPI label="Reuniones procesadas" value={d?.totals.meetingsDone ?? "—"} accent="tech" />
         <KPI label="KB aprobados" value={d?.totals.kbApproved ?? "—"} accent="ok" />
+      </div>
+
+      {/* KPIs AMS avanzados (localStorage + training backend) */}
+      <div style={{ marginBottom: 8, fontSize: 11, letterSpacing: 2, color: "var(--text-dim)", fontFamily: "var(--font-mono, monospace)" }}>
+        ▸ AMS · GOBIERNO Y MADUREZ DEL AGENTE
+      </div>
+      <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(170px, 1fr))", gap: 12, marginBottom: 18 }}>
+        <KPI label="Conocimientos desde incidentes" value={amsKnowledgeFromIncidents} accent="tech" hint="convertir → entrenar" />
+        <KPI label="Playbooks activos"             value={amsActivePlaybooks}      accent="ok" />
+        <KPI label="Documentos generados"          value={amsDocsGenerated}        accent="info" hint="Document Factory" />
+        <KPI label="Score promedio del agente"     value={amsAvgScore > 0 ? amsAvgScore.toFixed(1) : "—"} accent={amsAvgScore >= 4 ? "ok" : "warn"} />
+        <KPI label="% riesgo alucinación"          value={qe.metrics.count > 0 ? `${amsHallucination}%` : "—"} accent={amsHallucination >= 15 ? "warn" : "ok"} />
+        <KPI label="Brechas abiertas"              value={amsOpenGaps}             accent={amsOpenGaps > 5 ? "warn" : "info"} />
+        <KPI label="Versiones publicadas"          value={amsPublishedVersions}    accent="ok" />
+        <KPI label="Módulos con cobertura"         value={amsScopeItemsCoverage}   accent="tech" />
       </div>
 
       {/* Heatmap actividad */}
