@@ -600,3 +600,126 @@ export async function apiRunSelfTraining(input: {
   if (!r.ok) return r;
   return { ok: true, report: r.data.report };
 }
+
+// ============================================================================
+// SELF-TRAINING CRON
+// ============================================================================
+export interface SelfTrainingCronConfig {
+  id: string;
+  enabled: boolean;
+  interval_hours: number;
+  run_eval: boolean;
+  last_scheduled: string | null;
+  updated_at: string;
+}
+
+export interface SelfTrainingHistoryRun {
+  id: string;
+  triggered_by: string;
+  before_snapshot: Record<string, unknown>;
+  after_snapshot: Record<string, unknown>;
+  total_ms: number;
+  started_at: string;
+  finished_at: string | null;
+}
+
+export async function apiGetSelfTrainingConfig(): Promise<{ ok: true; config: SelfTrainingCronConfig } | { ok: false; error: string }> {
+  const r = await call<{ config: SelfTrainingCronConfig }>("/api/training/self/config");
+  if (!r.ok) return r;
+  return { ok: true, config: r.data.config };
+}
+
+export async function apiUpdateSelfTrainingConfig(patch: { enabled?: boolean; intervalHours?: number; runEval?: boolean }): Promise<
+  { ok: true; config: SelfTrainingCronConfig } | { ok: false; error: string }
+> {
+  const r = await call<{ config: SelfTrainingCronConfig }>("/api/training/self/config", {
+    method: "PATCH", body: JSON.stringify(patch),
+  });
+  if (!r.ok) return r;
+  return { ok: true, config: r.data.config };
+}
+
+export async function apiGetSelfTrainingHistory(): Promise<{ ok: true; runs: SelfTrainingHistoryRun[] } | { ok: false; error: string }> {
+  const r = await call<{ runs: SelfTrainingHistoryRun[] }>("/api/training/self/history");
+  if (!r.ok) return r;
+  return { ok: true, runs: r.data.runs };
+}
+
+// ============================================================================
+// EMBEDDINGS BACKFILL
+// ============================================================================
+export interface EmbeddingsBackfillReport {
+  qasScanned: number;
+  qasEmbedded: number;
+  itemsScanned: number;
+  itemsEmbedded: number;
+  skippedSameHash: number;
+}
+
+export async function apiBackfillEmbeddings(limit = 200): Promise<{ ok: true; report: EmbeddingsBackfillReport } | { ok: false; error: string }> {
+  const r = await call<{ report: EmbeddingsBackfillReport }>("/api/training/embeddings/backfill", {
+    method: "POST", body: JSON.stringify({ limit }),
+  });
+  if (!r.ok) return r;
+  return { ok: true, report: r.data.report };
+}
+
+// ============================================================================
+// TIMELINE + DRIFT
+// ============================================================================
+export interface TimelinePoint {
+  date: string; runs: number; totalQas: number; avgScore: number; passRate: number;
+}
+
+export interface DriftReport {
+  driftDetected: boolean;
+  current7dPassRate: number | null;
+  previous7dPassRate: number | null;
+  deltaPoints: number | null;
+  thresholdPoints: number;
+  current7dAvgScore: number | null;
+  previous7dAvgScore: number | null;
+  scoreDeltaPoints: number | null;
+  message: string;
+}
+
+export interface TimelineResponse {
+  days: number;
+  points: TimelinePoint[];
+  drift: DriftReport;
+}
+
+export async function apiGetEvalTimeline(days = 30, threshold = 10): Promise<
+  { ok: true; data: TimelineResponse } | { ok: false; error: string }
+> {
+  const r = await call<TimelineResponse>(`/api/training/eval/timeline?days=${days}&threshold=${threshold}`);
+  if (!r.ok) return r;
+  return { ok: true, data: r.data };
+}
+
+// ============================================================================
+// FEEDBACK PATTERNS
+// ============================================================================
+export interface FeedbackPatternReport {
+  scannedAt: string;
+  totalNegatives: number;
+  clustersFound: number;
+  gapsCreated: number;
+  clusters: {
+    representativeReason: string;
+    count: number;
+    sources: string[];
+    gapCreated: boolean;
+    gapId: string | null;
+  }[];
+}
+
+export async function apiDetectFeedbackPatterns(daysBack = 14): Promise<
+  { ok: true; report: FeedbackPatternReport } | { ok: false; error: string }
+> {
+  const r = await call<{ report: FeedbackPatternReport }>("/api/training/feedback/patterns", {
+    method: "POST", body: JSON.stringify({ daysBack, minClusterSize: 3 }),
+  });
+  if (!r.ok) return r;
+  return { ok: true, report: r.data.report };
+}

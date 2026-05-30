@@ -7,9 +7,13 @@ import {
   apiRunQaEval, apiListEvalRuns, apiGetEvalRunDetail,
   apiRunAbTest, apiAutoPromote, apiDiffRuns, apiProposeQasFromTickets,
   apiAutoGenerateQas, apiLoadExpandedCorpus, apiRunSelfTraining,
+  apiGetSelfTrainingConfig, apiUpdateSelfTrainingConfig, apiGetSelfTrainingHistory,
+  apiBackfillEmbeddings, apiGetEvalTimeline, apiDetectFeedbackPatterns,
   type EvalRunReport, type EvalRunSummary, type EvalRunDetail,
   type AbTestReport, type RunDiffReport, type TicketToQaReport,
   type SelfTrainingReport, type CorpusLoadResult, type AutoQaReport,
+  type SelfTrainingCronConfig, type TimelineResponse,
+  type FeedbackPatternReport, type EmbeddingsBackfillReport,
 } from "@/services/training.api";
 
 interface Props { ctx: UseAgentTraining }
@@ -66,6 +70,26 @@ export default function LearningDashboard({ ctx }: Props) {
   const [corpusResult, setCorpusResult] = useState<CorpusLoadResult | null>(null);
   const [autoQaLoading, setAutoQaLoading] = useState(false);
   const [autoQaResult, setAutoQaResult] = useState<AutoQaReport | null>(null);
+
+  // Cron config
+  const [cron, setCron] = useState<SelfTrainingCronConfig | null>(null);
+  const [cronSaving, setCronSaving] = useState(false);
+
+  // Timeline
+  const [timeline, setTimeline] = useState<TimelineResponse | null>(null);
+
+  // Embeddings backfill
+  const [embedLoading, setEmbedLoading] = useState(false);
+  const [embedResult, setEmbedResult] = useState<EmbeddingsBackfillReport | null>(null);
+
+  // Feedback patterns
+  const [patternsLoading, setPatternsLoading] = useState(false);
+  const [patternsReport, setPatternsReport] = useState<FeedbackPatternReport | null>(null);
+
+  useEffect(() => {
+    apiGetSelfTrainingConfig().then((r) => { if (r.ok) setCron(r.config); });
+    apiGetEvalTimeline(30, 10).then((r) => { if (r.ok) setTimeline(r.data); });
+  }, []);
 
   const refresh = useCallback(async () => {
     setLoading(true);
@@ -196,6 +220,32 @@ export default function LearningDashboard({ ctx }: Props) {
     const r = await apiAutoGenerateQas(50);
     setAutoQaLoading(false);
     if (r.ok) setAutoQaResult(r.report);
+    else setError(r.error);
+  }
+
+  async function updateCron(patch: { enabled?: boolean; intervalHours?: number; runEval?: boolean }) {
+    setCronSaving(true);
+    const r = await apiUpdateSelfTrainingConfig(patch);
+    setCronSaving(false);
+    if (r.ok) setCron(r.config);
+    else setError(r.error);
+  }
+
+  async function backfillEmb() {
+    setEmbedLoading(true);
+    setEmbedResult(null);
+    const r = await apiBackfillEmbeddings(200);
+    setEmbedLoading(false);
+    if (r.ok) setEmbedResult(r.report);
+    else setError(r.error);
+  }
+
+  async function detectPatterns() {
+    setPatternsLoading(true);
+    setPatternsReport(null);
+    const r = await apiDetectFeedbackPatterns(14);
+    setPatternsLoading(false);
+    if (r.ok) setPatternsReport(r.report);
     else setError(r.error);
   }
 
@@ -418,6 +468,164 @@ export default function LearningDashboard({ ctx }: Props) {
             <b style={{ color: VERDICT_COLORS.fail }}>{last.failed} fail</b> ·
             score promedio <b>{last.avgScore}</b>
             {last.promptLabel && <> · prompt: <b>{last.promptLabel}</b></>}
+          </div>
+        )}
+      </div>
+
+      {/* ============================================================== */}
+      {/* CRON · auto-pulido programado                                    */}
+      {/* ============================================================== */}
+      <div className="card" style={{ borderLeft: "3px solid #10b981" }}>
+        <div className="ticket-section-head">
+          <span style={{ color: "#10b981" }}>⏰</span> CRON · AUTO-PULIDO AUTOMÁTICO
+        </div>
+        <p className="settings-section-desc">
+          Activá el cron para que el ciclo completo de self-training corra automáticamente cada N horas.
+          El agente se pule solo 24/7 sin esfuerzo humano.
+        </p>
+        {cron ? (
+          <div className="row" style={{ gap: 12, alignItems: "center", flexWrap: "wrap" }}>
+            <label style={{ display: "flex", alignItems: "center", gap: 6, fontSize: 13 }}>
+              <input type="checkbox" checked={cron.enabled} disabled={cronSaving}
+                onChange={(e) => updateCron({ enabled: e.target.checked })} />
+              <b>{cron.enabled ? "✓ Activo" : "Inactivo"}</b>
+            </label>
+            <label style={{ display: "flex", alignItems: "center", gap: 6, fontSize: 12 }}>
+              <span>Cada</span>
+              <input type="number" min={1} max={168} value={cron.interval_hours}
+                onChange={(e) => updateCron({ intervalHours: Number(e.target.value) })}
+                style={{ width: 60 }} disabled={cronSaving} />
+              <span>horas</span>
+            </label>
+            <label style={{ display: "flex", alignItems: "center", gap: 6, fontSize: 12 }}>
+              <input type="checkbox" checked={cron.run_eval} disabled={cronSaving}
+                onChange={(e) => updateCron({ runEval: e.target.checked })} />
+              <span>incluir evaluación (más lento + quota)</span>
+            </label>
+            {cron.last_scheduled && (
+              <span style={{ marginLeft: "auto", fontSize: 11, color: "var(--text-dim)" }}>
+                Última actualización del schedule: {new Date(cron.last_scheduled).toLocaleString("es-CL")}
+              </span>
+            )}
+          </div>
+        ) : (
+          <div style={{ fontSize: 12, color: "var(--text-soft)" }}><span className="spinner" /> cargando config…</div>
+        )}
+      </div>
+
+      {/* ============================================================== */}
+      {/* TIMELINE · curva temporal + drift                                */}
+      {/* ============================================================== */}
+      {timeline && (
+        <div className="card" style={{
+          borderLeft: timeline.drift.driftDetected ? "3px solid #ef4444" : "3px solid #06b6d4",
+        }}>
+          <div className="ticket-section-head">
+            <span style={{ color: timeline.drift.driftDetected ? "#ef4444" : "#06b6d4" }}>
+              {timeline.drift.driftDetected ? "🚨" : "📈"}
+            </span> CURVA DE APRENDIZAJE · {timeline.days} días
+          </div>
+          <p className="settings-section-desc" style={{
+            color: timeline.drift.driftDetected ? "#fca5a5" : undefined,
+            fontWeight: timeline.drift.driftDetected ? 600 : undefined,
+          }}>
+            {timeline.drift.message}
+          </p>
+          {timeline.points.length > 0 ? (
+            <SparkChart points={timeline.points} />
+          ) : (
+            <div style={{ fontSize: 12, color: "var(--text-dim)", textAlign: "center", padding: 20 }}>
+              Aún no hay evaluaciones suficientes para graficar.
+            </div>
+          )}
+          <div className="row" style={{ gap: 10, marginTop: 8, fontSize: 11, color: "var(--text-soft)", flexWrap: "wrap" }}>
+            {timeline.drift.current7dPassRate !== null && (
+              <span>Pass rate 7d: <b>{timeline.drift.current7dPassRate}%</b>
+                {timeline.drift.previous7dPassRate !== null && (
+                  <span style={{ color: "var(--text-dim)" }}> vs {timeline.drift.previous7dPassRate}% anterior</span>
+                )}
+              </span>
+            )}
+            {timeline.drift.current7dAvgScore !== null && (
+              <span>Score 7d: <b>{timeline.drift.current7dAvgScore}</b>
+                {timeline.drift.scoreDeltaPoints !== null && timeline.drift.scoreDeltaPoints !== 0 && (
+                  <span style={{ color: timeline.drift.scoreDeltaPoints > 0 ? "#10b981" : "#ef4444" }}>
+                    {" "}({timeline.drift.scoreDeltaPoints > 0 ? "+" : ""}{timeline.drift.scoreDeltaPoints})
+                  </span>
+                )}
+              </span>
+            )}
+          </div>
+        </div>
+      )}
+
+      {/* ============================================================== */}
+      {/* SEMANTIC FEW-SHOT · embeddings                                   */}
+      {/* ============================================================== */}
+      <div className="card" style={{ borderLeft: "3px solid #f43f5e" }}>
+        <div className="ticket-section-head">
+          <span style={{ color: "#f87171" }}>🧬</span> EMBEDDINGS SEMÁNTICOS · few-shot inteligente
+        </div>
+        <p className="settings-section-desc">
+          Reemplaza el match léxico por embeddings reales de Gemini. El agente encuentra Q&amp;A relevantes
+          aunque el usuario use sinónimos o reformule la pregunta. Para los nuevos items se generan auto;
+          para el corpus existente correr backfill una vez.
+        </p>
+        <div className="row" style={{ gap: 10, flexWrap: "wrap" }}>
+          <button className="btn primary" onClick={backfillEmb} disabled={embedLoading}
+            style={{ background: "linear-gradient(135deg, #f43f5e, #e11d48)", borderColor: "#f43f5e" }}>
+            {embedLoading ? <><span className="spinner" /> generando embeddings…</> : "🧬 Backfill embeddings (200 items)"}
+          </button>
+        </div>
+        {embedResult && (
+          <div className="alert ok" style={{ marginTop: 10, fontSize: 12.5 }}>
+            ✓ Backfill OK: <b>{embedResult.qasEmbedded}</b> Q&amp;A embedded · <b>{embedResult.itemsEmbedded}</b> items embedded.
+          </div>
+        )}
+      </div>
+
+      {/* ============================================================== */}
+      {/* FEEDBACK PATTERNS · auto-curación                                */}
+      {/* ============================================================== */}
+      <div className="card" style={{ borderLeft: "3px solid #f59e0b" }}>
+        <div className="ticket-section-head">
+          <span style={{ color: "#fbbf24" }}>🔬</span> DETECTAR PATRONES DE FEEDBACK NEGATIVO
+        </div>
+        <p className="settings-section-desc">
+          Cluster por embeddings de razones de feedback 👎 recurrentes. Cada cluster ≥ 3 genera una
+          KnowledgeGap automática con sugerencia de cómo curar el contenido.
+        </p>
+        <button className="btn primary" onClick={detectPatterns} disabled={patternsLoading}
+          style={{ background: "linear-gradient(135deg, #f59e0b, #d97706)", borderColor: "#f59e0b" }}>
+          {patternsLoading ? <><span className="spinner" /> clusterizando…</> : "🔬 Buscar patrones (14 días)"}
+        </button>
+        {patternsReport && (
+          <div className="col" style={{ gap: 8, marginTop: 10 }}>
+            <div className="alert ok" style={{ fontSize: 12.5 }}>
+              ✓ <b>{patternsReport.totalNegatives}</b> feedbacks analizados ·
+              <b> {patternsReport.clustersFound}</b> clusters detectados ·
+              <b> {patternsReport.gapsCreated}</b> brechas nuevas creadas
+            </div>
+            {patternsReport.clusters.length > 0 && (
+              <div className="col" style={{ gap: 6 }}>
+                {patternsReport.clusters.slice(0, 5).map((c, i) => (
+                  <div key={i} className="lab-fb-block" style={{
+                    borderLeft: c.gapCreated ? "3px solid #10b981" : "3px solid #94a3b8",
+                  }}>
+                    <div style={{ fontSize: 12, marginBottom: 4 }}>
+                      <b style={{ color: c.gapCreated ? "#10b981" : "var(--text-soft)" }}>
+                        {c.count} casos
+                      </b>
+                      {" · fuentes: " + c.sources.join(", ")}
+                      {c.gapCreated && <span style={{ marginLeft: 6, color: "#10b981" }}>✓ brecha creada</span>}
+                    </div>
+                    <div style={{ fontSize: 11.5, color: "var(--text-soft)", fontStyle: "italic" }}>
+                      "{c.representativeReason.slice(0, 200)}"
+                    </div>
+                  </div>
+                ))}
+              </div>
+            )}
           </div>
         )}
       </div>
@@ -750,4 +958,49 @@ function delta(before: number, after: number, invert = false): React.ReactNode {
   const color = positive ? "#10b981" : "#ef4444";
   const sign = d > 0 ? "+" : "";
   return <span style={{ color, fontSize: 10.5, marginLeft: 4 }}>({sign}{d})</span>;
+}
+
+/** Sparkline SVG nativo de la curva de aprendizaje (avgScore + passRate). */
+function SparkChart({ points }: { points: { date: string; avgScore: number; passRate: number; runs: number }[] }) {
+  const W = 800, H = 140, PAD = 20;
+  const n = points.length;
+  if (n === 0) return null;
+
+  const xs = (i: number) => PAD + (i * (W - PAD * 2)) / Math.max(1, n - 1);
+  const ys = (v: number) => H - PAD - (v / 100) * (H - PAD * 2);
+
+  const scorePath = points.map((p, i) => `${i === 0 ? "M" : "L"} ${xs(i).toFixed(1)} ${ys(p.avgScore).toFixed(1)}`).join(" ");
+  const passPath  = points.map((p, i) => `${i === 0 ? "M" : "L"} ${xs(i).toFixed(1)} ${ys(p.passRate).toFixed(1)}`).join(" ");
+
+  return (
+    <svg viewBox={`0 0 ${W} ${H}`} style={{ width: "100%", height: 140, marginTop: 8 }} preserveAspectRatio="none">
+      {/* gridlines */}
+      {[0, 25, 50, 75, 100].map((v) => (
+        <line key={v} x1={PAD} x2={W - PAD} y1={ys(v)} y2={ys(v)}
+          stroke="rgba(148,163,184,0.15)" strokeDasharray="2 2" strokeWidth="0.5" />
+      ))}
+      {/* passRate (verde) */}
+      <path d={passPath} stroke="#10b981" strokeWidth="2" fill="none" />
+      {/* avgScore (cyan) */}
+      <path d={scorePath} stroke="#22d3ee" strokeWidth="2" fill="none" />
+      {/* dots */}
+      {points.map((p, i) => (
+        <g key={i}>
+          <circle cx={xs(i)} cy={ys(p.passRate)} r="2.5" fill="#10b981" />
+          <circle cx={xs(i)} cy={ys(p.avgScore)} r="2.5" fill="#22d3ee" />
+        </g>
+      ))}
+      {/* labels Y */}
+      <text x="4" y={ys(100) + 3} fontSize="9" fill="rgba(148,163,184,0.6)">100</text>
+      <text x="4" y={ys(50)  + 3} fontSize="9" fill="rgba(148,163,184,0.6)">50</text>
+      <text x="4" y={ys(0)   + 3} fontSize="9" fill="rgba(148,163,184,0.6)">0</text>
+      {/* leyenda */}
+      <g transform={`translate(${W - 180}, 10)`}>
+        <circle cx="6" cy="6" r="3" fill="#22d3ee" />
+        <text x="14" y="9" fontSize="10" fill="var(--text-soft)">avg score</text>
+        <circle cx="90" cy="6" r="3" fill="#10b981" />
+        <text x="98" y="9" fontSize="10" fill="var(--text-soft)">pass rate %</text>
+      </g>
+    </svg>
+  );
 }
