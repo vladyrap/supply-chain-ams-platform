@@ -28,6 +28,7 @@ const SERVICE_FEATURES: Record<string, string[]> = {
     "Document Factory — RCA, minutas, specs, manuales, hypercare",
     "Modo Demo Cliente — escenarios guiados para presentar la plataforma",
     "Escalamiento Nivel 2 — Jira/ServiceNow demo + reglas + SLA + payloads visibles",
+    "Testing Intelligence SAP — grabación pantalla + scripts + evidencias + manual + Cloud ALM prep",
   ],
   ENTERPRISE: [
     "Todo Premium",
@@ -38,6 +39,7 @@ const SERVICE_FEATURES: Record<string, string[]> = {
     "Gobierno de IA — roles, permisos, auditoría y versionado del agente",
     "Madurez del agente — score, drift detection, embeddings semánticos",
     "Escalamiento Nivel 2 REAL — backend con credenciales Jira/ServiceNow + aprobación dual + SAP Cloud ALM (futuro)",
+    "Testing Intelligence SAP completo — integración real Cloud ALM + Activate Roadmap + análisis IA de video (roadmap)",
     "Soporte SLA dedicado",
   ],
 };

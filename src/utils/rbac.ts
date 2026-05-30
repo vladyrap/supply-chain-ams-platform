@@ -75,6 +75,7 @@ export function buildDefaultRoles(): PlatformRole[] {
         document_factory: fullPerm(),
         quality_evaluator:fullPerm(),
         escalamiento_n2:  fullPerm(),
+        testing_intelligence: fullPerm(),
       }),
     },
     {
@@ -106,6 +107,8 @@ export function buildDefaultRoles(): PlatformRole[] {
         quality_evaluator:{ ...viewCreateEdit(), export: true, approve: true },
         // SERVICE_LEAD: view + create + edit + export + configure + approve sobre escalamiento
         escalamiento_n2:  { ...viewCreateEdit(), export: true, configure: true, approve: true },
+        // SERVICE_LEAD: idem sobre testing
+        testing_intelligence: { ...viewCreateEdit(), export: true, configure: true, approve: true },
       }),
     },
     {
@@ -137,6 +140,8 @@ export function buildDefaultRoles(): PlatformRole[] {
         quality_evaluator:viewCreateEdit(),
         // AMS_CONSULTANT: view + create + edit + export sobre escalamiento (sin configure ni approve)
         escalamiento_n2:  { ...viewCreateEdit(), export: true },
+        // AMS_CONSULTANT: idem sobre testing
+        testing_intelligence: { ...viewCreateEdit(), export: true },
       }),
     },
     {
@@ -167,6 +172,8 @@ export function buildDefaultRoles(): PlatformRole[] {
         quality_evaluator:noPerm(),
         // CLIENT_USER ve sus propios casos escalados (filtro en UI por cliente). Sin configurar.
         escalamiento_n2:  viewOnly(),
+        // CLIENT_USER ve testing (gateado por tier PREMIUM/ENTERPRISE en UI).
+        testing_intelligence: viewOnly(),
       }),
     },
     {

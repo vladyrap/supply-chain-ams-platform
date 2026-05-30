@@ -314,6 +314,16 @@ export const MODULES: ModuleDef[] = [
     phase: 7,
     rolesAllowed: ["viewer", "consultor", "aprobador", "admin"],
   },
+  {
+    id: "testing-intelligence",
+    label: "Testing Intelligence",
+    icon: "🧪",
+    href: "/testing-intelligence",
+    description: "Testing Intelligence SAP: graba procesos, genera test scripts, organiza evidencia y prepara documentación para SAP Cloud ALM",
+    status: "available",
+    phase: 7,
+    rolesAllowed: ["consultor", "aprobador", "admin"],
+  },
 ];
 
 export function moduleById(id: string): ModuleDef | undefined {

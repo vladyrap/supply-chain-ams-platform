@@ -18,6 +18,7 @@ import { useDocumentFactory } from "@/hooks/useDocumentFactory";
 import { useQualityEvaluator } from "@/hooks/useQualityEvaluator";
 import { useAgentTraining } from "@/hooks/useAgentTraining";
 import { useEscalation } from "@/hooks/useEscalation";
+import { useTestingIntelligence } from "@/hooks/useTestingIntelligence";
 
 const MODULE_COLORS: Record<string, string> = {
   MM: "#5b8def", SD: "#c780f0", PP: "#4dd0c5", WM: "#f0b66c",
@@ -62,6 +63,7 @@ export default function DashboardPage() {
   const qe = useQualityEvaluator();
   const tr = useAgentTraining();
   const es = useEscalation();
+  const ti = useTestingIntelligence();
 
   const amsKnowledgeFromIncidents = tr.knowledge.filter((k) =>
     k.source?.toLowerCase().includes("incidente") || k.tags?.includes("from-incident")
@@ -138,6 +140,18 @@ export default function DashboardPage() {
         <KPI label="Tiempo a asignación"            value={es.metrics.avgTimeToAssignMinutes > 0 ? `${es.metrics.avgTimeToAssignMinutes}min` : "—"} accent="tech" />
         <KPI label="Responsable más cargado"        value={es.metrics.topResponsible?.[0] || "—"}            accent="ok" hint={es.metrics.topResponsible ? `${es.metrics.topResponsible[1]} casos` : ""} />
         <KPI label="Canal más usado"                value={Object.entries(es.metrics.byChannel).sort((a, b) => b[1] - a[1])[0]?.[0] || "—"} accent="tech" />
+      </div>
+
+      {/* KPIs Testing Intelligence */}
+      <div style={{ marginBottom: 8, fontSize: 11, letterSpacing: 2, color: "var(--text-dim)", fontFamily: "var(--font-mono, monospace)" }}>
+        ▸ AMS · TESTING INTELLIGENCE
+      </div>
+      <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(170px, 1fr))", gap: 12, marginBottom: 18 }}>
+        <KPI label="Scripts generados"        value={ti.metrics.scriptsGenerated}  accent="info" hint={`de ${ti.metrics.total} escenarios`} />
+        <KPI label="Evidencias capturadas"    value={ti.metrics.evidencesCount}    accent="tech" />
+        <KPI label="Pruebas aprobadas"        value={ti.metrics.passed}            accent="ok" />
+        <KPI label="Defectos abiertos"        value={ti.metrics.defectsOpen}       accent={ti.metrics.defectsOpen > 0 ? "warn" : "ok"} />
+        <KPI label="Cobertura Scope Items"    value={Object.keys(ti.metrics.coverageByScopeItem).length} accent="tech" hint="distintos cubiertos" />
       </div>
 
       {/* Heatmap actividad */}
