@@ -6,6 +6,14 @@ import {
   type AmsPlaybook, type PlaybookExecution, type PlaybookStatus,
 } from "@/types/ams-modules";
 import { buildDefaultPlaybooks } from "@/lib/playbooks/seedData";
+import { playbooksApi } from "@/services/ams-modules.api";
+
+const log = {
+  debug: (...a: unknown[]) => { if (process.env.NODE_ENV !== "production") console.debug("[playbooks]", ...a); },
+};
+function fireSync<T>(p: Promise<T>): void {
+  p.catch((err) => log.debug("playbooks sync failed:", (err as Error)?.message || err));
+}
 
 const EVT = "ams-playbooks-changed";
 
@@ -75,6 +83,24 @@ export function usePlaybooks(): UsePlaybooks {
     };
   }, []);
 
+  // Hidratar desde backend (offline-first). Si backend no responde, seguimos local.
+  useEffect(() => {
+    let cancelled = false;
+    (async () => {
+      try {
+        const snap = await playbooksApi.getSnapshot();
+        if (cancelled) return;
+        setPlaybooks(snap.playbooks);
+        setExecutions(snap.executions);
+        persist(AMS_MODULES_STORAGE.playbooks, snap.playbooks);
+        persist(AMS_MODULES_STORAGE.playbookRuns, snap.executions);
+      } catch (err) {
+        log.debug("backend offline, using localStorage:", (err as Error)?.message);
+      }
+    })();
+    return () => { cancelled = true; };
+  }, []);
+
   const savePlaybooks = useCallback((next: AmsPlaybook[]) => {
     setPlaybooks(next);
     persist(AMS_MODULES_STORAGE.playbooks, next);
@@ -92,15 +118,20 @@ export function usePlaybooks(): UsePlaybooks {
       updatedAt: now(),
     };
     savePlaybooks([item, ...playbooks]);
+    fireSync(playbooksApi.upsertPlaybook(item));
     return item;
   }, [playbooks, savePlaybooks]);
 
   const updatePlaybook: UsePlaybooks["updatePlaybook"] = useCallback((id, patch) => {
-    savePlaybooks(playbooks.map((p) => p.id === id ? { ...p, ...patch, updatedAt: now() } : p));
+    const next = playbooks.map((p) => p.id === id ? { ...p, ...patch, updatedAt: now() } : p);
+    savePlaybooks(next);
+    const updated = next.find((p) => p.id === id);
+    if (updated) fireSync(playbooksApi.upsertPlaybook(updated));
   }, [playbooks, savePlaybooks]);
 
   const deletePlaybook: UsePlaybooks["deletePlaybook"] = useCallback((id) => {
     savePlaybooks(playbooks.filter((p) => p.id !== id));
+    fireSync(playbooksApi.deletePlaybook(id));
   }, [playbooks, savePlaybooks]);
 
   const duplicatePlaybook: UsePlaybooks["duplicatePlaybook"] = useCallback((id) => {
@@ -114,6 +145,7 @@ export function usePlaybooks(): UsePlaybooks {
       createdAt: now(), updatedAt: now(),
     };
     savePlaybooks([copy, ...playbooks]);
+    fireSync(playbooksApi.upsertPlaybook(copy));
     return copy;
   }, [playbooks, savePlaybooks]);
 
@@ -130,11 +162,12 @@ export function usePlaybooks(): UsePlaybooks {
       status: "IN_PROGRESS",
     };
     saveExecutions([exec, ...executions]);
+    fireSync(playbooksApi.upsertExecution(exec));
     return exec;
   }, [executions, saveExecutions]);
 
   const toggleStep: UsePlaybooks["toggleStep"] = useCallback((executionId, stepId) => {
-    saveExecutions(executions.map((e) => {
+    const next = executions.map((e) => {
       if (e.id !== executionId) return e;
       const has = e.completedSteps.includes(stepId);
       return {
@@ -143,34 +176,55 @@ export function usePlaybooks(): UsePlaybooks {
           ? e.completedSteps.filter((s) => s !== stepId)
           : [...e.completedSteps, stepId],
       };
-    }));
+    });
+    saveExecutions(next);
+    const updated = next.find((e) => e.id === executionId);
+    if (updated) fireSync(playbooksApi.upsertExecution(updated));
   }, [executions, saveExecutions]);
 
   const setStepNote: UsePlaybooks["setStepNote"] = useCallback((executionId, stepId, note) => {
-    saveExecutions(executions.map((e) => {
+    const next = executions.map((e) => {
       if (e.id !== executionId) return e;
       return { ...e, notes: { ...e.notes, [stepId]: note } };
-    }));
+    });
+    saveExecutions(next);
+    const updated = next.find((e) => e.id === executionId);
+    if (updated) fireSync(playbooksApi.upsertExecution(updated));
   }, [executions, saveExecutions]);
 
   const completeExecution: UsePlaybooks["completeExecution"] = useCallback((executionId) => {
-    saveExecutions(executions.map((e) => e.id === executionId ? { ...e, status: "COMPLETED", finishedAt: now() } : e));
+    const next = executions.map((e) => e.id === executionId ? { ...e, status: "COMPLETED" as const, finishedAt: now() } : e);
+    saveExecutions(next);
+    const updated = next.find((e) => e.id === executionId);
+    if (updated) fireSync(playbooksApi.upsertExecution(updated));
   }, [executions, saveExecutions]);
 
   const abandonExecution: UsePlaybooks["abandonExecution"] = useCallback((executionId) => {
-    saveExecutions(executions.map((e) => e.id === executionId ? { ...e, status: "ABANDONED", finishedAt: now() } : e));
+    const next = executions.map((e) => e.id === executionId ? { ...e, status: "ABANDONED" as const, finishedAt: now() } : e);
+    saveExecutions(next);
+    const updated = next.find((e) => e.id === executionId);
+    if (updated) fireSync(playbooksApi.upsertExecution(updated));
   }, [executions, saveExecutions]);
 
   const resetPlaybooksDemo: UsePlaybooks["resetPlaybooksDemo"] = useCallback(() => {
-    if (typeof window !== "undefined") {
-      localStorage.removeItem(AMS_MODULES_STORAGE.playbooks);
-      localStorage.removeItem(AMS_MODULES_STORAGE.playbookRuns);
-    }
-    const fresh = buildDefaultPlaybooks();
-    persist(AMS_MODULES_STORAGE.playbooks, fresh);
-    persist(AMS_MODULES_STORAGE.playbookRuns, []);
-    setPlaybooks(fresh);
-    setExecutions([]);
+    (async () => {
+      try {
+        const snap = await playbooksApi.resetDemo();
+        setPlaybooks(snap.playbooks); setExecutions(snap.executions);
+        persist(AMS_MODULES_STORAGE.playbooks, snap.playbooks);
+        persist(AMS_MODULES_STORAGE.playbookRuns, snap.executions);
+        return;
+      } catch { /* fallback local */ }
+      if (typeof window !== "undefined") {
+        localStorage.removeItem(AMS_MODULES_STORAGE.playbooks);
+        localStorage.removeItem(AMS_MODULES_STORAGE.playbookRuns);
+      }
+      const fresh = buildDefaultPlaybooks();
+      persist(AMS_MODULES_STORAGE.playbooks, fresh);
+      persist(AMS_MODULES_STORAGE.playbookRuns, []);
+      setPlaybooks(fresh);
+      setExecutions([]);
+    })();
   }, []);
 
   return {

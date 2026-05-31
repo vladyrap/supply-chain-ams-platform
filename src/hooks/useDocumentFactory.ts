@@ -6,8 +6,15 @@ import {
   type GeneratedDocument, type DocumentType, type DocumentStatus, type DocumentSourceType,
 } from "@/types/ams-modules";
 import { TEMPLATES } from "@/lib/documents/templates";
+import { documentsApi } from "@/services/ams-modules.api";
 
 const EVT = "ams-documents-changed";
+const log = {
+  debug: (...a: unknown[]) => { if (process.env.NODE_ENV !== "production") console.debug("[documents]", ...a); },
+};
+function fireSync<T>(p: Promise<T>): void {
+  p.catch((err) => log.debug("documents sync failed:", (err as Error)?.message || err));
+}
 
 function safe<T>(raw: string | null): T | null {
   if (!raw) return null;
@@ -61,6 +68,24 @@ export function useDocumentFactory(): UseDocumentFactory {
     };
   }, []);
 
+  // Hidratar desde backend
+  useEffect(() => {
+    let cancelled = false;
+    (async () => {
+      try {
+        const snap = await documentsApi.getSnapshot();
+        if (cancelled) return;
+        setDocuments(snap.documents);
+        if (typeof window !== "undefined") {
+          localStorage.setItem(AMS_MODULES_STORAGE.documents, JSON.stringify(snap.documents));
+        }
+      } catch (err) {
+        log.debug("backend offline:", (err as Error)?.message);
+      }
+    })();
+    return () => { cancelled = true; };
+  }, []);
+
   const save = useCallback((next: GeneratedDocument[]) => {
     setDocuments(next);
     if (typeof window !== "undefined") {
@@ -87,15 +112,20 @@ export function useDocumentFactory(): UseDocumentFactory {
       formData: input.formData,
     };
     save([doc, ...documents]);
+    fireSync(documentsApi.upsertDocument(doc));
     return doc;
   }, [documents, save]);
 
   const updateDocument: UseDocumentFactory["updateDocument"] = useCallback((id, patch) => {
-    save(documents.map((d) => d.id === id ? { ...d, ...patch, updatedAt: now() } : d));
+    const next = documents.map((d) => d.id === id ? { ...d, ...patch, updatedAt: now() } : d);
+    save(next);
+    const updated = next.find((d) => d.id === id);
+    if (updated) fireSync(documentsApi.upsertDocument(updated));
   }, [documents, save]);
 
   const deleteDocument: UseDocumentFactory["deleteDocument"] = useCallback((id) => {
     save(documents.filter((d) => d.id !== id));
+    fireSync(documentsApi.deleteDocument(id));
   }, [documents, save]);
 
   const exportMarkdown: UseDocumentFactory["exportMarkdown"] = useCallback((id) => {

@@ -5,8 +5,15 @@ import {
   AMS_MODULES_STORAGE,
   type AgentEvaluation, type HallucinationRiskLevel, type TechnicalLevelFit,
 } from "@/types/ams-modules";
+import { qualityApi } from "@/services/ams-modules.api";
 
 const EVT = "ams-evaluations-changed";
+const log = {
+  debug: (...a: unknown[]) => { if (process.env.NODE_ENV !== "production") console.debug("[quality]", ...a); },
+};
+function fireSync<T>(p: Promise<T>): void {
+  p.catch((err) => log.debug("quality sync failed:", (err as Error)?.message || err));
+}
 
 function safe<T>(raw: string | null): T | null {
   if (!raw) return null;
@@ -111,6 +118,24 @@ export function useQualityEvaluator(): UseQualityEvaluator {
     };
   }, []);
 
+  // Hidratar desde backend
+  useEffect(() => {
+    let cancelled = false;
+    (async () => {
+      try {
+        const snap = await qualityApi.getSnapshot();
+        if (cancelled) return;
+        setEvaluations(snap.evaluations);
+        if (typeof window !== "undefined") {
+          localStorage.setItem(AMS_MODULES_STORAGE.evaluations, JSON.stringify(snap.evaluations));
+        }
+      } catch (err) {
+        log.debug("backend offline:", (err as Error)?.message);
+      }
+    })();
+    return () => { cancelled = true; };
+  }, []);
+
   const save = useCallback((next: AgentEvaluation[]) => {
     setEvaluations(next);
     if (typeof window !== "undefined") {
@@ -122,15 +147,20 @@ export function useQualityEvaluator(): UseQualityEvaluator {
   const createEvaluation: UseQualityEvaluator["createEvaluation"] = useCallback((input) => {
     const ev: AgentEvaluation = { ...input, id: uid("ev"), createdAt: now() };
     save([ev, ...evaluations]);
+    fireSync(qualityApi.upsertEvaluation(ev));
     return ev;
   }, [evaluations, save]);
 
   const updateEvaluation: UseQualityEvaluator["updateEvaluation"] = useCallback((id, patch) => {
-    save(evaluations.map((e) => e.id === id ? { ...e, ...patch } : e));
+    const next = evaluations.map((e) => e.id === id ? { ...e, ...patch } : e);
+    save(next);
+    const updated = next.find((e) => e.id === id);
+    if (updated) fireSync(qualityApi.upsertEvaluation(updated));
   }, [evaluations, save]);
 
   const deleteEvaluation: UseQualityEvaluator["deleteEvaluation"] = useCallback((id) => {
     save(evaluations.filter((e) => e.id !== id));
+    fireSync(qualityApi.deleteEvaluation(id));
   }, [evaluations, save]);
 
   const metrics = useMemo(() => aggregate(evaluations), [evaluations]);
