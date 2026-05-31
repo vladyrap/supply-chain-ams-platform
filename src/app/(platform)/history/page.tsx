@@ -6,6 +6,9 @@ import MarkdownView from "@/components/agent/MarkdownView";
 import { listIncidents, getIncident, type IncidentSummary, type IncidentDetail } from "@/services/agent.api";
 import KnowledgeQuickActions from "@/components/knowledge/KnowledgeQuickActions";
 import EscalationQuickAction from "@/components/escalation/EscalationQuickAction";
+import TicketEstimateBadge from "@/components/estimation/TicketEstimateBadge";
+import TicketEstimateDetail from "@/components/estimation/TicketEstimateDetail";
+import { buildEstimateInputFromIncident, recalculateTicketEstimate, applyManualAdjustment } from "@/utils/ticket-factory";
 import { useAuth } from "@/context/AuthContext";
 import type { SapModule, Environment } from "@/types";
 
@@ -177,10 +180,11 @@ export default function HistoryPage() {
                   }}>
                     {inc.message}
                   </div>
-                  <div className="row" style={{ gap: 6, marginTop: 4 }}>
+                  <div className="row" style={{ gap: 6, marginTop: 4, flexWrap: "wrap" }}>
                     <Badge variant="muted">{inc.sap_module ?? "—"}</Badge>
                     <Badge variant="muted">{inc.environment ?? "—"}</Badge>
                     {inc.client_name && <Badge variant="muted">{inc.client_name}</Badge>}
+                    <TicketEstimateBadge estimate={inc.estimatedResolution} />
                   </div>
                 </button>
               );
@@ -235,6 +239,34 @@ export default function HistoryPage() {
                   <div className="body">{detail.message}</div>
                 </div>
               </div>
+
+              {/* Autoestimación de Resolución */}
+              <TicketEstimateDetail
+                estimate={detail.estimatedResolution}
+                actor={authUser?.name || authUser?.email || "Consultor AMS"}
+                canRecalculate={authUser?.role === "admin" || authUser?.role === "aprobador" || authUser?.role === "consultor"}
+                canAdjustManual={authUser?.role === "admin" || authUser?.role === "aprobador"}
+                onRecalculate={() => {
+                  if (!detail) return;
+                  const next = recalculateTicketEstimate(
+                    { id: detail.id, estimatedResolution: detail.estimatedResolution ?? undefined },
+                    buildEstimateInputFromIncident(detail),
+                  );
+                  setDetail({ ...detail, estimatedResolution: next.estimatedResolution });
+                  setIncidents((cur) => cur.map((i) => i.id === detail.id ? { ...i, estimatedResolution: next.estimatedResolution } : i));
+                }}
+                onManualAdjust={(patch, reason) => {
+                  if (!detail?.estimatedResolution) return;
+                  const adjusted = applyManualAdjustment(
+                    detail.estimatedResolution,
+                    patch,
+                    authUser?.name || authUser?.email || "Consultor AMS",
+                    reason,
+                  );
+                  setDetail({ ...detail, estimatedResolution: adjusted });
+                  setIncidents((cur) => cur.map((i) => i.id === detail.id ? { ...i, estimatedResolution: adjusted } : i));
+                }}
+              />
 
               {detail.attachments.length > 0 && (
                 <div>

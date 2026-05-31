@@ -144,6 +144,10 @@ export async function getHealth(): Promise<{ ok: boolean; detail?: string }> {
   }
 }
 
+// Re-export del tipo de autoestimación para que los consumidores no tengan
+// que importar de dos paths distintos.
+import type { TicketEstimatedResolution } from "@/types/estimation";
+
 export interface IncidentSummary {
   id: string;
   user_name: string | null;
@@ -155,6 +159,8 @@ export interface IncidentSummary {
   confidence: string | null;
   model: string | null;
   attachments: { name: string; mimeType: string; sizeBytes: number }[];
+  /** Autoestimación generada por el backend en saveIncident o en lazy backfill */
+  estimatedResolution?: TicketEstimatedResolution | null;
   created_at: string;
 }
 
