@@ -20,6 +20,7 @@ import { useAgentTraining } from "@/hooks/useAgentTraining";
 import { useEscalation } from "@/hooks/useEscalation";
 import { useTestingIntelligence } from "@/hooks/useTestingIntelligence";
 import HeroCard from "@/components/dashboard/HeroCard";
+import { listIncidents, type IncidentSummary } from "@/services/agent.api";
 
 const MODULE_COLORS: Record<string, string> = {
   MM: "#5b8def", SD: "#c780f0", PP: "#4dd0c5", WM: "#f0b66c",
@@ -80,6 +81,28 @@ export default function DashboardPage() {
   const amsScopeItemsCoverage = tr.metrics.coverageByModule.length;
 
   useEffect(() => { load(); }, [load, tick]);
+
+  // Incidentes para KPIs de autoestimación
+  const [incidentsForEst, setIncidentsForEst] = useState<IncidentSummary[]>([]);
+  useEffect(() => {
+    listIncidents({ limit: 200 }).then((r) => {
+      if (r.ok) setIncidentsForEst(r.incidents);
+    });
+  }, [tick]);
+
+  // Agregaciones de autoestimación
+  const estStats = (() => {
+    const withEst = incidentsForEst.filter((i) => !!i.estimatedResolution);
+    const totalMin = withEst.reduce((s, i) => s + (i.estimatedResolution?.totalMinHours ?? 0), 0);
+    const totalMax = withEst.reduce((s, i) => s + (i.estimatedResolution?.totalMaxHours ?? 0), 0);
+    const lowConf = withEst.filter((i) => i.estimatedResolution?.confidence === "LOW").length;
+    const lowConfPct = withEst.length > 0 ? Math.round((lowConf / withEst.length) * 100) : 0;
+    const top5 = [...withEst]
+      .sort((a, b) => (b.estimatedResolution?.totalMaxHours ?? 0) - (a.estimatedResolution?.totalMaxHours ?? 0))
+      .slice(0, 5);
+    const avgMax = withEst.length > 0 ? totalMax / withEst.length : 0;
+    return { withEstCount: withEst.length, totalMin, totalMax, lowConf, lowConfPct, top5, avgMax };
+  })();
 
   // Stats hero
   const heroResponseRate = d?.totals.aiResolvedRate ?? 0;
@@ -147,6 +170,59 @@ export default function DashboardPage() {
         <KPI label="Responsable más cargado"        value={es.metrics.topResponsible?.[0] || "—"}            accent="ok" hint={es.metrics.topResponsible ? `${es.metrics.topResponsible[1]} casos` : ""} />
         <KPI label="Canal más usado"                value={Object.entries(es.metrics.byChannel).sort((a, b) => b[1] - a[1])[0]?.[0] || "—"} accent="tech" />
       </div>
+
+      {/* KPIs Autoestimación de Resolución */}
+      <div style={{ marginBottom: 8, fontSize: 11, letterSpacing: 2, color: "var(--text-dim)", fontFamily: "var(--font-mono, monospace)" }}>
+        ▸ AMS · AUTOESTIMACIÓN DE RESOLUCIÓN
+      </div>
+      <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(170px, 1fr))", gap: 12, marginBottom: 18 }}>
+        <KPI label="Tickets estimados"
+          value={estStats.withEstCount}
+          accent="info"
+          hint={`de ${incidentsForEst.length} cargados`} />
+        <KPI label="Esfuerzo total (techo)"
+          value={estStats.totalMax > 0 ? `${Math.round(estStats.totalMax)}h` : "—"}
+          accent="tech"
+          hint={`mín ${Math.round(estStats.totalMin)}h`} />
+        <KPI label="Promedio por ticket"
+          value={estStats.avgMax > 0 ? `${estStats.avgMax.toFixed(1)}h` : "—"}
+          accent="info"
+          hint="horas máximas" />
+        <KPI label="Confianza baja"
+          value={estStats.withEstCount > 0 ? `${estStats.lowConfPct}%` : "—"}
+          accent={estStats.lowConfPct > 30 ? "warn" : "ok"}
+          hint={`${estStats.lowConf} tickets`} />
+      </div>
+
+      {estStats.top5.length > 0 && (
+        <div className="card" style={{ marginBottom: 18 }}>
+          <div style={{ fontSize: 11, letterSpacing: 2, color: "var(--text-dim)", fontFamily: "var(--font-mono, monospace)", marginBottom: 8 }}>
+            ▸ TOP 5 TICKETS CON MAYOR ETA ESTIMADA
+          </div>
+          <table style={{ width: "100%", fontSize: 12 }}>
+            <thead>
+              <tr style={{ color: "var(--text-dim)", textAlign: "left" }}>
+                <th style={{ padding: "4px 6px", fontWeight: 600 }}>Ticket</th>
+                <th style={{ padding: "4px 6px", fontWeight: 600, width: 80 }}>Módulo</th>
+                <th style={{ padding: "4px 6px", fontWeight: 600, width: 100, textAlign: "right" }}>Rango</th>
+                <th style={{ padding: "4px 6px", fontWeight: 600, width: 80, textAlign: "right" }}>Confianza</th>
+              </tr>
+            </thead>
+            <tbody>
+              {estStats.top5.map((i) => (
+                <tr key={i.id} style={{ borderTop: "1px solid var(--border-soft)" }}>
+                  <td style={{ padding: "4px 6px", maxWidth: 320, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{i.message}</td>
+                  <td style={{ padding: "4px 6px" }}>{i.sap_module || "—"}</td>
+                  <td style={{ padding: "4px 6px", textAlign: "right", fontVariantNumeric: "tabular-nums" }}>
+                    {i.estimatedResolution?.totalMinHours}–{i.estimatedResolution?.totalMaxHours}h
+                  </td>
+                  <td style={{ padding: "4px 6px", textAlign: "right" }}>{i.estimatedResolution?.confidence}</td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
+      )}
 
       {/* KPIs Testing Intelligence */}
       <div style={{ marginBottom: 8, fontSize: 11, letterSpacing: 2, color: "var(--text-dim)", fontFamily: "var(--font-mono, monospace)" }}>

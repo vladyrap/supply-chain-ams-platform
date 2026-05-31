@@ -76,7 +76,8 @@ export type DocumentType =
   | "GO_LIVE_CHECKLIST"
   | "REMEDIATION_PLAN"
   | "GAPS_REPORT"
-  | "AGENT_CHANGELOG";
+  | "AGENT_CHANGELOG"
+  | "ESTIMATE_RESOLUTION";
 
 export type DocumentStatus = "DRAFT" | "GENERATED" | "REVIEWED" | "APPROVED" | "EXPORTED";
 
@@ -113,6 +114,7 @@ export const DOCUMENT_TYPE_LABELS: Record<DocumentType, string> = {
   REMEDIATION_PLAN:   "Plan de remediación",
   GAPS_REPORT:        "Informe de brechas",
   AGENT_CHANGELOG:    "Changelog del agente",
+  ESTIMATE_RESOLUTION:"Estimación de resolución",
 };
 
 export const DOCUMENT_TYPE_ICONS: Record<DocumentType, string> = {
@@ -121,6 +123,7 @@ export const DOCUMENT_TYPE_ICONS: Record<DocumentType, string> = {
   USER_MANUAL: "📘", CUTOVER_PLAN: "🚀", HYPERCARE_PLAN: "🩺",
   EXECUTIVE_REPORT: "📊", GO_LIVE_CHECKLIST: "✅",
   REMEDIATION_PLAN: "🔧", GAPS_REPORT: "🚧", AGENT_CHANGELOG: "🧠",
+  ESTIMATE_RESOLUTION: "⏱",
 };
 
 // ============================================================================

@@ -482,4 +482,75 @@ ${bulletList(d.fixed || "")}
 ${bulletList(d.knownIssues || "")}
 `,
   },
+
+  ESTIMATE_RESOLUTION: {
+    type: "ESTIMATE_RESOLUTION",
+    description: "Estimación de resolución para un ticket/incidente — para enviar al cliente con respaldo del rango propuesto.",
+    fields: [
+      { id: "ticketCode",    label: "Código del ticket",          type: "text", required: true, placeholder: "INC-1234 / MESA-007" },
+      { id: "ticketTitle",   label: "Título / resumen",           type: "text", required: true, placeholder: "Error MIGO M7 022 al recibir mercancía" },
+      { id: "sapModule",     label: "Módulo SAP",                 type: "text", placeholder: "MM / SD / PP …" },
+      { id: "environment",   label: "Ambiente afectado",          type: "text", placeholder: "PRD / QA / DEV" },
+      { id: "severity",      label: "Severidad",                  type: "text", placeholder: "CRITICAL / HIGH / MEDIUM / LOW" },
+      { id: "rangeHours",    label: "Rango horas (ej. 4-12)",     type: "text", required: true, placeholder: "4-12" },
+      { id: "businessDays",  label: "Días hábiles (ej. 0.5-1.5)", type: "text", required: true, placeholder: "0.5-1.5" },
+      { id: "confidence",    label: "Confianza",                  type: "text", required: true, placeholder: "Alta / Media / Baja" },
+      { id: "complexity",    label: "Complejidad",                type: "text", placeholder: "Baja / Media / Alta" },
+      { id: "phases",        label: "Fases (una por línea)",      type: "textarea", rows: 6, required: true,
+        placeholder: "Recepción y clasificación · 0.25-0.5h\nDiagnóstico funcional · 1-3h\nResolución · 1-4h\nValidación · 0.5-1.5h\n…" },
+      { id: "assumptions",   label: "Supuestos (uno por línea)",  type: "textarea", rows: 3, required: true,
+        placeholder: "Horario hábil 9×5\nKey user disponible para validar\n…" },
+      { id: "risks",         label: "Riesgos (uno por línea)",    type: "textarea", rows: 3,
+        placeholder: "Posible necesidad de SAP Note\nVentana de transporte restringida\n…" },
+      { id: "dependencies",  label: "Dependencias",               type: "textarea", rows: 2,
+        placeholder: "Aprobación CAB\nVentana de pase\n…" },
+      { id: "missingData",   label: "Datos requeridos",           type: "textarea", rows: 2,
+        placeholder: "Material afectado\nLog dump completo\n…" },
+      { id: "nextSteps",     label: "Próximos pasos",             type: "textarea", rows: 3,
+        placeholder: "Confirmar prioridad con el solicitante\nReservar ventana de validación\n…" },
+      { id: "clientReply",   label: "Respuesta sugerida al cliente", type: "textarea", rows: 4,
+        defaultValue: "Estimado/a,\n\nAdjuntamos la estimación para el ticket indicado. Quedamos atentos a su confirmación para avanzar.\n\nSaludos,\nEquipo AMS" },
+    ],
+    generate: (d) => `# Estimación de resolución · ${d.ticketCode}
+
+**Ticket:** ${d.ticketTitle}
+**Módulo:** ${d.sapModule || "—"} · **Ambiente:** ${d.environment || "—"} · **Severidad:** ${d.severity || "—"}
+
+---
+
+## Esfuerzo estimado
+- **Rango horas:** ${d.rangeHours}
+- **Días hábiles:** ${d.businessDays}
+- **Confianza:** ${d.confidence}
+- **Complejidad:** ${d.complexity || "—"}
+
+> Estimación por rangos. No constituye un tiempo exacto comprometido — el real depende de los factores listados abajo.
+
+## Fases
+${numbered(d.phases)}
+
+## Supuestos
+${bulletList(d.assumptions)}
+
+## Riesgos
+${bulletList(d.risks || "")}
+
+## Dependencias
+${bulletList(d.dependencies || "")}
+
+## Datos requeridos para precisar
+${bulletList(d.missingData || "")}
+
+## Próximos pasos
+${bulletList(d.nextSteps || "")}
+
+---
+
+## Respuesta sugerida al cliente
+${d.clientReply}
+
+---
+**Generado:** ${today()}
+`,
+  },
 };
