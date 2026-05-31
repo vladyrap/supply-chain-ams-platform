@@ -10,6 +10,14 @@ import {
   normalizeRoleCode, suggestDuplicatedCode, validateRoleCode,
   migrateRolesAddingMissingScreens,
 } from "@/utils/rbac";
+import * as rbacApi from "@/services/rbac.api";
+
+const log = {
+  debug: (...a: unknown[]) => { if (process.env.NODE_ENV !== "production") console.debug("[rbac]", ...a); },
+};
+function fireSync<T>(p: Promise<T>): void {
+  p.catch((err) => log.debug("rbac sync failed:", (err as Error)?.message || err));
+}
 
 const now = () => new Date().toISOString();
 const uid = (prefix: string) => `${prefix}_${Math.random().toString(36).slice(2, 9)}${Date.now().toString(36).slice(-4)}`;
@@ -94,13 +102,25 @@ export function useAccessAdmin(): UseAccessAdmin {
   const [currentUserId, setCurrentUId]  = useState<string | null>(null);
   const [loading, setLoading]           = useState(true);
 
-  // Load on mount
+  // Load on mount (offline-first: localStorage primero, después hidratar desde backend)
   useEffect(() => {
     const data = loadFromLocalStorage();
     setRoles(data.roles);
     setUsers(data.users);
     setCurrentUId(data.currentUserId);
     setLoading(false);
+    // Hidratación backend en background
+    (async () => {
+      try {
+        const snap = await rbacApi.getSnapshot();
+        setRoles(snap.roles);
+        setUsers(snap.users);
+        persistRoles(snap.roles);
+        persistUsers(snap.users);
+      } catch (err) {
+        log.debug("rbac backend offline:", (err as Error)?.message);
+      }
+    })();
   }, []);
 
   const currentUser = useMemo(() => users.find((u) => u.id === currentUserId) ?? null, [users, currentUserId]);
@@ -124,6 +144,7 @@ export function useAccessAdmin(): UseAccessAdmin {
       persistRoles(next);
       return next;
     });
+    fireSync(rbacApi.upsertRole(fresh));
     return { ok: true, role: fresh };
   }, [roles]);
 
@@ -149,10 +170,16 @@ export function useAccessAdmin(): UseAccessAdmin {
       persistRoles(next);
       return next;
     });
+    fireSync(rbacApi.upsertRole(updated));
     // Si cambió el code, propagar a los users que tenían el viejo
     if (nextCode !== target.code) {
       setUsers((us) => {
-        const next = us.map((u) => (u.roleCode === target.code ? { ...u, roleCode: nextCode } : u));
+        const next = us.map((u) => {
+          if (u.roleCode !== target.code) return u;
+          const updatedUser = { ...u, roleCode: nextCode };
+          fireSync(rbacApi.upsertUser(updatedUser));
+          return updatedUser;
+        });
         persistUsers(next);
         return next;
       });
@@ -173,6 +200,7 @@ export function useAccessAdmin(): UseAccessAdmin {
       persistRoles(next);
       return next;
     });
+    fireSync(rbacApi.deleteRole(id));
     return { ok: true };
   }, [roles, users]);
 
@@ -194,15 +222,17 @@ export function useAccessAdmin(): UseAccessAdmin {
       persistRoles(next);
       return next;
     });
+    fireSync(rbacApi.upsertRole(dup));
     return { ok: true, role: dup };
   }, [roles]);
 
   const togglePermission: UseAccessAdmin["togglePermission"] = useCallback((roleId, screen, action) => {
     setRoles((rs) => {
+      let updated: PlatformRole | null = null;
       const next = rs.map((r) => {
         if (r.id !== roleId) return r;
         const screenPerm = r.permissions[screen];
-        return {
+        updated = {
           ...r,
           updatedAt: now(),
           permissions: {
@@ -210,18 +240,24 @@ export function useAccessAdmin(): UseAccessAdmin {
             [screen]: { ...screenPerm, [action]: !screenPerm[action] },
           },
         };
+        return updated;
       });
       persistRoles(next);
+      if (updated) fireSync(rbacApi.upsertRole(updated));
       return next;
     });
   }, []);
 
   const setRolePermissions: UseAccessAdmin["setRolePermissions"] = useCallback((roleId, screen, perm) => {
     setRoles((rs) => {
-      const next = rs.map((r) => r.id === roleId
-        ? { ...r, updatedAt: now(), permissions: { ...r.permissions, [screen]: { ...perm } } }
-        : r);
+      let updated: PlatformRole | null = null;
+      const next = rs.map((r) => {
+        if (r.id !== roleId) return r;
+        updated = { ...r, updatedAt: now(), permissions: { ...r.permissions, [screen]: { ...perm } } };
+        return updated;
+      });
       persistRoles(next);
+      if (updated) fireSync(rbacApi.upsertRole(updated));
       return next;
     });
   }, []);
@@ -250,6 +286,7 @@ export function useAccessAdmin(): UseAccessAdmin {
       persistUsers(next);
       return next;
     });
+    fireSync(rbacApi.upsertUser(fresh));
     return { ok: true, user: fresh };
   }, [roles, users]);
 
@@ -268,6 +305,7 @@ export function useAccessAdmin(): UseAccessAdmin {
       persistUsers(next);
       return next;
     });
+    fireSync(rbacApi.upsertUser(updated));
     return { ok: true, user: updated };
   }, [users, roles]);
 
@@ -278,6 +316,7 @@ export function useAccessAdmin(): UseAccessAdmin {
       persistUsers(next);
       return next;
     });
+    fireSync(rbacApi.deleteUser(id));
     if (currentUserId === id) {
       setCurrentUId(null);
       persistCurrent(null);
@@ -287,8 +326,14 @@ export function useAccessAdmin(): UseAccessAdmin {
 
   const toggleUserStatus: UseAccessAdmin["toggleUserStatus"] = useCallback((id) => {
     setUsers((us) => {
-      const next = us.map((u) => u.id === id ? { ...u, status: u.status === "ACTIVE" ? "INACTIVE" as const : "ACTIVE" as const } : u);
+      let updated: PlatformUser | null = null;
+      const next = us.map((u) => {
+        if (u.id !== id) return u;
+        updated = { ...u, status: u.status === "ACTIVE" ? "INACTIVE" as const : "ACTIVE" as const };
+        return updated;
+      });
       persistUsers(next);
+      if (updated) fireSync(rbacApi.upsertUser(updated));
       return next;
     });
   }, []);
@@ -300,19 +345,31 @@ export function useAccessAdmin(): UseAccessAdmin {
 
   // -------- reset --------
   const resetDemoData: UseAccessAdmin["resetDemoData"] = useCallback(() => {
-    if (typeof window !== "undefined") {
-      localStorage.removeItem(RBAC_STORAGE.roles);
-      localStorage.removeItem(RBAC_STORAGE.users);
-      localStorage.removeItem(RBAC_STORAGE.currentUser);
-    }
-    const freshRoles = buildDefaultRoles();
-    const freshUsers = buildDefaultUsers();
-    persistRoles(freshRoles);
-    persistUsers(freshUsers);
-    persistCurrent(null);
-    setRoles(freshRoles);
-    setUsers(freshUsers);
-    setCurrentUId(null);
+    (async () => {
+      try {
+        const snap = await rbacApi.resetDemo();
+        setRoles(snap.roles);
+        setUsers(snap.users);
+        setCurrentUId(null);
+        persistRoles(snap.roles);
+        persistUsers(snap.users);
+        persistCurrent(null);
+        return;
+      } catch { /* fallback local */ }
+      if (typeof window !== "undefined") {
+        localStorage.removeItem(RBAC_STORAGE.roles);
+        localStorage.removeItem(RBAC_STORAGE.users);
+        localStorage.removeItem(RBAC_STORAGE.currentUser);
+      }
+      const freshRoles = buildDefaultRoles();
+      const freshUsers = buildDefaultUsers();
+      persistRoles(freshRoles);
+      persistUsers(freshUsers);
+      persistCurrent(null);
+      setRoles(freshRoles);
+      setUsers(freshUsers);
+      setCurrentUId(null);
+    })();
   }, []);
 
   const countUsersByRoleCode = useCallback((code: string) => users.filter((u) => u.roleCode === code).length, [users]);

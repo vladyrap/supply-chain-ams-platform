@@ -6,6 +6,7 @@ import GlobalParallax from "@/components/fx/GlobalParallax";
 import Jaimito from "@/components/jarvis/Jaimito";
 import TourController from "@/components/jarvis/TourController";
 import DemoModeBanner from "@/components/demo/DemoModeBanner";
+import SentryBoot from "@/components/fx/SentryBoot";
 
 export default function PlatformLayout({ children }: { children: React.ReactNode }) {
   return (
@@ -21,6 +22,7 @@ export default function PlatformLayout({ children }: { children: React.ReactNode
       <EventEffects />
       <TourController />
       <Jaimito />
+      <SentryBoot />
     </div>
   );
 }
