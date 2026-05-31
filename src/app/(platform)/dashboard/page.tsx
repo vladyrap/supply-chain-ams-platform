@@ -21,6 +21,8 @@ import { useEscalation } from "@/hooks/useEscalation";
 import { useTestingIntelligence } from "@/hooks/useTestingIntelligence";
 import HeroCard from "@/components/dashboard/HeroCard";
 import { listIncidents, type IncidentSummary } from "@/services/agent.api";
+import { calculateBusinessValue } from "@/utils/business-value-engine";
+import AgentReadinessCenter from "@/components/readiness/AgentReadinessCenter";
 
 const MODULE_COLORS: Record<string, string> = {
   MM: "#5b8def", SD: "#c780f0", PP: "#4dd0c5", WM: "#f0b66c",
@@ -193,6 +195,57 @@ export default function DashboardPage() {
           accent={estStats.lowConfPct > 30 ? "warn" : "ok"}
           hint={`${estStats.lowConf} tickets`} />
       </div>
+
+      {/* Business Value · valor económico generado */}
+      {(() => {
+        const bv = calculateBusinessValue({
+          ticketsAssistedByIa: estStats.withEstCount,
+          rcasGenerated: df.documents.filter((d) => d.documentType === "RCA").length,
+          meetingMinutesGenerated: df.documents.filter((d) => d.documentType === "MEETING_MINUTES").length,
+          testCasesGenerated: ti.scenarios.length,
+          knowledgeConversions: amsKnowledgeFromIncidents,
+          avoidedEscalations: Math.max(0, estStats.withEstCount - es.metrics.total),
+          documentsGenerated: amsDocsGenerated,
+        });
+        return (
+          <>
+            <div style={{ marginBottom: 8, fontSize: 11, letterSpacing: 2, color: "var(--text-dim)", fontFamily: "var(--font-mono, monospace)" }}>
+              ▸ AMS · VALOR GENERADO POR LA PLATAFORMA
+            </div>
+            <div className="card" style={{ marginBottom: 18, borderLeft: "3px solid #10b981" }}>
+              <div className="row between" style={{ alignItems: "flex-end", flexWrap: "wrap", gap: 14 }}>
+                <div>
+                  <div style={{ fontSize: 28, fontWeight: 800, color: "#10b981", fontVariantNumeric: "tabular-nums" }}>
+                    USD {bv.totals.minCost.toLocaleString("es-CL")}–{bv.totals.maxCost.toLocaleString("es-CL")}
+                  </div>
+                  <div style={{ fontSize: 11, color: "var(--text-dim)", marginTop: 2 }}>
+                    Costo evitado estimado · {bv.totals.minHours}–{bv.totals.maxHours} h · USD {bv.hourlyCostUsd}/h
+                  </div>
+                </div>
+                <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(140px, 1fr))", gap: 8, flex: 1 }}>
+                  {bv.breakdown.filter((b) => b.count > 0).map((b) => (
+                    <div key={b.category} style={{
+                      padding: "6px 10px",
+                      background: "rgba(15,23,42,0.55)",
+                      border: "1px solid var(--border-soft)",
+                      borderRadius: 6,
+                    }}>
+                      <div style={{ fontSize: 16, fontWeight: 700, color: "var(--text)", fontVariantNumeric: "tabular-nums" }}>{b.count}</div>
+                      <div style={{ fontSize: 10, color: "var(--text-dim)" }}>{b.category}</div>
+                      <div style={{ fontSize: 10, color: "var(--text-soft)" }}>{b.minHoursTotal}–{b.maxHoursTotal} h</div>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            </div>
+          </>
+        );
+      })()}
+
+      {/* Agent Readiness Center */}
+      <AgentReadinessCenter />
+
+      <div style={{ height: 18 }} />
 
       {estStats.top5.length > 0 && (
         <div className="card" style={{ marginBottom: 18 }}>
