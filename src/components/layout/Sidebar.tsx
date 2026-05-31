@@ -31,7 +31,7 @@ function readRbacState(): { roles: PlatformRole[]; users: PlatformUser[]; curren
 const SECTIONS: { name: string; ids: string[] }[] = [
   { name: "Operación",       ids: ["welcome", "mission-control", "topology", "tv", "demo", "dashboard", "agent", "history"] },
   { name: "Visualizaciones", ids: ["launchpad", "wallboard", "war-room", "brain", "terminal", "hud", "forecast", "flow"] },
-  { name: "AMS avanzado",    ids: ["support-desk", "agent-lab", "voice-calls", "knowledge", "playbooks", "document-factory", "quality-evaluator", "escalation-n2", "testing-intelligence", "tickets", "integrations", "sap-readonly", "meetings"] },
+  { name: "AMS avanzado",    ids: ["support-desk", "agent-lab", "voice-calls", "knowledge", "playbooks", "document-factory", "quality-evaluator", "escalation-n2", "testing-intelligence", "time-estimator", "tickets", "integrations", "sap-readonly", "meetings"] },
   { name: "Sistema",         ids: ["executive", "settings", "admin"] },
 ];
 
