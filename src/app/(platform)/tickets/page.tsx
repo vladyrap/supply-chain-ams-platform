@@ -3,7 +3,7 @@
 import { useEffect, useState, useCallback } from "react";
 import Badge from "@/components/ui/Badge";
 import MarkdownView from "@/components/agent/MarkdownView";
-import { listTickets, classifyTicket, getProviderStatus, type Ticket, type Classification } from "@/services/tickets.api";
+import { listTickets, classifyTicket, getProviderStatus, recalculateTicket, adjustTicketEstimate, type Ticket, type Classification } from "@/services/tickets.api";
 import CreateTicketModal from "@/components/tickets/CreateTicketModal";
 import TicketEstimateBadge from "@/components/estimation/TicketEstimateBadge";
 import TicketEstimateDetail from "@/components/estimation/TicketEstimateDetail";
@@ -169,12 +169,33 @@ export default function TicketsPage() {
                 </div>
               </div>
 
-              {/* Panel completo de autoestimación si el ticket la tiene */}
+              {/* Panel completo de autoestimación si el ticket la tiene.
+                  Recalcular/ajustar manualmente solo para tickets creados desde la UI (source="user")
+                  porque son los que están persistidos en la tabla tickets_demo. */}
               {selected.estimatedResolution && (
                 <TicketEstimateDetail
                   estimate={selected.estimatedResolution}
-                  canRecalculate={false}
-                  canAdjustManual={false}
+                  actor={authUser?.name || authUser?.email || "Consultor AMS"}
+                  canRecalculate={selected.source === "user" && (authUser?.role === "admin" || authUser?.role === "aprobador" || authUser?.role === "consultor")}
+                  canAdjustManual={selected.source === "user" && (authUser?.role === "admin" || authUser?.role === "aprobador")}
+                  onRecalculate={async () => {
+                    const res = await recalculateTicket(selected.key, {
+                      actor: authUser?.name || authUser?.email || "Consultor AMS",
+                    });
+                    if ("success" in res && res.success) {
+                      setTickets((cur) => cur.map((t) => t.key === selected.key ? res.ticket : t));
+                    }
+                  }}
+                  onManualAdjust={async (patch, reason) => {
+                    const res = await adjustTicketEstimate(selected.key, {
+                      ...patch,
+                      actor: authUser?.name || authUser?.email || "Consultor AMS",
+                      reason,
+                    });
+                    if ("success" in res && res.success) {
+                      setTickets((cur) => cur.map((t) => t.key === selected.key ? res.ticket : t));
+                    }
+                  }}
                 />
               )}
 

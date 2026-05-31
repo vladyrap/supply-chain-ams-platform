@@ -70,6 +70,29 @@ export async function createTicket(input: CreateTicketInput) {
   );
 }
 
+export async function recalculateTicket(key: string, opts: { force?: boolean; actor?: string } = {}) {
+  return call<{ success: true; ticket: Ticket } | { success: false; error: string }>(
+    `/api/tickets/${encodeURIComponent(key)}/recalculate`,
+    { method: "POST", body: JSON.stringify(opts) }
+  );
+}
+
+export interface ManualTicketEstimatePatch {
+  totalMinHours?: number;
+  totalMaxHours?: number;
+  confidence?: "LOW" | "MEDIUM" | "HIGH";
+  complexity?: "VERY_LOW" | "LOW" | "MEDIUM" | "HIGH" | "VERY_HIGH" | "UNKNOWN";
+  actor: string;
+  reason: string;
+}
+
+export async function adjustTicketEstimate(key: string, patch: ManualTicketEstimatePatch) {
+  return call<{ success: true; ticket: Ticket } | { success: false; error: string }>(
+    `/api/tickets/${encodeURIComponent(key)}/estimate`,
+    { method: "PATCH", body: JSON.stringify(patch) }
+  );
+}
+
 export async function getProviderStatus() {
   return call<{
     success: true;
