@@ -12,6 +12,8 @@ import {
 } from "@/services/agent.api";
 import { supportApi } from "@/services/support.api";
 import { semanticSearch, type SearchSourceType } from "@/services/search.api";
+import { listTickets as listAmsTickets } from "@/services/tickets.api";
+import { listScopeItems } from "@/services/scope-items.api";
 
 interface Props {
   onClose: () => void;
@@ -58,6 +60,9 @@ export default function CommandPalette({ onClose }: Props) {
       buildIncidentSearch(q, router, onClose),
       buildSupportTicketSearch(q, router, onClose),
       buildSupportKbSearch(q, router, onClose),
+      // Global Intelligence Search · fuentes adicionales
+      buildAmsTicketSearch(q, router, onClose),
+      buildScopeItemSearch(q, router, onClose),
     ];
     Promise.all(builders.map((b) => b(q).catch(() => [] as Command[])))
       .then((results) => {
@@ -388,6 +393,65 @@ function buildSupportKbSearch(q: string, router: ReturnType<typeof useRouter>, o
         icon: "📘",
         group: "Recientes",
         action: () => router.push(`/support-desk/kb`),
+      }));
+  };
+}
+
+// ============================================================
+// Global Intelligence Search · builders adicionales
+// (tickets AMS persistidos + scope items SAP).
+// ============================================================
+function buildAmsTicketSearch(q: string, router: ReturnType<typeof useRouter>, _onClose: () => void): AsyncBuilder {
+  return async () => {
+    const r = await listAmsTickets();
+    if (!("success" in r) || !r.success) return [];
+    const needle = q.toLowerCase();
+    return r.tickets
+      .filter((t) =>
+        t.key.toLowerCase().includes(needle) ||
+        t.title.toLowerCase().includes(needle) ||
+        (t.description || "").toLowerCase().includes(needle) ||
+        (t.sapModule || "").toLowerCase().includes(needle)
+      )
+      .slice(0, 6)
+      .map<Command>((t) => ({
+        id: `ams-tkt:${t.key}`,
+        label: `${t.key} · ${t.title}`,
+        hint: `Ticket AMS · ${t.sapModule ?? "—"} · ${t.priority} · ${t.status}${
+          t.estimatedResolution
+            ? ` · ${t.estimatedResolution.totalMinHours}-${t.estimatedResolution.totalMaxHours}h`
+            : ""
+        }`,
+        icon: "🎫",
+        group: "Recientes",
+        action: () => router.push(`/tickets`),
+      }));
+  };
+}
+
+function buildScopeItemSearch(q: string, router: ReturnType<typeof useRouter>, _onClose: () => void): AsyncBuilder {
+  return async () => {
+    const r = await listScopeItems();
+    if (!("success" in r) || !r.success) return [];
+    const needle = q.toLowerCase();
+    return r.items
+      .filter((it) =>
+        it.code.toLowerCase().includes(needle) ||
+        it.title.toLowerCase().includes(needle) ||
+        it.process.toLowerCase().includes(needle) ||
+        (it.subProcess || "").toLowerCase().includes(needle) ||
+        it.module.toLowerCase().includes(needle)
+      )
+      .slice(0, 5)
+      .map<Command>((it) => ({
+        id: `scope:${it.code}`,
+        label: `${it.code} — ${it.title}`,
+        hint: `Scope Item SAP · ${it.module} · ${it.process}${
+          it.hasKnowledge ? " · KB ✓" : ""
+        }${it.hasPlaybook ? " · Playbook ✓" : ""}`,
+        icon: "🎯",
+        group: "Recientes",
+        action: () => router.push(`/tickets`),
       }));
   };
 }
