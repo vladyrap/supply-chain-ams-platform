@@ -19,6 +19,7 @@ import { useQualityEvaluator } from "@/hooks/useQualityEvaluator";
 import { useAgentTraining } from "@/hooks/useAgentTraining";
 import { useEscalation } from "@/hooks/useEscalation";
 import { useTestingIntelligence } from "@/hooks/useTestingIntelligence";
+import HeroCard from "@/components/dashboard/HeroCard";
 
 const MODULE_COLORS: Record<string, string> = {
   MM: "#5b8def", SD: "#c780f0", PP: "#4dd0c5", WM: "#f0b66c",
@@ -80,20 +81,25 @@ export default function DashboardPage() {
 
   useEffect(() => { load(); }, [load, tick]);
 
+  // Stats hero
+  const heroResponseRate = d?.totals.aiResolvedRate ?? 0;
+
   return (
     <div>
-      <div className="page-title">
-        <h1>Dashboard</h1>
-        <p>
-          Bienvenido, <b>{user?.name || user?.email}</b> · Rol <b>{roleDef?.label}</b> · Cliente <b>{client || "—"}</b> · Ambiente <b>{environment}</b>
-        </p>
-      </div>
+      <HeroCard
+        userName={user?.name || user?.email?.split("@")[0] || "Operador"}
+        role={roleDef?.label || role}
+        totalIncidents={d?.totals.incidents ?? 0}
+        resolvedToday={d?.totals.incidentsToday ?? 0}
+        activeEscalations={es.metrics.assignedActive + es.metrics.pendingApproval}
+        agentResponseRate={heroResponseRate}
+      />
 
       <div className="row between" style={{ marginBottom: 16, gap: 10, flexWrap: "wrap" }}>
         <div className="row" style={{ gap: 8, flexWrap: "wrap" }}>
-          <Badge variant="ok">backend :6601</Badge>
-          <Badge variant="info">plataforma :6700</Badge>
-          <Badge variant="tech">Gemini · Whisper · pgvector</Badge>
+          <Badge variant="info">Cliente: <b>{client || "—"}</b></Badge>
+          <Badge variant="tech">Ambiente: <b>{environment}</b></Badge>
+          <Badge variant="ok">Gemini · Whisper · pgvector</Badge>
         </div>
         <button className="btn ghost" onClick={() => setTick((t) => t + 1)} disabled={loading}>
           {loading ? <><span className="spinner" /> actualizando</> : "↻ Refrescar"}

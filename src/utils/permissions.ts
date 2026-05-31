@@ -12,6 +12,7 @@ import type { PlatformScreen } from "@/types/rbac";
 // Mantiene los IDs originales sin tocar para no romper navegación.
 const MODULE_TO_SCREEN: Record<string, PlatformScreen> = {
   // Operación
+  welcome:          "dashboard",
   dashboard:        "dashboard",
   agent:            "agente_ams",
   "agent-think":    "agente_ams",

@@ -43,19 +43,14 @@ export default function TestingIntelligenceCenter({ actingUserId, canEdit, canCo
 
   return (
     <div className="col" style={{ gap: 14 }}>
-      <div className="card" style={{
-        background: "linear-gradient(135deg, rgba(34,211,238,0.08), rgba(168,85,247,0.05))",
-        borderColor: "rgba(34,211,238,0.30)",
-      }}>
-        <div style={{ fontSize: 10.5, letterSpacing: 2, color: "#67e8f9", fontFamily: "var(--font-mono, monospace)" }}>
-          AMS · TESTING INTELLIGENCE
-        </div>
-        <h1 style={{ margin: "4px 0 0", fontSize: 22 }}>🧪 Testing Intelligence SAP</h1>
-        <p style={{ margin: "6px 0 0", color: "var(--text-soft)", fontSize: 13 }}>
+      <div className="module-hero anim-fade-up">
+        <div className="eyebrow">AMS · TESTING INTELLIGENCE</div>
+        <h1>🧪 Testing Intelligence SAP</h1>
+        <p className="subtitle">
           Graba procesos, genera scripts de prueba, organiza evidencias y prepara documentación para SAP Cloud ALM.
         </p>
         <div style={{ marginTop: 8, fontSize: 11, color: "#fde68a" }}>
-          Modo demo activo · videos no se suben a backend · Cloud ALM en modo preparación (sin envío real).
+          <span className="live-dot" /> Modo demo activo · Cloud ALM en modo preparación (sin envío real).
         </div>
       </div>
 

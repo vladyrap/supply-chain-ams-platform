@@ -5,6 +5,16 @@ import type { ModuleDef } from "@/types";
 // El resto son placeholders honestos que muestran roadmap.
 export const MODULES: ModuleDef[] = [
   {
+    id: "welcome",
+    label: "Bienvenida",
+    icon: "🏠",
+    href: "/welcome",
+    description: "Landing del cliente: hero animado + 6 módulos destacados + CTA al agente y dashboard",
+    status: "available",
+    phase: 1,
+    rolesAllowed: ["viewer", "consultor", "aprobador", "admin"],
+  },
+  {
     id: "dashboard",
     label: "Dashboard",
     icon: "📊",

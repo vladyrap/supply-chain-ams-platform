@@ -35,19 +35,14 @@ export default function EscalationCenter({ actingUserId, canEdit, canConfigure, 
 
   return (
     <div className="col" style={{ gap: 14 }}>
-      <div className="card" style={{
-        background: "linear-gradient(135deg, rgba(168,85,247,0.08), rgba(34,211,238,0.05))",
-        borderColor: "rgba(168,85,247,0.30)",
-      }}>
-        <div style={{ fontSize: 10.5, letterSpacing: 2, color: "#c084fc", fontFamily: "var(--font-mono, monospace)" }}>
-          AMS · ESCALAMIENTO NIVEL 2
-        </div>
-        <h1 style={{ margin: "4px 0 0", fontSize: 22 }}>🚨 Centro de Escalamiento Nivel 2</h1>
-        <p style={{ margin: "6px 0 0", color: "var(--text-soft)", fontSize: 13 }}>
+      <div className="module-hero anim-fade-up">
+        <div className="eyebrow">AMS · ESCALAMIENTO NIVEL 2</div>
+        <h1>🚨 Centro de Escalamiento Nivel 2</h1>
+        <p className="subtitle">
           Deriva incidentes críticos o complejos al especialista correcto, con trazabilidad, SLA y preparación para Jira o ServiceNow.
         </p>
         <div style={{ marginTop: 8, fontSize: 11, color: "#fde68a" }}>
-          Modo demo activo · los tickets no se envían a sistemas reales sin confirmación humana y credenciales backend.
+          <span className="live-dot" /> Modo demo activo · los tickets no se envían sin confirmación humana y credenciales backend.
         </div>
       </div>
 
