@@ -1,8 +1,11 @@
 "use client";
 
 // Hook único que gobierna todo el módulo Escalation N2.
-// Persiste en localStorage (sin tocar backend) y sincroniza
-// entre tabs con eventos "ams-escalation-changed".
+// MODO OFFLINE-FIRST:
+// - Estado en memoria + cache en localStorage.
+// - Si hay backend disponible (escalation.api), hidrata desde Postgres al montar
+//   y sincroniza cada mutación. Si el backend no responde, sigue funcionando local.
+// - Esto permite que la UI nunca quede bloqueada y soporte trabajo sin conexión.
 
 import { useCallback, useEffect, useMemo, useState } from "react";
 import {
@@ -17,16 +20,22 @@ import {
   buildSeedConnectors, buildSeedSettings,
 } from "@/lib/escalation/seedData";
 import {
-  evaluateEscalationRules, suggestAssignee, toCandidate,
+  evaluateEscalationRules, toCandidate,
   buildJiraPayload, buildServiceNowPayload,
   generateEscalationSummary, generateClientSummary,
 } from "@/utils/escalation-engine";
 import type { IncidentSummary, IncidentDetail } from "@/services/agent.api";
+import * as api from "@/services/escalation.api";
+
+// Logger ligero. Si querés silenciar todo el módulo, cambialo a no-op.
+const log = {
+  debug: (...a: unknown[]) => { if (process.env.NODE_ENV !== "production") console.debug("[escalation]", ...a); },
+};
 
 type AnyIncident = IncidentSummary | IncidentDetail;
 
 // ============================================================
-// Persistencia segura
+// Persistencia local (cache)
 // ============================================================
 
 function loadList<T>(key: string, seed: () => T[]): T[] {
@@ -65,6 +74,11 @@ function saveAndEmit(key: string, value: unknown) {
   } catch { /* ignore */ }
 }
 
+// Fire-and-forget sync con el backend; nunca rompe la UI si falla.
+function fireSync<T>(p: Promise<T>): void {
+  p.catch((err) => log.debug("escalation backend sync failed (using local cache):", err?.message || err));
+}
+
 // ============================================================
 // Hook
 // ============================================================
@@ -75,6 +89,36 @@ export function useEscalation() {
   const [records, setRecords] = useState<EscalationRecord[]>(() => loadList(ESCALATION_STORAGE.records, buildSeedRecords));
   const [connectors, setConnectors] = useState<ItsmConnectorConfig>(() => loadObj(ESCALATION_STORAGE.connectors, buildSeedConnectors));
   const [settings, setSettings] = useState<EscalationSettings>(() => loadObj(ESCALATION_STORAGE.settings, buildSeedSettings));
+  const [backendOnline, setBackendOnline] = useState(false);
+
+  // -----------------------------
+  // Hidratar desde backend al montar (offline-first)
+  // -----------------------------
+  useEffect(() => {
+    let cancelled = false;
+    (async () => {
+      try {
+        const snap = await api.getSnapshot();
+        if (cancelled) return;
+        setRules(snap.rules);
+        setResponsibles(snap.responsibles);
+        setRecords(snap.records);
+        setConnectors(snap.connectors);
+        setSettings(snap.settings);
+        // Refrescar cache local con la verdad del servidor
+        saveAndEmit(ESCALATION_STORAGE.rules, snap.rules);
+        saveAndEmit(ESCALATION_STORAGE.responsibles, snap.responsibles);
+        saveAndEmit(ESCALATION_STORAGE.records, snap.records);
+        saveAndEmit(ESCALATION_STORAGE.connectors, snap.connectors);
+        saveAndEmit(ESCALATION_STORAGE.settings, snap.settings);
+        setBackendOnline(true);
+      } catch (err) {
+        log.debug("escalation backend offline, using localStorage cache:", (err as Error)?.message);
+        setBackendOnline(false);
+      }
+    })();
+    return () => { cancelled = true; };
+  }, []);
 
   // Sync entre tabs y otros componentes
   useEffect(() => {
@@ -97,13 +141,14 @@ export function useEscalation() {
   // CRUD reglas
   // -----------------------------
   const upsertRule = useCallback((rule: EscalationRule) => {
+    const updated = { ...rule, updatedAt: new Date().toISOString() };
     setRules((prev) => {
       const idx = prev.findIndex((r) => r.id === rule.id);
-      const updated = { ...rule, updatedAt: new Date().toISOString() };
       const next = idx >= 0 ? prev.map((r, i) => (i === idx ? updated : r)) : [...prev, updated];
       saveAndEmit(ESCALATION_STORAGE.rules, next);
       return next;
     });
+    fireSync(api.upsertRule(updated));
   }, []);
   const removeRule = useCallback((id: string) => {
     setRules((prev) => {
@@ -111,19 +156,21 @@ export function useEscalation() {
       saveAndEmit(ESCALATION_STORAGE.rules, next);
       return next;
     });
+    fireSync(api.deleteRule(id));
   }, []);
 
   // -----------------------------
   // CRUD responsables
   // -----------------------------
   const upsertResponsible = useCallback((r: N2Responsible) => {
+    const updated = { ...r, updatedAt: new Date().toISOString() };
     setResponsibles((prev) => {
       const idx = prev.findIndex((x) => x.id === r.id);
-      const updated = { ...r, updatedAt: new Date().toISOString() };
       const next = idx >= 0 ? prev.map((x, i) => (i === idx ? updated : x)) : [...prev, updated];
       saveAndEmit(ESCALATION_STORAGE.responsibles, next);
       return next;
     });
+    fireSync(api.upsertResponsible(updated));
   }, []);
   const removeResponsible = useCallback((id: string) => {
     setResponsibles((prev) => {
@@ -131,11 +178,16 @@ export function useEscalation() {
       saveAndEmit(ESCALATION_STORAGE.responsibles, next);
       return next;
     });
+    fireSync(api.deleteResponsible(id));
   }, []);
   const toggleResponsibleActive = useCallback((id: string) => {
     setResponsibles((prev) => {
-      const next = prev.map((r) => r.id === id ? { ...r, active: !r.active, updatedAt: new Date().toISOString() } : r);
+      const target = prev.find((r) => r.id === id);
+      if (!target) return prev;
+      const updated = { ...target, active: !target.active, updatedAt: new Date().toISOString() };
+      const next = prev.map((r) => r.id === id ? updated : r);
       saveAndEmit(ESCALATION_STORAGE.responsibles, next);
+      fireSync(api.upsertResponsible(updated));
       return next;
     });
   }, []);
@@ -149,6 +201,7 @@ export function useEscalation() {
       saveAndEmit(ESCALATION_STORAGE.connectors, next);
       return next;
     });
+    fireSync(api.updateConnectors(patch));
   }, []);
   const updateSettings = useCallback((patch: Partial<EscalationSettings>) => {
     setSettings((prev) => {
@@ -156,6 +209,7 @@ export function useEscalation() {
       saveAndEmit(ESCALATION_STORAGE.settings, next);
       return next;
     });
+    fireSync(api.updateSettings(patch));
   }, []);
 
   // -----------------------------
@@ -236,15 +290,22 @@ export function useEscalation() {
       saveAndEmit(ESCALATION_STORAGE.records, next);
       return next;
     });
+    fireSync(api.createRecord(rec));
     return rec;
   }, [responsibles, nextEscalationNumber, settings]);
 
   const _patchRecord = useCallback((id: string, patch: (r: EscalationRecord) => EscalationRecord) => {
+    let updated: EscalationRecord | null = null;
     setRecords((prev) => {
-      const next = prev.map((r) => r.id === id ? { ...patch(r), updatedAt: new Date().toISOString() } : r);
+      const next = prev.map((r) => {
+        if (r.id !== id) return r;
+        updated = { ...patch(r), updatedAt: new Date().toISOString() };
+        return updated;
+      });
       saveAndEmit(ESCALATION_STORAGE.records, next);
       return next;
     });
+    if (updated) fireSync(api.updateRecord(id, updated));
   }, []);
 
   const approveEscalation = useCallback((id: string, by: string) => {
@@ -343,15 +404,33 @@ export function useEscalation() {
     return generateEscalationSummary(inc, reason);
   }, []);
 
-  const resetDemoEscalationData = useCallback(() => {
-    const r = buildSeedRules(); const p = buildSeedResponsibles();
-    const h = buildSeedRecords(); const c = buildSeedConnectors(); const s = buildSeedSettings();
-    saveAndEmit(ESCALATION_STORAGE.rules, r);
-    saveAndEmit(ESCALATION_STORAGE.responsibles, p);
-    saveAndEmit(ESCALATION_STORAGE.records, h);
-    saveAndEmit(ESCALATION_STORAGE.connectors, c);
-    saveAndEmit(ESCALATION_STORAGE.settings, s);
-    setRules(r); setResponsibles(p); setRecords(h); setConnectors(c); setSettings(s);
+  const resetDemoEscalationData = useCallback(async () => {
+    // Si hay backend, le pedimos al server que resetee y traiga snapshot fresco
+    try {
+      const snap = await api.resetDemo();
+      setRules(snap.rules);
+      setResponsibles(snap.responsibles);
+      setRecords(snap.records);
+      setConnectors(snap.connectors);
+      setSettings(snap.settings);
+      saveAndEmit(ESCALATION_STORAGE.rules, snap.rules);
+      saveAndEmit(ESCALATION_STORAGE.responsibles, snap.responsibles);
+      saveAndEmit(ESCALATION_STORAGE.records, snap.records);
+      saveAndEmit(ESCALATION_STORAGE.connectors, snap.connectors);
+      saveAndEmit(ESCALATION_STORAGE.settings, snap.settings);
+      setBackendOnline(true);
+      return;
+    } catch {
+      // Fallback local
+      const r = buildSeedRules(); const p = buildSeedResponsibles();
+      const h = buildSeedRecords(); const c = buildSeedConnectors(); const s = buildSeedSettings();
+      saveAndEmit(ESCALATION_STORAGE.rules, r);
+      saveAndEmit(ESCALATION_STORAGE.responsibles, p);
+      saveAndEmit(ESCALATION_STORAGE.records, h);
+      saveAndEmit(ESCALATION_STORAGE.connectors, c);
+      saveAndEmit(ESCALATION_STORAGE.settings, s);
+      setRules(r); setResponsibles(p); setRecords(h); setConnectors(c); setSettings(s);
+    }
   }, []);
 
   // -----------------------------
@@ -417,7 +496,7 @@ export function useEscalation() {
 
   return {
     // estado
-    rules, responsibles, records, connectors, settings, metrics,
+    rules, responsibles, records, connectors, settings, metrics, backendOnline,
     // CRUD reglas
     upsertRule, removeRule,
     // CRUD responsables
