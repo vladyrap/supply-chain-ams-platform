@@ -3,10 +3,10 @@
 import { useEffect, useState, useCallback } from "react";
 import Badge from "@/components/ui/Badge";
 import MarkdownView from "@/components/agent/MarkdownView";
-import { listTickets, classifyTicket, getProviderStatus, recalculateTicket, adjustTicketEstimate, type Ticket, type Classification } from "@/services/tickets.api";
+import { listTickets, getProviderStatus, type Ticket } from "@/services/tickets.api";
 import CreateTicketModal from "@/components/tickets/CreateTicketModal";
 import TicketEstimateBadge from "@/components/estimation/TicketEstimateBadge";
-import TicketEstimateDetail from "@/components/estimation/TicketEstimateDetail";
+import TicketCommandCenter from "@/components/tickets/TicketCommandCenter";
 import { useAuth } from "@/context/AuthContext";
 
 function statusVariant(s: string): "ok" | "warn" | "error" | "muted" | "info" {
@@ -32,9 +32,6 @@ export default function TicketsPage() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [selectedKey, setSelectedKey] = useState<string | null>(null);
-  const [classifying, setClassifying] = useState(false);
-  const [classification, setClassification] = useState<Classification | null>(null);
-  const [classifyError, setClassifyError] = useState<string | null>(null);
   const [createOpen, setCreateOpen] = useState(false);
   const [createdMsg, setCreatedMsg] = useState<string | null>(null);
 
@@ -55,16 +52,6 @@ export default function TicketsPage() {
   useEffect(() => { refresh(); }, [refresh]);
 
   const selected = tickets.find((t) => t.key === selectedKey) ?? null;
-
-  async function handleClassify(t: Ticket) {
-    setClassifying(true);
-    setClassifyError(null);
-    setClassification(null);
-    const res = await classifyTicket(t.key);
-    setClassifying(false);
-    if ("success" in res && res.success) setClassification(res.classification);
-    else setClassifyError("error" in res ? res.error : "Error");
-  }
 
   return (
     <div>
@@ -117,7 +104,7 @@ export default function TicketsPage() {
               return (
                 <button
                   key={t.key}
-                  onClick={() => { setSelectedKey(t.key); setClassification(null); setClassifyError(null); }}
+                  onClick={() => setSelectedKey(t.key)}
                   style={{
                     display: "block", width: "100%", textAlign: "left",
                     background: active ? "var(--accent-soft)" : "transparent",
@@ -144,95 +131,20 @@ export default function TicketsPage() {
           </div>
         </div>
 
-        {/* Detalle */}
-        <div className="card">
-          {!selected && <div style={{ color: "var(--text-dim)", fontSize: 13 }}>Selecciona un ticket.</div>}
-          {selected && (
-            <div className="col" style={{ gap: 12 }}>
-              <div className="row between" style={{ flexWrap: "wrap", gap: 8 }}>
-                <div>
-                  <div style={{ fontFamily: "ui-monospace, monospace", fontSize: 11.5, color: "var(--text-dim)" }}>{selected.key}</div>
-                  <h3 style={{ margin: "2px 0 4px", fontSize: 16 }}>{selected.title}</h3>
-                  <div className="row" style={{ gap: 6, flexWrap: "wrap" }}>
-                    <Badge variant={statusVariant(selected.status)}>{selected.status}</Badge>
-                    <Badge variant={priorityVariant(selected.priority)}>{selected.priority}</Badge>
-                    {selected.assignee && <Badge variant="muted">@{selected.assignee}</Badge>}
-                    {selected.url && <a className="badge info" href={selected.url} target="_blank" rel="noopener noreferrer">↗ Jira</a>}
-                  </div>
-                </div>
-              </div>
-
-              <div>
-                <h4 style={{ margin: "0 0 6px", fontSize: 13, color: "var(--text-soft)" }}>Descripción</h4>
-                <div className="msg user">
-                  <div className="body" style={{ whiteSpace: "pre-wrap" }}>{selected.description}</div>
-                </div>
-              </div>
-
-              {/* Panel completo de autoestimación. Editar es OK para todos los
-                  tickets: si el ticket viene de Jira el backend lo espeja en
-                  tickets_demo al primer edit (ensureTicketMirror). */}
-              {selected.estimatedResolution && (
-                <TicketEstimateDetail
-                  estimate={selected.estimatedResolution}
-                  actor={authUser?.name || authUser?.email || "Consultor AMS"}
-                  canRecalculate={authUser?.role === "admin" || authUser?.role === "aprobador" || authUser?.role === "consultor"}
-                  canAdjustManual={authUser?.role === "admin" || authUser?.role === "aprobador"}
-                  onRecalculate={async () => {
-                    const res = await recalculateTicket(selected.key, {
-                      actor: authUser?.name || authUser?.email || "Consultor AMS",
-                    });
-                    if ("success" in res && res.success) {
-                      setTickets((cur) => cur.map((t) => t.key === selected.key ? res.ticket : t));
-                    }
-                  }}
-                  onManualAdjust={async (patch, reason) => {
-                    const res = await adjustTicketEstimate(selected.key, {
-                      ...patch,
-                      actor: authUser?.name || authUser?.email || "Consultor AMS",
-                      reason,
-                    });
-                    if ("success" in res && res.success) {
-                      setTickets((cur) => cur.map((t) => t.key === selected.key ? res.ticket : t));
-                    }
-                  }}
-                />
-              )}
-
-              <div>
-                <button
-                  className="btn primary"
-                  onClick={() => handleClassify(selected)}
-                  disabled={classifying}
-                >
-                  {classifying ? <><span className="spinner" /> Clasificando con el agente…</> : "🤖 Clasificar con Agente AMS"}
-                </button>
-              </div>
-
-              {classifyError && <div className="alert error">{classifyError}</div>}
-
-              {classification && (
-                <div>
-                  <div className="row" style={{ gap: 8, marginBottom: 8 }}>
-                    <h4 style={{ margin: 0, fontSize: 13, color: "var(--text-soft)" }}>Clasificación AMS sugerida</h4>
-                    <Badge variant="tech">{classification.model}</Badge>
-                    <Badge variant={
-                      classification.confidence === "alta" ? "ok" :
-                      classification.confidence === "media" ? "warn" :
-                      classification.confidence === "baja" ? "error" : "muted"
-                    }>
-                      confianza: {classification.confidence}
-                    </Badge>
-                  </div>
-                  <div className="msg agent">
-                    <div className="body"><MarkdownView text={classification.response} /></div>
-                  </div>
-                  <div className="alert info" style={{ marginTop: 10, fontSize: 12 }}>
-                    Esta sugerencia <b>no se envía al cliente automáticamente</b>. Requiere aprobación humana antes de comunicarla.
-                  </div>
-                </div>
-              )}
+        {/* Detalle → Ticket Command Center */}
+        <div>
+          {!selected && (
+            <div className="card" style={{ color: "var(--text-dim)", fontSize: 13 }}>
+              Selecciona un ticket para ver su Command Center.
             </div>
+          )}
+          {selected && (
+            <TicketCommandCenter
+              ticket={selected}
+              onTicketUpdated={(t) =>
+                setTickets((cur) => cur.map((x) => x.key === t.key ? t : x))
+              }
+            />
           )}
         </div>
       </div>
@@ -257,7 +169,6 @@ JIRA_PROJECT_KEY=AMS (opcional)`}</pre>
           // Optimistic: meto el nuevo arriba sin esperar refresh, y refresh igual.
           setTickets((cur) => [t, ...cur]);
           setSelectedKey(t.key);
-          setClassification(null);
           const eta = t.estimatedResolution
             ? ` Estimación: ${t.estimatedResolution.totalMinHours}–${t.estimatedResolution.totalMaxHours}h (${t.estimatedResolution.confidence}).`
             : "";
