@@ -292,3 +292,101 @@ export const COMPLEXITY_LEVELS: ComplexityLevel[] = ["VERY_LOW", "LOW", "MEDIUM"
 export const SEVERITY_LEVELS: SeverityLevel[] = ["LOW", "MEDIUM", "HIGH", "CRITICAL"];
 export const URGENCY_LEVELS: UrgencyLevel[] = ["NORMAL", "URGENT", "IMMEDIATE"];
 export const ENVIRONMENT_LEVELS: EnvironmentLevel[] = ["DEV", "QA", "UAT", "PRD", "SANDBOX", "TRAINING", "NO_INFORMADO"];
+
+// ============================================================
+// Autoestimación de Resolución (por ticket/incidente)
+// ============================================================
+// El feature `/time-estimator` produce TimeEstimate (cotización manual de proyectos).
+// Esta sección define la estructura para autoestimaciones embebidas en cada
+// ticket/incidente: se generan automáticamente al crear, viven dentro del JSONB
+// del ticket, y son recalculables cuando cambian factores.
+
+export type TicketEstimateOrigin =
+  | "agent_chat"
+  | "manual_incident"
+  | "escalation_n2"
+  | "testing_defect"
+  | "jira_demo"
+  | "servicenow_demo"
+  | "support_desk"
+  | "demo_cliente"
+  | "other";
+
+export type TicketKind = "incident" | "change_request" | "service_request";
+
+export interface TicketEstimatePhase {
+  id: string;
+  name: string;
+  description: string;
+  minHours: number;
+  maxHours: number;
+  ownerProfile: RequiredProfile;
+  required: boolean;
+  status?: "pending" | "in_progress" | "done" | "skipped";
+  dependencies: string[];
+  deliverables: string[];
+}
+
+export interface TicketEstimateInput {
+  ticketId: string;
+  origin: TicketEstimateOrigin;
+  kind?: TicketKind;
+  title: string;
+  description?: string;
+  sapModule?: string;
+  process?: string;
+  subProcess?: string;
+  environment?: EnvironmentLevel;
+  severity?: SeverityLevel;
+  priority?: UrgencyLevel;
+  complexity?: ComplexityLevel;
+  serviceLevel?: string;
+  agentConfidence?: ConfidenceLevel | "no_detectada" | "baja" | "media" | "alta";
+  requiresDevelopment?: boolean;
+  requiresIntegration?: boolean;
+  requiresTransport?: boolean;
+  requiresTesting?: boolean;
+  requiresUAT?: boolean;
+  hasKnownPlaybook?: boolean;
+  hasKnowledgeMatch?: boolean;
+  hasScopeItemCoverage?: boolean;
+  isRepeatedIncident?: boolean;
+  affectedUsers?: number;
+  businessImpact?: "low" | "medium" | "high" | "critical";
+  technicalImpact?: "low" | "medium" | "high" | "critical";
+  hasErrorEvidence?: boolean;
+  isProductive?: boolean;
+  missingData?: string[];
+}
+
+export interface TicketEstimatedResolution {
+  id: string;
+  ticketId: string;
+  totalMinHours: number;
+  totalMaxHours: number;
+  totalMinBusinessDays: number;
+  totalMaxBusinessDays: number;
+  confidence: ConfidenceLevel;
+  confidenceScore: number;
+  complexity: ComplexityLevel;
+  phaseBreakdown: TicketEstimatePhase[];
+  assumptions: string[];
+  risks: string[];
+  dependencies: string[];
+  missingData: string[];
+  suggestedSlaMinutes: number;
+  // metadatos de origen / auditoría
+  generatedAt: string;
+  lastRecalculatedAt: string;
+  generatedBy: "SYSTEM_ESTIMATOR" | string;
+  manuallyAdjusted: boolean;
+  adjustedBy?: string;
+  adjustmentReason?: string;
+  // factores aplicados (útil para explicar el resultado)
+  appliedRules: string[];
+}
+
+// Storage para autoestimaciones (clave separada para no mezclar con TimeEstimate del módulo /time-estimator)
+export const TICKET_ESTIMATE_STORAGE = {
+  estimates: "supply-chain-ams-ticket-estimates",
+} as const;

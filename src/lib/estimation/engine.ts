@@ -7,6 +7,7 @@ import type {
   EstimateInput, EstimateType, ComplexityLevel, SeverityLevel,
   UrgencyLevel, EnvironmentLevel, RequiredProfile,
   EstimationResult, EstimatePhase, ConfidenceLevel,
+  TicketEstimateInput, TicketEstimatedResolution, TicketEstimatePhase,
 } from "@/types/estimation";
 
 // ============================================================
@@ -417,4 +418,288 @@ ${closing}
 
 Saludos,
 Equipo AMS`;
+}
+
+// ============================================================
+// AUTOESTIMACIÓN DE RESOLUCIÓN (por ticket / incidente)
+// ============================================================
+// API independiente de estimate(): tomá un TicketEstimateInput y devuelve
+// TicketEstimatedResolution para embebir directo en el ticket. Reutiliza las
+// mismas tablas base y multiplicadores que el engine de proyectos.
+//
+// Reglas de ajuste por requirements/conocimiento implementadas:
+// - Integración +8..40h · Desarrollo +16..80h · Transporte +2..8h · UAT +4..24h
+// - Playbook -15% · Recurrente -25% · Sin evidencia +20% · Baja conf agente +30%
+// ============================================================
+
+function ticketPhase(
+  id: string, name: string, description: string,
+  minH: number, maxH: number, owner: RequiredProfile,
+  opts: { required?: boolean; dependencies?: string[]; deliverables?: string[] } = {},
+): TicketEstimatePhase {
+  return {
+    id, name, description, minHours: minH, maxHours: maxH, ownerProfile: owner,
+    required: opts.required ?? true,
+    dependencies: opts.dependencies ?? [],
+    deliverables: opts.deliverables ?? [],
+    status: "pending",
+  };
+}
+
+// 10 fases AMS estándar para tickets/incidentes.
+function amsStandardPhases(): TicketEstimatePhase[] {
+  return [
+    ticketPhase("p01", "Recepción y clasificación", "Triage, validación de impacto y módulo afectado.", 0.25, 0.75, "AMS_LEAD"),
+    ticketPhase("p02", "Análisis funcional inicial", "Diagnóstico funcional + revisión de configuración.", 0.5, 2, "FUNCTIONAL_CONSULTANT", { dependencies: ["p01"] }),
+    ticketPhase("p03", "Análisis técnico si aplica", "Logs, dumps, debug ABAP/BTP.", 0.5, 3, "ABAP_DEVELOPER", { required: false, dependencies: ["p02"] }),
+    ticketPhase("p04", "Reproducción del error", "Replicar en QA/SBX con datos análogos.", 0.5, 2, "FUNCTIONAL_CONSULTANT", { dependencies: ["p02"] }),
+    ticketPhase("p05", "Identificación de causa probable", "Root cause preliminar.", 0.5, 2, "FUNCTIONAL_CONSULTANT", { dependencies: ["p04"] }),
+    ticketPhase("p06", "Resolución o workaround", "Aplicar fix definitivo o paliativo.", 0.5, 4, "FUNCTIONAL_CONSULTANT", { dependencies: ["p05"], deliverables: ["Solución aplicada"] }),
+    ticketPhase("p07", "Validación en ambiente", "Pruebas con key user.", 0.25, 1.5, "TESTING_CONSULTANT", { dependencies: ["p06"], deliverables: ["Evidencia de prueba"] }),
+    ticketPhase("p08", "Comunicación al cliente", "Update + cierre con el solicitante.", 0.25, 0.75, "AMS_LEAD", { dependencies: ["p07"] }),
+    ticketPhase("p09", "Documentación del caso", "Actualizar KB / ticket / playbook.", 0.25, 1, "FUNCTIONAL_CONSULTANT", { dependencies: ["p08"], deliverables: ["KB actualizada"] }),
+    ticketPhase("p10", "Cierre o escalamiento", "Cerrar o derivar a N2.", 0.1, 0.5, "AMS_LEAD", { dependencies: ["p09"] }),
+  ];
+}
+
+// Fases adicionales para incidentes críticos en productivo.
+function criticalPrdExtraPhases(): TicketEstimatePhase[] {
+  return [
+    ticketPhase("p11", "Contención inicial", "Workaround urgente para frenar el sangrado.", 0.5, 2, "AMS_LEAD", { deliverables: ["Workaround aplicado"] }),
+    ticketPhase("p12", "Escalamiento Nivel 2", "Derivación al especialista N2.", 0.25, 1, "AMS_LEAD", { dependencies: ["p11"] }),
+    ticketPhase("p13", "RCA preliminar", "Causa raíz preliminar dentro de las primeras 24h.", 1, 4, "FUNCTIONAL_CONSULTANT", { dependencies: ["p12"], deliverables: ["RCA preliminar"] }),
+    ticketPhase("p14", "RCA final", "RCA definitivo con plan de acción.", 2, 8, "AMS_LEAD", { dependencies: ["p13"], deliverables: ["RCA final firmado"] }),
+    ticketPhase("p15", "Hypercare o monitoreo", "Monitoreo intensivo 48-72h post-fix.", 4, 24, "AMS_LEAD", { dependencies: ["p14"], deliverables: ["Reporte hypercare"] }),
+  ];
+}
+
+// 13 fases para change request / requerimiento.
+function changeRequestPhases(): TicketEstimatePhase[] {
+  return [
+    ticketPhase("c01", "Análisis", "Toma de requerimiento.", 2, 6, "FUNCTIONAL_CONSULTANT"),
+    ticketPhase("c02", "Diseño funcional", "Spec funcional.", 4, 16, "FUNCTIONAL_CONSULTANT", { dependencies: ["c01"], deliverables: ["Spec funcional"] }),
+    ticketPhase("c03", "Diseño técnico", "Spec técnica ABAP/BTP.", 4, 16, "ABAP_DEVELOPER", { required: false, dependencies: ["c02"], deliverables: ["Spec técnica"] }),
+    ticketPhase("c04", "Configuración", "Customizing SAP.", 2, 12, "FUNCTIONAL_CONSULTANT", { dependencies: ["c02"] }),
+    ticketPhase("c05", "Desarrollo si aplica", "Codificación ABAP/BTP.", 8, 48, "ABAP_DEVELOPER", { required: false, dependencies: ["c03"] }),
+    ticketPhase("c06", "Integración si aplica", "Mapeo + iflow.", 8, 40, "INTEGRATION_CONSULTANT", { required: false, dependencies: ["c05"] }),
+    ticketPhase("c07", "Pruebas unitarias", "PU del developer.", 2, 8, "ABAP_DEVELOPER", { dependencies: ["c05"] }),
+    ticketPhase("c08", "Pruebas funcionales", "QA funcional.", 4, 16, "TESTING_CONSULTANT", { dependencies: ["c07"] }),
+    ticketPhase("c09", "UAT", "Aceptación key user.", 4, 24, "KEY_USER", { dependencies: ["c08"], deliverables: ["UAT firmada"] }),
+    ticketPhase("c10", "Documentación", "Manual + spec final.", 2, 8, "FUNCTIONAL_CONSULTANT", { dependencies: ["c09"] }),
+    ticketPhase("c11", "Transporte", "TR controlado.", 1, 4, "BASIS_CONSULTANT", { dependencies: ["c10"] }),
+    ticketPhase("c12", "Puesta en marcha", "Pase productivo.", 2, 8, "AMS_LEAD", { dependencies: ["c11"], deliverables: ["Sistema productivo"] }),
+    ticketPhase("c13", "Hypercare", "Monitoreo post go-live.", 8, 40, "AMS_LEAD", { dependencies: ["c12"] }),
+  ];
+}
+
+// Confianza desde texto libre o ConfidenceLevel hacia HIGH/MEDIUM/LOW canónico.
+function normalizeAgentConfidence(v: TicketEstimateInput["agentConfidence"]): ConfidenceLevel | null {
+  if (!v) return null;
+  const s = String(v).toLowerCase();
+  if (s === "high" || s === "alta") return "HIGH";
+  if (s === "low" || s === "baja") return "LOW";
+  if (s === "medium" || s === "media") return "MEDIUM";
+  return null;
+}
+
+// Heurística rápida: deduce complejidad si no vino del input.
+function inferComplexity(input: TicketEstimateInput): ComplexityLevel {
+  if (input.complexity && input.complexity !== "UNKNOWN") return input.complexity;
+  let score = 2; // MEDIUM por default
+  if (input.requiresDevelopment) score += 2;
+  if (input.requiresIntegration) score += 2;
+  if (input.severity === "CRITICAL") score += 1;
+  if (input.isProductive) score += 1;
+  if (input.hasKnownPlaybook || input.hasKnowledgeMatch) score -= 1;
+  if (input.isRepeatedIncident) score -= 1;
+  if (score <= 0) return "VERY_LOW";
+  if (score === 1) return "LOW";
+  if (score === 2) return "MEDIUM";
+  if (score === 3) return "HIGH";
+  return "VERY_HIGH";
+}
+
+// SLA sugerido en minutos según severidad + ambiente.
+function suggestedSla(severity: SeverityLevel, env: EnvironmentLevel): number {
+  if (severity === "CRITICAL" && env === "PRD") return 60;        // 1h
+  if (severity === "CRITICAL") return 240;                         // 4h
+  if (severity === "HIGH" && env === "PRD") return 240;            // 4h
+  if (severity === "HIGH") return 480;                             // 8h
+  if (severity === "MEDIUM") return 1440;                          // 24h
+  return 2880;                                                     // 48h
+}
+
+const uidEst = (p: string) => `${p}_${Math.random().toString(36).slice(2, 8)}${Date.now().toString(36).slice(-4)}`;
+const nowIso = () => new Date().toISOString();
+
+/**
+ * Autoestima la resolución de un ticket/incidente.
+ * Determinístico, sin LLM. Devuelve banda mín/máx + fases + confianza + auditoría.
+ */
+export function autoEstimateTicketResolution(input: TicketEstimateInput): TicketEstimatedResolution {
+  const kind: "incident" | "change_request" | "service_request" = input.kind ?? "incident";
+  const severity = input.severity ?? "MEDIUM";
+  const env = input.environment ?? "NO_INFORMADO";
+  const urgency = input.priority ?? (severity === "CRITICAL" ? "IMMEDIATE" : "NORMAL");
+  const complexity = inferComplexity(input);
+  const isProductive = !!input.isProductive || env === "PRD";
+  const isCriticalPrd = isProductive && severity === "CRITICAL";
+
+  // Selección de fases según tipo de ticket
+  let phases: TicketEstimatePhase[] = kind === "change_request"
+    ? changeRequestPhases()
+    : amsStandardPhases();
+
+  if (kind === "incident" && isCriticalPrd) {
+    phases = [...phases, ...criticalPrdExtraPhases()];
+  }
+
+  // Filtrar fases opcionales que no aplican
+  phases = phases.filter((p) => {
+    if (p.required) return true;
+    if (p.id === "p03" || p.id === "c03" || p.id === "c05") return !!input.requiresDevelopment;
+    if (p.id === "c06") return !!input.requiresIntegration;
+    return true;
+  });
+
+  // Base = suma de fases
+  let baseMin = phases.reduce((s, p) => s + p.minHours, 0);
+  let baseMax = phases.reduce((s, p) => s + p.maxHours, 0);
+
+  const appliedRules: string[] = [];
+
+  // Multiplicadores estándar
+  const mult = COMPLEXITY_MULT[complexity] * SEVERITY_MULT[severity] * URGENCY_MULT[urgency] * ENV_MULT[env];
+  baseMin *= mult;
+  baseMax *= mult;
+  appliedRules.push(`mult_base=${mult.toFixed(2)} (complex=${complexity} sev=${severity} urg=${urgency} env=${env})`);
+
+  // Bumps absolutos por requirements (suman al techo, conservador en piso)
+  const bump = (label: string, min: number, max: number) => {
+    baseMin += min; baseMax += max; appliedRules.push(`bump:${label} +${min}/+${max}h`);
+  };
+  if (input.requiresDevelopment) bump("desarrollo", 16, 80);
+  if (input.requiresIntegration) bump("integracion", 8, 40);
+  if (input.requiresTransport)   bump("transporte", 2, 8);
+  if (input.requiresUAT)         bump("UAT", 4, 24);
+
+  // Discounts proporcionales
+  const pct = (label: string, factor: number) => {
+    baseMin *= factor; baseMax *= factor;
+    appliedRules.push(`pct:${label} x${factor.toFixed(2)}`);
+  };
+  if (input.hasKnownPlaybook)   pct("playbook_-15%", 0.85);
+  if (input.isRepeatedIncident) pct("recurrente_-25%", 0.75);
+
+  // Bumps porcentuales por incertidumbre
+  const agentConf = normalizeAgentConfidence(input.agentConfidence);
+  if (agentConf === "LOW")            pct("agente_baja_+30%", 1.30);
+  if (input.hasErrorEvidence === false) pct("sin_evidencia_+20%", 1.20);
+
+  // Redondeo amigable y piso
+  if (baseMin < 0.5) baseMin = 0.5;
+  if (baseMax < baseMin) baseMax = baseMin * 1.5;
+  const totalMinHours = Math.round(baseMin * 10) / 10;
+  const totalMaxHours = Math.round(baseMax * 10) / 10;
+
+  // Escalar las fases para que la suma respete el total (proporcional al base original)
+  const scale = (totalMinHours + totalMaxHours) / Math.max(0.1,
+    phases.reduce((s, p) => s + p.minHours + p.maxHours, 0));
+  phases = phases.map((p) => ({
+    ...p,
+    minHours: Math.round(p.minHours * scale * 10) / 10,
+    maxHours: Math.round(p.maxHours * scale * 10) / 10,
+  }));
+
+  // Confianza
+  const missingData: string[] = [...(input.missingData ?? [])];
+  if (!input.sapModule)                 missingData.push("Módulo SAP afectado.");
+  if (!input.process)                   missingData.push("Proceso de negocio.");
+  if (!input.environment || input.environment === "NO_INFORMADO") missingData.push("Ambiente objetivo.");
+  if (input.hasErrorEvidence === false) missingData.push("Mensaje de error o evidencia (screenshot/log).");
+  if (input.complexity === "UNKNOWN")   missingData.push("Estimación de complejidad funcional/técnica.");
+
+  let score = 100;
+  if (missingData.length) score -= missingData.length * 10;
+  if (complexity === "VERY_HIGH" || complexity === "HIGH") score -= 8;
+  if (urgency === "IMMEDIATE") score -= 5;
+  if (input.requiresDevelopment) score -= 8;
+  if (input.requiresIntegration) score -= 12;
+  if (input.hasKnownPlaybook)   score += 8;
+  if (input.hasKnowledgeMatch)  score += 6;
+  if (input.isRepeatedIncident) score += 8;
+  if (agentConf === "LOW") score -= 12;
+  if (agentConf === "HIGH") score += 6;
+  if (score < 0) score = 0; if (score > 100) score = 100;
+  let confidence: ConfidenceLevel = "MEDIUM";
+  if (score >= 75) confidence = "HIGH";
+  else if (score <= 45) confidence = "LOW";
+
+  // Reglas legibles aplicadas (acumulador con las decisiones de fases)
+  if (kind === "change_request") appliedRules.push("rule:change_request_phases");
+  if (isCriticalPrd) appliedRules.push("rule:critical_prd_extra_phases");
+
+  // Supuestos/riesgos/dependencias
+  const assumptions: string[] = [
+    `Estimación basada en módulo ${input.sapModule || "SAP genérico"} y complejidad ${complexity}.`,
+    "Horario hábil 9×5 sin recargos nocturnos ni fin de semana.",
+    "Equipo cliente disponible para validar fix en ventana acordada.",
+  ];
+  if (input.hasKnownPlaybook) assumptions.push("Existe playbook AMS aplicable, se asume reutilización completa.");
+
+  const risks: string[] = [];
+  if (complexity === "VERY_HIGH" || complexity === "HIGH") risks.push("Complejidad alta: variabilidad amplia entre mín y máx.");
+  if (isCriticalPrd) risks.push("Productivo + crítico: cualquier desliz tiene impacto al negocio.");
+  if (input.requiresDevelopment) risks.push("Desarrollo ABAP/BTP: variabilidad por scope no cerrado.");
+  if (input.requiresIntegration) risks.push("Integración cross-system: depende del externo.");
+  if (agentConf === "LOW") risks.push("Confianza del agente baja en la categorización inicial.");
+
+  const dependencies: string[] = [];
+  if (input.requiresUAT)       dependencies.push("Disponibilidad del key user para UAT.");
+  if (input.requiresTransport) dependencies.push("Ventana de transporte agendada por Basis.");
+  if (env === "PRD")           dependencies.push("Plan de back-out validado con el cliente.");
+
+  const totalMinBusinessDays = +(totalMinHours / 8).toFixed(1);
+  const totalMaxBusinessDays = +(totalMaxHours / 8).toFixed(1);
+  const slaMin = suggestedSla(severity, env);
+
+  const t = nowIso();
+  return {
+    id: uidEst("est"),
+    ticketId: input.ticketId,
+    totalMinHours, totalMaxHours,
+    totalMinBusinessDays, totalMaxBusinessDays,
+    confidence, confidenceScore: score,
+    complexity,
+    phaseBreakdown: phases,
+    assumptions, risks, dependencies, missingData,
+    suggestedSlaMinutes: slaMin,
+    generatedAt: t, lastRecalculatedAt: t,
+    generatedBy: "SYSTEM_ESTIMATOR",
+    manuallyAdjusted: false,
+    appliedRules,
+  };
+}
+
+/**
+ * Recalcula una estimación preservando ajustes manuales si manuallyAdjusted=true.
+ * Si quien recalcula tiene permiso "force", igual sobreescribe pero deja traza.
+ */
+export function recalculateTicketResolution(
+  previous: TicketEstimatedResolution,
+  input: TicketEstimateInput,
+  options: { force?: boolean; actor?: string } = {},
+): TicketEstimatedResolution {
+  if (previous.manuallyAdjusted && !options.force) {
+    return { ...previous, lastRecalculatedAt: nowIso() };
+  }
+  const fresh = autoEstimateTicketResolution(input);
+  return {
+    ...fresh,
+    id: previous.id,
+    generatedAt: previous.generatedAt,
+    manuallyAdjusted: false,
+    adjustedBy: options.force ? options.actor : previous.adjustedBy,
+    adjustmentReason: options.force ? "force-recalc" : previous.adjustmentReason,
+  };
 }
