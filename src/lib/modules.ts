@@ -344,6 +344,36 @@ export const MODULES: ModuleDef[] = [
     phase: 7,
     rolesAllowed: ["consultor", "aprobador", "admin"],
   },
+  {
+    id: "audit",
+    label: "Audit Trail",
+    icon: "📜",
+    href: "/audit",
+    description: "Timeline cross-ticket de todas las acciones registradas con actor, rol y metadata",
+    status: "available",
+    phase: 8,
+    rolesAllowed: ["aprobador", "admin"],
+  },
+  {
+    id: "agent-readiness",
+    label: "Agent Readiness",
+    icon: "🎯",
+    href: "/agent-readiness",
+    description: "Score 0-100 de cobertura del agente por módulo SAP (knowledge + Q&A + tests + scope + gaps)",
+    status: "available",
+    phase: 8,
+    rolesAllowed: ["consultor", "aprobador", "admin"],
+  },
+  {
+    id: "business-value",
+    label: "Valor Económico",
+    icon: "💎",
+    href: "/business-value",
+    description: "Costo evitado USD y horas ahorradas por la plataforma. Vista C-Level del ROI",
+    status: "available",
+    phase: 8,
+    rolesAllowed: ["aprobador", "admin"],
+  },
 ];
 
 export function moduleById(id: string): ModuleDef | undefined {
