@@ -109,6 +109,7 @@ Navegador  ──HTTP──►  supply-chain-ams-platform  ──HTTP──►  
 | 🔌 Integraciones | `/integrations` | aprobador |
 | 🏭 SAP Read-Only | `/sap-readonly` | aprobador |
 | 🎙️ Reuniones AMS | `/meetings` | consultor |
+| ⏱ Estimador de Tiempos | `/time-estimator` | consultor |
 
 ### 🛡️ Sistema
 
@@ -118,6 +119,19 @@ Navegador  ──HTTP──►  supply-chain-ams-platform  ──HTTP──►  
 | 🛡️ Administración | `/admin` | admin |
 | 📈 Eval del agente | `/admin/eval` | admin |
 | ⚙️ Configuración | `/settings` | viewer |
+
+## ⏱ Autoestimación de Resolución de Tickets
+
+Cada ticket/incidente recibe automáticamente una estimación embebida con rango
+horas/días, fases, supuestos, riesgos y confianza. Se genera en el backend al
+crear el ticket, se muestra en `/history` (badge + panel), se copia al
+escalation N2 con diff cuando ajustan, se anexa al payload Jira/ServiceNow y
+se agrega como KPI al `/dashboard`.
+
+- Documentación completa: [`docs/ticket-auto-estimation.md`](docs/ticket-auto-estimation.md)
+- Motor determinístico (sin LLM), reglas calibradas
+- Recalculable y ajustable manualmente con auditoría
+- Convive con `/time-estimator` (cotizaciones manuales de proyectos)
 
 ## ✨ Highlights técnicos
 
