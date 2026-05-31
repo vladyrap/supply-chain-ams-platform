@@ -4,6 +4,10 @@ import { useEffect, useState, useCallback } from "react";
 import Badge from "@/components/ui/Badge";
 import MarkdownView from "@/components/agent/MarkdownView";
 import { listTickets, classifyTicket, getProviderStatus, type Ticket, type Classification } from "@/services/tickets.api";
+import CreateTicketModal from "@/components/tickets/CreateTicketModal";
+import TicketEstimateBadge from "@/components/estimation/TicketEstimateBadge";
+import TicketEstimateDetail from "@/components/estimation/TicketEstimateDetail";
+import { useAuth } from "@/context/AuthContext";
 
 function statusVariant(s: string): "ok" | "warn" | "error" | "muted" | "info" {
   const lower = s.toLowerCase();
@@ -21,6 +25,7 @@ function priorityVariant(p: string): "ok" | "warn" | "error" | "muted" | "info" 
 }
 
 export default function TicketsPage() {
+  const { user: authUser } = useAuth();
   const [tickets, setTickets] = useState<Ticket[]>([]);
   const [source, setSource] = useState<"jira" | "mock" | null>(null);
   const [provider, setProvider] = useState<{ jiraConfigured: boolean; jiraReachable: boolean } | null>(null);
@@ -30,6 +35,8 @@ export default function TicketsPage() {
   const [classifying, setClassifying] = useState(false);
   const [classification, setClassification] = useState<Classification | null>(null);
   const [classifyError, setClassifyError] = useState<string | null>(null);
+  const [createOpen, setCreateOpen] = useState(false);
+  const [createdMsg, setCreatedMsg] = useState<string | null>(null);
 
   const refresh = useCallback(async () => {
     setLoading(true);
@@ -84,10 +91,17 @@ export default function TicketsPage() {
             </>
           )}
         </div>
-        <button className="btn ghost" onClick={refresh} disabled={loading}>
-          {loading ? <><span className="spinner" /> cargando</> : "↻ Refrescar"}
-        </button>
+        <div className="row" style={{ gap: 8 }}>
+          <button className="btn primary" onClick={() => setCreateOpen(true)}>
+            ＋ Crear ticket
+          </button>
+          <button className="btn ghost" onClick={refresh} disabled={loading}>
+            {loading ? <><span className="spinner" /> cargando</> : "↻ Refrescar"}
+          </button>
+        </div>
       </div>
+
+      {createdMsg && <div className="alert ok" style={{ marginBottom: 14, fontSize: 12.5 }}>{createdMsg}</div>}
 
       {error && <div className="alert error" style={{ marginBottom: 14 }}>{error}</div>}
 
@@ -117,9 +131,12 @@ export default function TicketsPage() {
                     <Badge variant={priorityVariant(t.priority)}>{t.priority}</Badge>
                   </div>
                   <div style={{ fontWeight: 500, fontSize: 13.5, marginTop: 4 }}>{t.title}</div>
-                  <div className="row" style={{ gap: 6, marginTop: 4 }}>
+                  <div className="row" style={{ gap: 6, marginTop: 4, flexWrap: "wrap" }}>
                     <Badge variant={statusVariant(t.status)}>{t.status}</Badge>
                     {t.assignee && <Badge variant="muted">@{t.assignee}</Badge>}
+                    {t.sapModule && <Badge variant="muted">{t.sapModule}</Badge>}
+                    {t.source === "user" && <Badge variant="info">creado</Badge>}
+                    <TicketEstimateBadge estimate={t.estimatedResolution} />
                   </div>
                 </button>
               );
@@ -151,6 +168,15 @@ export default function TicketsPage() {
                   <div className="body" style={{ whiteSpace: "pre-wrap" }}>{selected.description}</div>
                 </div>
               </div>
+
+              {/* Panel completo de autoestimación si el ticket la tiene */}
+              {selected.estimatedResolution && (
+                <TicketEstimateDetail
+                  estimate={selected.estimatedResolution}
+                  canRecalculate={false}
+                  canAdjustManual={false}
+                />
+              )}
 
               <div>
                 <button
@@ -200,6 +226,25 @@ JIRA_PROJECT_KEY=AMS (opcional)`}</pre>
           y reinicia el backend.
         </div>
       )}
+
+      <CreateTicketModal
+        open={createOpen}
+        defaultReporter={authUser?.name || authUser?.email || null}
+        onClose={() => setCreateOpen(false)}
+        onCreated={(t) => {
+          setCreateOpen(false);
+          // Optimistic: meto el nuevo arriba sin esperar refresh, y refresh igual.
+          setTickets((cur) => [t, ...cur]);
+          setSelectedKey(t.key);
+          setClassification(null);
+          const eta = t.estimatedResolution
+            ? ` Estimación: ${t.estimatedResolution.totalMinHours}–${t.estimatedResolution.totalMaxHours}h (${t.estimatedResolution.confidence}).`
+            : "";
+          setCreatedMsg(`✓ Ticket ${t.key} creado.${eta}`);
+          setTimeout(() => setCreatedMsg(null), 6000);
+          refresh();
+        }}
+      />
     </div>
   );
 }

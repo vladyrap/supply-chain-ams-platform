@@ -1,8 +1,10 @@
+import type { TicketEstimatedResolution } from "@/types/estimation";
+
 const API_BASE =
   (process.env.NEXT_PUBLIC_AGENT_API_URL || "http://localhost:6601").replace(/\/+$/, "");
 
 export interface Ticket {
-  source: "jira" | "mock";
+  source: "jira" | "mock" | "user";
   key: string;
   title: string;
   description: string;
@@ -10,9 +12,27 @@ export interface Ticket {
   priority: string;
   reporter: string | null;
   assignee: string | null;
+  sapModule?: string | null;
+  environment?: string | null;
   created: string;
   updated: string;
   url?: string;
+  estimatedResolution?: TicketEstimatedResolution | null;
+}
+
+export interface CreateTicketInput {
+  title: string;
+  description: string;
+  priority?: string;
+  reporter?: string | null;
+  assignee?: string | null;
+  sapModule?: string | null;
+  environment?: string | null;
+  complexity?: "VERY_LOW" | "LOW" | "MEDIUM" | "HIGH" | "VERY_HIGH" | "UNKNOWN";
+  requiresDevelopment?: boolean;
+  requiresIntegration?: boolean;
+  requiresUAT?: boolean;
+  requiresTransport?: boolean;
 }
 
 export interface Classification {
@@ -40,6 +60,13 @@ async function call<T>(path: string, init: RequestInit = {}): Promise<T | { succ
 export async function listTickets() {
   return call<{ success: true; source: "jira" | "mock"; count: number; tickets: Ticket[] } | { success: false; error: string }>(
     "/api/tickets"
+  );
+}
+
+export async function createTicket(input: CreateTicketInput) {
+  return call<{ success: true; ticket: Ticket } | { success: false; error: string }>(
+    "/api/tickets",
+    { method: "POST", body: JSON.stringify(input) }
   );
 }
 
