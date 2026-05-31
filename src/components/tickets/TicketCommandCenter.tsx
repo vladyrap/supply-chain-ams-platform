@@ -165,6 +165,24 @@ export default function TicketCommandCenter({ ticket, onTicketUpdated }: Props) 
     return candidateKey.includes(ticket.key.toLowerCase());
   });
 
+  // Señales v2 derivadas
+  // - Recurrencia: tickets en el mismo módulo cuyo título comparte ≥2 palabras
+  //   significativas con el actual. Heurística simple.
+  const similarPastTicketsCount = useMemo(() => {
+    if (!ticket.sapModule) return 0;
+    const words = (ticket.title || "").toLowerCase().split(/\W+/).filter((w) => w.length >= 4);
+    return docs.documents.filter((d) =>
+      d.documentType === "RCA" &&
+      d.title.toLowerCase().split(/\W+/).filter((w) => words.includes(w)).length >= 2
+    ).length;
+  }, [docs.documents, ticket.title, ticket.sapModule]);
+
+  const daysSinceLastUpdate = useMemo(() => {
+    if (!ticket.updated) return 0;
+    const ms = Date.now() - new Date(ticket.updated).getTime();
+    return Math.floor(ms / (1000 * 60 * 60 * 24));
+  }, [ticket.updated]);
+
   // Decisión del motor
   const decision = useMemo(() => analyzeTicketDecision(ticket, ticket.estimatedResolution, {
     hasKnowledgeMatch: ticketKnowledge.length > 0,
@@ -176,7 +194,14 @@ export default function TicketCommandCenter({ ticket, onTicketUpdated }: Props) 
     isProductive: (ticket.environment || "").toUpperCase() === "PRD",
     hasComplexSolution: (ticket.estimatedResolution?.totalMaxHours ?? 0) >= 12,
     agentConfidence: (classification?.confidence === "no_detectada" ? null : classification?.confidence) ?? null,
-  }), [ticket, scopeItems, ticketKnowledge.length, ticketPlaybooks.length, classification]);
+    // v2 context
+    hasExistingTestCase: ticketTests.length > 0,
+    hasExistingRca: ticketDocs.some((d) => d.documentType === "RCA"),
+    similarPastTicketsCount,
+    hasReusableResolution: similarPastTicketsCount > 0 && ticketKnowledge.length > 0,
+    daysSinceLastUpdate,
+  }), [ticket, scopeItems, ticketKnowledge.length, ticketPlaybooks.length, classification,
+       ticketTests.length, ticketDocs, similarPastTicketsCount, daysSinceLastUpdate]);
 
   const classMetadata = (classification as Classification & { metadata?: AgentResponseMetadata })?.metadata ?? null;
 
@@ -375,6 +400,35 @@ export default function TicketCommandCenter({ ticket, onTicketUpdated }: Props) 
           actor, actorRole, source: "ui",
         });
         notify("✓ Solicitud registrada en auditoría");
+        return;
+      case "REUSE_PREVIOUS_RESOLUTION":
+        audit.record({
+          ticketId: ticket.key,
+          eventType: "KNOWLEDGE_MATCHED",
+          title: "Reutilizar resolución previa",
+          description: `Se detectaron ${similarPastTicketsCount} casos parecidos previos. Revisar tickets/KB del mismo módulo.`,
+          actor, actorRole, source: "system",
+        });
+        notify(`→ Buscar tickets parecidos del módulo ${ticket.sapModule || "—"} (Cmd+K)`);
+        return;
+      case "SPLIT_INTO_SUBTASKS":
+        audit.record({
+          ticketId: ticket.key,
+          eventType: "COMMENT_ADDED",
+          title: "Sugerencia: dividir en sub-tareas",
+          description: `Esfuerzo techo ${ticket.estimatedResolution?.totalMaxHours ?? 0}h supera 40h.`,
+          actor, actorRole, source: "ui",
+        });
+        notify("✓ Sugerencia registrada — coordinar con líder de servicio");
+        return;
+      case "FOLLOW_UP_WITH_USER":
+        audit.record({
+          ticketId: ticket.key,
+          eventType: "COMMENT_ADDED",
+          title: `Follow-up enviado al cliente (${daysSinceLastUpdate} días sin movimiento)`,
+          actor, actorRole, source: "ui",
+        });
+        notify("✓ Follow-up registrado en auditoría");
         return;
       default:
         notify(`Acción ${AMS_ACTION_LABELS[action]} disponible en su módulo`);

@@ -28,6 +28,9 @@ const ICONS: Record<AmsRecommendedAction, string> = {
   CREATE_KNOWLEDGE_GAP: "🔍",
   CLOSE_WITH_DOCUMENTATION: "✅",
   WAIT_FOR_USER_CONFIRMATION: "⏳",
+  REUSE_PREVIOUS_RESOLUTION: "♻",
+  SPLIT_INTO_SUBTASKS: "✂",
+  FOLLOW_UP_WITH_USER: "📞",
 };
 
 function weightColor(w: number): string {

@@ -18,7 +18,11 @@ export type AmsRecommendedAction =
   | "CONVERT_TO_KNOWLEDGE"
   | "CREATE_KNOWLEDGE_GAP"
   | "CLOSE_WITH_DOCUMENTATION"
-  | "WAIT_FOR_USER_CONFIRMATION";
+  | "WAIT_FOR_USER_CONFIRMATION"
+  // v2
+  | "REUSE_PREVIOUS_RESOLUTION"     // ticket recurrente con solución conocida
+  | "SPLIT_INTO_SUBTASKS"           // estimación supera 40h
+  | "FOLLOW_UP_WITH_USER";          // sin movimiento hace días
 
 export interface AmsNextBestAction {
   action: AmsRecommendedAction;
@@ -53,6 +57,17 @@ export interface DecisionContext {
   isProductive: boolean;
   hasComplexSolution: boolean;
   agentConfidence?: "LOW" | "MEDIUM" | "HIGH" | "alta" | "media" | "baja" | null;
+  // ── v2 context (opcional; si falta se asume "no") ──
+  /** Ya existe un caso de prueba asociado al ticket */
+  hasExistingTestCase?: boolean;
+  /** Ya existe un RCA o documento de cierre generado */
+  hasExistingRca?: boolean;
+  /** Otros tickets parecidos en el mismo módulo (heurística de recurrencia) */
+  similarPastTicketsCount?: number;
+  /** Si hay un ticket histórico ya resuelto que parezca el mismo caso */
+  hasReusableResolution?: boolean;
+  /** Días desde la última actualización del ticket */
+  daysSinceLastUpdate?: number;
 }
 
 function normalizePriority(p: string): "highest" | "high" | "medium" | "low" {
@@ -85,6 +100,9 @@ const LABELS: Record<AmsRecommendedAction, string> = {
   CREATE_KNOWLEDGE_GAP: "Marcar brecha de conocimiento",
   CLOSE_WITH_DOCUMENTATION: "Cerrar con documentación",
   WAIT_FOR_USER_CONFIRMATION: "Esperar confirmación del cliente",
+  REUSE_PREVIOUS_RESOLUTION: "Reutilizar resolución previa",
+  SPLIT_INTO_SUBTASKS: "Dividir en sub-tareas",
+  FOLLOW_UP_WITH_USER: "Follow-up con el cliente",
 };
 
 export function analyzeTicketDecision(
@@ -146,8 +164,8 @@ export function analyzeTicketDecision(
     reasons.push("Sin KB previo.");
   }
 
-  // Regla 7 — Funcional SAP → caso de prueba
-  if (context.hasScopeItem) {
+  // Regla 7 — Funcional SAP → caso de prueba (v2: solo si todavía no hay uno)
+  if (context.hasScopeItem && !context.hasExistingTestCase) {
     actions.push({ action: "CREATE_TEST_CASE", label: LABELS.CREATE_TEST_CASE, weight: 45,
       reason: `Scope item ${context.scopeItems[0]?.code} aplicable — caso de prueba útil.` });
   }
@@ -156,12 +174,57 @@ export function analyzeTicketDecision(
   if (context.isResolved) {
     actions.push({ action: "CONVERT_TO_KNOWLEDGE", label: LABELS.CONVERT_TO_KNOWLEDGE, weight: 80,
       reason: "Ticket resuelto — capitalizar la solución como conocimiento." });
-    if (context.hasComplexSolution) {
+    // v2: solo recomendar RCA si todavía no hay uno
+    if (context.hasComplexSolution && !context.hasExistingRca) {
       actions.push({ action: "GENERATE_RCA", label: LABELS.GENERATE_RCA, weight: 70,
         reason: "Solución compleja — generar RCA documentado." });
     }
     actions.push({ action: "CLOSE_WITH_DOCUMENTATION", label: LABELS.CLOSE_WITH_DOCUMENTATION, weight: 60,
       reason: "Cerrar formalmente con documentación adjunta." });
+  }
+
+  // ── v2 reglas adicionales ──
+
+  // Regla v2-10 — Recurrencia detectada
+  if ((context.similarPastTicketsCount ?? 0) >= 2) {
+    actions.push({
+      action: "REUSE_PREVIOUS_RESOLUTION",
+      label: LABELS.REUSE_PREVIOUS_RESOLUTION,
+      weight: context.hasReusableResolution ? 85 : 55,
+      reason: `Se detectaron ${context.similarPastTicketsCount} tickets parecidos previos${
+        context.hasReusableResolution ? " con resolución conocida" : ""
+      }.`,
+    });
+    reasons.push("Recurrencia detectada.");
+  }
+
+  // Regla v2-11 — Combo crítico extremo: PRD + crítico + baja confianza + faltan datos
+  if (isPrd && (priority === "highest") && agentConf === "LOW" && missing.length >= 2) {
+    actions.push({ action: "ESCALATE_N2", label: LABELS.ESCALATE_N2, weight: 100,
+      reason: "Combo extremo: crítico PRD + baja confianza + faltan datos. Escalar ya." });
+    reasons.push("Combo extremo de riesgo.");
+  }
+
+  // Regla v2-12 — Estimación supera 40h → sugerir dividir
+  if (estimate && estimate.totalMaxHours >= 40) {
+    actions.push({
+      action: "SPLIT_INTO_SUBTASKS",
+      label: LABELS.SPLIT_INTO_SUBTASKS,
+      weight: 50,
+      reason: `Esfuerzo techo ${estimate.totalMaxHours}h — conviene partir en sub-tareas para mejor seguimiento.`,
+    });
+  }
+
+  // Regla v2-13 — Sin movimiento hace tiempo → follow-up
+  const days = context.daysSinceLastUpdate ?? 0;
+  if (!context.isResolved && days >= 2) {
+    const weight = days >= 5 ? 70 : 45;
+    actions.push({
+      action: "FOLLOW_UP_WITH_USER",
+      label: LABELS.FOLLOW_UP_WITH_USER,
+      weight,
+      reason: `Sin movimiento hace ${days} días — recordatorio al cliente o al asignado.`,
+    });
   }
 
   // Pick top recommendation por weight
