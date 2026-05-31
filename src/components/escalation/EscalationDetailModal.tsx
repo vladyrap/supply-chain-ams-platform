@@ -5,6 +5,7 @@ import type { UseEscalation } from "@/hooks/useEscalation";
 import type { EscalationRecord, EscalationStatus } from "@/types/escalation";
 import EscalationStatusBadge from "./EscalationStatusBadge";
 import ItsmTicketPreview from "./ItsmTicketPreview";
+import EscalationEstimateDiff from "./EscalationEstimateDiff";
 
 interface Props {
   record: EscalationRecord;
@@ -87,6 +88,14 @@ export default function EscalationDetailModal({ record, escalation, actingUserId
               )}
 
               <ItsmTicketPreview payload={record.payload} />
+
+              {/* Autoestimación + diff N1↔N2 si fue ajustada */}
+              {record.estimatedResolution && (
+                <EscalationEstimateDiff
+                  current={record.estimatedResolution}
+                  original={record.estimatedResolutionOriginal}
+                />
+              )}
             </div>
 
             <div className="col" style={{ gap: 12 }}>

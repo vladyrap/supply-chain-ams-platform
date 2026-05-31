@@ -157,6 +157,10 @@ export interface EscalationRecord {
   mode: ItsmMode;                    // DEMO | REAL
   payload?: ItsmTicketPayload;
   events: EscalationEvent[];
+  /** Autoestimación copiada del incidente al escalar; puede recalcularse en N2. */
+  estimatedResolution?: import("./estimation").TicketEstimatedResolution | null;
+  /** Snapshot original al momento de la escalación, para mostrar diff N1↔N2. */
+  estimatedResolutionOriginal?: import("./estimation").TicketEstimatedResolution | null;
   createdAt: string;
   updatedAt: string;
 }
