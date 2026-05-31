@@ -28,19 +28,20 @@ export default function ScreenRecorder({ testing, actingUserId }: Props) {
 
   const selectedScenario: TestingScenario | undefined = testing.scenarios.find((s) => s.id === scenarioId);
 
-  function handleAttach() {
+  async function handleAttach() {
     if (!rec.recordedBlob || !scenarioId) return;
-    testing.attachEvidence(scenarioId, {
+    const ext = rec.mimeType?.includes("mp4") ? "mp4" : "webm";
+    const filename = `screen-recording-${Date.now()}.${ext}`;
+    const tags = ["grabacion", "pantalla", selectedScenario?.sapModule || ""].filter(Boolean) as string[];
+    // Intentamos upload real al backend; el hook maneja fallback a ObjectURL local.
+    await testing.uploadEvidenceFile(scenarioId, rec.recordedBlob, {
       type: "SCREEN_RECORDING",
       title: title || "Grabación de pantalla",
-      description: `Grabación local sin upload. Duración: ${rec.durationSeconds}s.`,
-      fileName: `screen-recording-${Date.now()}.${rec.mimeType?.includes("mp4") ? "mp4" : "webm"}`,
-      fileType: rec.mimeType || "video/webm",
-      fileSize: rec.recordedBlob.size,
+      description: `Grabación de pantalla · Duración: ${rec.durationSeconds}s.`,
       durationSeconds: rec.durationSeconds,
-      localPreviewUrl: rec.recordedUrl || undefined,
+      tags,
       createdBy: actingUserId,
-      tags: ["grabacion", "pantalla", selectedScenario?.sapModule || ""].filter(Boolean) as string[],
+      filename,
     });
     testing.markScenarioStatus(scenarioId, "RECORDED");
     setAttached(true);

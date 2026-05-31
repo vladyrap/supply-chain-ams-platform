@@ -43,19 +43,16 @@ export default function VideoUploadPanel({ testing, actingUserId }: Props) {
     }
   }
 
-  function handleAttach() {
-    if (!file || !previewUrl || !scenarioId) return;
-    testing.attachEvidence(scenarioId, {
+  async function handleAttach() {
+    if (!file || !scenarioId) return;
+    await testing.uploadEvidenceFile(scenarioId, file, {
       type: "UPLOADED_VIDEO",
       title: title || file.name,
-      description: `Video local cargado (no se subió a backend). ${durationSeconds ? durationSeconds + "s." : ""}`,
-      fileName: file.name,
-      fileType: file.type,
-      fileSize: file.size,
+      description: `Video cargado · ${durationSeconds ? durationSeconds + "s." : ""}`,
       durationSeconds: durationSeconds ?? undefined,
-      localPreviewUrl: previewUrl,
-      createdBy: actingUserId,
       tags: ["video", "carga"],
+      createdBy: actingUserId,
+      filename: file.name,
     });
     setAttached(true);
   }
