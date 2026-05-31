@@ -2,7 +2,7 @@
 
 import { createContext, useContext, useEffect, useState, useCallback } from "react";
 import { useRouter, usePathname } from "next/navigation";
-import { me as fetchMe, logout as apiLogout } from "@/services/auth.api";
+import { me as fetchMe, logout as apiLogout, refreshSession } from "@/services/auth.api";
 import type { AuthUser } from "@/types";
 
 interface AuthState {
@@ -24,13 +24,29 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   const pathname = usePathname();
 
   const refresh = useCallback(async () => {
-    const res = await fetchMe();
+    let res = await fetchMe();
+    // Si la sesión de acceso expiró pero existe refresh token, rotarlo y reintentar /me una vez.
+    if (!("success" in res && res.success)) {
+      const rot = await refreshSession();
+      if ("success" in rot && rot.success) {
+        res = await fetchMe();
+      }
+    }
     if ("success" in res && res.success) setUser(res.user);
     else setUser(null);
     setLoading(false);
   }, []);
 
   useEffect(() => { refresh(); }, [refresh]);
+
+  // Auto-refresh silencioso del access cookie cada 20 min mientras hay sesión activa.
+  useEffect(() => {
+    if (!user) return;
+    const id = window.setInterval(() => {
+      refreshSession().catch(() => null);
+    }, 20 * 60 * 1000);
+    return () => window.clearInterval(id);
+  }, [user]);
 
   // Redirigir si no hay sesión y no es ruta pública
   useEffect(() => {
