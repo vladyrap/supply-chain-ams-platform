@@ -76,6 +76,7 @@ export function buildDefaultRoles(): PlatformRole[] {
         quality_evaluator:fullPerm(),
         escalamiento_n2:  fullPerm(),
         testing_intelligence: fullPerm(),
+        time_estimator:   fullPerm(),
       }),
     },
     {
@@ -109,6 +110,8 @@ export function buildDefaultRoles(): PlatformRole[] {
         escalamiento_n2:  { ...viewCreateEdit(), export: true, configure: true, approve: true },
         // SERVICE_LEAD: idem sobre testing
         testing_intelligence: { ...viewCreateEdit(), export: true, configure: true, approve: true },
+        // SERVICE_LEAD: aprueba estimaciones antes de enviarlas al cliente
+        time_estimator:   { ...viewCreateEdit(), export: true, approve: true },
       }),
     },
     {
@@ -142,6 +145,8 @@ export function buildDefaultRoles(): PlatformRole[] {
         escalamiento_n2:  { ...viewCreateEdit(), export: true },
         // AMS_CONSULTANT: idem sobre testing
         testing_intelligence: { ...viewCreateEdit(), export: true },
+        // AMS_CONSULTANT: crea y exporta estimaciones (no aprueba)
+        time_estimator:   { ...viewCreateEdit(), export: true },
       }),
     },
     {
@@ -174,6 +179,8 @@ export function buildDefaultRoles(): PlatformRole[] {
         escalamiento_n2:  viewOnly(),
         // CLIENT_USER ve testing (gateado por tier PREMIUM/ENTERPRISE en UI).
         testing_intelligence: viewOnly(),
+        // CLIENT_USER ve estimaciones que le corresponden (gate por nivel servicio en UI).
+        time_estimator:   viewOnly(),
       }),
     },
     {
@@ -202,6 +209,7 @@ export function buildDefaultRoles(): PlatformRole[] {
         playbooks_ams:    noPerm(),
         document_factory: noPerm(),
         quality_evaluator:noPerm(),
+        time_estimator:   noPerm(),
       }),
     },
   ];

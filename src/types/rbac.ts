@@ -37,7 +37,8 @@ export type PlatformScreen =
   | "document_factory"
   | "quality_evaluator"
   | "escalamiento_n2"
-  | "testing_intelligence";
+  | "testing_intelligence"
+  | "time_estimator";
 
 export interface RolePermission {
   view: boolean;
@@ -96,6 +97,7 @@ export const SCREEN_LABELS: Record<PlatformScreen, string> = {
   quality_evaluator:"Quality Evaluator",
   escalamiento_n2:  "Escalamiento N2",
   testing_intelligence: "Testing Intelligence",
+  time_estimator:   "Estimador de Tiempos",
 };
 
 export const ACTION_LABELS: Record<PermissionAction, string> = {
@@ -114,7 +116,7 @@ export const ALL_SCREENS: PlatformScreen[] = [
   "canal_telefonico", "conocimiento_rag", "integraciones",
   "usuarios", "roles", "entrenamiento_ia",
   "playbooks_ams", "document_factory", "quality_evaluator",
-  "escalamiento_n2", "testing_intelligence",
+  "escalamiento_n2", "testing_intelligence", "time_estimator",
 ];
 
 export const ALL_ACTIONS: PermissionAction[] = [

@@ -334,6 +334,16 @@ export const MODULES: ModuleDef[] = [
     phase: 7,
     rolesAllowed: ["consultor", "aprobador", "admin"],
   },
+  {
+    id: "time-estimator",
+    label: "Estimador de Tiempos",
+    icon: "⏱",
+    href: "/time-estimator",
+    description: "Convierte un requerimiento o incidente en banda horas/días con fases, perfiles, riesgos, supuestos y respuesta lista para el cliente",
+    status: "available",
+    phase: 7,
+    rolesAllowed: ["consultor", "aprobador", "admin"],
+  },
 ];
 
 export function moduleById(id: string): ModuleDef | undefined {
