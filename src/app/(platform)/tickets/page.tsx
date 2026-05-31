@@ -169,15 +169,15 @@ export default function TicketsPage() {
                 </div>
               </div>
 
-              {/* Panel completo de autoestimación si el ticket la tiene.
-                  Recalcular/ajustar manualmente solo para tickets creados desde la UI (source="user")
-                  porque son los que están persistidos en la tabla tickets_demo. */}
+              {/* Panel completo de autoestimación. Editar es OK para todos los
+                  tickets: si el ticket viene de Jira el backend lo espeja en
+                  tickets_demo al primer edit (ensureTicketMirror). */}
               {selected.estimatedResolution && (
                 <TicketEstimateDetail
                   estimate={selected.estimatedResolution}
                   actor={authUser?.name || authUser?.email || "Consultor AMS"}
-                  canRecalculate={selected.source === "user" && (authUser?.role === "admin" || authUser?.role === "aprobador" || authUser?.role === "consultor")}
-                  canAdjustManual={selected.source === "user" && (authUser?.role === "admin" || authUser?.role === "aprobador")}
+                  canRecalculate={authUser?.role === "admin" || authUser?.role === "aprobador" || authUser?.role === "consultor"}
+                  canAdjustManual={authUser?.role === "admin" || authUser?.role === "aprobador"}
                   onRecalculate={async () => {
                     const res = await recalculateTicket(selected.key, {
                       actor: authUser?.name || authUser?.email || "Consultor AMS",
