@@ -51,6 +51,26 @@ export interface AgentChatRequest {
   attachments?: Attachment[];
 }
 
+export interface AgentResponseSource {
+  id: string;
+  sourceType: "rag_document" | "kb_article" | "playbook" | "scope_item" | "qa";
+  title: string;
+  chunkIndex?: number;
+  relevance?: number;
+}
+
+export interface AgentResponseMetadata {
+  model: string;
+  timestamp: string;
+  confidence: ConfidenceLevel;
+  // Trazabilidad agregada por el backend al construir la respuesta
+  agentVersion?: string;          // ej. "v0.1.0" o git sha
+  kbVersion?: string;             // ej. "KB-2026-05-31-1430-n42"
+  mode?: "demo" | "real";         // demo cuando no hay conectores externos
+  responseId?: string;             // FK con agent_response_provenance / feedback
+  sources?: AgentResponseSource[]; // fuentes RAG / KB / Playbook usadas
+}
+
 export interface AgentChatResponseOk {
   success: true;
   agent: string;
@@ -62,11 +82,7 @@ export interface AgentChatResponseOk {
     environment: string;
   };
   response: string;
-  metadata: {
-    model: string;
-    timestamp: string;
-    confidence: ConfidenceLevel;
-  };
+  metadata: AgentResponseMetadata;
 }
 
 export interface AgentChatResponseError {
