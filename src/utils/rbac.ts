@@ -77,6 +77,11 @@ export function buildDefaultRoles(): PlatformRole[] {
         escalamiento_n2:  fullPerm(),
         testing_intelligence: fullPerm(),
         time_estimator:   fullPerm(),
+        ticket_command_center: fullPerm(),
+        audit_trail:      fullPerm(),
+        global_search:    fullPerm(),
+        agent_readiness:  fullPerm(),
+        business_value_dashboard: fullPerm(),
       }),
     },
     {
@@ -112,6 +117,12 @@ export function buildDefaultRoles(): PlatformRole[] {
         testing_intelligence: { ...viewCreateEdit(), export: true, configure: true, approve: true },
         // SERVICE_LEAD: aprueba estimaciones antes de enviarlas al cliente
         time_estimator:   { ...viewCreateEdit(), export: true, approve: true },
+        // SERVICE_LEAD: gestiona Ticket Command Center y operación enterprise
+        ticket_command_center: { ...viewCreateEdit(), export: true, approve: true },
+        audit_trail:      viewExport(),
+        global_search:    viewOnly(),
+        agent_readiness:  viewExport(),
+        business_value_dashboard: viewExportApprove(),
       }),
     },
     {
@@ -147,6 +158,12 @@ export function buildDefaultRoles(): PlatformRole[] {
         testing_intelligence: { ...viewCreateEdit(), export: true },
         // AMS_CONSULTANT: crea y exporta estimaciones (no aprueba)
         time_estimator:   { ...viewCreateEdit(), export: true },
+        // AMS_CONSULTANT: opera el Command Center sin aprobar
+        ticket_command_center: viewCreateEdit(),
+        audit_trail:      viewOnly(),
+        global_search:    viewOnly(),
+        agent_readiness:  viewOnly(),
+        business_value_dashboard: viewOnly(),
       }),
     },
     {
@@ -181,6 +198,9 @@ export function buildDefaultRoles(): PlatformRole[] {
         testing_intelligence: viewOnly(),
         // CLIENT_USER ve estimaciones que le corresponden (gate por nivel servicio en UI).
         time_estimator:   viewOnly(),
+        // CLIENT_USER ve resumen de su ticket sin acciones operativas
+        ticket_command_center: viewOnly(),
+        global_search:    viewOnly(),
       }),
     },
     {
@@ -210,6 +230,7 @@ export function buildDefaultRoles(): PlatformRole[] {
         document_factory: noPerm(),
         quality_evaluator:noPerm(),
         time_estimator:   noPerm(),
+        ticket_command_center: viewOnly(),
       }),
     },
   ];

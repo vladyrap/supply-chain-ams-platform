@@ -38,7 +38,12 @@ export type PlatformScreen =
   | "quality_evaluator"
   | "escalamiento_n2"
   | "testing_intelligence"
-  | "time_estimator";
+  | "time_estimator"
+  | "ticket_command_center"
+  | "audit_trail"
+  | "global_search"
+  | "agent_readiness"
+  | "business_value_dashboard";
 
 export interface RolePermission {
   view: boolean;
@@ -98,6 +103,11 @@ export const SCREEN_LABELS: Record<PlatformScreen, string> = {
   escalamiento_n2:  "Escalamiento N2",
   testing_intelligence: "Testing Intelligence",
   time_estimator:   "Estimador de Tiempos",
+  ticket_command_center: "Ticket Command Center",
+  audit_trail:      "Audit Trail",
+  global_search:    "Global Intelligence Search",
+  agent_readiness:  "Agent Readiness Center",
+  business_value_dashboard: "Dashboard de Valor Económico",
 };
 
 export const ACTION_LABELS: Record<PermissionAction, string> = {
@@ -117,6 +127,8 @@ export const ALL_SCREENS: PlatformScreen[] = [
   "usuarios", "roles", "entrenamiento_ia",
   "playbooks_ams", "document_factory", "quality_evaluator",
   "escalamiento_n2", "testing_intelligence", "time_estimator",
+  "ticket_command_center", "audit_trail", "global_search",
+  "agent_readiness", "business_value_dashboard",
 ];
 
 export const ALL_ACTIONS: PermissionAction[] = [

@@ -120,6 +120,27 @@ Navegador  ──HTTP──►  supply-chain-ams-platform  ──HTTP──►  
 | 📈 Eval del agente | `/admin/eval` | admin |
 | ⚙️ Configuración | `/settings` | viewer |
 
+## 🚀 Ticket Command Center · Flujo End-to-End AMS
+
+El ticket es el **centro del sistema**. Cada ticket abre un Command Center en
+`/tickets` con 14 secciones que cubren todo el ciclo AMS sin salir de la pantalla:
+estimación, clasificación con agente, diagnóstico, conocimiento, scope items SAP,
+playbooks, escalamiento N2, Jira/SN, documentos, testing, quality, conversión a KB
+y auditoría.
+
+El **AMS Decision Engine** recomienda la "próxima mejor acción" sobre cada ticket
+(Escalar, Pedir más info, Generar RCA, etc.) con peso y razón. Las acciones se
+ejecutan desde la card ⚡ ACCIONES RÁPIDAS y quedan auditadas en el timeline.
+
+- Documentación completa: [`docs/ticket-command-center.md`](docs/ticket-command-center.md)
+- Decision Engine: [`docs/ams-decision-engine.md`](docs/ams-decision-engine.md)
+- Audit Trail: [`docs/ticket-audit-trail.md`](docs/ticket-audit-trail.md)
+- Global Intelligence Search (`Ctrl+K`): [`docs/global-intelligence-search.md`](docs/global-intelligence-search.md)
+- Business Value Dashboard: [`docs/business-value-dashboard.md`](docs/business-value-dashboard.md)
+- Agent Readiness Center: [`docs/agent-readiness-center.md`](docs/agent-readiness-center.md)
+
+Demo guiado: scenario "Flujo completo AMS" en el modo demo cliente.
+
 ## ⏱ Autoestimación de Resolución de Tickets
 
 Cada ticket/incidente recibe automáticamente una estimación embebida con rango

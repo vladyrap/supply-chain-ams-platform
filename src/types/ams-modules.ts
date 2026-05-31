@@ -167,7 +167,8 @@ export type DemoScenarioId =
   | "executive"
   | "training_ia"
   | "ia_governance"
-  | "documentation";
+  | "documentation"
+  | "ams_full_flow";
 
 export interface DemoScenarioStep {
   href: string;

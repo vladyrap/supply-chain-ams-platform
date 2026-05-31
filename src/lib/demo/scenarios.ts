@@ -61,4 +61,23 @@ export const DEMO_SCENARIOS: DemoScenario[] = [
       { href: "/document-factory",     title: "Respuesta al cliente + export",  description: "Generar y descargar como Markdown." },
     ],
   },
+  {
+    id: "ams_full_flow",
+    label: "Flujo completo AMS",
+    icon: "🚀",
+    description: "Ticket MM como centro: autoestimación → Decision Engine → clasificación → escalación → RCA → Q&A → valor económico.",
+    steps: [
+      { href: "/tickets",              title: "Crear ticket MM MIGO",           description: "Botón ＋ Crear ticket. Ej.: 'MIGO M7 022 al recibir mercancía OC 4500001234' · MM · PRD · High." },
+      { href: "/tickets",              title: "Ver autoestimación (4–12h)",     description: "Sección 'ESTIMACIÓN DE RESOLUCIÓN' del Command Center: banda + fases + confianza." },
+      { href: "/tickets",              title: "Clasificar con Agente AMS",      description: "Sección 'CLASIFICACIÓN AMS · DIAGNÓSTICO': mirá la metadata (agentVersion, kbVersion, fuentes RAG)." },
+      { href: "/tickets",              title: "Scope Items + Playbook",         description: "Secciones automáticas que muestran qué procesos SAP aplican y si hay playbook reutilizable." },
+      { href: "/tickets",              title: "Acciones rápidas (Decision Engine)", description: "Card ⚡ ACCIONES RÁPIDAS: el motor recomienda 'Pedir más info', 'Escalar N2', 'Generar RCA', etc., con peso." },
+      { href: "/escalation-n2",        title: "Escalación N2 con diff",         description: "Si escalaste el ticket, abrir su detalle: muestra ETA N1 vs ajustada N2." },
+      { href: "/document-factory",     title: "Generar RCA del ticket",         description: "Plantilla 'Estimación de resolución' o 'RCA' usando los datos auto-generados." },
+      { href: "/testing-intelligence", title: "Crear caso de prueba",           description: "Capturar el escenario para regresión." },
+      { href: "/knowledge/training",   title: "Convertir en conocimiento",      description: "El ticket resuelto se vuelve KB + Q&A. Versión publicada del agente sube su readiness." },
+      { href: "/tickets",              title: "Auditoría · Timeline",           description: "Volver al ticket: sección AUDITORÍA muestra cada paso registrado con actor y timestamp." },
+      { href: "/dashboard",            title: "Valor económico generado",       description: "Sección 'VALOR GENERADO': costo evitado USD + horas ahorradas + readiness por módulo." },
+    ],
+  },
 ];
