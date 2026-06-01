@@ -357,6 +357,17 @@ export interface TicketEstimateInput {
   hasErrorEvidence?: boolean;
   isProductive?: boolean;
   missingData?: string[];
+  /** Hints derivados del análisis visual de imágenes adjuntas. Opcional. */
+  visualAnalysisHints?: {
+    detectedSapModule?: string;
+    detectedProcess?: string;
+    detectedSubProcess?: string;
+    detectedErrorCode?: string;
+    detectedTransaction?: string;
+    confidence?: ConfidenceLevel | "low" | "medium" | "high";
+    extraMissingData?: string[];
+    extraHints?: string[];
+  };
 }
 
 export interface TicketEstimatedResolution {

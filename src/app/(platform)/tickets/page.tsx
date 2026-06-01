@@ -7,6 +7,7 @@ import { listTickets, getProviderStatus, type Ticket } from "@/services/tickets.
 import CreateTicketModal from "@/components/tickets/CreateTicketModal";
 import TicketEstimateBadge from "@/components/estimation/TicketEstimateBadge";
 import TicketCommandCenter from "@/components/tickets/TicketCommandCenter";
+import GuidedAmsDemo from "@/components/demo/GuidedAmsDemo";
 import { useAuth } from "@/context/AuthContext";
 
 function statusVariant(s: string): "ok" | "warn" | "error" | "muted" | "info" {
@@ -34,6 +35,7 @@ export default function TicketsPage() {
   const [selectedKey, setSelectedKey] = useState<string | null>(null);
   const [createOpen, setCreateOpen] = useState(false);
   const [createdMsg, setCreatedMsg] = useState<string | null>(null);
+  const [demoOpen, setDemoOpen] = useState(false);
 
   const refresh = useCallback(async () => {
     setLoading(true);
@@ -79,6 +81,14 @@ export default function TicketsPage() {
           )}
         </div>
         <div className="row" style={{ gap: 8 }}>
+          <button
+            className="btn ghost"
+            onClick={() => setDemoOpen(true)}
+            style={{ borderColor: "#fbbf24", color: "#fbbf24" }}
+            title="Ejecuta el flujo completo AMS sobre un ticket demo (crea ticket, clasifica con agente real, RCA, test, etc.)"
+          >
+            🎬 Ejecutar demo completa
+          </button>
           <button className="btn primary" onClick={() => setCreateOpen(true)}>
             ＋ Crear ticket
           </button>
@@ -177,6 +187,10 @@ JIRA_PROJECT_KEY=AMS (opcional)`}</pre>
           refresh();
         }}
       />
+
+      {demoOpen && (
+        <GuidedAmsDemo onClose={() => { setDemoOpen(false); refresh(); }} />
+      )}
     </div>
   );
 }

@@ -537,6 +537,26 @@ const nowIso = () => new Date().toISOString();
  * Determinístico, sin LLM. Devuelve banda mín/máx + fases + confianza + auditoría.
  */
 export function autoEstimateTicketResolution(input: TicketEstimateInput): TicketEstimatedResolution {
+  // ── Aplicar hints del análisis visual ANTES de cualquier inferencia ──
+  // Si el análisis detectó módulo y el usuario no eligió uno, lo usamos.
+  // Idem proceso/subProceso. La confianza alta del análisis sube la confianza global.
+  const visual = input.visualAnalysisHints;
+  if (visual) {
+    if (!input.sapModule && visual.detectedSapModule) {
+      input = { ...input, sapModule: visual.detectedSapModule };
+    }
+    if (!input.process && visual.detectedProcess) {
+      input = { ...input, process: visual.detectedProcess };
+    }
+    if (!input.subProcess && visual.detectedSubProcess) {
+      input = { ...input, subProcess: visual.detectedSubProcess };
+    }
+    // Si la imagen muestra mensaje de error → hay evidencia
+    if (visual.detectedErrorCode || visual.detectedTransaction) {
+      input = { ...input, hasErrorEvidence: true };
+    }
+  }
+
   const kind: "incident" | "change_request" | "service_request" = input.kind ?? "incident";
   const severity = input.severity ?? "MEDIUM";
   const env = input.environment ?? "NO_INFORMADO";
@@ -618,6 +638,8 @@ export function autoEstimateTicketResolution(input: TicketEstimateInput): Ticket
   if (!input.environment || input.environment === "NO_INFORMADO") missingData.push("Ambiente objetivo.");
   if (input.hasErrorEvidence === false) missingData.push("Mensaje de error o evidencia (screenshot/log).");
   if (input.complexity === "UNKNOWN")   missingData.push("Estimación de complejidad funcional/técnica.");
+  // Datos faltantes derivados del análisis visual
+  if (visual?.extraMissingData) missingData.push(...visual.extraMissingData);
 
   let score = 100;
   if (missingData.length) score -= missingData.length * 10;
@@ -630,6 +652,10 @@ export function autoEstimateTicketResolution(input: TicketEstimateInput): Ticket
   if (input.isRepeatedIncident) score += 8;
   if (agentConf === "LOW") score -= 12;
   if (agentConf === "HIGH") score += 6;
+  // Análisis visual de alta confianza aporta a la confianza global
+  const visualConf = String(visual?.confidence ?? "").toUpperCase();
+  if (visualConf === "HIGH") score += 10;
+  else if (visualConf === "MEDIUM") score += 4;
   if (score < 0) score = 0; if (score > 100) score = 100;
   let confidence: ConfidenceLevel = "MEDIUM";
   if (score >= 75) confidence = "HIGH";
@@ -646,6 +672,13 @@ export function autoEstimateTicketResolution(input: TicketEstimateInput): Ticket
     "Equipo cliente disponible para validar fix en ventana acordada.",
   ];
   if (input.hasKnownPlaybook) assumptions.push("Existe playbook AMS aplicable, se asume reutilización completa.");
+  // Supuestos derivados del análisis visual (transparencia)
+  if (visual?.detectedErrorCode) {
+    assumptions.push(`Análisis visual identificó código ${visual.detectedErrorCode}${
+      visual.detectedTransaction ? ` en transacción ${visual.detectedTransaction}` : ""
+    }.`);
+  }
+  if (visual?.extraHints) assumptions.push(...visual.extraHints.map((h) => `Hint visual: ${h}`));
 
   const risks: string[] = [];
   if (complexity === "VERY_HIGH" || complexity === "HIGH") risks.push("Complejidad alta: variabilidad amplia entre mín y máx.");

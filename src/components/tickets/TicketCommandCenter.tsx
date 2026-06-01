@@ -8,7 +8,10 @@ import { useEffect, useMemo, useState } from "react";
 import Badge from "@/components/ui/Badge";
 import MarkdownView from "@/components/agent/MarkdownView";
 import TicketEstimateDetail from "@/components/estimation/TicketEstimateDetail";
-import TicketQuickActions from "./TicketQuickActions";
+import EstimateExplainabilityCard from "@/components/estimation/EstimateExplainabilityCard";
+import TicketNextBestAction from "./TicketNextBestAction";
+import TicketReadinessScore from "./TicketReadinessScore";
+import { calculateTicketReadiness } from "@/utils/ticket-readiness-engine";
 import TicketAuditTimeline from "@/components/audit/TicketAuditTimeline";
 import {
   recalculateTicket, adjustTicketEstimate, classifyTicket,
@@ -28,12 +31,20 @@ import {
   type AmsRecommendedAction,
 } from "@/utils/ams-decision-engine";
 import type { AgentResponseMetadata } from "@/types";
+// QuickActions reusables — patrón orquestador
+import EscalationQuickAction from "@/components/escalation/EscalationQuickAction";
+import KnowledgeQuickActions from "@/components/knowledge/KnowledgeQuickActions";
+import DocumentFactoryQuickAction from "@/components/documents/DocumentFactoryQuickAction";
+import TestingQuickAction from "@/components/testing/TestingQuickAction";
+import QualityQuickAction from "@/components/quality/QualityQuickAction";
+import PlaybookQuickAction from "@/components/playbooks/PlaybookQuickAction";
+import { ticketToIncidentLike } from "@/utils/ticket-to-incident-adapter";
 
 // --------------------------------------------------------------------
 // Sección colapsable
 // --------------------------------------------------------------------
 function Section({
-  title, icon, accent, defaultOpen = true, count, children,
+  title, icon, accent, defaultOpen = true, count, children, id,
 }: {
   title: string;
   icon: string;
@@ -41,10 +52,12 @@ function Section({
   defaultOpen?: boolean;
   count?: number;
   children: React.ReactNode;
+  /** id HTML para scroll-to (usado por TicketReadinessScore) */
+  id?: string;
 }) {
   const [open, setOpen] = useState(defaultOpen);
   return (
-    <div className="card" style={{ borderLeft: `3px solid ${accent || "var(--accent)"}` }}>
+    <div className="card" id={id} style={{ borderLeft: `3px solid ${accent || "var(--accent)"}` }}>
       <button
         onClick={() => setOpen((o) => !o)}
         style={{
@@ -128,6 +141,20 @@ export default function TicketCommandCenter({ ticket, onTicketUpdated }: Props) 
 
   const actor = authUser?.name || authUser?.email || "Consultor AMS";
   const actorRole = authUser?.role;
+  const actingUserId = authUser?.id || "anonymous";
+
+  // Ticket → IncidentLike (memo). Lo consumen los QuickActions Escalation,
+  // Knowledge y Quality que esperan IncidentSummary.
+  // Cuando el agente clasifique, sustituimos response por la respuesta real.
+  const incidentLike = useMemo(() => {
+    const base = ticketToIncidentLike(ticket);
+    if (classification?.response) {
+      base.response = classification.response;
+      base.confidence = classification.confidence;
+      base.model = classification.model;
+    }
+    return base;
+  }, [ticket, classification]);
 
   // Sugerir scope items al cambiar de ticket
   useEffect(() => {
@@ -229,6 +256,42 @@ export default function TicketCommandCenter({ ticket, onTicketUpdated }: Props) 
           source: "system",
           metadata: { confidence: ticket.estimatedResolution.confidence, complexity: ticket.estimatedResolution.complexity },
         });
+      }
+      // Audit del análisis visual si el ticket lo trae
+      if (ticket.visualEvidenceNotes && ticket.visualEvidenceNotes.length > 0) {
+        for (const n of ticket.visualEvidenceNotes) {
+          audit.record({
+            ticketId: ticket.key,
+            eventType: "VISUAL_EVIDENCE_ATTACHED",
+            title: `Imagen ${n.fileName}`,
+            description: `Modo: ${n.analysisMode} · Confianza: ${n.confidence}`,
+            actor: ticket.reporter || "system",
+            actorRole: "system",
+            source: "system",
+            metadata: { mode: n.analysisMode, confidence: n.confidence, considered: n.consideredForEstimate },
+          });
+          if (n.analysisMode !== "MANUAL_SUMMARY") {
+            audit.record({
+              ticketId: ticket.key,
+              eventType: "VISUAL_EVIDENCE_ANALYZED",
+              title: `Análisis: ${n.detectedTransaction || n.detectedSapModule || "sin clasificar"}`,
+              description: n.analysisSummary,
+              actor: "VISION_ENGINE",
+              actorRole: "agent",
+              source: "agent",
+            });
+          }
+        }
+        if (ticket.estimatedResolution && ticket.visualEvidenceNotes.some((n) => n.consideredForEstimate)) {
+          audit.record({
+            ticketId: ticket.key,
+            eventType: "TICKET_ESTIMATED_WITH_VISUAL_ANALYSIS",
+            title: "Estimación enriquecida con análisis visual",
+            actor: "SYSTEM_ESTIMATOR",
+            actorRole: "system",
+            source: "system",
+          });
+        }
       }
     }
   }, [ticket.key]); // eslint-disable-line react-hooks/exhaustive-deps
@@ -439,7 +502,7 @@ export default function TicketCommandCenter({ ticket, onTicketUpdated }: Props) 
   return (
     <div className="col" style={{ gap: 12 }}>
       {/* Header del ticket */}
-      <div className="card">
+      <div id="section-header" className="card">
         <div className="row between" style={{ flexWrap: "wrap", gap: 8, alignItems: "flex-start" }}>
           <div style={{ minWidth: 0, flex: 1 }}>
             <div style={{ fontFamily: "ui-monospace, monospace", fontSize: 11.5, color: "var(--text-dim)" }}>{ticket.key}</div>
@@ -471,25 +534,42 @@ export default function TicketCommandCenter({ ticket, onTicketUpdated }: Props) 
 
       {actionToast && <div className="alert ok" style={{ fontSize: 12 }}>{actionToast}</div>}
 
+      {/* Top: NBA + Readiness Score lado a lado */}
+      <div style={{ display: "grid", gridTemplateColumns: "1.4fr 1fr", gap: 10 }}>
+        <TicketNextBestAction
+          decision={decision}
+          onAction={executeQuickAction}
+          readinessScore={calculateTicketReadiness(ticket).score}
+        />
+        <TicketReadinessScore ticket={ticket} />
+      </div>
+
       {/* Sección 1: Resumen / descripción */}
-      <Section title="RESUMEN" icon="📝" accent="#22d3ee">
+      <Section id="section-summary" title="RESUMEN" icon="📝" accent="#22d3ee">
         <div className="msg user"><div className="body" style={{ whiteSpace: "pre-wrap" }}>{ticket.description}</div></div>
       </Section>
 
-      {/* Sección 2: Estimación */}
+      {/* Sección 2: Estimación + Explicabilidad */}
       <Section title="ESTIMACIÓN DE RESOLUCIÓN" icon="⏱" accent="#a855f7" count={ticket.estimatedResolution?.phaseBreakdown.length}>
-        <TicketEstimateDetail
-          estimate={ticket.estimatedResolution}
-          actor={actor}
-          canRecalculate={actorRole === "admin" || actorRole === "aprobador" || actorRole === "consultor"}
-          canAdjustManual={actorRole === "admin" || actorRole === "aprobador"}
-          onRecalculate={handleRecalculate}
-          onManualAdjust={handleManualAdjust}
-        />
+        <div className="col" style={{ gap: 10 }}>
+          <TicketEstimateDetail
+            estimate={ticket.estimatedResolution}
+            actor={actor}
+            canRecalculate={actorRole === "admin" || actorRole === "aprobador" || actorRole === "consultor"}
+            canAdjustManual={actorRole === "admin" || actorRole === "aprobador"}
+            onRecalculate={handleRecalculate}
+            onManualAdjust={handleManualAdjust}
+          />
+          {/* Explicabilidad — qué factores subieron/bajaron la ETA */}
+          <EstimateExplainabilityCard
+            ticket={ticket}
+            onRecalculate={handleRecalculate}
+          />
+        </div>
       </Section>
 
       {/* Sección 3-4: Clasificación + diagnóstico */}
-      <Section title="CLASIFICACIÓN AMS · DIAGNÓSTICO" icon="🤖" accent="#10b981">
+      <Section id="section-classification" title="CLASIFICACIÓN AMS · DIAGNÓSTICO" icon="🤖" accent="#10b981">
         {!classification && (
           <button className="btn primary" onClick={handleClassify} disabled={classifying}>
             {classifying ? <><span className="spinner" /> Clasificando…</> : "🤖 Clasificar con Agente AMS"}
@@ -512,6 +592,61 @@ export default function TicketCommandCenter({ ticket, onTicketUpdated }: Props) 
           </div>
         )}
       </Section>
+
+      {/* Sección 4.5: Análisis visual usado */}
+      {ticket.visualEvidenceNotes && ticket.visualEvidenceNotes.length > 0 && (
+        <Section id="section-visual" title="ANÁLISIS VISUAL USADO" icon="🔬" accent="#22d3ee" count={ticket.visualEvidenceNotes.length}>
+          <div className="alert info" style={{ fontSize: 11, marginBottom: 8 }}>
+            🔒 Las imágenes <strong>no fueron guardadas</strong>. Solo se conservó el resumen textual del análisis para auditar cómo se estimó este ticket.
+          </div>
+          <div className="col" style={{ gap: 8 }}>
+            {ticket.visualEvidenceNotes.map((n) => (
+              <div key={n.id} className="lab-fb-block" style={{ borderLeft: `3px solid ${n.consideredForEstimate ? "#10b981" : "#64748b"}` }}>
+                <div className="row between" style={{ alignItems: "center" }}>
+                  <div style={{ fontWeight: 600, fontSize: 12.5 }}>
+                    📷 {n.fileName}
+                    <span style={{ marginLeft: 8, fontSize: 10.5, color: "var(--text-dim)", fontWeight: 400 }}>
+                      {(n.fileSize / 1024).toFixed(0)} KB · {n.fileType}
+                    </span>
+                  </div>
+                  <div className="row" style={{ gap: 6 }}>
+                    <Badge variant="tech">{n.analysisMode}</Badge>
+                    <Badge variant={n.confidence === "HIGH" ? "ok" : n.confidence === "MEDIUM" ? "warn" : "error"}>
+                      conf {n.confidence}
+                    </Badge>
+                    {n.consideredForEstimate && <Badge variant="ok">usado para estimar</Badge>}
+                  </div>
+                </div>
+                <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 6, marginTop: 8, fontSize: 11.5 }}>
+                  {n.detectedTransaction && <div><span style={{ color: "var(--text-dim)" }}>Transacción:</span> <strong>{n.detectedTransaction}</strong></div>}
+                  {n.detectedErrorCode && <div><span style={{ color: "var(--text-dim)" }}>Error:</span> <strong style={{ color: "#ef4444" }}>{n.detectedErrorCode}</strong></div>}
+                  {n.detectedSapModule && <div><span style={{ color: "var(--text-dim)" }}>Módulo:</span> <strong style={{ color: "#22d3ee" }}>{n.detectedSapModule}</strong></div>}
+                  {n.detectedProcess && <div><span style={{ color: "var(--text-dim)" }}>Proceso:</span> <strong>{n.detectedProcess}</strong></div>}
+                  {n.detectedSubProcess && <div><span style={{ color: "var(--text-dim)" }}>Subproceso:</span> <strong>{n.detectedSubProcess}</strong></div>}
+                </div>
+                {n.detectedObjects && Object.keys(n.detectedObjects).length > 0 && (
+                  <div className="row" style={{ gap: 6, flexWrap: "wrap", marginTop: 6 }}>
+                    {Object.entries(n.detectedObjects).map(([k, v]) => v && (
+                      <span key={k} className="pill" style={{
+                        fontSize: 10, background: "rgba(34,211,238,0.12)", color: "#22d3ee",
+                        border: "1px solid #22d3ee55", padding: "1px 6px", borderRadius: 3,
+                      }}>{k}: {v}</span>
+                    ))}
+                  </div>
+                )}
+                <div style={{ marginTop: 6, padding: 6, background: "rgba(15,23,42,0.45)", borderRadius: 4, fontSize: 11.5 }}>
+                  {n.analysisSummary}
+                </div>
+                {n.userComment && (
+                  <div style={{ marginTop: 4, fontSize: 11, fontStyle: "italic", color: "var(--text-soft)" }}>
+                    💭 {n.userComment}
+                  </div>
+                )}
+              </div>
+            ))}
+          </div>
+        </Section>
+      )}
 
       {/* Sección 5: Conocimiento relacionado */}
       <Section title="CONOCIMIENTO RELACIONADO" icon="📚" accent="#22d3ee" count={ticketKnowledge.length} defaultOpen={ticketKnowledge.length > 0}>
@@ -552,74 +687,114 @@ export default function TicketCommandCenter({ ticket, onTicketUpdated }: Props) 
         )}
       </Section>
 
-      {/* Sección 7: Playbooks */}
-      <Section title="PLAYBOOK RECOMENDADO" icon="📕" accent="#a855f7" count={ticketPlaybooks.length} defaultOpen={ticketPlaybooks.length > 0}>
-        {ticketPlaybooks.length === 0 ? (
-          <div style={{ fontSize: 12, color: "var(--text-dim)" }}>Sin playbook directo. Considerá abrir uno en /playbooks.</div>
-        ) : (
-          <ul style={{ margin: 0, paddingLeft: 18, fontSize: 12 }}>
-            {ticketPlaybooks.slice(0, 3).map((p) => (
-              <li key={p.id}><strong>{p.title}</strong> · <em>{p.status}</em></li>
-            ))}
-          </ul>
-        )}
+      {/* Sección 7 — Playbook · ORQUESTADOR (no listado) */}
+      <Section title="PLAYBOOK AMS" icon="📕" accent="#a855f7" count={ticketPlaybooks.length} defaultOpen>
+        <div className="row" style={{ gap: 8, alignItems: "center", flexWrap: "wrap" }}>
+          <PlaybookQuickAction
+            ticketKey={ticket.key}
+            ticketTitle={ticket.title}
+            sapModule={ticket.sapModule}
+            actor={actor}
+          />
+          {ticketPlaybooks.length > 0 && (
+            <span style={{ fontSize: 11.5, color: "var(--text-soft)" }}>
+              · {ticketPlaybooks.length} playbook{ticketPlaybooks.length === 1 ? "" : "s"} aplicable{ticketPlaybooks.length === 1 ? "" : "s"}
+              {ticketPlaybooks[0] && <> · sugerido: <strong>{ticketPlaybooks[0].title}</strong></>}
+            </span>
+          )}
+        </div>
       </Section>
 
-      {/* Sección 8: Escalamiento N2 */}
+      {/* Sección 8 — Escalamiento N2 · ORQUESTADOR */}
       <Section title="ESCALAMIENTO N2" icon="🚨" accent="#ef4444" count={ticketEscalations.length}>
-        {ticketEscalations.length === 0 ? (
-          <div style={{ fontSize: 12, color: "var(--text-dim)" }}>Sin escalaciones todavía.</div>
-        ) : (
-          <ul style={{ margin: 0, paddingLeft: 18, fontSize: 12 }}>
-            {ticketEscalations.map((e) => (
-              <li key={e.id}>
-                <strong>{e.escalationNumber}</strong> · {e.status} · {e.channel}
-                {e.assignedToName && <> → @{e.assignedToName}</>}
-              </li>
-            ))}
-          </ul>
-        )}
+        <div className="row" style={{ gap: 8, alignItems: "center", flexWrap: "wrap" }}>
+          <EscalationQuickAction
+            incident={incidentLike}
+            actingUserId={actingUserId}
+            canApprove={actorRole === "admin" || actorRole === "aprobador"}
+            variant="full"
+          />
+          {ticketEscalations.length > 0 && (
+            <span style={{ fontSize: 11.5, color: "var(--text-soft)" }}>
+              · {ticketEscalations.length} escalaci{ticketEscalations.length === 1 ? "ón" : "ones"} previas
+            </span>
+          )}
+        </div>
       </Section>
 
-      {/* Sección 9: Jira/ServiceNow placeholder */}
+      {/* Sección 9 — Jira / ServiceNow (read-only por ahora) */}
       <Section title="JIRA / SERVICENOW" icon="↗" accent="#5b8def" defaultOpen={false}>
         <div style={{ fontSize: 12, color: "var(--text-soft)" }}>
           {ticket.source === "jira"
             ? <>Este ticket viene de Jira (key {ticket.key}). {ticket.url && <a href={ticket.url} target="_blank" rel="noopener noreferrer">↗ Abrir en Jira</a>}</>
-            : <>Sin Jira/ServiceNow asociado. Usar acción "Crear ticket Jira" para registrar uno demo (no envía).</>}
+            : <>Sin Jira/ServiceNow asociado. Cuando se escala con el botón de arriba, el módulo Escalamiento N2 dispara la creación demo en su flujo.</>}
         </div>
       </Section>
 
-      {/* Sección 10: Documentos generados */}
-      <Section title="DOCUMENTOS GENERADOS" icon="📄" accent="#a855f7" count={ticketDocs.length} defaultOpen={ticketDocs.length > 0}>
-        {ticketDocs.length === 0 ? (
-          <div style={{ fontSize: 12, color: "var(--text-dim)" }}>Aún no hay documentos para este ticket.</div>
-        ) : (
-          <ul style={{ margin: 0, paddingLeft: 18, fontSize: 12 }}>
-            {ticketDocs.map((d) => (
+      {/* Sección 10 — Documentos · ORQUESTADOR (lista + crear nuevo) */}
+      <Section title="DOCUMENTOS DEL TICKET" icon="📄" accent="#a855f7" count={ticketDocs.length} defaultOpen>
+        <div className="row" style={{ gap: 8, alignItems: "center", flexWrap: "wrap" }}>
+          <DocumentFactoryQuickAction
+            sourceId={ticket.key}
+            sourceType="incident"
+            defaultType={(ticket.estimatedResolution?.totalMaxHours ?? 0) >= 12 ? "RCA" : "CLIENT_RESPONSE"}
+            prefill={{
+              incidentCode: ticket.key,
+              title: ticket.title,
+              executiveSummary: ticket.description.slice(0, 200),
+            }}
+          />
+          {ticketDocs.length > 0 && (
+            <span style={{ fontSize: 11.5, color: "var(--text-soft)" }}>
+              · {ticketDocs.length} documento{ticketDocs.length === 1 ? "" : "s"} ya generado{ticketDocs.length === 1 ? "" : "s"}
+            </span>
+          )}
+        </div>
+        {ticketDocs.length > 0 && (
+          <ul style={{ margin: "8px 0 0", paddingLeft: 18, fontSize: 11.5, color: "var(--text-soft)" }}>
+            {ticketDocs.slice(0, 5).map((d) => (
               <li key={d.id}><strong>{d.title}</strong> · {d.documentType} · <em>{d.status}</em></li>
             ))}
           </ul>
         )}
       </Section>
 
-      {/* Sección 11: Testing */}
-      <Section title="TESTING Y EVIDENCIAS" icon="🧪" accent="#22d3ee" count={ticketTests.length} defaultOpen={false}>
-        {ticketTests.length === 0 ? (
-          <div style={{ fontSize: 12, color: "var(--text-dim)" }}>Sin casos de prueba asociados. Crear desde /testing-intelligence.</div>
-        ) : (
-          <ul style={{ margin: 0, paddingLeft: 18, fontSize: 12 }}>
-            {ticketTests.map((t) => <li key={t.id}>{t.title} · {t.status ?? "—"}</li>)}
+      {/* Sección 11 — Testing · ORQUESTADOR */}
+      <Section title="TESTING INTELLIGENCE" icon="🧪" accent="#22d3ee" count={ticketTests.length}>
+        <div className="row" style={{ gap: 8, alignItems: "center", flexWrap: "wrap" }}>
+          <TestingQuickAction
+            ticketKey={ticket.key}
+            ticketTitle={ticket.title}
+            ticketDescription={ticket.description}
+            sapModule={ticket.sapModule}
+            scopeItemIds={scopeItems.slice(0, 3).map((s) => s.code)}
+            ownerEmail={authUser?.email || actor}
+          />
+          {ticketTests.length > 0 && (
+            <span style={{ fontSize: 11.5, color: "var(--text-soft)" }}>
+              · {ticketTests.length} caso{ticketTests.length === 1 ? "" : "s"} de prueba asociado{ticketTests.length === 1 ? "" : "s"}
+            </span>
+          )}
+        </div>
+        {ticketTests.length > 0 && (
+          <ul style={{ margin: "8px 0 0", paddingLeft: 18, fontSize: 11.5, color: "var(--text-soft)" }}>
+            {ticketTests.slice(0, 5).map((t) => <li key={t.id}>{t.title} · {t.status ?? "—"}</li>)}
           </ul>
         )}
       </Section>
 
-      {/* Sección 12: Quality */}
-      <Section title="QUALITY EVALUATOR" icon="🏅" accent="#fbbf24" count={ticketEvaluations.length} defaultOpen={false}>
-        {ticketEvaluations.length === 0 ? (
-          <div style={{ fontSize: 12, color: "var(--text-dim)" }}>Sin evaluaciones de calidad sobre este ticket.</div>
-        ) : (
-          <ul style={{ margin: 0, paddingLeft: 18, fontSize: 12 }}>
+      {/* Sección 12 — Quality · ORQUESTADOR */}
+      <Section title="QUALITY EVALUATOR" icon="🏅" accent="#fbbf24" count={ticketEvaluations.length}>
+        <div className="row" style={{ gap: 8, alignItems: "center", flexWrap: "wrap" }}>
+          <QualityQuickAction incident={incidentLike} variant="full" />
+          {ticketEvaluations.length > 0 && (
+            <span style={{ fontSize: 11.5, color: "var(--text-soft)" }}>
+              · {ticketEvaluations.length} evaluaci{ticketEvaluations.length === 1 ? "ón" : "ones"} previas
+            </span>
+          )}
+        </div>
+        {ticketEvaluations.length > 0 && (
+          <ul style={{ margin: "8px 0 0", paddingLeft: 18, fontSize: 11.5, color: "var(--text-soft)" }}>
             {ticketEvaluations.map((ev) => (
               <li key={ev.id}>
                 Precisión <strong>{ev.accuracyScore}</strong>/5 · Utilidad <strong>{ev.usefulnessScore}</strong>/5 · Claridad <strong>{ev.clarityScore}</strong>/5 · Riesgo {ev.hallucinationRisk}
@@ -629,11 +804,13 @@ export default function TicketCommandCenter({ ticket, onTicketUpdated }: Props) 
         )}
       </Section>
 
-      {/* Sección 13: Convertir en conocimiento */}
-      <Section title="CONVERTIR EN CONOCIMIENTO" icon="🧠" accent="#10b981" defaultOpen={false}>
-        <div style={{ fontSize: 12, color: "var(--text-soft)" }}>
-          Si este ticket ya tiene solución, capitalizala como artículo en /knowledge/training.
-          La conversión queda registrada en el audit trail.
+      {/* Sección 13 — Convertir en conocimiento · ORQUESTADOR */}
+      <Section title="CONVERTIR EN CONOCIMIENTO" icon="🧠" accent="#10b981">
+        <div className="row" style={{ gap: 8, alignItems: "center", flexWrap: "wrap" }}>
+          <KnowledgeQuickActions incident={incidentLike} variant="full" />
+          <span style={{ fontSize: 11.5, color: "var(--text-soft)" }}>
+            Capitaliza la solución como artículo de KB. Queda en /knowledge/training para validar y publicar.
+          </span>
         </div>
       </Section>
 
@@ -641,11 +818,6 @@ export default function TicketCommandCenter({ ticket, onTicketUpdated }: Props) 
       <Section title="AUDITORÍA · TIMELINE" icon="📜" accent="#64748b" count={ticketAuditEvents.length}>
         <TicketAuditTimeline events={ticketAuditEvents} compact />
       </Section>
-
-      {/* Acciones rápidas — al final para que estén siempre visibles tras scroll */}
-      <div className="card" style={{ borderLeft: "3px solid #fbbf24" }}>
-        <TicketQuickActions decision={decision} onAction={executeQuickAction} />
-      </div>
     </div>
   );
 }
