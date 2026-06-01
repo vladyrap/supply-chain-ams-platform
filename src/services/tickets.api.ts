@@ -121,3 +121,25 @@ export async function classifyTicket(key: string) {
     { method: "POST" }
   );
 }
+
+export interface CloseTicketInput {
+  /** Horas reales que tomó resolver. Input humano al cerrar. */
+  actualHours: number;
+  /** Usuario que cierra y captura las horas. */
+  closedBy: string;
+  /** Nota opcional explicando desviación grande (>50%). */
+  closeNote?: string;
+}
+
+/**
+ * Cierra un ticket capturando las horas reales. Backend computa variance contra
+ * la estimación generada al crear y persiste todo en el jsonb del ticket.
+ * Esta data alimenta el tile "Estimación · Desviación" del dashboard y la
+ * recalibración del motor.
+ */
+export async function closeTicket(key: string, input: CloseTicketInput) {
+  return call<{ success: true; ticket: Ticket } | { success: false; error: string }>(
+    `/api/tickets/${encodeURIComponent(key)}/close`,
+    { method: "POST", body: JSON.stringify(input) }
+  );
+}

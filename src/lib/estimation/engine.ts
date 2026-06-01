@@ -8,7 +8,54 @@ import type {
   UrgencyLevel, EnvironmentLevel, RequiredProfile,
   EstimationResult, EstimatePhase, ConfidenceLevel,
   TicketEstimateInput, TicketEstimatedResolution, TicketEstimatePhase,
+  EstimationCalibrationMode,
 } from "@/types/estimation";
+
+// ============================================================
+// Calibración
+// ============================================================
+// El motor tiene 2 modos:
+// - BOOTSTRAP (default los primeros meses, hasta tener 20+ cierres reales):
+//   * Bandas ampliadas (min -10% / max +20%) para reflejar incertidumbre real
+//   * Confianza tope MEDIUM (nunca devuelve HIGH)
+//   * Disclaimer en el clientResponse
+// - CALIBRATED: rangos estrictos, puede devolver HIGH.
+//
+// Sin calibración con histórico real, las estimaciones "precisas" del primer mes
+// son falsamente precisas. Mejor ser honesto y ampliar la banda.
+
+export const BOOTSTRAP_BAND_MIN_FACTOR = 0.90;
+export const BOOTSTRAP_BAND_MAX_FACTOR = 1.20;
+
+function readCalibrationMode(): EstimationCalibrationMode {
+  // Permite override por env. Si no, default BOOTSTRAP.
+  if (typeof process !== "undefined" && process.env) {
+    const env = process.env.NEXT_PUBLIC_ESTIMATION_MODE;
+    if (env === "CALIBRATED") return "CALIBRATED";
+    if (env === "BOOTSTRAP") return "BOOTSTRAP";
+  }
+  // Frontend puede sobreescribir vía localStorage (lo setea el admin desde /admin
+  // cuando el cliente ya tiene 20+ cierres). Falla silenciosa en SSR.
+  try {
+    if (typeof window !== "undefined") {
+      const v = window.localStorage.getItem("supply-chain-ams-estimation-mode");
+      if (v === "CALIBRATED") return "CALIBRATED";
+    }
+  } catch {/* ignore */}
+  return "BOOTSTRAP";
+}
+
+function applyBootstrapBands(minH: number, maxH: number): { minH: number; maxH: number } {
+  return {
+    minH: Math.max(0.5, minH * BOOTSTRAP_BAND_MIN_FACTOR),
+    maxH: maxH * BOOTSTRAP_BAND_MAX_FACTOR,
+  };
+}
+
+function capConfidenceBootstrap(c: ConfidenceLevel): ConfidenceLevel {
+  // En modo BOOTSTRAP nunca devolvemos HIGH — el motor todavía no aprendió.
+  return c === "HIGH" ? "MEDIUM" : c;
+}
 
 // ============================================================
 // Tablas base (horas) por tipo de estimación
@@ -252,6 +299,14 @@ export function estimate(input: EstimateInput): EstimationResult {
   if (minH < 0.5) minH = 0.5;
   if (maxH < minH) maxH = minH * 1.5;
 
+  // Calibración: en BOOTSTRAP ampliamos bandas para reflejar incertidumbre.
+  const calibrationMode = readCalibrationMode();
+  if (calibrationMode === "BOOTSTRAP") {
+    const widened = applyBootstrapBands(minH, maxH);
+    minH = widened.minH;
+    maxH = widened.maxH;
+  }
+
   // Redondeos amigables
   minH = round1(minH);
   maxH = round1(maxH);
@@ -266,10 +321,21 @@ export function estimate(input: EstimateInput): EstimationResult {
   const missingData = buildMissingData(input);
   const dependencies = buildDependencies(input);
 
+  // Disclaimer honesto en BOOTSTRAP
+  if (calibrationMode === "BOOTSTRAP") {
+    assumptions.push(
+      "Motor en modo BOOTSTRAP: banda ampliada por falta de histórico calibrado. " +
+      "Se recalibra tras 20+ cierres reales con horas efectivas.",
+    );
+  }
+
   const requiredProfiles = PROFILES_BY_TYPE[type];
 
-  // Confidence
-  const { confidence, score } = scoreConfidence(input, missingData.length);
+  // Confidence — cap a MEDIUM en BOOTSTRAP
+  let { confidence, score } = scoreConfidence(input, missingData.length);
+  if (calibrationMode === "BOOTSTRAP") {
+    confidence = capConfidenceBootstrap(confidence);
+  }
 
   // Fases
   const phaseBreakdown = scalePhases(basePhases(type, mod), mult, bumps.reduce((s, b) => s + b.max, 0) / Math.max(1, maxH));
@@ -619,6 +685,16 @@ export function autoEstimateTicketResolution(input: TicketEstimateInput): Ticket
   // Redondeo amigable y piso
   if (baseMin < 0.5) baseMin = 0.5;
   if (baseMax < baseMin) baseMax = baseMin * 1.5;
+
+  // Calibración: en BOOTSTRAP ampliamos bandas para reflejar incertidumbre real.
+  const calibrationMode = readCalibrationMode();
+  if (calibrationMode === "BOOTSTRAP") {
+    const widened = applyBootstrapBands(baseMin, baseMax);
+    baseMin = widened.minH;
+    baseMax = widened.maxH;
+    appliedRules.push(`calib:BOOTSTRAP banda x[${BOOTSTRAP_BAND_MIN_FACTOR}-${BOOTSTRAP_BAND_MAX_FACTOR}]`);
+  }
+
   const totalMinHours = Math.round(baseMin * 10) / 10;
   const totalMaxHours = Math.round(baseMax * 10) / 10;
 
@@ -661,6 +737,11 @@ export function autoEstimateTicketResolution(input: TicketEstimateInput): Ticket
   if (score >= 75) confidence = "HIGH";
   else if (score <= 45) confidence = "LOW";
 
+  // En modo BOOTSTRAP capeamos confianza a MEDIUM — el motor todavía no aprendió.
+  if (calibrationMode === "BOOTSTRAP") {
+    confidence = capConfidenceBootstrap(confidence);
+  }
+
   // Reglas legibles aplicadas (acumulador con las decisiones de fases)
   if (kind === "change_request") appliedRules.push("rule:change_request_phases");
   if (isCriticalPrd) appliedRules.push("rule:critical_prd_extra_phases");
@@ -696,6 +777,15 @@ export function autoEstimateTicketResolution(input: TicketEstimateInput): Ticket
   const totalMaxBusinessDays = +(totalMaxHours / 8).toFixed(1);
   const slaMin = suggestedSla(severity, env);
 
+  // Disclaimer transparente al cliente cuando estamos en BOOTSTRAP
+  if (calibrationMode === "BOOTSTRAP") {
+    assumptions.push(
+      "Motor de estimación en modo BOOTSTRAP: bandas ampliadas hasta tener 20+ " +
+      "tickets cerrados con horas reales registradas. La precisión mejora con " +
+      "cada cierre.",
+    );
+  }
+
   const t = nowIso();
   return {
     id: uidEst("est"),
@@ -711,6 +801,88 @@ export function autoEstimateTicketResolution(input: TicketEstimateInput): Ticket
     generatedBy: "SYSTEM_ESTIMATOR",
     manuallyAdjusted: false,
     appliedRules,
+    calibrationMode,
+  };
+}
+
+// ============================================================
+// Trackeo estimado vs real (Fix #2)
+// ============================================================
+// Cuando el ticket se cierra, capturamos las horas reales y computamos la
+// desviación contra la estimación generada. Estos datos alimentan el tile del
+// dashboard `Estimación · Desviación` y eventualmente el cron de re-calibración.
+
+export interface ActualHoursInput {
+  actualHours: number;
+  closedBy: string;
+  closedAt?: string;       // ISO; default = now
+}
+
+/**
+ * Toma una estimación existente y registra las horas reales del cierre.
+ * Devuelve la estimación enriquecida con actual* + variance* + withinBand.
+ * NO modifica las horas estimadas (queda el snapshot original).
+ */
+export function applyActualHours(
+  estimate: TicketEstimatedResolution,
+  input: ActualHoursInput,
+): TicketEstimatedResolution {
+  const actualHours = Math.max(0, Number(input.actualHours) || 0);
+  const actualBusinessDays = +(actualHours / 8).toFixed(2);
+  const mid = (estimate.totalMinHours + estimate.totalMaxHours) / 2;
+  const varianceHours = +(actualHours - mid).toFixed(2);
+  const variancePct = mid > 0 ? +(((actualHours - mid) / mid) * 100).toFixed(1) : 0;
+  const withinBand = actualHours >= estimate.totalMinHours && actualHours <= estimate.totalMaxHours;
+  return {
+    ...estimate,
+    actualHours,
+    actualBusinessDays,
+    closedAt: input.closedAt || nowIso(),
+    closedBy: input.closedBy,
+    varianceHours,
+    variancePct,
+    withinBand,
+  };
+}
+
+/**
+ * Agrega una lista de estimaciones cerradas (con actualHours) en un snapshot de
+ * calibración. Sirve para el dashboard y para decidir si promover el motor a
+ * CALIBRATED.
+ */
+export function computeCalibrationSnapshot(
+  estimates: TicketEstimatedResolution[],
+): import("@/types/estimation").EstimationCalibrationSnapshot {
+  const withActual = estimates.filter((e) => typeof e.actualHours === "number" && (e.actualHours ?? 0) > 0);
+  const n = withActual.length;
+  if (n === 0) {
+    return {
+      closedTicketsWithActual: 0,
+      averageVariancePct: 0,
+      averageAbsVariancePct: 0,
+      withinBandPct: 0,
+      recommendedMode: "BOOTSTRAP",
+      suggestedAdjustmentFactor: 1.0,
+      lastComputedAt: nowIso(),
+    };
+  }
+  const sumPct = withActual.reduce((s, e) => s + (e.variancePct ?? 0), 0);
+  const sumAbsPct = withActual.reduce((s, e) => s + Math.abs(e.variancePct ?? 0), 0);
+  const within = withActual.filter((e) => e.withinBand).length;
+  const avgPct = sumPct / n;
+  const avgAbs = sumAbsPct / n;
+  // Adjustment factor: si en promedio subestimamos 30%, multiplicar por 1.30
+  const factor = 1 + avgPct / 100;
+  // Promovemos a CALIBRATED solo si hay >=20 cierres Y avgAbs <= 35%
+  const recommended = (n >= 20 && avgAbs <= 35) ? "CALIBRATED" : "BOOTSTRAP";
+  return {
+    closedTicketsWithActual: n,
+    averageVariancePct: +avgPct.toFixed(1),
+    averageAbsVariancePct: +avgAbs.toFixed(1),
+    withinBandPct: +((within / n) * 100).toFixed(1),
+    recommendedMode: recommended,
+    suggestedAdjustmentFactor: +factor.toFixed(2),
+    lastComputedAt: nowIso(),
   };
 }
 

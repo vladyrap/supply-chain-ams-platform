@@ -20,7 +20,9 @@ import { useAgentTraining } from "@/hooks/useAgentTraining";
 import { useEscalation } from "@/hooks/useEscalation";
 import { useTestingIntelligence } from "@/hooks/useTestingIntelligence";
 import HeroCard from "@/components/dashboard/HeroCard";
+import EstimationCalibrationTile from "@/components/dashboard/EstimationCalibrationTile";
 import { listIncidents, type IncidentSummary } from "@/services/agent.api";
+import { listTickets, type Ticket } from "@/services/tickets.api";
 import { calculateBusinessValue } from "@/utils/business-value-engine";
 import AgentReadinessCenter from "@/components/readiness/AgentReadinessCenter";
 
@@ -92,6 +94,14 @@ export default function DashboardPage() {
     });
   }, [tick]);
 
+  // Tickets para calibración del estimador (estimado vs real)
+  const [ticketsForCalib, setTicketsForCalib] = useState<Ticket[]>([]);
+  useEffect(() => {
+    listTickets().then((r) => {
+      if ("success" in r && r.success) setTicketsForCalib(r.tickets);
+    });
+  }, [tick]);
+
   // Agregaciones de autoestimación
   const estStats = (() => {
     const withEst = incidentsForEst.filter((i) => !!i.estimatedResolution);
@@ -158,6 +168,14 @@ export default function DashboardPage() {
         <KPI label="Brechas abiertas"              value={amsOpenGaps}             accent={amsOpenGaps > 5 ? "warn" : "info"} />
         <KPI label="Versiones publicadas"          value={amsPublishedVersions}    accent="ok" />
         <KPI label="Módulos con cobertura"         value={amsScopeItemsCoverage}   accent="tech" />
+      </div>
+
+      {/* Calibración del motor de estimación — honest tile estimado vs real */}
+      <div style={{ marginBottom: 8, fontSize: 11, letterSpacing: 2, color: "var(--text-dim)", fontFamily: "var(--font-mono, monospace)" }}>
+        ▸ AMS · CALIBRACIÓN DEL ESTIMADOR DE TIEMPOS
+      </div>
+      <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(280px, 1fr))", gap: 12, marginBottom: 18 }}>
+        <EstimationCalibrationTile tickets={ticketsForCalib} />
       </div>
 
       {/* KPIs Escalamiento N2 */}

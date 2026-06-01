@@ -11,10 +11,11 @@ import TicketEstimateDetail from "@/components/estimation/TicketEstimateDetail";
 import EstimateExplainabilityCard from "@/components/estimation/EstimateExplainabilityCard";
 import TicketNextBestAction from "./TicketNextBestAction";
 import TicketReadinessScore from "./TicketReadinessScore";
+import CloseTicketModal from "./CloseTicketModal";
 import { calculateTicketReadiness } from "@/utils/ticket-readiness-engine";
 import TicketAuditTimeline from "@/components/audit/TicketAuditTimeline";
 import {
-  recalculateTicket, adjustTicketEstimate, classifyTicket,
+  recalculateTicket, adjustTicketEstimate, classifyTicket, closeTicket,
   type Ticket, type Classification,
 } from "@/services/tickets.api";
 import { suggestScopeItemsForTicket, type SapScopeItem } from "@/services/scope-items.api";
@@ -138,6 +139,9 @@ export default function TicketCommandCenter({ ticket, onTicketUpdated }: Props) 
   const [classifyError, setClassifyError] = useState<string | null>(null);
   const [scopeItems, setScopeItems] = useState<SapScopeItem[]>([]);
   const [actionToast, setActionToast] = useState<string | null>(null);
+  const [closeModalOpen, setCloseModalOpen] = useState(false);
+  const [closing, setClosing] = useState(false);
+  const [closeError, setCloseError] = useState<string | null>(null);
 
   const actor = authUser?.name || authUser?.email || "Consultor AMS";
   const actorRole = authUser?.role;
@@ -344,6 +348,45 @@ export default function TicketCommandCenter({ ticket, onTicketUpdated }: Props) 
     }
   }
 
+  /**
+   * Cierra el ticket capturando horas reales. Alimenta el motor con datos
+   * verídicos para calibración. Sin esto, el motor queda en BOOTSTRAP.
+   */
+  async function handleCloseTicket(input: { actualHours: number; closeNote?: string }) {
+    setClosing(true);
+    setCloseError(null);
+    const res = await closeTicket(ticket.key, {
+      actualHours: input.actualHours,
+      closedBy: actor,
+      closeNote: input.closeNote,
+    });
+    setClosing(false);
+    if ("success" in res && res.success) {
+      onTicketUpdated(res.ticket);
+      const newEst = res.ticket.estimatedResolution;
+      audit.record({
+        ticketId: ticket.key,
+        eventType: "STATUS_CHANGED",
+        title: `Cerrado · ${input.actualHours}h reales`,
+        description: newEst?.variancePct != null
+          ? `Desviación ${newEst.variancePct > 0 ? "+" : ""}${newEst.variancePct}% vs estimación (${newEst.withinBand ? "dentro de banda" : "fuera de banda"})`
+          : "Sin estimación previa para comparar",
+        actor, actorRole, source: "ui",
+        metadata: {
+          actualHours: input.actualHours,
+          varianceHours: newEst?.varianceHours,
+          variancePct: newEst?.variancePct,
+          withinBand: newEst?.withinBand,
+          closeNote: input.closeNote,
+        },
+      });
+      setCloseModalOpen(false);
+      notify(`✓ Ticket cerrado · ${input.actualHours}h registradas`);
+    } else {
+      setCloseError("error" in res ? res.error : "Error cerrando ticket");
+    }
+  }
+
   async function handleManualAdjust(patch: Parameters<typeof adjustTicketEstimate>[1] extends infer P ? Partial<P> : never, reason: string) {
     const res = await adjustTicketEstimate(ticket.key, {
       ...(patch as object),
@@ -516,23 +559,73 @@ export default function TicketCommandCenter({ ticket, onTicketUpdated }: Props) 
               {ticket.url && <a className="badge info" href={ticket.url} target="_blank" rel="noopener noreferrer">↗ Jira</a>}
             </div>
           </div>
-          <div style={{
-            padding: "6px 10px", borderRadius: 6,
-            background: "rgba(15,23,42,0.6)", border: "1px solid var(--border-soft)",
-            fontSize: 11, textAlign: "right",
-          }}>
-            <div style={{ color: "var(--text-dim)", letterSpacing: 2 }}>DECISIÓN AMS</div>
-            <div style={{ color: "#22d3ee", fontWeight: 700, marginTop: 2 }}>
-              {AMS_ACTION_LABELS[decision.recommendedAction]}
+          <div className="col" style={{ gap: 6, alignItems: "flex-end" }}>
+            <div style={{
+              padding: "6px 10px", borderRadius: 6,
+              background: "rgba(15,23,42,0.6)", border: "1px solid var(--border-soft)",
+              fontSize: 11, textAlign: "right",
+            }}>
+              <div style={{ color: "var(--text-dim)", letterSpacing: 2 }}>DECISIÓN AMS</div>
+              <div style={{ color: "#22d3ee", fontWeight: 700, marginTop: 2 }}>
+                {AMS_ACTION_LABELS[decision.recommendedAction]}
+              </div>
+              <div style={{ color: "var(--text-dim)", marginTop: 2 }}>
+                confianza {decision.confidence.toLowerCase()}
+              </div>
             </div>
-            <div style={{ color: "var(--text-dim)", marginTop: 2 }}>
-              confianza {decision.confidence.toLowerCase()}
-            </div>
+            {/* Cerrar ticket (oculto si ya está resuelto). Captura horas reales
+                que alimentan el tile "Desviación" del dashboard y la calibración
+                del motor de estimación. */}
+            {!(ticket.status.toLowerCase().includes("resol") ||
+               ticket.status.toLowerCase().includes("done") ||
+               ticket.status.toLowerCase().includes("closed")) && (
+              <button
+                className="btn sm"
+                onClick={() => { setCloseError(null); setCloseModalOpen(true); }}
+                title="Cerrar ticket y capturar horas reales"
+                style={{
+                  background: "#10b98122",
+                  color: "#10b981",
+                  border: "1px solid #10b98155",
+                  fontSize: 11,
+                  fontWeight: 600,
+                }}
+              >
+                ✓ Cerrar y registrar horas
+              </button>
+            )}
+            {(ticket.status.toLowerCase().includes("resol") ||
+              ticket.status.toLowerCase().includes("done") ||
+              ticket.status.toLowerCase().includes("closed")) && ticket.estimatedResolution?.actualHours != null && (
+              <div style={{
+                padding: "4px 8px", borderRadius: 4,
+                background: "rgba(16,185,129,0.12)", border: "1px solid #10b98155",
+                fontSize: 10.5, color: "#10b981",
+              }}>
+                ✓ Cerrado · {ticket.estimatedResolution.actualHours}h reales
+                {ticket.estimatedResolution.variancePct != null && (
+                  <span style={{ marginLeft: 4, opacity: 0.85 }}>
+                    ({ticket.estimatedResolution.variancePct > 0 ? "+" : ""}{ticket.estimatedResolution.variancePct}%)
+                  </span>
+                )}
+              </div>
+            )}
           </div>
         </div>
       </div>
 
       {actionToast && <div className="alert ok" style={{ fontSize: 12 }}>{actionToast}</div>}
+
+      {closeModalOpen && (
+        <CloseTicketModal
+          ticket={ticket}
+          closingUser={actor}
+          busy={closing}
+          error={closeError}
+          onClose={() => setCloseModalOpen(false)}
+          onConfirm={handleCloseTicket}
+        />
+      )}
 
       {/* Top: NBA + Readiness Score lado a lado */}
       <div style={{ display: "grid", gridTemplateColumns: "1.4fr 1fr", gap: 10 }}>

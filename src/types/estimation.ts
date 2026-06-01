@@ -370,6 +370,19 @@ export interface TicketEstimateInput {
   };
 }
 
+/**
+ * Modo de calibración del motor de estimación.
+ *
+ * - BOOTSTRAP (default): para tenants con <20 cierres reales. Bandas más amplias,
+ *   confianza tope MEDIUM, disclaimer en clientResponse. Evita falsa precisión.
+ * - CALIBRATED: para tenants con >=20 cierres + factor de ajuste aceptado.
+ *   Bandas estrictas, puede devolver confianza HIGH.
+ *
+ * Setear vía tenant_settings.estimationCalibrationMode (UI en /admin),
+ * o por env `NEXT_PUBLIC_ESTIMATION_MODE`. Default sigue siendo BOOTSTRAP.
+ */
+export type EstimationCalibrationMode = "BOOTSTRAP" | "CALIBRATED";
+
 export interface TicketEstimatedResolution {
   id: string;
   ticketId: string;
@@ -395,9 +408,48 @@ export interface TicketEstimatedResolution {
   adjustmentReason?: string;
   // factores aplicados (útil para explicar el resultado)
   appliedRules: string[];
+  // Modo de calibración usado al generar (BOOTSTRAP por default)
+  calibrationMode?: EstimationCalibrationMode;
+
+  // ── Trackeo estimado vs real (se llenan al cerrar el ticket) ──────────────
+  /** Horas que efectivamente tomó la resolución (input humano al cerrar). */
+  actualHours?: number;
+  /** Días hábiles efectivos (actualHours / 8). */
+  actualBusinessDays?: number;
+  /** Cuándo se cerró el ticket. */
+  closedAt?: string;
+  /** Quien capturó las horas reales. */
+  closedBy?: string;
+  /**
+   * Desviación = actualHours - midEstimate. Negativo si fue más rápido.
+   * midEstimate = (totalMinHours + totalMaxHours) / 2.
+   */
+  varianceHours?: number;
+  /** Desviación relativa: (actualHours - mid) / mid · 100. */
+  variancePct?: number;
+  /** Si actualHours cayó dentro del rango min-max → true. */
+  withinBand?: boolean;
+}
+
+/**
+ * Agregado a nivel tenant: cuántos tickets cerrados con `actualHours` hay y cuál
+ * es la desviación promedio. Sirve para el tile del dashboard y para decidir si
+ * el motor ya puede promoverse a CALIBRATED.
+ */
+export interface EstimationCalibrationSnapshot {
+  closedTicketsWithActual: number;
+  averageVariancePct: number;        // signed: positivo = subestimamos
+  averageAbsVariancePct: number;     // unsigned: error medio
+  withinBandPct: number;              // % de tickets cuyo actual cayó dentro del min-max
+  recommendedMode: EstimationCalibrationMode;
+  suggestedAdjustmentFactor: number;  // 1.0 = sin ajuste, 1.3 = motor subestima 30%, multiplicar
+  lastComputedAt: string;
+  // Promedios por estimateType — para ajustar pesos más finos en el futuro
+  byKind?: Record<string, { samples: number; avgVariancePct: number }>;
 }
 
 // Storage para autoestimaciones (clave separada para no mezclar con TimeEstimate del módulo /time-estimator)
 export const TICKET_ESTIMATE_STORAGE = {
   estimates: "supply-chain-ams-ticket-estimates",
+  calibrationSnapshot: "supply-chain-ams-estimation-calibration",
 } as const;
