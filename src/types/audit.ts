@@ -20,7 +20,15 @@ export type TicketAuditEventType =
   | "QUALITY_EVALUATED"
   | "CONVERTED_TO_KNOWLEDGE"
   | "STATUS_CHANGED"
-  | "COMMENT_ADDED";
+  | "COMMENT_ADDED"
+  // Visual analysis
+  | "VISUAL_EVIDENCE_ATTACHED"
+  | "VISUAL_EVIDENCE_ANALYZED"
+  | "TICKET_ESTIMATED_WITH_VISUAL_ANALYSIS"
+  // Demo guiada end-to-end
+  | "DEMO_STARTED"
+  | "DEMO_STEP_COMPLETED"
+  | "DEMO_COMPLETED";
 
 export interface TicketAuditEvent {
   id: string;
@@ -59,6 +67,12 @@ export const EVENT_LABELS: Record<TicketAuditEventType, string> = {
   CONVERTED_TO_KNOWLEDGE: "Convertido en conocimiento",
   STATUS_CHANGED: "Estado cambiado",
   COMMENT_ADDED: "Comentario",
+  VISUAL_EVIDENCE_ATTACHED: "Imagen adjuntada",
+  VISUAL_EVIDENCE_ANALYZED: "Imagen analizada",
+  TICKET_ESTIMATED_WITH_VISUAL_ANALYSIS: "Estimado con análisis visual",
+  DEMO_STARTED: "Demo iniciada",
+  DEMO_STEP_COMPLETED: "Paso demo completado",
+  DEMO_COMPLETED: "Demo completada",
 };
 
 export const EVENT_ICONS: Record<TicketAuditEventType, string> = {
@@ -81,6 +95,12 @@ export const EVENT_ICONS: Record<TicketAuditEventType, string> = {
   CONVERTED_TO_KNOWLEDGE: "🧠",
   STATUS_CHANGED: "🔁",
   COMMENT_ADDED: "💭",
+  VISUAL_EVIDENCE_ATTACHED: "📷",
+  VISUAL_EVIDENCE_ANALYZED: "🔬",
+  TICKET_ESTIMATED_WITH_VISUAL_ANALYSIS: "🎯",
+  DEMO_STARTED: "🎬",
+  DEMO_STEP_COMPLETED: "▶",
+  DEMO_COMPLETED: "🏁",
 };
 
 export const EVENT_COLORS: Record<TicketAuditEventType, string> = {
@@ -103,4 +123,10 @@ export const EVENT_COLORS: Record<TicketAuditEventType, string> = {
   CONVERTED_TO_KNOWLEDGE: "#10b981",
   STATUS_CHANGED: "#64748b",
   COMMENT_ADDED: "#64748b",
+  VISUAL_EVIDENCE_ATTACHED: "#22d3ee",
+  VISUAL_EVIDENCE_ANALYZED: "#a855f7",
+  TICKET_ESTIMATED_WITH_VISUAL_ANALYSIS: "#10b981",
+  DEMO_STARTED: "#fbbf24",
+  DEMO_STEP_COMPLETED: "#22d3ee",
+  DEMO_COMPLETED: "#10b981",
 };

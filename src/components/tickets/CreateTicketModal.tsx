@@ -6,6 +6,10 @@
 import { useState } from "react";
 import type { CreateTicketInput, Ticket } from "@/services/tickets.api";
 import { createTicket } from "@/services/tickets.api";
+import VisualEvidenceUploader from "./VisualEvidenceUploader";
+import type { TemporaryVisualEvidence } from "@/types/visual-evidence";
+import { temporaryToNote } from "@/types/visual-evidence";
+import ModalPortal from "@/components/ui/ModalPortal";
 
 const SAP_MODULES = ["", "MM", "SD", "PP", "WM", "EWM", "QM", "PM", "ARIBA", "IBP", "BTP", "INTEGRACION"];
 const PRIORITIES = ["Highest", "High", "Medium", "Low"];
@@ -34,6 +38,7 @@ const EMPTY: CreateTicketInput = {
 
 export default function CreateTicketModal({ open, defaultReporter, onClose, onCreated }: Props) {
   const [form, setForm] = useState<CreateTicketInput>(EMPTY);
+  const [evidence, setEvidence] = useState<TemporaryVisualEvidence[]>([]);
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
@@ -43,22 +48,36 @@ export default function CreateTicketModal({ open, defaultReporter, onClose, onCr
     setForm((cur) => ({ ...cur, [k]: v }));
   }
 
+  function cleanupPreviews() {
+    for (const e of evidence) {
+      if (e.previewUrl) URL.revokeObjectURL(e.previewUrl);
+    }
+  }
+
   async function submit() {
     setError(null);
     if (!form.title.trim()) { setError("El título es obligatorio."); return; }
     if (!form.description.trim()) { setError("La descripción es obligatoria."); return; }
     setBusy(true);
+    // Solo persistimos las notas de las evidencias QUE TIENEN análisis y están
+    // marcadas para considerarse. El archivo en sí nunca cruza al backend.
+    const notes = evidence
+      .filter((e) => e.visualAnalysis && e.consideredForEstimate)
+      .map(temporaryToNote);
     const payload: CreateTicketInput = {
       ...form,
       reporter: defaultReporter || null,
       sapModule: form.sapModule || null,
       environment: form.environment || null,
       complexity: form.complexity || undefined,
+      visualEvidenceNotes: notes.length > 0 ? notes : undefined,
     };
     const res = await createTicket(payload);
     setBusy(false);
     if ("success" in res && res.success) {
       onCreated(res.ticket);
+      cleanupPreviews();
+      setEvidence([]);
       setForm(EMPTY);
     } else {
       setError("error" in res ? res.error : "Error al crear");
@@ -66,11 +85,8 @@ export default function CreateTicketModal({ open, defaultReporter, onClose, onCr
   }
 
   return (
-    <div role="dialog" style={{
-      position: "fixed", inset: 0, background: "rgba(2,6,23,0.7)", zIndex: 1000,
-      display: "flex", alignItems: "center", justifyContent: "center", padding: 20, overflowY: "auto",
-    }} onClick={onClose}>
-      <div onClick={(e) => e.stopPropagation()} className="card" style={{ maxWidth: 640, width: "100%", padding: 20, maxHeight: "90vh", overflowY: "auto" }}>
+    <ModalPortal open={open} onClose={onClose} maxWidth={640} contentClassName="card">
+      <div style={{ padding: 20 }}>
         <div className="ticket-section-head">＋ NUEVO TICKET</div>
         <p className="settings-section-desc">
           Al guardar, el agente generará automáticamente la estimación de resolución (rango horas, fases, confianza).
@@ -87,6 +103,16 @@ export default function CreateTicketModal({ open, defaultReporter, onClose, onCr
           <textarea value={form.description} onChange={(e) => update("description", e.target.value)}
             rows={4} placeholder="Pasos para reproducir, transacciones involucradas, mensaje de error completo, contexto del usuario..." />
         </label>
+
+        {/* Evidencia visual con análisis IA */}
+        <div style={{ marginTop: 12 }}>
+          <VisualEvidenceUploader
+            evidence={evidence}
+            onChange={setEvidence}
+            ticketTitle={form.title}
+            ticketDescription={form.description}
+          />
+        </div>
 
         <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr 1fr", gap: 10 }}>
           <label className="tc-field">
@@ -141,13 +167,22 @@ export default function CreateTicketModal({ open, defaultReporter, onClose, onCr
 
         {error && <div className="alert error" style={{ marginTop: 10 }}>{error}</div>}
 
-        <div className="row" style={{ gap: 8, marginTop: 14, justifyContent: "flex-end" }}>
-          <button className="btn ghost" onClick={onClose} disabled={busy}>cancelar</button>
-          <button className="btn primary" onClick={submit} disabled={busy}>
-            {busy ? <><span className="spinner" /> creando…</> : "＋ crear ticket"}
-          </button>
+        <div className="row between" style={{ gap: 8, marginTop: 14, alignItems: "center" }}>
+          <div style={{ fontSize: 11, color: "var(--text-dim)" }}>
+            {evidence.filter((e) => e.visualAnalysis && e.consideredForEstimate).length > 0
+              ? `📷 ${evidence.filter((e) => e.visualAnalysis && e.consideredForEstimate).length} análisis visual será usado para estimar`
+              : evidence.length > 0
+                ? "📷 Imágenes adjuntas sin análisis — no influirán en la estimación"
+                : ""}
+          </div>
+          <div className="row" style={{ gap: 8 }}>
+            <button className="btn ghost" onClick={() => { cleanupPreviews(); setEvidence([]); onClose(); }} disabled={busy}>cancelar</button>
+            <button className="btn primary" onClick={submit} disabled={busy}>
+              {busy ? <><span className="spinner" /> creando…</> : "＋ crear ticket"}
+            </button>
+          </div>
         </div>
       </div>
-    </div>
+    </ModalPortal>
   );
 }

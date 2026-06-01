@@ -1,4 +1,5 @@
 import type { TicketEstimatedResolution } from "@/types/estimation";
+import type { VisualEvidenceNote } from "@/types/visual-evidence";
 
 const API_BASE =
   (process.env.NEXT_PUBLIC_AGENT_API_URL || "http://localhost:6601").replace(/\/+$/, "");
@@ -18,6 +19,8 @@ export interface Ticket {
   updated: string;
   url?: string;
   estimatedResolution?: TicketEstimatedResolution | null;
+  /** Resúmenes textuales del análisis visual de imágenes adjuntas (sin archivos). */
+  visualEvidenceNotes?: VisualEvidenceNote[] | null;
 }
 
 export interface CreateTicketInput {
@@ -33,6 +36,9 @@ export interface CreateTicketInput {
   requiresIntegration?: boolean;
   requiresUAT?: boolean;
   requiresTransport?: boolean;
+  /** Análisis visual ya hecho client-side. El backend lo persiste y usa los hints
+   *  para mejorar la autoestimación. No incluye archivos ni base64. */
+  visualEvidenceNotes?: VisualEvidenceNote[];
 }
 
 export interface Classification {
@@ -43,10 +49,16 @@ export interface Classification {
 
 async function call<T>(path: string, init: RequestInit = {}): Promise<T | { success: false; error: string }> {
   try {
+    // Solo mandar Content-Type cuando hay body real. Fastify rechaza un POST
+    // con Content-Type: application/json y body vacío con "Body cannot be empty".
+    const headers: Record<string, string> = { ...(init.headers as Record<string, string> ?? {}) };
+    if (init.body != null && !headers["Content-Type"]) {
+      headers["Content-Type"] = "application/json";
+    }
     const res = await fetch(`${API_BASE}${path}`, {
       ...init,
       credentials: "include",
-      headers: { "Content-Type": "application/json", ...(init.headers || {}) },
+      headers,
       cache: "no-store",
     });
     const data = (await res.json().catch(() => null)) as T | null;
