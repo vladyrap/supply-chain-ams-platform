@@ -19,6 +19,7 @@ import { CHANNEL_LABELS } from "@/types/escalation";
 import { buildJiraPayload, buildServiceNowPayload } from "@/utils/escalation-engine";
 import AssigneeSuggestionCard from "./AssigneeSuggestionCard";
 import ItsmTicketPreview from "./ItsmTicketPreview";
+import TcModalShell from "@/components/ui/TcModalShell";
 
 interface Props {
   incident: IncidentSummary | IncidentDetail;
@@ -114,7 +115,7 @@ export default function EscalationModal({ incident, escalation, createdByUserId,
   }
 
   return (
-    <div className="tc-modal-back" onClick={onClose}>
+    <TcModalShell onClose={onClose}>
       <div className="tc-modal" onClick={(e) => e.stopPropagation()} style={{ maxWidth: 920 }}>
         <div className="tc-modal-head">
           <div>
@@ -246,6 +247,6 @@ export default function EscalationModal({ incident, escalation, createdByUserId,
           )}
         </div>
       </div>
-    </div>
+    </TcModalShell>
   );
 }

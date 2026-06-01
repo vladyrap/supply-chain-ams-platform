@@ -6,6 +6,7 @@ import { useKnowledgeConversion, type ConversionInput, type ConversionDraft } fr
 import type { KnowledgeType, Priority } from "@/types/training";
 import { KNOWLEDGE_TYPE_LABELS, PRIORITY_LABELS, SUPPLY_CHAIN_PROCESSES } from "@/types/training";
 import KnowledgeConversionPreview from "./KnowledgeConversionPreview";
+import TcModalShell from "@/components/ui/TcModalShell";
 
 interface Props {
   incident: IncidentSummary | IncidentDetail;
@@ -53,7 +54,7 @@ export default function IncidentToKnowledgeWizard({ incident, onClose, onSaved }
   }
 
   return (
-    <div className="tc-modal-back" onClick={onClose}>
+    <TcModalShell onClose={onClose}>
       <div className="tc-modal" onClick={(e) => e.stopPropagation()} style={{ maxWidth: 900 }}>
         <div className="tc-modal-head">
           <div style={{ flex: 1, minWidth: 0 }}>
@@ -222,6 +223,6 @@ export default function IncidentToKnowledgeWizard({ incident, onClose, onSaved }
           )}
         </div>
       </div>
-    </div>
+    </TcModalShell>
   );
 }

@@ -8,6 +8,7 @@ import {
   TESTING_TYPES, TESTING_ENVIRONMENTS, TESTING_SAP_MODULES, TESTING_PROCESSES,
   TESTING_TYPE_LABELS,
 } from "@/types/testing";
+import TcModalShell from "@/components/ui/TcModalShell";
 
 interface Props {
   scenario: TestingScenario | null;
@@ -46,7 +47,7 @@ export default function TestScenarioFormModal({ scenario, onClose, onSave, defau
   const [form, setForm] = useState<TestingScenario>(scenario ?? blank(defaultOwner));
 
   return (
-    <div className="tc-modal-back" onClick={onClose}>
+    <TcModalShell onClose={onClose}>
       <div className="tc-modal" onClick={(e) => e.stopPropagation()} style={{ maxWidth: 720 }}>
         <div className="tc-modal-head">
           <div>
@@ -141,6 +142,6 @@ export default function TestScenarioFormModal({ scenario, onClose, onSave, defau
           </button>
         </div>
       </div>
-    </div>
+    </TcModalShell>
   );
 }

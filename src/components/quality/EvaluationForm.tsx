@@ -5,6 +5,7 @@ import type { IncidentSummary, IncidentDetail } from "@/services/agent.api";
 import type { AgentEvaluation, HallucinationRiskLevel, TechnicalLevelFit } from "@/types/ams-modules";
 import { FIT_LABELS, RISK_COLORS } from "@/types/ams-modules";
 import KnowledgeQuickActions from "@/components/knowledge/KnowledgeQuickActions";
+import TcModalShell from "@/components/ui/TcModalShell";
 
 interface Props {
   incident: IncidentSummary | IncidentDetail;
@@ -72,7 +73,7 @@ export default function EvaluationForm({ incident, onClose, onSaved }: Props) {
   const overallColor = overall >= 4 ? "#10b981" : overall >= 3 ? "#fbbf24" : "#ef4444";
 
   return (
-    <div className="tc-modal-back" onClick={onClose}>
+    <TcModalShell onClose={onClose}>
       <div className="tc-modal" onClick={(e) => e.stopPropagation()} style={{ maxWidth: 800 }}>
         <div className="tc-modal-head">
           <div style={{ flex: 1, minWidth: 0 }}>
@@ -201,6 +202,6 @@ export default function EvaluationForm({ incident, onClose, onSaved }: Props) {
           </button>
         </div>
       </div>
-    </div>
+    </TcModalShell>
   );
 }

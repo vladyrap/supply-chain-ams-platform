@@ -6,6 +6,7 @@ import type { EscalationRecord, EscalationStatus } from "@/types/escalation";
 import EscalationStatusBadge from "./EscalationStatusBadge";
 import ItsmTicketPreview from "./ItsmTicketPreview";
 import EscalationEstimateDiff from "./EscalationEstimateDiff";
+import TcModalShell from "@/components/ui/TcModalShell";
 
 interface Props {
   record: EscalationRecord;
@@ -35,7 +36,7 @@ export default function EscalationDetailModal({ record, escalation, actingUserId
   }
 
   return (
-    <div className="tc-modal-back" onClick={onClose}>
+    <TcModalShell onClose={onClose}>
       <div className="tc-modal" onClick={(e) => e.stopPropagation()} style={{ maxWidth: 820 }}>
         <div className="tc-modal-head">
           <div>
@@ -159,6 +160,6 @@ export default function EscalationDetailModal({ record, escalation, actingUserId
           </div>
         </div>
       </div>
-    </div>
+    </TcModalShell>
   );
 }

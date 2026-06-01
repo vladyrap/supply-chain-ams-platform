@@ -8,6 +8,7 @@ import type {
   TicketEstimatedResolution, ConfidenceLevel, ComplexityLevel,
 } from "@/types/estimation";
 import { COMPLEXITY_LEVELS, COMPLEXITY_LABELS, CONFIDENCE_LABELS } from "@/types/estimation";
+import ModalPortal from "@/components/ui/ModalPortal";
 
 interface Props {
   open: boolean;
@@ -40,11 +41,8 @@ export default function ManualEstimateAdjustmentModal({
   }
 
   return (
-    <div role="dialog" style={{
-      position: "fixed", inset: 0, background: "rgba(2,6,23,0.7)", zIndex: 1000,
-      display: "flex", alignItems: "center", justifyContent: "center", padding: 20,
-    }} onClick={onClose}>
-      <div onClick={(e) => e.stopPropagation()} className="card" style={{ maxWidth: 520, width: "100%", padding: 18 }}>
+    <ModalPortal open={open} onClose={onClose} maxWidth={520} contentClassName="card">
+      <div style={{ padding: 18 }}>
         <div className="ticket-section-head">✎ AJUSTE MANUAL DE ESTIMACIÓN</div>
         <p className="settings-section-desc">
           Cambios marcarán esta estimación como ajustada manualmente. Recalcular automáticamente
@@ -95,6 +93,6 @@ export default function ManualEstimateAdjustmentModal({
           <button className="btn primary" onClick={save}>guardar ajuste</button>
         </div>
       </div>
-    </div>
+    </ModalPortal>
   );
 }
