@@ -128,6 +128,16 @@ estimación, clasificación con agente, diagnóstico, conocimiento, scope items 
 playbooks, escalamiento N2, Jira/SN, documentos, testing, quality, conversión a KB
 y auditoría.
 
+**5 mejoras prioritarias activas:**
+
+1. **Ticket Command Center** completo · 14 secciones que orquestan los módulos existentes via QuickActions.
+2. **Next Best Action** destacada al tope · pinta la recomendación #1 del Decision Engine.
+3. **Explicabilidad de ETA** · dos columnas ↑/↓ con los factores que mueven la estimación.
+4. **Ticket Readiness Score** 0-100 · 10 criterios con botones scroll-to-fix.
+5. **Demo guiada end-to-end ejecutable** · botón "🎬 Ejecutar demo completa" en /tickets corre 13 pasos REALES.
+
+Doc: [`docs/ticket-command-center-priority-improvements.md`](docs/ticket-command-center-priority-improvements.md)
+
 El **AMS Decision Engine** recomienda la "próxima mejor acción" sobre cada ticket
 (Escalar, Pedir más info, Generar RCA, etc.) con peso y razón. Las acciones se
 ejecutan desde la card ⚡ ACCIONES RÁPIDAS y quedan auditadas en el timeline.

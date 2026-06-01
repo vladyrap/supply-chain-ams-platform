@@ -1,0 +1,218 @@
+/* ============================================================
+   Manual AMS · estilos PDF (A4)
+   ============================================================ */
+
+@page { size: A4; margin: 16mm 14mm; }
+
+* { box-sizing: border-box; }
+
+html, body {
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+  color: #1a1a1a;
+  font-size: 11.5pt;
+  line-height: 1.55;
+  -webkit-print-color-adjust: exact;
+  print-color-adjust: exact;
+}
+
+body { margin: 0; padding: 0; }
+
+/* ===== Cover ===== */
+.cover {
+  page-break-after: always;
+  height: 100vh;
+  position: relative;
+  display: flex;
+  align-items: center;
+}
+.cover-stripe {
+  position: absolute;
+  top: 0; left: 0; bottom: 0;
+  width: 10mm;
+}
+.cover-inner {
+  padding-left: 24mm;
+  max-width: 150mm;
+}
+.cover-eyebrow {
+  font-size: 9pt;
+  letter-spacing: 4pt;
+  color: #888;
+  margin-bottom: 8mm;
+}
+.cover-title {
+  font-size: 32pt;
+  font-weight: 800;
+  line-height: 1.15;
+  margin: 0 0 6mm 0;
+  color: #0a0a0a;
+}
+.cover-subtitle {
+  font-size: 13pt;
+  color: #555;
+  margin: 0 0 12mm 0;
+}
+.cover-meta {
+  font-size: 10pt;
+  color: #888;
+  display: flex;
+  gap: 6mm;
+}
+
+/* ===== TOC ===== */
+.toc {
+  page-break-after: always;
+  padding-top: 4mm;
+}
+.toc h2 {
+  font-size: 18pt;
+  margin: 0 0 8mm 0;
+  padding-bottom: 4mm;
+  border-bottom: 2px solid #e1e1e1;
+}
+.toc ol {
+  padding-left: 0;
+  list-style-position: inside;
+  columns: 2;
+  column-gap: 10mm;
+}
+.toc li {
+  font-size: 10.5pt;
+  padding: 1.5mm 0;
+  break-inside: avoid;
+}
+.toc a {
+  color: #1a1a1a;
+  text-decoration: none;
+}
+
+/* ===== Module sections ===== */
+.module {
+  page-break-before: always;
+  padding-top: 2mm;
+}
+.module:first-of-type { page-break-before: auto; }
+.module-eyebrow {
+  font-size: 8pt;
+  letter-spacing: 3pt;
+  color: #999;
+  text-transform: uppercase;
+  margin-bottom: 3mm;
+}
+.appendix .module-eyebrow { color: #c47900; }
+
+h1 {
+  font-size: 22pt;
+  font-weight: 800;
+  color: #0a0a0a;
+  margin: 0 0 4mm 0;
+  line-height: 1.2;
+  padding-bottom: 3mm;
+  border-bottom: 1px solid #e1e1e1;
+}
+h2 {
+  font-size: 15pt;
+  font-weight: 700;
+  color: #1a1a1a;
+  margin: 8mm 0 3mm 0;
+  page-break-after: avoid;
+}
+h3 {
+  font-size: 12.5pt;
+  font-weight: 700;
+  color: #333;
+  margin: 6mm 0 2mm 0;
+  page-break-after: avoid;
+}
+h4 {
+  font-size: 11pt;
+  font-weight: 700;
+  color: #444;
+  margin: 4mm 0 1mm 0;
+  page-break-after: avoid;
+}
+
+p { margin: 2mm 0 3mm 0; }
+
+blockquote {
+  border-left: 3px solid #888;
+  margin: 3mm 0;
+  padding: 1mm 5mm;
+  color: #555;
+  font-style: italic;
+  background: #f7f7f7;
+}
+
+ul, ol { margin: 2mm 0 4mm 0; padding-left: 7mm; }
+li { margin: 0.8mm 0; }
+
+a { color: #1d63d1; }
+
+code {
+  background: #f1f5f9;
+  padding: 0.5mm 1.5mm;
+  border-radius: 1mm;
+  font-family: "SF Mono", Consolas, "Liberation Mono", monospace;
+  font-size: 9.5pt;
+}
+
+pre {
+  background: #0f172a;
+  color: #e2e8f0;
+  padding: 4mm;
+  border-radius: 2mm;
+  font-size: 8.5pt;
+  line-height: 1.4;
+  overflow-x: auto;
+  page-break-inside: avoid;
+  margin: 3mm 0;
+}
+pre code {
+  background: transparent;
+  color: inherit;
+  padding: 0;
+  border-radius: 0;
+  font-size: inherit;
+}
+
+/* highlight.js basic colors (override for print) */
+.hljs-comment, .hljs-quote { color: #8b9bb4; font-style: italic; }
+.hljs-keyword, .hljs-selector-tag, .hljs-literal { color: #d19a66; font-weight: 600; }
+.hljs-string, .hljs-doctag { color: #98c379; }
+.hljs-title, .hljs-section, .hljs-selector-id { color: #61afef; }
+.hljs-attr, .hljs-attribute, .hljs-built_in, .hljs-name { color: #e5c07b; }
+.hljs-number, .hljs-symbol, .hljs-bullet, .hljs-link { color: #c678dd; }
+.hljs-type, .hljs-class .hljs-title { color: #56b6c2; }
+
+table {
+  width: 100%;
+  border-collapse: collapse;
+  margin: 3mm 0 5mm 0;
+  font-size: 10pt;
+  page-break-inside: avoid;
+}
+th {
+  text-align: left;
+  background: #f1f5f9;
+  padding: 2mm 3mm;
+  border-bottom: 2px solid #cbd5e1;
+  font-weight: 700;
+}
+td {
+  padding: 1.5mm 3mm;
+  border-bottom: 1px solid #e2e8f0;
+  vertical-align: top;
+}
+tr:last-child td { border-bottom: 0; }
+
+img {
+  max-width: 100%;
+  height: auto;
+  border: 1px solid #e1e1e1;
+  border-radius: 2mm;
+  margin: 3mm 0;
+  page-break-inside: avoid;
+  display: block;
+}
+
+hr { border: 0; border-top: 1px solid #e1e1e1; margin: 6mm 0; }

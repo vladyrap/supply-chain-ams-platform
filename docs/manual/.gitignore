@@ -1,0 +1,4 @@
+# Build artifacts del manual — regenerables con `npm run build` en scripts/
+screens/
+pdf/
+*.pdf
