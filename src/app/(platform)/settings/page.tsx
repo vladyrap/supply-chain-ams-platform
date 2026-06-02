@@ -836,6 +836,9 @@ function WorkspaceTab() {
 
   return (
     <div className="col" style={{ gap: 14 }}>
+      {/* Customer Response firma y branding del tenant */}
+      <CustomerResponseSettingsSection />
+
       {/* Contexto de trabajo */}
       <div className="card">
         <h3 style={{ marginTop: 0, fontSize: 14 }}>🏢 Contexto de trabajo</h3>
@@ -1149,5 +1152,109 @@ function Toggle({ label, desc, value, onChange }: { label: string; desc: string;
       <input type="checkbox" checked={value} onChange={(e) => onChange(e.target.checked)} />
       <span className="settings-toggle-switch" />
     </label>
+  );
+}
+
+// ============================================================
+// Customer Response Settings — firma + branding del tenant
+// ============================================================
+
+const SIGNATURE_KEY = "supply-chain-ams-tenant-signature";
+const BRAND_KEY = "supply-chain-ams-tenant-brand";
+
+function CustomerResponseSettingsSection() {
+  const [signature, setSignature] = useState<string>("Equipo AMS");
+  const [brand, setBrand] = useState<string>("");
+  const [saved, setSaved] = useState(false);
+
+  useEffect(() => {
+    if (typeof window === "undefined") return;
+    setSignature(localStorage.getItem(SIGNATURE_KEY) || "Equipo AMS");
+    setBrand(localStorage.getItem(BRAND_KEY) || "");
+  }, []);
+
+  function save() {
+    if (typeof window === "undefined") return;
+    localStorage.setItem(SIGNATURE_KEY, signature);
+    localStorage.setItem(BRAND_KEY, brand);
+    setSaved(true);
+    setTimeout(() => setSaved(false), 2500);
+  }
+
+  function reset() {
+    setSignature("Equipo AMS");
+    setBrand("");
+    if (typeof window !== "undefined") {
+      localStorage.removeItem(SIGNATURE_KEY);
+      localStorage.removeItem(BRAND_KEY);
+    }
+  }
+
+  return (
+    <div className="card">
+      <h3 style={{ marginTop: 0, fontSize: 14 }}>✉ Customer Response · Firma del tenant</h3>
+      <p className="settings-section-desc">
+        Firma que se incluye al final de cada respuesta generada con el motor
+        Customer Response Intelligence. Aplica a todas las respuestas que vayan
+        al cliente (no a notas internas).
+      </p>
+
+      <div className="col" style={{ gap: 12, marginTop: 10 }}>
+        <div>
+          <label className="lab" htmlFor="cr-signature">Firma (texto multilinea)</label>
+          <textarea
+            id="cr-signature"
+            rows={4}
+            value={signature}
+            onChange={(e) => setSignature(e.target.value)}
+            placeholder="Equipo AMS&#10;contacto@miempresa.cl&#10;+56 9 1234 5678"
+            style={{ fontFamily: "monospace", fontSize: 12 }}
+          />
+          <div style={{ fontSize: 11, color: "var(--text-dim)", marginTop: 4 }}>
+            Recomendado: nombre del equipo + mail + teléfono o link de soporte.
+          </div>
+        </div>
+
+        <div>
+          <label className="lab" htmlFor="cr-brand">Branding adicional (opcional)</label>
+          <input
+            id="cr-brand"
+            value={brand}
+            onChange={(e) => setBrand(e.target.value)}
+            placeholder="ej. AMS · Powered by MyF SAP Consultores"
+          />
+          <div style={{ fontSize: 11, color: "var(--text-dim)", marginTop: 4 }}>
+            Frase corta opcional que se concatena después de la firma.
+          </div>
+        </div>
+
+        <div className="row" style={{ gap: 8 }}>
+          <button className="btn primary" onClick={save}>
+            💾 Guardar firma
+          </button>
+          <button className="btn ghost" onClick={reset}>
+            ↺ Restaurar default
+          </button>
+          {saved && <span style={{ fontSize: 12, color: "#10b981" }}>✓ guardado</span>}
+        </div>
+
+        {/* Preview */}
+        <div style={{
+          padding: 12, borderRadius: 6,
+          background: "var(--bg-elev)", fontSize: 12, color: "var(--text-soft)",
+        }}>
+          <div style={{ fontSize: 10, letterSpacing: 1.5, color: "var(--text-dim)", marginBottom: 6 }}>
+            PREVIEW
+          </div>
+          <pre style={{
+            margin: 0, fontFamily: "inherit", whiteSpace: "pre-wrap",
+            fontSize: 12, lineHeight: 1.5,
+          }}>{`...
+
+Saludos,
+${signature || "Equipo AMS"}${brand ? `\n${brand}` : ""}`}</pre>
+        </div>
+      </div>
+    </div>
   );
 }

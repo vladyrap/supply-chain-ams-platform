@@ -11,6 +11,19 @@ import TicketEstimateDetail from "@/components/estimation/TicketEstimateDetail";
 import EstimateExplainabilityCard from "@/components/estimation/EstimateExplainabilityCard";
 import ContextualEstimationView from "@/components/estimation/ContextualEstimationView";
 import type { ContextualEstimationInput } from "@/types/estimation";
+import GenerateResponseModal from "@/components/customer-response/GenerateResponseModal";
+import ResponseHistoryList from "@/components/customer-response/ResponseHistoryList";
+import { useCustomerResponses } from "@/hooks/useCustomerResponses";
+import { buildResponseContextFromTicket } from "@/intelligence/customer-response-engine";
+import type { CustomerResponse, CustomerResponseType } from "@/types/customer-response";
+
+/** Lee la firma del tenant desde /settings (localStorage). */
+function buildTenantSignature(): string {
+  if (typeof window === "undefined") return "Equipo AMS";
+  const sig = window.localStorage.getItem("supply-chain-ams-tenant-signature") || "Equipo AMS";
+  const brand = window.localStorage.getItem("supply-chain-ams-tenant-brand") || "";
+  return brand ? `${sig}\n${brand}` : sig;
+}
 import TicketNextBestAction from "./TicketNextBestAction";
 import TicketReadinessScore from "./TicketReadinessScore";
 import CloseTicketModal from "./CloseTicketModal";
@@ -148,6 +161,11 @@ export default function TicketCommandCenter({ ticket, onTicketUpdated }: Props) 
   const [closeError, setCloseError] = useState<string | null>(null);
   const [contextualOpen, setContextualOpen] = useState(false);
   const [contextualRefresh, setContextualRefresh] = useState(0);
+  const [responseModalOpen, setResponseModalOpen] = useState(false);
+  const [responseInitialType, setResponseInitialType] = useState<CustomerResponseType | undefined>(undefined);
+  const [closureExtras, setClosureExtras] = useState<import("@/types/customer-response").CustomerResponseContext | null>(null);
+  const customerResponses = useCustomerResponses();
+  const ticketResponses = customerResponses.byTicket(ticket.key);
 
   const actor = authUser?.name || authUser?.email || "Consultor AMS";
   const actorRole = authUser?.role;
@@ -358,7 +376,11 @@ export default function TicketCommandCenter({ ticket, onTicketUpdated }: Props) 
    * Cierra el ticket capturando horas reales. Alimenta el motor con datos
    * verídicos para calibración. Sin esto, el motor queda en BOOTSTRAP.
    */
-  async function handleCloseTicket(input: { actualHours: number; closeNote?: string }) {
+  async function handleCloseTicket(input: {
+    actualHours: number;
+    closeNote?: string;
+    extras: import("./CloseTicketModal").CloseTicketExtras;
+  }) {
     setClosing(true);
     setCloseError(null);
     const res = await closeTicket(ticket.key, {
@@ -388,6 +410,41 @@ export default function TicketCommandCenter({ ticket, onTicketUpdated }: Props) 
       });
       setCloseModalOpen(false);
       notify(`✓ Ticket cerrado · ${input.actualHours}h registradas`);
+
+      // ── Customer Response: generar CLOSURE auto si el user lo marcó ──
+      if (input.extras.generateClosureResponse) {
+        const closureContext = buildResponseContextFromTicket(
+          { ...res.ticket, estimatedResolution: newEst ?? null },
+          {
+            hasKnowledgeMatch: ticketKnowledge.length > 0,
+            hasPlaybook: ticketPlaybooks.length > 0,
+            playbookTitle: ticketPlaybooks[0]?.title,
+            hasScopeItem: scopeItems.length > 0,
+            hasErrorEvidence: true,
+            hasEscalationN2: ticketEscalations.length > 0,
+            escalationKey: ticketEscalations[0]?.escalationNumber,
+            confidence: newEst?.confidence,
+            missingData: newEst?.missingData,
+          },
+          {
+            rootCauseValidated: !!input.extras.rootCauseSummary,
+            rootCauseSummary: input.extras.rootCauseSummary,
+            resolutionSummary: input.extras.resolutionSummary,
+            validationSummary: input.extras.validationSummary,
+            preventionRecommendation: input.extras.preventionRecommendation,
+          },
+        );
+        // Abrir el modal de respuestas pre-pobladas con CLOSURE
+        setResponseInitialType("CLOSURE");
+        // Pequeño delay para que el modal cierre antes de abrir el otro
+        setTimeout(() => {
+          // Reemplazar el context que usa el modal — buildResponseContext usa
+          // el ticket actual, pero acá necesitamos los extras del cierre.
+          // Para no agregar otro setState, guardamos los extras y los usamos:
+          setClosureExtras(closureContext);
+          setResponseModalOpen(true);
+        }, 300);
+      }
     } else {
       setCloseError("error" in res ? res.error : "Error cerrando ticket");
     }
@@ -431,6 +488,112 @@ export default function TicketCommandCenter({ ticket, onTicketUpdated }: Props) 
       const err = "error" in res ? res.error : "Error desconocido";
       throw new Error(err);
     }
+  }
+
+  // ── Customer Response handlers ────────────────────────────
+  function openResponseModal(initialType?: CustomerResponseType) {
+    setResponseInitialType(initialType);
+    setResponseModalOpen(true);
+  }
+
+  function buildResponseContext() {
+    return buildResponseContextFromTicket(
+      ticket,
+      {
+        hasKnowledgeMatch: ticketKnowledge.length > 0,
+        hasPlaybook: ticketPlaybooks.length > 0,
+        playbookTitle: ticketPlaybooks[0]?.title,
+        hasScopeItem: scopeItems.length > 0,
+        hasErrorEvidence: (ticket.description || "").length > 80
+          || !!(ticket.visualEvidenceNotes && ticket.visualEvidenceNotes.length > 0),
+        hasVisualEvidence: !!(ticket.visualEvidenceNotes && ticket.visualEvidenceNotes.length > 0),
+        hasEscalationN2: ticketEscalations.length > 0,
+        escalationKey: ticketEscalations[0]?.escalationNumber,
+        confidence: ticket.estimatedResolution?.confidence,
+        missingData: ticket.estimatedResolution?.missingData,
+      },
+    );
+  }
+
+  function handleResponseSave(response: CustomerResponse) {
+    customerResponses.save(response);
+    audit.record({
+      ticketId: ticket.key,
+      eventType: "CUSTOMER_RESPONSE_GENERATED",
+      title: `Respuesta cliente generada · ${response.responseType}`,
+      description: `Score ${response.qualityGate.score}/100 · ${response.qualityGate.issues.length} issues`,
+      actor, actorRole, source: "ui",
+      metadata: {
+        responseId: response.responseId,
+        responseType: response.responseType,
+        audience: response.audience,
+        tone: response.tone,
+        confidence: response.confidence,
+        qualityScore: response.qualityGate.score,
+        canSend: response.canSendToClient,
+      },
+    });
+    audit.record({
+      ticketId: ticket.key,
+      eventType: "CUSTOMER_RESPONSE_SAVED",
+      title: `Respuesta guardada en ticket`,
+      actor, actorRole, source: "ui",
+      metadata: { responseId: response.responseId },
+    });
+    notify(`✓ Respuesta ${response.responseType} guardada`);
+  }
+
+  function handleResponseSent(response: CustomerResponse) {
+    customerResponses.updateStatus(response.responseId, "SENT_MANUAL");
+    audit.record({
+      ticketId: ticket.key,
+      eventType: "CUSTOMER_RESPONSE_SENT_MANUAL",
+      title: `Respuesta enviada manualmente · ${response.responseType}`,
+      actor, actorRole, source: "ui",
+      metadata: { responseId: response.responseId },
+    });
+    notify("✓ Marcada como enviada");
+  }
+
+  function handleResponseApproved(response: CustomerResponse) {
+    customerResponses.updateStatus(response.responseId, "APPROVED");
+    audit.record({
+      ticketId: ticket.key,
+      eventType: "CUSTOMER_RESPONSE_APPROVED",
+      title: `Respuesta aprobada`,
+      actor, actorRole, source: "ui",
+      metadata: { responseId: response.responseId },
+    });
+    notify("✓ Aprobada");
+  }
+
+  function handleResponseReview(response: CustomerResponse) {
+    customerResponses.save({ ...response, status: "DRAFT" });
+    audit.record({
+      ticketId: ticket.key,
+      eventType: "CUSTOMER_RESPONSE_QUALITY_CHECKED",
+      title: `Enviada a revisión humana`,
+      description: response.qualityGate.requiresHumanReview ? "Caso crítico PRD" : "Issues bloqueantes",
+      actor, actorRole, source: "ui",
+      metadata: { responseId: response.responseId, issues: response.qualityGate.issues.length },
+    });
+    notify("✓ Pendiente de revisión humana");
+  }
+
+  function handleResponseBlocked(response: CustomerResponse) {
+    audit.record({
+      ticketId: ticket.key,
+      eventType: "CUSTOMER_RESPONSE_BLOCKED",
+      title: `Respuesta bloqueada por quality gate`,
+      description: `${response.qualityGate.issues.filter((i) => i.severity === "block").length} bloqueos · score ${response.qualityGate.score}`,
+      actor, actorRole, source: "system",
+      metadata: { responseId: response.responseId, issues: response.qualityGate.issues },
+    });
+  }
+
+  function handleResponseRemove(response: CustomerResponse) {
+    customerResponses.remove(response.responseId);
+    notify("✓ Eliminada");
   }
 
   async function handleManualAdjust(patch: Parameters<typeof adjustTicketEstimate>[1] extends infer P ? Partial<P> : never, reason: string) {
@@ -1007,6 +1170,93 @@ export default function TicketCommandCenter({ ticket, onTicketUpdated }: Props) 
       <Section title="AUDITORÍA · TIMELINE" icon="📜" accent="#64748b" count={ticketAuditEvents.length}>
         <TicketAuditTimeline events={ticketAuditEvents} compact />
       </Section>
+
+      {/* Sección 15: Respuesta al cliente — Customer Response Intelligence */}
+      <Section
+        id="section-customer-response"
+        title="RESPUESTA AL CLIENTE"
+        icon="✉"
+        accent="#f59e0b"
+        count={ticketResponses.length}
+        defaultOpen={ticketResponses.length === 0}
+      >
+        <div className="col" style={{ gap: 10 }}>
+          <div style={{ fontSize: 12, color: "var(--text-soft)", lineHeight: 1.5 }}>
+            Genera respuestas profesionales adaptadas al tipo de caso, audiencia y tono.
+            Pasa por <strong>quality gate</strong> con 8 reglas para evitar promesas no
+            sustentadas, lenguaje absoluto o culpabilizar al cliente.
+          </div>
+          <div className="row" style={{ gap: 6, flexWrap: "wrap" }}>
+            <button
+              className="btn primary"
+              onClick={() => openResponseModal()}
+              style={{ background: "#f59e0b", borderColor: "#f59e0b" }}
+            >
+              ✉ Generar respuesta cliente
+            </button>
+            <button
+              className="btn ghost sm"
+              onClick={() => openResponseModal("ACKNOWLEDGEMENT")}
+              style={{ fontSize: 11 }}
+              title="Confirmar recepción rápida"
+            >
+              👋 Acknowledgement
+            </button>
+            <button
+              className="btn ghost sm"
+              onClick={() => openResponseModal("REQUEST_MORE_INFO")}
+              style={{ fontSize: 11 }}
+              title="Pedir info faltante"
+            >
+              ❓ Pedir info
+            </button>
+            <button
+              className="btn ghost sm"
+              onClick={() => openResponseModal("STATUS_UPDATE")}
+              style={{ fontSize: 11 }}
+              title="Actualización de avance"
+            >
+              📊 Update
+            </button>
+          </div>
+
+          {ticketResponses.length > 0 && (
+            <div style={{ marginTop: 6 }}>
+              <div style={{ fontSize: 11, color: "var(--text-dim)", letterSpacing: 1.5, marginBottom: 6 }}>
+                ▸ HISTÓRICO ({ticketResponses.length})
+              </div>
+              <ResponseHistoryList
+                responses={ticketResponses}
+                onMarkSent={handleResponseSent}
+                onRemove={handleResponseRemove}
+                onApprove={handleResponseApproved}
+              />
+            </div>
+          )}
+        </div>
+      </Section>
+
+      {/* Modal generador de respuestas */}
+      {responseModalOpen && (
+        <GenerateResponseModal
+          context={closureExtras ?? buildResponseContext()}
+          signature={typeof window !== "undefined"
+            ? buildTenantSignature()
+            : "Equipo AMS"}
+          generatedBy={actor}
+          humanReviewed={actorRole === "admin" || actorRole === "aprobador"}
+          initialType={responseInitialType}
+          onClose={() => {
+            setResponseModalOpen(false);
+            setClosureExtras(null);
+            setResponseInitialType(undefined);
+          }}
+          onSave={handleResponseSave}
+          onMarkSent={handleResponseSent}
+          onSendToHumanReview={handleResponseReview}
+          onBlocked={handleResponseBlocked}
+        />
+      )}
     </div>
   );
 }

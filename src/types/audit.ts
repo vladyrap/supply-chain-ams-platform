@@ -28,7 +28,14 @@ export type TicketAuditEventType =
   // Demo guiada end-to-end
   | "DEMO_STARTED"
   | "DEMO_STEP_COMPLETED"
-  | "DEMO_COMPLETED";
+  | "DEMO_COMPLETED"
+  // Customer Response Intelligence
+  | "CUSTOMER_RESPONSE_GENERATED"
+  | "CUSTOMER_RESPONSE_QUALITY_CHECKED"
+  | "CUSTOMER_RESPONSE_BLOCKED"
+  | "CUSTOMER_RESPONSE_APPROVED"
+  | "CUSTOMER_RESPONSE_SAVED"
+  | "CUSTOMER_RESPONSE_SENT_MANUAL";
 
 export interface TicketAuditEvent {
   id: string;
@@ -73,6 +80,12 @@ export const EVENT_LABELS: Record<TicketAuditEventType, string> = {
   DEMO_STARTED: "Demo iniciada",
   DEMO_STEP_COMPLETED: "Paso demo completado",
   DEMO_COMPLETED: "Demo completada",
+  CUSTOMER_RESPONSE_GENERATED: "Respuesta cliente generada",
+  CUSTOMER_RESPONSE_QUALITY_CHECKED: "Quality gate evaluado",
+  CUSTOMER_RESPONSE_BLOCKED: "Respuesta cliente bloqueada",
+  CUSTOMER_RESPONSE_APPROVED: "Respuesta cliente aprobada",
+  CUSTOMER_RESPONSE_SAVED: "Respuesta guardada en ticket",
+  CUSTOMER_RESPONSE_SENT_MANUAL: "Respuesta enviada manualmente",
 };
 
 export const EVENT_ICONS: Record<TicketAuditEventType, string> = {
@@ -101,6 +114,12 @@ export const EVENT_ICONS: Record<TicketAuditEventType, string> = {
   DEMO_STARTED: "🎬",
   DEMO_STEP_COMPLETED: "▶",
   DEMO_COMPLETED: "🏁",
+  CUSTOMER_RESPONSE_GENERATED: "✉",
+  CUSTOMER_RESPONSE_QUALITY_CHECKED: "🛡",
+  CUSTOMER_RESPONSE_BLOCKED: "🚫",
+  CUSTOMER_RESPONSE_APPROVED: "✅",
+  CUSTOMER_RESPONSE_SAVED: "💾",
+  CUSTOMER_RESPONSE_SENT_MANUAL: "📤",
 };
 
 export const EVENT_COLORS: Record<TicketAuditEventType, string> = {
@@ -129,4 +148,10 @@ export const EVENT_COLORS: Record<TicketAuditEventType, string> = {
   DEMO_STARTED: "#fbbf24",
   DEMO_STEP_COMPLETED: "#22d3ee",
   DEMO_COMPLETED: "#10b981",
+  CUSTOMER_RESPONSE_GENERATED: "#f59e0b",
+  CUSTOMER_RESPONSE_QUALITY_CHECKED: "#22d3ee",
+  CUSTOMER_RESPONSE_BLOCKED: "#ef4444",
+  CUSTOMER_RESPONSE_APPROVED: "#10b981",
+  CUSTOMER_RESPONSE_SAVED: "#a855f7",
+  CUSTOMER_RESPONSE_SENT_MANUAL: "#10b981",
 };

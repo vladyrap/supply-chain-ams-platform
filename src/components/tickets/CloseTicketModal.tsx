@@ -5,13 +5,27 @@ import TcModalShell from "@/components/ui/TcModalShell";
 import type { Ticket } from "@/services/tickets.api";
 import type { TicketEstimatedResolution } from "@/types/estimation";
 
+/** Datos extra para alimentar la respuesta CLOSURE si el usuario lo marca. */
+export interface CloseTicketExtras {
+  rootCauseSummary?: string;
+  resolutionSummary?: string;
+  validationSummary?: string;
+  preventionRecommendation?: string;
+  /** Si true, se debe generar respuesta CLOSURE automática post-cierre. */
+  generateClosureResponse: boolean;
+}
+
 interface Props {
   ticket: Ticket;
   closingUser: string;
   busy?: boolean;
   error?: string | null;
   onClose: () => void;
-  onConfirm: (input: { actualHours: number; closeNote?: string }) => Promise<void> | void;
+  onConfirm: (input: {
+    actualHours: number;
+    closeNote?: string;
+    extras: CloseTicketExtras;
+  }) => Promise<void> | void;
 }
 
 /**
@@ -35,6 +49,14 @@ export default function CloseTicketModal({
     return mid.toFixed(1);
   });
   const [note, setNote] = useState("");
+  // Customer Response — campos opcionales para CLOSURE
+  const [generateClosure, setGenerateClosure] = useState(true);
+  const [rootCauseSummary, setRootCauseSummary] = useState("");
+  const [resolutionSummary, setResolutionSummary] = useState("");
+  const [validationSummary, setValidationSummary] = useState("");
+  const [preventionRecommendation, setPreventionRecommendation] = useState("");
+  const [showClosureFields, setShowClosureFields] = useState(true);
+
   const hours = useMemo(() => {
     const n = Number(hoursStr.replace(",", "."));
     return Number.isFinite(n) && n > 0 ? n : 0;
@@ -148,6 +170,89 @@ export default function CloseTicketModal({
             </div>
           )}
 
+          {/* Customer Response · CLOSURE auto */}
+          <div style={{
+            padding: 10, borderRadius: 6,
+            background: "#f59e0b08", border: "1px solid #f59e0b33",
+          }}>
+            <label style={{ display: "flex", gap: 6, alignItems: "center", cursor: "pointer", fontSize: 12 }}>
+              <input
+                type="checkbox"
+                checked={generateClosure}
+                onChange={(e) => setGenerateClosure(e.target.checked)}
+                disabled={busy}
+              />
+              <span>✉ <strong>Generar respuesta de cierre al cliente</strong></span>
+            </label>
+            <div style={{ fontSize: 11, color: "var(--text-soft)", marginTop: 4 }}>
+              Customer Response Intelligence creará una respuesta tipo CLOSURE con
+              resumen + acción + validación + recomendación preventiva. Pasa por
+              quality gate.
+            </div>
+
+            {generateClosure && (
+              <details
+                open={showClosureFields}
+                onToggle={(e) => setShowClosureFields((e.target as HTMLDetailsElement).open)}
+                style={{ marginTop: 8 }}
+              >
+                <summary style={{ fontSize: 11, color: "var(--text-dim)", cursor: "pointer", marginBottom: 6 }}>
+                  Detalles para la respuesta CLOSURE (opcional pero recomendado)
+                </summary>
+                <div className="col" style={{ gap: 8, marginTop: 6 }}>
+                  <div>
+                    <label className="lab" htmlFor="cl-rc" style={{ fontSize: 11 }}>
+                      Causa raíz validada (opcional)
+                    </label>
+                    <textarea
+                      id="cl-rc" rows={2} disabled={busy}
+                      value={rootCauseSummary}
+                      onChange={(e) => setRootCauseSummary(e.target.value)}
+                      placeholder="ej. Falta de parámetro de stock especial K en OMB1 para movement type 101."
+                      style={{ fontSize: 12 }}
+                    />
+                  </div>
+                  <div>
+                    <label className="lab" htmlFor="cl-res" style={{ fontSize: 11 }}>
+                      Acción realizada *
+                    </label>
+                    <textarea
+                      id="cl-res" rows={2} disabled={busy}
+                      value={resolutionSummary}
+                      onChange={(e) => setResolutionSummary(e.target.value)}
+                      placeholder="ej. OMB1 customizing: agregamos entrada para tipo movimiento 101 + special stock K, transporte a PRD."
+                      style={{ fontSize: 12 }}
+                    />
+                  </div>
+                  <div>
+                    <label className="lab" htmlFor="cl-val" style={{ fontSize: 11 }}>
+                      Validación con cliente *
+                    </label>
+                    <textarea
+                      id="cl-val" rows={2} disabled={busy}
+                      value={validationSummary}
+                      onChange={(e) => setValidationSummary(e.target.value)}
+                      placeholder="ej. Key user reprodujo MIGO contra OC 4500003421 — éxito sin error M7 022."
+                      style={{ fontSize: 12 }}
+                    />
+                  </div>
+                  <div>
+                    <label className="lab" htmlFor="cl-prev" style={{ fontSize: 11 }}>
+                      Recomendación preventiva (opcional)
+                    </label>
+                    <textarea
+                      id="cl-prev" rows={2} disabled={busy}
+                      value={preventionRecommendation}
+                      onChange={(e) => setPreventionRecommendation(e.target.value)}
+                      placeholder="ej. Revisar OMB1 al activar nuevos tipos de movimiento personalizados."
+                      style={{ fontSize: 12 }}
+                    />
+                  </div>
+                </div>
+              </details>
+            )}
+          </div>
+
           {error && <div className="alert error" style={{ fontSize: 12 }}>{error}</div>}
         </div>
 
@@ -155,7 +260,17 @@ export default function CloseTicketModal({
           <button className="btn ghost" onClick={onClose} disabled={busy}>Cancelar</button>
           <button
             className="btn primary"
-            onClick={() => onConfirm({ actualHours: hours, closeNote: note.trim() || undefined })}
+            onClick={() => onConfirm({
+              actualHours: hours,
+              closeNote: note.trim() || undefined,
+              extras: {
+                rootCauseSummary: rootCauseSummary.trim() || undefined,
+                resolutionSummary: resolutionSummary.trim() || undefined,
+                validationSummary: validationSummary.trim() || undefined,
+                preventionRecommendation: preventionRecommendation.trim() || undefined,
+                generateClosureResponse: generateClosure,
+              },
+            })}
             disabled={!canSubmit}
           >
             {busy ? <><span className="spinner" /> cerrando…</> : `Cerrar ticket · ${closingUser}`}
