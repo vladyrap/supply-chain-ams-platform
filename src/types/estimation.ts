@@ -453,3 +453,239 @@ export const TICKET_ESTIMATE_STORAGE = {
   estimates: "supply-chain-ams-ticket-estimates",
   calibrationSnapshot: "supply-chain-ams-estimation-calibration",
 } as const;
+
+// =============================================================================
+// CONTEXTUAL AMS ESTIMATION ENGINE
+// =============================================================================
+// Tipos del motor contextual (v2). Envuelve el baseline determinístico con:
+// - análisis semántico del texto
+// - detección de objetos SAP
+// - matching con casos históricos
+// - matching con playbooks
+// - escenarios optimista/esperado/pesimista
+// - explicabilidad por factor
+// =============================================================================
+
+import type { DetectedSapContext } from "@/utils/sap-context-detector";
+
+/** Factor que sube o baja la estimación, con razón legible. */
+export interface ContextualAdjustment {
+  factor: string;
+  /** Multiplicador aplicado (1.0 = neutro, 1.30 = sube 30%, 0.80 = baja 20%). */
+  impact: number;
+  /** Tipo de impacto */
+  direction: "increase" | "decrease" | "neutral";
+  /** Categoría a la que pertenece — sirve para agrupar en UI */
+  category:
+    | "complexity"
+    | "data_quality"
+    | "environment"
+    | "scope"
+    | "knowledge_availability"
+    | "historical"
+    | "risk";
+  /** Explicación humana. */
+  reason: string;
+  /** Delta en horas si es absoluto en lugar de multiplicador */
+  hoursDelta?: number;
+}
+
+/** Un caso histórico similar para benchmarking. */
+export interface SimilarHistoricalCase {
+  caseId: string;
+  title: string;
+  module: string;
+  similarityScore: number;            // 0..1
+  actualResolutionHours: number;
+  complexity: ComplexityLevel;
+  rootCause: string;
+  solutionSummary: string;
+  matchedSignals: string[];           // qué coincidió: ["MM", "MIGO", "M7 022"]
+}
+
+/** Una fase del breakdown contextual con horas + razón + confianza. */
+export interface ContextualPhase {
+  id: string;
+  order: number;
+  name: string;
+  reason: string;                     // por qué esta fase aplica al caso
+  minHours: number;
+  expectedHours: number;
+  maxHours: number;
+  ownerProfile: RequiredProfile;
+  required: boolean;
+  confidence: ConfidenceLevel;
+  evidenceRequired?: boolean;
+  dependencies?: string[];
+}
+
+/** Escenario probabilístico — narrativo + numérico. */
+export interface ContextualScenario {
+  hours: number;
+  businessDays: number;
+  explanation: string;
+  assumptions: string[];
+}
+
+/** Match opcional con un playbook AMS. */
+export interface PlaybookMatch {
+  playbookId: string;
+  playbookTitle: string;
+  matchScore: number;
+  steps: number;
+  estimatedMinutes: number;
+  /** Reasons del match */
+  reasons: string[];
+}
+
+/** Recomendación accionable que el motor produce además del número. */
+export interface ContextualRecommendation {
+  id: string;
+  /** Tipo de acción que aplica */
+  kind:
+    | "improve_estimation"
+    | "ask_user"
+    | "escalate_n2"
+    | "create_jira"
+    | "use_playbook"
+    | "request_evidence"
+    | "open_rca"
+    | "validate_data";
+  title: string;
+  description: string;
+  /** Score 1-5 — qué tanto impactaría aplicarla */
+  expectedImpact: 1 | 2 | 3 | 4 | 5;
+}
+
+/** Output completo del Contextual AMS Estimation Engine. */
+export interface ContextualEstimationResult {
+  estimateId: string;
+  createdAt: string;
+  engineVersion: string;              // ej "0.1.0-mock"
+
+  /** Resumen del texto que entró al motor */
+  inputSummary: {
+    title?: string;
+    descriptionExcerpt?: string;
+    sapModuleHint?: string;
+    environmentHint?: string;
+  };
+
+  /** Contexto detectado por el sap-context-detector */
+  detectedContext: DetectedSapContext;
+
+  /** Baseline del motor determinístico (sin contexto) */
+  baselineEstimate: {
+    minHours: number;
+    maxHours: number;
+    confidence: ConfidenceLevel;
+    confidenceScore: number;
+    source: "ticket_engine" | "project_engine";
+  };
+
+  /** Ajustes contextuales aplicados sobre el baseline */
+  contextualAdjustments: ContextualAdjustment[];
+
+  /** Casos históricos top-N similares */
+  similarCases: SimilarHistoricalCase[];
+
+  /** Match con playbook AMS (null si no hay aplicable) */
+  playbookMatch: PlaybookMatch | null;
+
+  /** Escenarios probabilísticos */
+  optimisticScenario: ContextualScenario;
+  expectedScenario: ContextualScenario;
+  pessimisticScenario: ContextualScenario;
+
+  /** Rango total — superset de los 3 escenarios */
+  totalRange: {
+    minHours: number;
+    expectedHours: number;
+    maxHours: number;
+    minBusinessDays: number;
+    expectedBusinessDays: number;
+    maxBusinessDays: number;
+  };
+
+  /** Breakdown por fases con horas + confianza por fase */
+  phaseBreakdown: ContextualPhase[];
+
+  /** Confianza global del motor */
+  confidence: ConfidenceLevel;
+  confidenceScore: number;            // 0-100
+
+  /** Supuestos del cálculo */
+  assumptions: string[];
+
+  /** Riesgos identificados */
+  risks: string[];
+
+  /** Datos que faltan y mejorarían la precisión */
+  missingData: string[];
+
+  /** Recomendaciones accionables */
+  recommendations: ContextualRecommendation[];
+
+  /** NBA específica del estimador */
+  nextBestAction: {
+    label: string;
+    description: string;
+    cta?: string;
+  };
+
+  /** Texto pre-armado para responder al cliente con la estimación */
+  clientResponseDraft: string;
+
+  /** Notas internas (debug + razones del cálculo) */
+  internalNotes: string;
+
+  /** Modo de calibración usado al estimar (heredado del baseline) */
+  calibrationMode?: EstimationCalibrationMode;
+}
+
+/** Input mínimo para el motor contextual. Permite tanto texto libre como
+ * los flags clásicos del estimador determinístico. Todos los campos son
+ * opcionales — si falta algo, el motor lo marca como missingData. */
+export interface ContextualEstimationInput {
+  // Identificación
+  sourceId?: string;
+  ticketKey?: string;
+
+  // Texto (lo central — alimenta el detector)
+  title?: string;
+  description?: string;
+  comments?: string;
+  errorMessage?: string;
+  transcription?: string;
+
+  // Hints clásicos (sobreescriben al detector si están)
+  sapModule?: string;
+  process?: string;
+  subProcess?: string;
+  environment?: EnvironmentLevel;
+  severity?: SeverityLevel;
+  urgency?: UrgencyLevel;
+  complexity?: ComplexityLevel;
+  serviceLevel?: string;
+  estimateType?: EstimateType;
+  kind?: TicketKind;
+
+  // Booleanos clásicos (override del detector)
+  requiresDevelopment?: boolean;
+  requiresIntegration?: boolean;
+  requiresTransport?: boolean;
+  requiresUAT?: boolean;
+  requiresApproval?: boolean;
+  hasDocumentation?: boolean;
+  hasPlaybook?: boolean;
+  hasPublishedKnowledge?: boolean;
+  hasErrorEvidence?: boolean;
+  isProductive?: boolean;
+  isRepeatedIncident?: boolean;
+
+  // Datos auxiliares
+  scopeItemIds?: string[];
+  tags?: string[];
+  createdBy?: string;
+  internalNotes?: string;
+}

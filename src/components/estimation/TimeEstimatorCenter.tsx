@@ -12,11 +12,13 @@ import {
   type EnvironmentLevel, type EstimateStatus,
 } from "@/types/estimation";
 import MarkdownView from "@/components/agent/MarkdownView";
+import ContextualEstimationView from "./ContextualEstimationView";
+import type { ContextualEstimationInput } from "@/types/estimation";
 
 const SAP_MODULES = ["MM", "SD", "PP", "WM", "EWM", "QM", "PM", "ARIBA", "IBP", "BTP", "INTEGRACION"];
 const SERVICE_LEVELS = ["BASIC", "STANDARD", "PREMIUM", "ENTERPRISE"];
 
-type Tab = "new" | "history";
+type Tab = "new" | "history" | "contextual";
 
 const EMPTY: EstimateInput = {
   title: "",
@@ -135,8 +137,16 @@ export default function TimeEstimatorCenter() {
       {/* Tabs */}
       <div className="row" style={{ gap: 8, marginBottom: 14 }}>
         <button className={`btn ${tab === "new" ? "primary" : "ghost"}`} onClick={() => setTab("new")}>＋ Nueva estimación</button>
+        <button className={`btn ${tab === "contextual" ? "primary" : "ghost"}`} onClick={() => setTab("contextual")}
+          title="Motor contextual v2 — análisis semántico + casos históricos + escenarios">
+          🧠 Modo contextual
+        </button>
         <button className={`btn ${tab === "history" ? "primary" : "ghost"}`} onClick={() => setTab("history")}>📜 Historial ({hook.estimates.length})</button>
       </div>
+
+      {tab === "contextual" && (
+        <ContextualTab input={input} update={update} />
+      )}
 
       {tab === "new" && (
         <div style={{ display: "grid", gridTemplateColumns: "1fr 360px", gap: 14 }}>
@@ -257,9 +267,10 @@ export default function TimeEstimatorCenter() {
           <div className="card">
             <div className="ticket-section-head"><span style={{ color: "var(--accent)" }}>💡</span> CÓMO ESTIMA</div>
             <p className="settings-section-desc">
-              El motor es <strong>determinístico</strong>: combina horas base por tipo con multiplicadores de complejidad,
-              severidad, urgencia y ambiente, y luego suma/resta horas por requerimientos (desarrollo, integración, UAT)
-              o por activos disponibles (playbook, conocimiento curado, recurrencia).
+              El motor combina una <strong>línea base determinística</strong> (esta pestaña)
+              con <strong>análisis contextual</strong>, similitud histórica, playbooks, calidad de
+              información y riesgos operacionales (pestaña 🧠 <strong>Modo contextual</strong>).
+              La salida es un rango estimado por escenarios y fases, no un número único.
             </p>
             <ul style={{ fontSize: 12, color: "var(--text-soft)", lineHeight: 1.6, paddingLeft: 18 }}>
               <li>📈 <strong>Banda mín/máx</strong> en lugar de un número único.</li>
@@ -472,6 +483,160 @@ function ListBox({ title, items, color }: { title: string; items: string[]; colo
           {items.map((it, i) => <li key={i}>{it}</li>)}
         </ul>
       )}
+    </div>
+  );
+}
+
+// ============================================================
+// Tab Contextual — usa el ContextualEstimationView del motor v2
+// ============================================================
+
+interface ContextualTabProps {
+  input: EstimateInput;
+  update: <K extends keyof EstimateInput>(k: K, v: EstimateInput[K]) => void;
+}
+
+function ContextualTab({ input, update }: ContextualTabProps) {
+  const [analyzed, setAnalyzed] = useState(false);
+  const [refreshKey, setRefreshKey] = useState(0);
+
+  // Map del input clásico al contextual input
+  const ctxInput = useMemo<ContextualEstimationInput>(() => ({
+    title: input.title,
+    description: input.description,
+    sapModule: input.sapModule,
+    process: input.process,
+    subProcess: input.subProcess,
+    environment: input.environment,
+    severity: input.severity,
+    urgency: input.urgency,
+    complexity: input.complexity,
+    serviceLevel: input.serviceLevel,
+    estimateType: input.estimateType,
+    requiresDevelopment: input.requiresDevelopment,
+    requiresIntegration: input.requiresIntegration,
+    requiresTransport: input.requiresTransport,
+    requiresUAT: input.requiresUAT,
+    requiresApproval: input.requiresApproval,
+    hasDocumentation: input.hasDocumentation,
+    hasPlaybook: input.hasPlaybook,
+    hasPublishedKnowledge: input.hasPublishedKnowledge,
+    isProductive: input.isProductive,
+    isRepeatedIncident: input.isRepeatedIncident,
+    scopeItemIds: input.scopeItemIds,
+    tags: input.tags,
+    createdBy: input.createdBy,
+    internalNotes: input.internalNotes,
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }), [input, refreshKey]);
+
+  const canAnalyze = !!input.title && input.title.length >= 5;
+
+  return (
+    <div style={{ display: "grid", gridTemplateColumns: "1fr 1.6fr", gap: 14 }}>
+      {/* Form lateral — input mínimo para el motor contextual */}
+      <div className="card">
+        <div className="ticket-section-head"><span style={{ color: "#22d3ee" }}>🧠</span> ANÁLISIS CONTEXTUAL</div>
+        <p className="settings-section-desc" style={{ fontSize: 12 }}>
+          El motor lee título + descripción + módulo + ambiente. Detecta transacciones,
+          objetos SAP, errores y casos similares automáticamente.
+        </p>
+
+        <div className="col" style={{ gap: 10 }}>
+          <label className="tc-field">
+            <span>Título *</span>
+            <input value={input.title}
+              onChange={(e) => update("title", e.target.value)}
+              placeholder="ej. MIGO error M7 022 al recibir mercancía" />
+          </label>
+          <label className="tc-field">
+            <span>Descripción</span>
+            <textarea rows={5} value={input.description ?? ""}
+              onChange={(e) => update("description", e.target.value)}
+              placeholder="Pegá el detalle del caso. Mientras más contexto, mejor estimación." />
+          </label>
+          <div className="row" style={{ gap: 8 }}>
+            <label className="tc-field" style={{ flex: 1 }}>
+              <span>Módulo</span>
+              <select value={input.sapModule ?? ""} onChange={(e) => update("sapModule", e.target.value)}>
+                <option value="">auto-detect</option>
+                {SAP_MODULES.map((m) => <option key={m} value={m}>{m}</option>)}
+              </select>
+            </label>
+            <label className="tc-field" style={{ flex: 1 }}>
+              <span>Ambiente</span>
+              <select value={input.environment ?? "NO_INFORMADO"} onChange={(e) => update("environment", e.target.value as EnvironmentLevel)}>
+                {ENVIRONMENT_LEVELS.map((env) => <option key={env} value={env}>{env}</option>)}
+              </select>
+            </label>
+          </div>
+
+          <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 6, fontSize: 12 }}>
+            <label style={{ display: "flex", gap: 6, alignItems: "center" }}>
+              <input type="checkbox" checked={input.requiresDevelopment ?? false}
+                onChange={(e) => update("requiresDevelopment", e.target.checked)} />
+              Requiere desarrollo
+            </label>
+            <label style={{ display: "flex", gap: 6, alignItems: "center" }}>
+              <input type="checkbox" checked={input.requiresIntegration ?? false}
+                onChange={(e) => update("requiresIntegration", e.target.checked)} />
+              Requiere integración
+            </label>
+            <label style={{ display: "flex", gap: 6, alignItems: "center" }}>
+              <input type="checkbox" checked={input.requiresUAT ?? false}
+                onChange={(e) => update("requiresUAT", e.target.checked)} />
+              Requiere UAT
+            </label>
+            <label style={{ display: "flex", gap: 6, alignItems: "center" }}>
+              <input type="checkbox" checked={input.hasPlaybook ?? false}
+                onChange={(e) => update("hasPlaybook", e.target.checked)} />
+              Hay playbook
+            </label>
+          </div>
+
+          <button
+            className="btn primary"
+            onClick={() => { setAnalyzed(true); setRefreshKey((k) => k + 1); }}
+            disabled={!canAnalyze}
+            style={{ marginTop: 6 }}
+          >
+            🧠 Analizar contexto
+          </button>
+          {analyzed && (
+            <button
+              className="btn ghost"
+              onClick={() => setRefreshKey((k) => k + 1)}
+              style={{ fontSize: 12 }}
+            >
+              ↻ Recalcular con cambios
+            </button>
+          )}
+        </div>
+      </div>
+
+      {/* Output del motor contextual */}
+      <div>
+        {!analyzed && (
+          <div className="card" style={{ padding: 30, textAlign: "center", color: "var(--text-soft)" }}>
+            <div style={{ fontSize: 48, marginBottom: 12 }}>🧠</div>
+            <div style={{ fontSize: 16, fontWeight: 600, marginBottom: 6 }}>
+              Motor Contextual AMS v2
+            </div>
+            <div style={{ fontSize: 13, color: "var(--text-soft)" }}>
+              Completá título + descripción y click <strong>Analizar contexto</strong>.
+              <br />
+              El motor detecta automáticamente: módulo + transacción + error + objetos +
+              casos similares + playbook + escenarios.
+            </div>
+          </div>
+        )}
+        {analyzed && (
+          <ContextualEstimationView
+            key={refreshKey}
+            input={ctxInput}
+          />
+        )}
+      </div>
     </div>
   );
 }

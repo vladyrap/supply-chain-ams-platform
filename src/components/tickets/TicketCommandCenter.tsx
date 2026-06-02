@@ -9,6 +9,8 @@ import Badge from "@/components/ui/Badge";
 import MarkdownView from "@/components/agent/MarkdownView";
 import TicketEstimateDetail from "@/components/estimation/TicketEstimateDetail";
 import EstimateExplainabilityCard from "@/components/estimation/EstimateExplainabilityCard";
+import ContextualEstimationView from "@/components/estimation/ContextualEstimationView";
+import type { ContextualEstimationInput } from "@/types/estimation";
 import TicketNextBestAction from "./TicketNextBestAction";
 import TicketReadinessScore from "./TicketReadinessScore";
 import CloseTicketModal from "./CloseTicketModal";
@@ -142,6 +144,8 @@ export default function TicketCommandCenter({ ticket, onTicketUpdated }: Props) 
   const [closeModalOpen, setCloseModalOpen] = useState(false);
   const [closing, setClosing] = useState(false);
   const [closeError, setCloseError] = useState<string | null>(null);
+  const [contextualOpen, setContextualOpen] = useState(false);
+  const [contextualRefresh, setContextualRefresh] = useState(0);
 
   const actor = authUser?.name || authUser?.email || "Consultor AMS";
   const actorRole = authUser?.role;
@@ -658,6 +662,54 @@ export default function TicketCommandCenter({ ticket, onTicketUpdated }: Props) 
             ticket={ticket}
             onRecalculate={handleRecalculate}
           />
+          {/* Análisis contextual v2 — toggle */}
+          <div className="row" style={{ gap: 8 }}>
+            <button
+              className="btn ghost"
+              onClick={() => {
+                setContextualOpen((o) => !o);
+                if (!contextualOpen) setContextualRefresh((k) => k + 1);
+              }}
+              style={{ fontSize: 12, padding: "5px 10px" }}
+              title="Motor contextual v2 — análisis semántico + casos históricos + escenarios"
+            >
+              {contextualOpen ? "▼" : "▶"} 🧠 Análisis contextual v2
+            </button>
+            {contextualOpen && (
+              <button
+                className="btn ghost"
+                onClick={() => setContextualRefresh((k) => k + 1)}
+                style={{ fontSize: 11, padding: "5px 10px" }}
+              >
+                ↻ recalcular
+              </button>
+            )}
+          </div>
+          {contextualOpen && (
+            <ContextualEstimationView
+              key={contextualRefresh}
+              input={{
+                ticketKey: ticket.key,
+                title: ticket.title,
+                description: ticket.description,
+                sapModule: ticket.sapModule ?? undefined,
+                environment: (ticket.environment as ContextualEstimationInput["environment"]) ?? undefined,
+                severity: ticket.priority?.toLowerCase().includes("high") ? "HIGH"
+                  : ticket.priority?.toLowerCase().includes("critical") ? "CRITICAL"
+                  : ticket.priority?.toLowerCase().includes("low") ? "LOW" : "MEDIUM",
+                isProductive: (ticket.environment || "").toUpperCase() === "PRD",
+                hasPlaybook: ticketPlaybooks.length > 0,
+                hasPublishedKnowledge: ticketKnowledge.length > 0,
+                scopeItemIds: scopeItems.map((s) => s.code),
+                createdBy: actor,
+              }}
+              compact={false}
+              onExportClientResponse={(md) => {
+                navigator.clipboard.writeText(md).catch(() => {});
+                notify("✓ Respuesta cliente copiada al portapapeles");
+              }}
+            />
+          )}
         </div>
       </Section>
 
