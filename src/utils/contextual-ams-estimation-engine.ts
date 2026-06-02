@@ -42,6 +42,80 @@ import type {
   ConfidenceLevel,
   RequiredProfile,
 } from "@/types/estimation";
+import type { SapIssueType } from "@/utils/sap-context-detector";
+
+// ============================================================
+// Cap realista por issueType — evita ranges absurdos
+// ============================================================
+// El baseline puede generar números enormes (auth_issue 24h max, dev 290h max).
+// Acá tenemos un techo realista por tipo de problema. Si el rango supera el
+// techo Y no hay casos históricos que lo confirmen, lo cortamos.
+//
+// Si SÍ hay casos históricos con horas mayores, respetamos el histórico.
+
+const REALISTIC_MAX_BY_ISSUE_TYPE: Record<SapIssueType, number> = {
+  incident_functional_simple: 8,
+  incident_functional_complex: 24,
+  incident_technical: 32,
+  defect: 24,
+  requirement: 80,
+  minor_change: 16,
+  change_with_development: 120,
+  integration_issue: 60,
+  master_data_issue: 12,
+  customizing_issue: 24,
+  authorization_issue: 4,
+  performance_issue: 40,
+  interface_issue: 40,
+  job_issue: 12,
+  idoc_api_issue: 24,
+  pricing_issue: 12,
+  stock_issue: 8,
+  mrp_issue: 24,
+  transport_issue: 8,
+  critical_production_issue: 48,
+  unknown: 32,
+};
+
+const REALISTIC_MIN_BY_ISSUE_TYPE: Record<SapIssueType, number> = {
+  incident_functional_simple: 0.5,
+  incident_functional_complex: 1.5,
+  incident_technical: 2,
+  defect: 1,
+  requirement: 8,
+  minor_change: 2,
+  change_with_development: 8,
+  integration_issue: 4,
+  master_data_issue: 0.5,
+  customizing_issue: 2,
+  authorization_issue: 0.25,
+  performance_issue: 2,
+  interface_issue: 2,
+  job_issue: 1,
+  idoc_api_issue: 2,
+  pricing_issue: 0.5,
+  stock_issue: 1,
+  mrp_issue: 2,
+  transport_issue: 0.5,
+  critical_production_issue: 2,
+  unknown: 1,
+};
+
+/** Aplica techo realista respetando casos históricos. */
+function applyRealisticCap(
+  issueType: SapIssueType,
+  minH: number, maxH: number,
+  historicalMaxHours: number,
+): { minH: number; maxH: number } {
+  const realisticMax = REALISTIC_MAX_BY_ISSUE_TYPE[issueType];
+  const realisticMin = REALISTIC_MIN_BY_ISSUE_TYPE[issueType];
+  // El cap respeta histórico — si un caso similar duró más, dejamos más margen.
+  const cap = Math.max(realisticMax, historicalMaxHours * 1.3);
+  return {
+    minH: Math.max(realisticMin * 0.8, Math.min(minH, realisticMin * 4)),
+    maxH: Math.max(minH * 1.4, Math.min(maxH, cap)),
+  };
+}
 
 // ============================================================
 // Constants
@@ -330,16 +404,38 @@ function applyAdjustments(
   maxH: number,
   adjustments: ContextualAdjustment[],
 ): { minH: number; maxH: number; totalMultiplier: number } {
-  let multiplier = 1;
+  // Separar increases y decreases para aplicar cap por dirección. Si solo
+  // multiplicamos todos sin segregar, 4 multiplicadores de 1.20 dan 2.07x
+  // (escalado exponencial), lo cual explota la banda. Acá cada categoría
+  // contribuye con magnitud sub-lineal: producto de magnitudes individuales
+  // pero capeado por categoría.
+  const byCategoryUp = new Map<string, number>();
+  const byCategoryDown = new Map<string, number>();
   let totalDelta = 0;
+
   for (const a of adjustments) {
     if (a.hoursDelta) totalDelta += a.hoursDelta;
-    multiplier *= a.impact;
+    if (a.direction === "increase") {
+      // Tomar el MAYOR multiplier por categoría (no acumular)
+      const cur = byCategoryUp.get(a.category) ?? 1;
+      byCategoryUp.set(a.category, Math.max(cur, a.impact));
+    } else if (a.direction === "decrease") {
+      // Tomar el MENOR multiplier por categoría (más descuento)
+      const cur = byCategoryDown.get(a.category) ?? 1;
+      byCategoryDown.set(a.category, Math.min(cur, a.impact));
+    }
   }
-  // Cap el multiplier para evitar resultados absurdos
-  multiplier = Math.max(0.5, Math.min(2.5, multiplier));
+
+  // Multiplicar las contribuciones por categoría — cada categoría aporta máx 1
+  let multiplier = 1;
+  for (const v of byCategoryUp.values()) multiplier *= v;
+  for (const v of byCategoryDown.values()) multiplier *= v;
+
+  // Cap estricto: máximo 1.8x (subir), mínimo 0.6x (bajar)
+  multiplier = Math.max(0.6, Math.min(1.8, multiplier));
+
   return {
-    minH: Math.max(0.25, minH * multiplier + totalDelta * 0.7),
+    minH: Math.max(0.25, minH * multiplier + totalDelta * 0.6),
     maxH: maxH * multiplier + totalDelta,
     totalMultiplier: multiplier,
   };
@@ -769,13 +865,25 @@ export function estimateAmsResolutionContextually(
   );
 
   // 6. Aplicar adjustments al baseline
-  const { minH: adjustedMin, maxH: adjustedMax } = applyAdjustments(
+  const { minH: rawMin, maxH: rawMax } = applyAdjustments(
     baseline.totalMinHours, baseline.totalMaxHours, contextualAdjustments,
   );
 
-  // 7. Escenarios
+  // 6b. Cap realista por issueType (respeta histórico SOLO de casos del MISMO
+  //     issueType — un caso ABAP dump (incident_technical) NO debe inflar el
+  //     cap de un caso de autorización simple aunque sean mismo módulo).
+  const sameTypeCases = similarCases.filter((c) => c.issueType === detectedContext.issueType);
+  const histMax = sameTypeCases.length > 0
+    ? Math.max(...sameTypeCases.map((c) => c.actualResolutionHours))
+    : 0;
+  const { minH: adjustedMin, maxH: adjustedMax } = applyRealisticCap(
+    detectedContext.issueType, rawMin, rawMax, histMax,
+  );
+
+  // 7. Escenarios — usar solo casos del mismo issueType para el histórico
+  //    pesimista/optimista, evita contaminación cross-tipo.
   const scenarios = buildScenarios(
-    adjustedMin, adjustedMax, detectedContext, similarCases, !!playbookMatch,
+    adjustedMin, adjustedMax, detectedContext, sameTypeCases.length > 0 ? sameTypeCases : similarCases, !!playbookMatch,
   );
 
   // 8. Phase breakdown contextual

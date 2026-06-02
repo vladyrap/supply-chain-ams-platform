@@ -306,8 +306,37 @@ const PATTERNS: ModulePattern[] = [
 // Helpers de detección
 // ============================================================
 
-const TRANSACTION_RX = /\b((?:[a-z]{1,3}\d{1,3}[a-z]?n?)|\/scwm\/\w+|\/[a-z]{3,4}\/\w+|sm\d{2}|st\d{2}|su\d{2,3})\b/gi;
-const ERROR_CODE_RX = /\b([a-z]{1,3}\s*\d{2,3})\b/gi;
+/**
+ * Transacciones SAP "nombradas" sin dígitos (no las matchea el regex genérico).
+ * Lista curada de las más comunes. Se completa con TRANSACTION_RX (letras+dígitos).
+ */
+const NAMED_TRANSACTIONS = [
+  "MIGO", "MIRO", "MB01", "MB1A", "MB1B", "MB1C", "MB31", "MB52", "MB51", "MMBE",
+  "NACE", "VOFM", "WE02", "WE05", "WE19", "WE20", "WE60", "BD87", "BD10", "BD11",
+  "MASS", "LSMW", "ABAP", "SE80", "SE38", "SE93", "PFCG", "SUIM",
+  "VBAK", "VBAP", "VBRK", "VBRP", "VBPA", "EKKO", "EKPO", "EBAN", "EKBE",
+  "MARA", "MARC", "MARD", "MARM", "MAKT", "MBEW", "MVKE",
+  "LIKP", "LIPS", "VBFA",
+  "MD61", "MD62", "MD63",
+];
+
+/** Regex para transacciones tipo letras+dígitos (VA01, ME21N, MD04, ST22, etc.) */
+const TRANSACTION_RX = /\b((?:[a-z]{1,3}\d{1,3}[a-z]?n?)|\/[a-z]{3,4}\/[a-z0-9_]+|sm\d{2}|st\d{2}|su\d{2,3}|ks\d{2}|fb\d{2,3}|f-?\d{2})\b/gi;
+
+/** Códigos de error SAP genuinos: PREFIJO + dígitos. Excluye transacciones conocidas. */
+const ERROR_CODE_PATTERNS: RegExp[] = [
+  /\b(m[78]\s*\d{2,3})\b/gi,           // M7 022, M8 ..., comunes MM
+  /\b(v[1-9]\s*\d{2,3})\b/gi,          // V1, V2, V4 ... SD
+  /\b(vk\s*\d{2,3})\b/gi,              // VK ... pricing
+  /\b(vbap\s*\d{2,3})\b/gi,            // VBAP error
+  /\b(co\s*\d{2,3})\b/gi,              // CO XXX
+  /\b(qm\s*\d{2,3})\b/gi,              // QM XXX
+  /\b(qa\s*\d{2,3})\b/gi,
+  /\b(mrp\s*\d{2,3})\b/gi,
+  /\b(idoc\s*\d{2,3})\b/gi,
+  /\b(http\s*\d{3})\b/gi,              // HTTP 500
+  /\b(status\s*\d{3})\b/gi,            // status 500
+];
 
 function uniqUpper(arr: (string | undefined)[]): string[] {
   const seen = new Set<string>();
@@ -324,27 +353,56 @@ function uniqUpper(arr: (string | undefined)[]): string[] {
 }
 
 function extractTransactions(text: string): string[] {
-  const matches = Array.from(text.matchAll(TRANSACTION_RX), (m) => m[1]);
-  // Filtrar falsos positivos genéricos
-  const filtered = matches.filter((t) => {
+  const all: string[] = [];
+
+  // 1. Transacciones letras+dígitos via regex
+  for (const m of text.matchAll(TRANSACTION_RX)) {
+    all.push(m[1]);
+  }
+
+  // 2. Transacciones nombradas (MIGO, MIRO, etc.)
+  const upper = text.toUpperCase();
+  for (const t of NAMED_TRANSACTIONS) {
+    // word boundary
+    const rx = new RegExp(`\\b${t}\\b`, "i");
+    if (rx.test(upper)) all.push(t);
+  }
+
+  // Filtro falsos positivos genéricos
+  const filtered = all.filter((t) => {
     const u = t.toUpperCase();
     if (u.length < 3) return false;
-    // Cualquier patrón SAP típico: letra(s)+dígitos
-    return /^[A-Z\/]+\d/.test(u) || /^SM\d{2}$/.test(u);
+    // Excluir palabras genéricas que matchean el regex pero no son transacciones
+    if (/^(art|rol|ver|dia|hor|sin|las|los|del|por|con|que|una|para|este)\d/i.test(u)) return false;
+    // Excluir error codes que parecen tx
+    if (/^m[78]\s*\d{2,3}$/i.test(u)) return false;
+    if (/^v[1-9]\s*\d{2,3}$/i.test(u)) return false;
+    if (/^vk\s*\d{2,3}$/i.test(u)) return false;
+    return true;
   });
+
   return uniqUpper(filtered).slice(0, 8);
 }
 
 function extractErrorCodes(text: string): string[] {
-  const matches = Array.from(text.matchAll(ERROR_CODE_RX), (m) => m[1]);
-  // Solo códigos que parecen errors SAP — letras+espacio+3 digits
-  const filtered = matches.filter((m) => {
-    const u = m.toUpperCase();
-    // Excluye stuff como "ART 22" (no SAP)
-    if (/^(ART|ROL|VER|DIA|HOR)/i.test(u)) return false;
-    return /^[A-Z]{1,3}\s*\d{2,3}$/.test(u.replace(/\s+/g, " "));
+  const all: string[] = [];
+  for (const rx of ERROR_CODE_PATTERNS) {
+    for (const m of text.matchAll(rx)) {
+      all.push(m[1]);
+    }
+  }
+  // Normalizar a "M7 022" — letras pegadas a primer dígito, luego espacio.
+  // Si el input es "M7 022" se preserva. Si es "M 7 022" se compacta a "M7 022".
+  // Si es "M7022" se separa a "M7 022".
+  const normalized = all.map((e) => {
+    let u = e.toUpperCase().replace(/\s+/g, " ").trim();
+    // Compactar "M 7 022" → "M7 022": espacio entre letra(s) y primer dígito
+    u = u.replace(/^([A-Z]+)\s+(\d)/, "$1$2");
+    // Separar "M7022" → "M7 022": espacio entre primer-grupo-letras+digitos y resto
+    u = u.replace(/^([A-Z]+\d)(\d{2,})$/, "$1 $2");
+    return u;
   });
-  return uniqUpper(filtered).slice(0, 6);
+  return uniqUpper(normalized).slice(0, 6);
 }
 
 function detectObjects(text: string): DetectedSapObjects {
@@ -362,15 +420,18 @@ function detectObjects(text: string): DetectedSapObjects {
   if ((m = text.match(/(?:factura|invoice)\s+(\d{6,10})/i))) o.invoice = m[1];
   if ((m = text.match(/(?:orden de producci[oó]n|production order)\s+(\d{6,10})/i))) o.productionOrder = m[1];
   if ((m = text.match(/(?:lote de inspecci[oó]n|inspection lot)\s+(\d{6,12})/i))) o.inspectionLot = m[1];
-  if ((m = text.match(/idoc\s+(?:n[°ºo\.]*\s*)?(\d{6,16})/i))) o.idocNumber = m[1];
+  // IDoc number puede aparecer con palabras intermedias: "IDoc tipo DESADV número 16000..."
+  if ((m = text.match(/idoc[^\d\n]{0,50}?(\d{8,16})/i))) o.idocNumber = m[1];
   if ((m = text.match(/(?:job|nombre.*job)\s+([a-z0-9_\-]{3,25})/i))) o.jobName = m[1].toUpperCase();
-  if ((m = text.match(/(?:usuario|user)\s+([a-z0-9_]{3,20})/i))) o.user = m[1].toUpperCase();
+  // User SAP suele tener nombres tipo PEDRO.GOMEZ, CARLOS_MARTINEZ, MARIA-LOPEZ
+  if ((m = text.match(/(?:usuario|user)\s+([a-z0-9_.\-]{3,25})/i))) o.user = m[1].toUpperCase();
   if ((m = text.match(/(?:rol|role)\s+([a-z0-9_:]{3,40})/i))) o.role = m[1].toUpperCase();
   if ((m = text.match(/(?:sociedad|company code|bukrs)\s+([a-z0-9]{4})/i))) o.companyCode = m[1].toUpperCase();
   if ((m = text.match(/(?:org\.?\s*de compras|purchasing org)\s+([a-z0-9]{4})/i))) o.purchasingOrg = m[1].toUpperCase();
   if ((m = text.match(/(?:org\.?\s*ventas|sales org)\s+([a-z0-9]{4})/i))) o.salesOrg = m[1].toUpperCase();
   if ((m = text.match(/(?:lote|batch)\s+([a-z0-9]{4,18})/i))) o.batch = m[1].toUpperCase();
-  if ((m = text.match(/(?:cliente|customer)\s+([a-z0-9]{4,12})/i))) o.customer = m[1].toUpperCase();
+  // Customer puede aparecer como "cliente CUST-100" o "customer CUST_100"
+  if ((m = text.match(/(?:cliente|customer)\s+([a-z0-9_\-]{4,18})/i))) o.customer = m[1].toUpperCase();
   if ((m = text.match(/(?:proveedor|vendor|supplier)\s+([a-z0-9]{4,12})/i))) o.vendor = m[1].toUpperCase();
   if ((m = text.match(/(?:tipo de movimiento|movement type)\s+(\d{3})/i))) o.movementType = m[1];
   if ((m = text.match(/(?:condici[oó]n|condition type)\s+([a-z0-9]{4})/i))) o.conditionType = m[1].toUpperCase();
@@ -420,28 +481,81 @@ function inferIssueType(opts: {
 }): SapIssueType {
   const t = opts.text;
 
+  // MRP gana sobre critical_production_issue cuando MD01/MD04 son explícitos
+  // (un MRP crítico SIGUE siendo MRP issue, lo crítico se refleja en severity)
+  if (/\bmd0[1-7]\b|orden.*previsional|propuesta.*planificada|no.*genera.*propuesta/i.test(t)) {
+    return "mrp_issue";
+  }
+
+  // Critical PRD trumps el resto si es claramente crítico
   if (opts.env === "PRD" && /cr[ií]tic[oa]|operaci[oó]n.*detenid|p1\b|outage/i.test(t)) {
     return "critical_production_issue";
   }
-  if (/desarrollo\b|abap|userexit|user-exit|badi|enhancement|cambio.*c[oó]digo|modifica.*c[oó]digo/i.test(t)) {
+
+  // Desarrollo override — si el texto menciona explícitamente desarrollo
+  if (/\babap\b|\bbadi\b|user.exit|userexit|enhancement|cambio.*c[oó]digo|modifica.*c[oó]digo|nuevo\s+programa|programa\s+z\b|reporte\s+z\b/i.test(t)) {
     return "change_with_development";
   }
+
+  // Detect explicit issue type signals BEFORE defaulting
+  // Autorización (palabras SU53, autorización, M_*_BSA, rol PFCG)
+  if (/\bsu53\b|autorizaci[oó]n|\bno autorizado\b|sin permiso|access denied|missing authorization|m_[a-z]+_[a-z]+|rol\s+(?:z_|sap_)|pfcg|\bsuim\b/i.test(t)) {
+    return "authorization_issue";
+  }
+
+  // Performance
+  if (/\bperformance\b|\blent[oa]\b|\btimeout\b|memory|\bdump\b|short dump|cuelg[ae]/i.test(t)) {
+    return "performance_issue";
+  }
+
+  // Pricing (PR00, K007, VK11/12, "no determina precio", etc.)
+  if (/\bpr00\b|\bk007\b|\bvk1[123]\b|determinaci[oó]n.*precio|no.*determina.*precio|condici[oó]n.*precio|pricing\s+procedure/i.test(t)) {
+    return "pricing_issue";
+  }
+
+  // Stock
+  if (/stock\s+negativ|mb52|mmbe|inventario.*incorrecto/i.test(t) && opts.module === "MM") {
+    return "stock_issue";
+  }
+
+  // MRP
+  if (/\bmrp\b|md01|md02|md03|md04|propuesta.*planificada|orden.*previsional|planificaci[oó]n.*necesidades/i.test(t)) {
+    return "mrp_issue";
+  }
+
+  // IDoc / API
+  if (/\bidoc\b|we02|we05|bd87|message type|partner profile|segmento\s+e\d/i.test(t)) {
+    return "idoc_api_issue";
+  }
+  if (/\bapi\b.*\b(rest|odata)\b|http\s*[45]\d{2}|status\s*[45]\d{2}|webhook|middleware/i.test(t)) {
+    return "interface_issue";
+  }
+
+  // Master data
+  if (/(extension|extender).*centro|maestro de material|customer master|vendor master|crear.*material.*nuevo|carga masiva|lsmw/i.test(t)) {
+    return "master_data_issue";
+  }
+
+  // Job
+  if (/\bjob\b.*(cancel|fall|aborte)|sm37|background\s+job|process chain/i.test(t)) {
+    return "job_issue";
+  }
+
+  // Integration externa
+  if (/integraci[oó]n.*externa|sistema externo|api externa|interfaz externa/i.test(t)) {
+    return "integration_issue";
+  }
+
+  // Requerimiento nuevo / cambio menor
   if (/nuevo requerimiento|crear.*funcionalidad|implementar.*proceso|alta.*funcionalidad/i.test(t)) {
     return "requirement";
   }
   if (/peque[nñ]o cambio|menor change|ajuste menor/i.test(t)) {
     return "minor_change";
   }
-  if (/integraci[oó]n.*externa|sistema externo|api externa|interfaz externa/i.test(t)) {
-    return "integration_issue";
-  }
-  if (opts.defaultIssueType) return opts.defaultIssueType;
 
-  // Inferir por flags
-  if (opts.module === "BASIS" && /performance|lent[oa]|timeout|memory/i.test(t)) return "performance_issue";
-  if (opts.module === "BASIS" && /job/i.test(t)) return "job_issue";
-  if (opts.module === "BASIS" && /autorizaci[oó]n|rol/i.test(t)) return "authorization_issue";
-  if (opts.module === "INTEGRACION") return /idoc/i.test(t) ? "idoc_api_issue" : "interface_issue";
+  // Ahora SÍ honramos el defaultIssueType del pattern match
+  if (opts.defaultIssueType) return opts.defaultIssueType;
 
   // Default según presencia de errores
   if (opts.hasErrors && opts.hasTransactions) return "incident_functional_complex";

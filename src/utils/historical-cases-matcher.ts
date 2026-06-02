@@ -181,6 +181,7 @@ export function findSimilarHistoricalCases(
     caseId: s.case.id,
     title: s.case.title,
     module: s.case.module,
+    issueType: s.case.issueType,
     similarityScore: +s.score.toFixed(2),
     actualResolutionHours: s.case.actualResolutionHours,
     complexity: s.case.complexity,

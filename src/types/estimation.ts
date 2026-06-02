@@ -495,6 +495,8 @@ export interface SimilarHistoricalCase {
   caseId: string;
   title: string;
   module: string;
+  /** Tipo de problema del caso histórico — sirve para filtrar al aplicar cap. */
+  issueType: string;
   similarityScore: number;            // 0..1
   actualResolutionHours: number;
   complexity: ComplexityLevel;
