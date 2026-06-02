@@ -17,9 +17,11 @@ import CloseTicketModal from "./CloseTicketModal";
 import { calculateTicketReadiness } from "@/utils/ticket-readiness-engine";
 import TicketAuditTimeline from "@/components/audit/TicketAuditTimeline";
 import {
-  recalculateTicket, adjustTicketEstimate, classifyTicket, closeTicket,
+  recalculateTicket, adjustTicketEstimate, classifyTicket, closeTicket, replaceTicketEstimateFull,
   type Ticket, type Classification,
 } from "@/services/tickets.api";
+import { contextualToTicketEstimate } from "@/utils/contextual-to-ticket-estimate";
+import type { ContextualEstimationResult } from "@/types/estimation";
 import { suggestScopeItemsForTicket, type SapScopeItem } from "@/services/scope-items.api";
 import { useTicketAudit } from "@/hooks/useTicketAudit";
 import { useDocumentFactory } from "@/hooks/useDocumentFactory";
@@ -391,6 +393,46 @@ export default function TicketCommandCenter({ ticket, onTicketUpdated }: Props) 
     }
   }
 
+  /**
+   * Aplica un ContextualEstimationResult al ticket — sobrescribe la estimación
+   * oficial con la del motor v2. Queda audit trail con razón.
+   */
+  async function handleApplyContextual(ctxResult: ContextualEstimationResult) {
+    const newEstimate = contextualToTicketEstimate(ctxResult, ticket.key, actor);
+    const res = await replaceTicketEstimateFull(ticket.key, {
+      estimate: newEstimate,
+      actor,
+      reason: `Aplicado desde motor contextual v${ctxResult.engineVersion}`,
+    });
+    if ("success" in res && res.success) {
+      onTicketUpdated(res.ticket);
+      audit.record({
+        ticketId: ticket.key,
+        eventType: "MANUAL_ADJUSTMENT",
+        title: "Estimación contextual aplicada",
+        description:
+          `Motor v${ctxResult.engineVersion} · ${ctxResult.detectedContext.issueType} · ` +
+          `${ctxResult.totalRange.minHours}-${ctxResult.totalRange.maxHours}h · ` +
+          `${ctxResult.similarCases.length} casos similares · ${ctxResult.contextualAdjustments.length} factores`,
+        actor, actorRole, source: "ui",
+        metadata: {
+          engineVersion: ctxResult.engineVersion,
+          issueType: ctxResult.detectedContext.issueType,
+          module: ctxResult.detectedContext.module,
+          totalMinHours: ctxResult.totalRange.minHours,
+          totalMaxHours: ctxResult.totalRange.maxHours,
+          confidence: ctxResult.confidence,
+          similarCasesCount: ctxResult.similarCases.length,
+          adjustmentsCount: ctxResult.contextualAdjustments.length,
+        },
+      });
+      notify("✓ Estimación contextual aplicada al ticket");
+    } else {
+      const err = "error" in res ? res.error : "Error desconocido";
+      throw new Error(err);
+    }
+  }
+
   async function handleManualAdjust(patch: Parameters<typeof adjustTicketEstimate>[1] extends infer P ? Partial<P> : never, reason: string) {
     const res = await adjustTicketEstimate(ticket.key, {
       ...(patch as object),
@@ -704,6 +746,8 @@ export default function TicketCommandCenter({ ticket, onTicketUpdated }: Props) 
                 createdBy: actor,
               }}
               compact={false}
+              canApplyToTicket={actorRole === "admin" || actorRole === "aprobador" || actorRole === "consultor"}
+              onApplyToTicket={handleApplyContextual}
               onExportClientResponse={(md) => {
                 navigator.clipboard.writeText(md).catch(() => {});
                 notify("✓ Respuesta cliente copiada al portapapeles");

@@ -13,12 +13,15 @@ import {
 } from "@/types/estimation";
 import MarkdownView from "@/components/agent/MarkdownView";
 import ContextualEstimationView from "./ContextualEstimationView";
-import type { ContextualEstimationInput } from "@/types/estimation";
+import HistoricalCasesBrowser from "./HistoricalCasesBrowser";
+import { useContextualEstimations } from "@/hooks/useContextualEstimations";
+import { downloadContextualMarkdown } from "@/utils/contextual-export";
+import type { ContextualEstimationInput, ContextualEstimationResult } from "@/types/estimation";
 
 const SAP_MODULES = ["MM", "SD", "PP", "WM", "EWM", "QM", "PM", "ARIBA", "IBP", "BTP", "INTEGRACION"];
 const SERVICE_LEVELS = ["BASIC", "STANDARD", "PREMIUM", "ENTERPRISE"];
 
-type Tab = "new" | "history" | "contextual";
+type Tab = "new" | "history" | "contextual" | "cases";
 
 const EMPTY: EstimateInput = {
   title: "",
@@ -135,18 +138,24 @@ export default function TimeEstimatorCenter() {
       </div>
 
       {/* Tabs */}
-      <div className="row" style={{ gap: 8, marginBottom: 14 }}>
+      <div className="row" style={{ gap: 8, marginBottom: 14, flexWrap: "wrap" }}>
         <button className={`btn ${tab === "new" ? "primary" : "ghost"}`} onClick={() => setTab("new")}>＋ Nueva estimación</button>
         <button className={`btn ${tab === "contextual" ? "primary" : "ghost"}`} onClick={() => setTab("contextual")}
           title="Motor contextual v2 — análisis semántico + casos históricos + escenarios">
           🧠 Modo contextual
         </button>
         <button className={`btn ${tab === "history" ? "primary" : "ghost"}`} onClick={() => setTab("history")}>📜 Historial ({hook.estimates.length})</button>
+        <button className={`btn ${tab === "cases" ? "primary" : "ghost"}`} onClick={() => setTab("cases")}
+          title="Browser de los 30 casos históricos AMS que alimentan el motor contextual">
+          📚 Casos AMS
+        </button>
       </div>
 
       {tab === "contextual" && (
         <ContextualTab input={input} update={update} />
       )}
+
+      {tab === "cases" && <HistoricalCasesBrowser />}
 
       {tab === "new" && (
         <div style={{ display: "grid", gridTemplateColumns: "1fr 360px", gap: 14 }}>
@@ -284,6 +293,15 @@ export default function TimeEstimatorCenter() {
       )}
 
       {tab === "history" && (
+        <div className="col" style={{ gap: 16 }}>
+          {/* Histórico contextual primero (v2) */}
+          <HistoricalContextualSection />
+
+          {/* Histórico clásico abajo (v1) */}
+          <div className="row" style={{ gap: 8, alignItems: "baseline", marginTop: 8 }}>
+            <h3 style={{ margin: 0, fontSize: 16 }}>📋 Histórico clásico ({hook.estimates.length})</h3>
+            <span style={{ fontSize: 11, color: "var(--text-dim)" }}>(motor determinístico v1)</span>
+          </div>
         <div style={{ display: "grid", gridTemplateColumns: "1fr 1.2fr", gap: 14 }}>
           {/* Lista */}
           <div className="card">
@@ -442,6 +460,7 @@ export default function TimeEstimatorCenter() {
             )}
           </div>
         </div>
+        </div>
       )}
     </div>
   );
@@ -488,6 +507,121 @@ function ListBox({ title, items, color }: { title: string; items: string[]; colo
 }
 
 // ============================================================
+// Sección "Histórico contextual" — render de las estimaciones guardadas
+// del motor v2. Aparece en la tab History cuando hay alguna.
+// ============================================================
+
+function HistoricalContextualSection() {
+  const ctxHook = useContextualEstimations();
+  const [expandedId, setExpandedId] = useState<string | null>(null);
+
+  if (ctxHook.estimations.length === 0) {
+    return (
+      <div className="card" style={{ padding: 30, textAlign: "center" }}>
+        <div style={{ fontSize: 48, marginBottom: 12 }}>🧠</div>
+        <div style={{ fontSize: 16, fontWeight: 600, marginBottom: 6 }}>
+          Sin estimaciones contextuales guardadas
+        </div>
+        <div style={{ fontSize: 13, color: "var(--text-soft)" }}>
+          Las estimaciones del motor v2 que guardes con 💾 Guardar aparecen acá.
+          Andá a la tab <strong>🧠 Modo contextual</strong>, analizá un caso y guardalo.
+        </div>
+      </div>
+    );
+  }
+
+  return (
+    <div className="col" style={{ gap: 12 }}>
+      <div className="row between" style={{ alignItems: "baseline", marginBottom: 4 }}>
+        <h3 style={{ margin: 0, fontSize: 16 }}>🧠 Histórico contextual ({ctxHook.estimations.length})</h3>
+        {ctxHook.estimations.length > 0 && (
+          <button
+            className="btn ghost sm"
+            style={{ fontSize: 11 }}
+            onClick={() => {
+              if (window.confirm("¿Borrar TODAS las estimaciones contextuales guardadas?")) {
+                ctxHook.clear();
+              }
+            }}
+          >
+            🗑 borrar todo
+          </button>
+        )}
+      </div>
+
+      {ctxHook.estimations.map((e) => {
+        const isOpen = expandedId === e.estimateId;
+        return (
+          <div key={e.estimateId} className="card" style={{ padding: 12 }}>
+            <div className="row between" style={{ alignItems: "flex-start", gap: 8 }}>
+              <div style={{ flex: 1, minWidth: 0 }}>
+                <div style={{ fontSize: 10, color: "var(--text-dim)", letterSpacing: 1.5 }}>
+                  {e.detectedContext.module} · {e.detectedContext.process} · {new Date(e.createdAt).toLocaleString("es-CL")}
+                </div>
+                <div style={{ fontSize: 14, fontWeight: 600, marginTop: 2 }}>
+                  {e.inputSummary.title || "Caso sin título"}
+                </div>
+                <div className="row" style={{ gap: 8, marginTop: 6, flexWrap: "wrap" }}>
+                  <span style={{ fontSize: 11, color: "var(--text-soft)" }}>
+                    <strong style={{ color: "#22d3ee" }}>{e.totalRange.minHours}h – {e.totalRange.maxHours}h</strong>{" "}
+                    esperado {e.totalRange.expectedHours}h
+                  </span>
+                  <span className="badge muted" style={{ fontSize: 10 }}>conf {e.confidence}</span>
+                  <span className="badge muted" style={{ fontSize: 10 }}>{e.detectedContext.issueType.replace(/_/g, " ")}</span>
+                  {e.similarCases.length > 0 && (
+                    <span className="badge muted" style={{ fontSize: 10 }}>{e.similarCases.length} casos hist.</span>
+                  )}
+                  {e.playbookMatch && (
+                    <span className="badge ok" style={{ fontSize: 10 }}>playbook</span>
+                  )}
+                </div>
+              </div>
+              <div className="row" style={{ gap: 4 }}>
+                <button
+                  className="btn ghost sm"
+                  onClick={() => setExpandedId(isOpen ? null : e.estimateId)}
+                  style={{ fontSize: 11, padding: "3px 8px" }}
+                >
+                  {isOpen ? "▲ cerrar" : "▼ abrir"}
+                </button>
+                <button
+                  className="btn ghost sm"
+                  onClick={() => downloadContextualMarkdown(e)}
+                  title="Exportar a Markdown"
+                  style={{ fontSize: 11, padding: "3px 8px" }}
+                >
+                  ↓ MD
+                </button>
+                <button
+                  className="btn ghost sm"
+                  onClick={() => {
+                    if (window.confirm("¿Borrar esta estimación?")) ctxHook.remove(e.estimateId);
+                  }}
+                  title="Eliminar"
+                  style={{ fontSize: 11, padding: "3px 8px", color: "#ef4444" }}
+                >
+                  🗑
+                </button>
+              </div>
+            </div>
+
+            {isOpen && (
+              <div style={{ marginTop: 10, paddingTop: 10, borderTop: "1px solid var(--border-soft)" }}>
+                <ContextualEstimationView
+                  input={{ title: e.inputSummary.title, description: e.inputSummary.descriptionExcerpt }}
+                  result={e}
+                  compact
+                />
+              </div>
+            )}
+          </div>
+        );
+      })}
+    </div>
+  );
+}
+
+// ============================================================
 // Tab Contextual — usa el ContextualEstimationView del motor v2
 // ============================================================
 
@@ -497,6 +631,7 @@ interface ContextualTabProps {
 }
 
 function ContextualTab({ input, update }: ContextualTabProps) {
+  const ctxHook = useContextualEstimations();
   const [analyzed, setAnalyzed] = useState(false);
   const [refreshKey, setRefreshKey] = useState(0);
 
@@ -634,6 +769,7 @@ function ContextualTab({ input, update }: ContextualTabProps) {
           <ContextualEstimationView
             key={refreshKey}
             input={ctxInput}
+            onSave={(r) => ctxHook.save(r)}
           />
         )}
       </div>

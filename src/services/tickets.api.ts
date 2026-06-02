@@ -143,3 +143,18 @@ export async function closeTicket(key: string, input: CloseTicketInput) {
     { method: "POST", body: JSON.stringify(input) }
   );
 }
+
+/**
+ * Sobrescribe la estimación completa del ticket — usado por el motor contextual
+ * cuando el consultor decide "aplicar al ticket". El backend valida el shape
+ * y reemplaza el jsonb entero.
+ */
+export async function replaceTicketEstimateFull(
+  key: string,
+  input: { estimate: TicketEstimatedResolution; actor: string; reason?: string },
+) {
+  return call<{ success: true; ticket: Ticket } | { success: false; error: string }>(
+    `/api/tickets/${encodeURIComponent(key)}/estimate/full`,
+    { method: "POST", body: JSON.stringify(input) }
+  );
+}

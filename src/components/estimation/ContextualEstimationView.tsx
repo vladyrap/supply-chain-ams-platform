@@ -10,7 +10,9 @@ import Badge from "@/components/ui/Badge";
 import ContextScanCard from "./ContextScanCard";
 import SimilarCasesCard from "./SimilarCasesCard";
 import { estimateAmsResolutionContextually } from "@/utils/contextual-ams-estimation-engine";
-import type { ContextualEstimationInput, ContextualEstimationResult, ContextualAdjustment } from "@/types/estimation";
+import { findSimilarHistoricalCases } from "@/utils/historical-cases-matcher";
+import { downloadContextualMarkdown, downloadContextualJson, buildEnrichedClientResponse } from "@/utils/contextual-export";
+import type { ContextualEstimationInput, ContextualEstimationResult, ContextualAdjustment, SimilarHistoricalCase } from "@/types/estimation";
 
 interface Props {
   /** Input pre-poblado (desde un ticket o desde el form manual del estimador) */
@@ -19,6 +21,12 @@ interface Props {
   result?: ContextualEstimationResult;
   /** Callback al exportar la respuesta para el cliente */
   onExportClientResponse?: (markdown: string) => void;
+  /** Callback al guardar la estimación (persistencia) */
+  onSave?: (result: ContextualEstimationResult) => void;
+  /** Callback al aplicar al ticket (sobrescribe estimación oficial) */
+  onApplyToTicket?: (result: ContextualEstimationResult) => Promise<void> | void;
+  /** Si está disponible la acción "aplicar al ticket" */
+  canApplyToTicket?: boolean;
   /** Modo compact: oculta secciones avanzadas (para Ticket Command Center) */
   compact?: boolean;
 }
@@ -27,13 +35,28 @@ interface Props {
  * Calcula la estimación contextual al primer render (o usa la pasada por props).
  */
 export default function ContextualEstimationView({
-  input, result: resultProp, onExportClientResponse, compact = false,
+  input, result: resultProp, onExportClientResponse, onSave, onApplyToTicket, canApplyToTicket = false, compact = false,
 }: Props) {
-  const result = useMemo<ContextualEstimationResult>(() => {
+  // Si NO se pasa result, lo computamos. Si SÍ, lo usamos directo.
+  // Cuando el user toca "Buscar casos similares" o "Recalcular con histórico"
+  // sobreescribimos el state local.
+  const initial = useMemo<ContextualEstimationResult>(() => {
     return resultProp ?? estimateAmsResolutionContextually(input);
   }, [resultProp, input]);
+  const [result, setResult] = useState<ContextualEstimationResult>(initial);
+
+  // Recalcular si cambia el input externamente (key change en parent)
+  // No usamos efecto pq el useMemo arriba ya lo cubre en el initial render.
 
   const [copied, setCopied] = useState(false);
+  const [toast, setToast] = useState<string | null>(null);
+  const [applying, setApplying] = useState(false);
+  const [extraCases, setExtraCases] = useState<SimilarHistoricalCase[] | null>(null);
+
+  function notify(msg: string) {
+    setToast(msg);
+    setTimeout(() => setToast(null), 2500);
+  }
 
   async function copyClient() {
     try {
@@ -41,6 +64,74 @@ export default function ContextualEstimationView({
       setCopied(true);
       setTimeout(() => setCopied(false), 2500);
     } catch { /* silent */ }
+  }
+
+  // ── Acciones operativas del spec ────────────────────────────
+
+  function searchMoreSimilar() {
+    // Baja el threshold de similarity y devuelve top-6 en lugar de top-3
+    const moreCases = findSimilarHistoricalCases(result.detectedContext, {
+      topN: 6, minScore: 0.15, extraText: input.title,
+    });
+    setExtraCases(moreCases);
+    notify(`✓ ${moreCases.length} casos similares encontrados (threshold reducido)`);
+  }
+
+  function recalculateWithHistory() {
+    // Re-corre el motor con los mismos inputs — útil tras cambios externos
+    // o cuando el dataset histórico se actualiza.
+    const fresh = estimateAmsResolutionContextually(input);
+    setResult(fresh);
+    setExtraCases(null);
+    notify("✓ Estimación recalculada con histórico actual");
+  }
+
+  function improveEstimation() {
+    // Scroll a la sección de datos faltantes
+    const el = document.getElementById("ctx-missing-data");
+    if (el) {
+      el.scrollIntoView({ behavior: "smooth", block: "center" });
+      el.style.background = "#f59e0b22";
+      setTimeout(() => { el.style.background = ""; }, 2000);
+      notify("✓ Datos faltantes destacados — completalos y recalculá");
+    } else {
+      notify("Sin datos faltantes — la estimación ya está completa");
+    }
+  }
+
+  function regenerateClientResponse() {
+    const enriched = buildEnrichedClientResponse(result);
+    setResult({ ...result, clientResponseDraft: enriched });
+    notify("✓ Respuesta cliente regenerada (versión enriquecida)");
+  }
+
+  function exportMarkdown() {
+    downloadContextualMarkdown(result);
+    notify("✓ Markdown descargado");
+  }
+
+  function exportJson() {
+    downloadContextualJson(result);
+    notify("✓ JSON descargado");
+  }
+
+  async function applyToTicket() {
+    if (!onApplyToTicket) return;
+    setApplying(true);
+    try {
+      await onApplyToTicket(result);
+      notify("✓ Estimación aplicada al ticket");
+    } catch (e) {
+      notify("✗ Error al aplicar: " + (e instanceof Error ? e.message : "desconocido"));
+    } finally {
+      setApplying(false);
+    }
+  }
+
+  function save() {
+    if (!onSave) return;
+    onSave(result);
+    notify("✓ Estimación guardada en histórico");
   }
 
   const conf = result.confidence;
@@ -53,6 +144,65 @@ export default function ContextualEstimationView({
 
   return (
     <div className="col" style={{ gap: 12 }}>
+      {/* ── 0. Barra de acciones operativas ────────────────── */}
+      <div className="card" style={{ padding: 10, background: "var(--bg-elev-2)" }}>
+        <div className="row" style={{ gap: 6, flexWrap: "wrap", alignItems: "center" }}>
+          <button className="btn ghost sm" onClick={searchMoreSimilar}
+            title="Bajar threshold y traer más casos del histórico" style={{ fontSize: 11 }}>
+            🔍 Buscar más casos similares
+          </button>
+          <button className="btn ghost sm" onClick={recalculateWithHistory}
+            title="Re-correr el motor con dataset histórico actual" style={{ fontSize: 11 }}>
+            ↻ Recalcular con histórico
+          </button>
+          <button className="btn ghost sm" onClick={improveEstimation}
+            title="Resaltar datos faltantes que mejorarían la precisión" style={{ fontSize: 11 }}>
+            🎯 Mejorar estimación
+          </button>
+          <button className="btn ghost sm" onClick={regenerateClientResponse}
+            title="Regenerar respuesta cliente enriquecida" style={{ fontSize: 11 }}>
+            ✉ Generar respuesta cliente
+          </button>
+          <div style={{ width: 1, height: 18, background: "var(--border-soft)" }} />
+          <button className="btn ghost sm" onClick={exportMarkdown}
+            title="Descargar Markdown" style={{ fontSize: 11 }}>
+            ↓ MD
+          </button>
+          <button className="btn ghost sm" onClick={exportJson}
+            title="Descargar JSON" style={{ fontSize: 11 }}>
+            ↓ JSON
+          </button>
+          {onSave && (
+            <>
+              <div style={{ width: 1, height: 18, background: "var(--border-soft)" }} />
+              <button className="btn primary sm" onClick={save}
+                title="Guardar estimación en histórico" style={{ fontSize: 11 }}>
+                💾 Guardar
+              </button>
+            </>
+          )}
+          {canApplyToTicket && onApplyToTicket && (
+            <>
+              <div style={{ width: 1, height: 18, background: "var(--border-soft)" }} />
+              <button
+                className="btn primary sm"
+                onClick={applyToTicket}
+                disabled={applying}
+                title="Sobrescribir la estimación oficial del ticket con esta contextual"
+                style={{ fontSize: 11, background: "#10b981", borderColor: "#10b981" }}
+              >
+                {applying ? <><span className="spinner" /> aplicando…</> : "🎯 Aplicar al ticket"}
+              </button>
+            </>
+          )}
+          {toast && (
+            <div style={{ marginLeft: "auto", fontSize: 11, color: "var(--text-soft)", fontWeight: 500 }}>
+              {toast}
+            </div>
+          )}
+        </div>
+      </div>
+
       {/* ── 1. Hero / ETA total ───────────────────────────── */}
       <div className="card" style={{ padding: 16, borderLeft: `4px solid ${confColor}` }}>
         <div className="row between" style={{ alignItems: "flex-start", flexWrap: "wrap", gap: 12 }}>
@@ -96,7 +246,7 @@ export default function ContextualEstimationView({
       {/* ── 2. Contexto + casos similares lado a lado ───── */}
       <div style={{ display: "grid", gridTemplateColumns: compact ? "1fr" : "1fr 1fr", gap: 10 }}>
         <ContextScanCard context={result.detectedContext} />
-        <SimilarCasesCard cases={result.similarCases} />
+        <SimilarCasesCard cases={extraCases ?? result.similarCases} />
       </div>
 
       {/* ── 3. Escenarios optimista / esperado / pesimista ── */}
@@ -181,7 +331,7 @@ export default function ContextualEstimationView({
 
       {/* ── 7. Datos faltantes ────────────────────────────── */}
       {result.missingData.length > 0 && (
-        <div className="card" style={{ padding: 14, borderLeft: "3px solid #f59e0b", background: "#f59e0b08" }}>
+        <div id="ctx-missing-data" className="card" style={{ padding: 14, borderLeft: "3px solid #f59e0b", background: "#f59e0b08", transition: "background 1s" }}>
           <div className="row between" style={{ marginBottom: 8 }}>
             <div style={{ fontSize: 10, letterSpacing: 2, color: "#f59e0b" }}>
               ⚠ DATOS FALTANTES ({result.missingData.length})
