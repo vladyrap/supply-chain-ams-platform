@@ -16,6 +16,11 @@ import ResponseHistoryList from "@/components/customer-response/ResponseHistoryL
 import { useCustomerResponses } from "@/hooks/useCustomerResponses";
 import { buildResponseContextFromTicket } from "@/intelligence/customer-response-engine";
 import type { CustomerResponse, CustomerResponseType } from "@/types/customer-response";
+import N2IntelligenceCard from "@/components/escalation/N2IntelligenceCard";
+import { analyzeN2Escalation } from "@/intelligence/n2-escalation-intelligence-engine";
+import KnowledgeCurationCard from "@/components/knowledge/KnowledgeCurationCard";
+import { useKnowledgeCuration } from "@/hooks/useKnowledgeCuration";
+import { analyzeCurationCandidate } from "@/intelligence/knowledge-curation-engine";
 
 /** Lee la firma del tenant desde /settings (localStorage). */
 function buildTenantSignature(): string {
@@ -166,6 +171,8 @@ export default function TicketCommandCenter({ ticket, onTicketUpdated }: Props) 
   const [closureExtras, setClosureExtras] = useState<import("@/types/customer-response").CustomerResponseContext | null>(null);
   const customerResponses = useCustomerResponses();
   const ticketResponses = customerResponses.byTicket(ticket.key);
+  const curation = useKnowledgeCuration();
+  const ticketCurations = curation.byTicket(ticket.key);
 
   const actor = authUser?.name || authUser?.email || "Consultor AMS";
   const actorRole = authUser?.role;
@@ -410,6 +417,40 @@ export default function TicketCommandCenter({ ticket, onTicketUpdated }: Props) 
       });
       setCloseModalOpen(false);
       notify(`✓ Ticket cerrado · ${input.actualHours}h registradas`);
+
+      // ── Knowledge Auto-Curation: generar candidato al cerrar ──
+      const curationCandidate = analyzeCurationCandidate({
+        ticketKey: ticket.key,
+        ticketTitle: ticket.title,
+        ticketDescription: ticket.description,
+        sapModule: ticket.sapModule,
+        hasClosureResponse: input.extras.generateClosureResponse,
+        closureQualityScore: 80, // heurística — refinable post-CLOSURE
+        hasRootCauseValidated: !!input.extras.rootCauseSummary,
+        hasValidationDocumented: !!input.extras.validationSummary,
+        hasPreventionDocumented: !!input.extras.preventionRecommendation,
+        rootCauseSummary: input.extras.rootCauseSummary,
+        solutionSummary: input.extras.resolutionSummary,
+        validationSummary: input.extras.validationSummary,
+        preventionRecommendation: input.extras.preventionRecommendation,
+        withinBandPct: newEst?.withinBand ? 100 : 0,
+        variancePct: newEst?.variancePct,
+        estimationConfidence: newEst?.confidence as "LOW" | "MEDIUM" | "HIGH" | undefined,
+        isFirstOfItsKind: similarPastTicketsCount === 0,
+        similarUnresolvedCount: similarPastTicketsCount,
+      });
+      if (curationCandidate) {
+        curation.save(curationCandidate);
+        audit.record({
+          ticketId: ticket.key,
+          eventType: "KB_CURATION_CANDIDATE_PROPOSED",
+          title: `Candidato KB propuesto · score ${curationCandidate.brilliantScore}/100`,
+          description: curationCandidate.proposedKbTitle,
+          actor: "SYSTEM_CURATION", actorRole: "system", source: "system",
+          metadata: { candidateId: curationCandidate.candidateId, brilliantScore: curationCandidate.brilliantScore },
+        });
+        notify(`🧠 Caso brillante detectado — candidato KB con score ${curationCandidate.brilliantScore}/100`);
+      }
 
       // ── Customer Response: generar CLOSURE auto si el user lo marcó ──
       if (input.extras.generateClosureResponse) {
@@ -1057,20 +1098,65 @@ export default function TicketCommandCenter({ ticket, onTicketUpdated }: Props) 
         </div>
       </Section>
 
-      {/* Sección 8 — Escalamiento N2 · ORQUESTADOR */}
+      {/* Sección 8 — Escalamiento N2 · ORQUESTADOR + INTELLIGENCE */}
       <Section title="ESCALAMIENTO N2" icon="🚨" accent="#ef4444" count={ticketEscalations.length}>
-        <div className="row" style={{ gap: 8, alignItems: "center", flexWrap: "wrap" }}>
-          <EscalationQuickAction
-            incident={incidentLike}
-            actingUserId={actingUserId}
-            canApprove={actorRole === "admin" || actorRole === "aprobador"}
-            variant="full"
+        <div className="col" style={{ gap: 10 }}>
+          <div className="row" style={{ gap: 8, alignItems: "center", flexWrap: "wrap" }}>
+            <EscalationQuickAction
+              incident={incidentLike}
+              actingUserId={actingUserId}
+              canApprove={actorRole === "admin" || actorRole === "aprobador"}
+              variant="full"
+            />
+            {ticketEscalations.length > 0 && (
+              <span style={{ fontSize: 11.5, color: "var(--text-soft)" }}>
+                · {ticketEscalations.length} escalaci{ticketEscalations.length === 1 ? "ón" : "ones"} previas
+              </span>
+            )}
+          </div>
+
+          {/* N2 Escalation Intelligence — análisis automático */}
+          <N2IntelligenceCard
+            analysis={analyzeN2Escalation({
+              ticketKey: ticket.key,
+              ticketTitle: ticket.title,
+              ticketDescription: ticket.description,
+              ticketPriority: ticket.priority,
+              sapModule: ticket.sapModule,
+              sapTransaction: ticket.estimatedResolution?.appliedRules?.find((r) => /transaction/i.test(r))?.split(":")[1]?.trim(),
+              environment: ticket.environment,
+              isProductive: (ticket.environment || "").toUpperCase() === "PRD",
+              hasPlaybook: ticketPlaybooks.length > 0,
+              hasKnowledgeMatch: ticketKnowledge.length > 0,
+              hasScopeItem: scopeItems.length > 0,
+              hasErrorEvidence: (ticket.description || "").length > 80,
+              hasVisualEvidence: !!(ticket.visualEvidenceNotes && ticket.visualEvidenceNotes.length > 0),
+              estimationConfidence: ticket.estimatedResolution?.confidence as "LOW" | "MEDIUM" | "HIGH" | undefined,
+              estimationMinHours: ticket.estimatedResolution?.totalMinHours,
+              estimationMaxHours: ticket.estimatedResolution?.totalMaxHours,
+              similarPastTicketsCount,
+              hasReusableResolution: similarPastTicketsCount > 0 && ticketKnowledge.length > 0,
+              daysOpen: daysSinceLastUpdate,
+              affectsCriticalProcess: (ticket.environment || "").toUpperCase() === "PRD",
+              availablePlaybooks: playbooks.playbooks.map((p) => ({
+                id: p.id, title: p.title, sapModule: p.sapModule, status: p.status,
+                triggerWhen: p.triggerWhen,
+              })),
+              rules: escalation.rules,
+              availableSpecialists: escalation.responsibles.length > 0 ? escalation.responsibles : undefined,
+            })}
+            onEscalateToSpecialist={(responsibleId) => {
+              audit.record({
+                ticketId: ticket.key,
+                eventType: "N2_INTELLIGENCE_VERDICT_ESCALATE",
+                title: "Escalación sugerida desde N2 Intelligence",
+                description: `Specialist recomendado: ${responsibleId}`,
+                actor, actorRole, source: "ui",
+                metadata: { responsibleId },
+              });
+              notify("✓ Recomendación registrada. Usá 'Escalar N2' para crear la escalación oficial.");
+            }}
           />
-          {ticketEscalations.length > 0 && (
-            <span style={{ fontSize: 11.5, color: "var(--text-soft)" }}>
-              · {ticketEscalations.length} escalaci{ticketEscalations.length === 1 ? "ón" : "ones"} previas
-            </span>
-          )}
         </div>
       </Section>
 
@@ -1235,6 +1321,60 @@ export default function TicketCommandCenter({ ticket, onTicketUpdated }: Props) 
           )}
         </div>
       </Section>
+
+      {/* Sección 16: KB Auto-Curation candidates */}
+      {ticketCurations.length > 0 && (
+        <Section
+          id="section-kb-curation"
+          title="KB AUTO-CURATION · CANDIDATOS"
+          icon="🧠"
+          accent="#a855f7"
+          count={ticketCurations.length}
+          defaultOpen
+        >
+          <div className="col" style={{ gap: 8 }}>
+            <div style={{ fontSize: 12, color: "var(--text-soft)", lineHeight: 1.5 }}>
+              El sistema detectó casos brillantes en este ticket que pueden publicarse como KB.
+              Revisá el score, aprobá o rechazá. Aprobado → se queda como draft listo para publicar.
+            </div>
+            {ticketCurations.map((c) => (
+              <KnowledgeCurationCard
+                key={c.candidateId}
+                candidate={c}
+                onApprove={() => {
+                  curation.updateStatus(c.candidateId, "APPROVED", actor);
+                  audit.record({
+                    ticketId: ticket.key, eventType: "KB_CURATION_APPROVED",
+                    title: "Candidato KB aprobado", actor, actorRole, source: "ui",
+                    metadata: { candidateId: c.candidateId },
+                  });
+                  notify("✓ Aprobado · listo para publicar como KB");
+                }}
+                onReject={(reason) => {
+                  curation.updateStatus(c.candidateId, "REJECTED", actor, reason);
+                  audit.record({
+                    ticketId: ticket.key, eventType: "KB_CURATION_REJECTED",
+                    title: "Candidato KB rechazado", description: reason,
+                    actor, actorRole, source: "ui",
+                    metadata: { candidateId: c.candidateId },
+                  });
+                }}
+                onPublish={() => {
+                  // Por ahora marca como PUBLISHED — integración con KB real es roadmap.
+                  curation.updateStatus(c.candidateId, "PUBLISHED", actor);
+                  audit.record({
+                    ticketId: ticket.key, eventType: "KB_CURATION_PUBLISHED",
+                    title: "KB publicado desde curación",
+                    actor, actorRole, source: "ui",
+                    metadata: { candidateId: c.candidateId, kbTitle: c.proposedKbTitle },
+                  });
+                  notify("📚 Publicado en KB");
+                }}
+              />
+            ))}
+          </div>
+        </Section>
+      )}
 
       {/* Modal generador de respuestas */}
       {responseModalOpen && (

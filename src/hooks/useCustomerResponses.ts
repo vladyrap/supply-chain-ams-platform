@@ -7,6 +7,10 @@
 import { useCallback, useEffect, useState } from "react";
 import type { CustomerResponse, CustomerResponseStatus } from "@/types/customer-response";
 import { CUSTOMER_RESPONSE_STORAGE } from "@/types/customer-response";
+import {
+  persistCustomerResponse, updateCustomerResponseStatusApi, deleteCustomerResponseApi,
+  fetchCustomerResponsesByTicket,
+} from "@/services/customer-responses.api";
 
 const STORAGE_KEY = CUSTOMER_RESPONSE_STORAGE.responses;
 const EVT = "ams-customer-responses-changed";
@@ -81,11 +85,9 @@ export function useCustomerResponses(): UseCustomerResponses {
 
       let kept: CustomerResponse[];
       if (idx >= 0) {
-        // update existing
         kept = [...sameTicket];
         kept[idx] = r;
       } else {
-        // insert
         kept = [r, ...sameTicket];
         if (kept.length > MAX_PER_TICKET) {
           kept = kept.slice(0, MAX_PER_TICKET);
@@ -98,6 +100,8 @@ export function useCustomerResponses(): UseCustomerResponses {
       }
       return next;
     });
+    // Sync best-effort con backend (no bloquea — si falla, queda solo en localStorage)
+    persistCustomerResponse(r).catch(() => null);
   }, []);
 
   const updateStatus: UseCustomerResponses["updateStatus"] = useCallback(
@@ -112,12 +116,15 @@ export function useCustomerResponses(): UseCustomerResponses {
         }
         return next;
       });
+      // Sync best-effort
+      updateCustomerResponseStatusApi(responseId, status).catch(() => null);
     },
     [],
   );
 
   const remove: UseCustomerResponses["remove"] = useCallback((id) => {
     persist(responses.filter((r) => r.responseId !== id));
+    deleteCustomerResponseApi(id).catch(() => null);
   }, [responses, persist]);
 
   const clearTicket: UseCustomerResponses["clearTicket"] = useCallback((k) => {

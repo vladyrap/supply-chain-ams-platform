@@ -35,7 +35,16 @@ export type TicketAuditEventType =
   | "CUSTOMER_RESPONSE_BLOCKED"
   | "CUSTOMER_RESPONSE_APPROVED"
   | "CUSTOMER_RESPONSE_SAVED"
-  | "CUSTOMER_RESPONSE_SENT_MANUAL";
+  | "CUSTOMER_RESPONSE_SENT_MANUAL"
+  // N2 Escalation Intelligence
+  | "N2_INTELLIGENCE_ANALYZED"
+  | "N2_INTELLIGENCE_VERDICT_ESCALATE"
+  | "N2_INTELLIGENCE_VERDICT_STAY"
+  // Knowledge Auto-Curation Intelligence
+  | "KB_CURATION_CANDIDATE_PROPOSED"
+  | "KB_CURATION_APPROVED"
+  | "KB_CURATION_REJECTED"
+  | "KB_CURATION_PUBLISHED";
 
 export interface TicketAuditEvent {
   id: string;
@@ -86,6 +95,13 @@ export const EVENT_LABELS: Record<TicketAuditEventType, string> = {
   CUSTOMER_RESPONSE_APPROVED: "Respuesta cliente aprobada",
   CUSTOMER_RESPONSE_SAVED: "Respuesta guardada en ticket",
   CUSTOMER_RESPONSE_SENT_MANUAL: "Respuesta enviada manualmente",
+  N2_INTELLIGENCE_ANALYZED: "N2 Intelligence ejecutada",
+  N2_INTELLIGENCE_VERDICT_ESCALATE: "N2 Intelligence: ESCALAR",
+  N2_INTELLIGENCE_VERDICT_STAY: "N2 Intelligence: mantener en N1",
+  KB_CURATION_CANDIDATE_PROPOSED: "Candidato KB propuesto auto",
+  KB_CURATION_APPROVED: "Candidato KB aprobado",
+  KB_CURATION_REJECTED: "Candidato KB rechazado",
+  KB_CURATION_PUBLISHED: "KB publicado desde curación",
 };
 
 export const EVENT_ICONS: Record<TicketAuditEventType, string> = {
@@ -120,6 +136,13 @@ export const EVENT_ICONS: Record<TicketAuditEventType, string> = {
   CUSTOMER_RESPONSE_APPROVED: "✅",
   CUSTOMER_RESPONSE_SAVED: "💾",
   CUSTOMER_RESPONSE_SENT_MANUAL: "📤",
+  N2_INTELLIGENCE_ANALYZED: "🧠",
+  N2_INTELLIGENCE_VERDICT_ESCALATE: "🚨",
+  N2_INTELLIGENCE_VERDICT_STAY: "🔧",
+  KB_CURATION_CANDIDATE_PROPOSED: "🧠",
+  KB_CURATION_APPROVED: "✅",
+  KB_CURATION_REJECTED: "✕",
+  KB_CURATION_PUBLISHED: "📚",
 };
 
 export const EVENT_COLORS: Record<TicketAuditEventType, string> = {
@@ -154,4 +177,11 @@ export const EVENT_COLORS: Record<TicketAuditEventType, string> = {
   CUSTOMER_RESPONSE_APPROVED: "#10b981",
   CUSTOMER_RESPONSE_SAVED: "#a855f7",
   CUSTOMER_RESPONSE_SENT_MANUAL: "#10b981",
+  N2_INTELLIGENCE_ANALYZED: "#22d3ee",
+  N2_INTELLIGENCE_VERDICT_ESCALATE: "#ef4444",
+  N2_INTELLIGENCE_VERDICT_STAY: "#10b981",
+  KB_CURATION_CANDIDATE_PROPOSED: "#22d3ee",
+  KB_CURATION_APPROVED: "#10b981",
+  KB_CURATION_REJECTED: "#ef4444",
+  KB_CURATION_PUBLISHED: "#a855f7",
 };

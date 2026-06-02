@@ -11,6 +11,9 @@ import {
 } from "@/types/customer-response";
 import CustomerResponsePreview from "./CustomerResponsePreview";
 import QualityGateReport from "./QualityGateReport";
+import {
+  toJiraComment, toServiceNowWorkNote, copyToClipboard,
+} from "@/intelligence/customer-response-jira-export";
 
 interface Props {
   responses: CustomerResponse[];
@@ -108,6 +111,28 @@ export default function ResponseHistoryList({ responses, onMarkSent, onRemove, o
                     📤
                   </button>
                 )}
+                <button
+                  className="btn ghost sm"
+                  onClick={async () => {
+                    const ok = await copyToClipboard(toJiraComment(r));
+                    if (ok) alert("✓ Comentario Jira copiado al portapapeles");
+                  }}
+                  title="Copiar como comentario Jira"
+                  style={{ fontSize: 10, padding: "3px 6px" }}
+                >
+                  ↗ Jira
+                </button>
+                <button
+                  className="btn ghost sm"
+                  onClick={async () => {
+                    const ok = await copyToClipboard(toServiceNowWorkNote(r));
+                    if (ok) alert("✓ Worknote ServiceNow copiada");
+                  }}
+                  title="Copiar como ServiceNow worknote"
+                  style={{ fontSize: 10, padding: "3px 6px" }}
+                >
+                  ↗ SN
+                </button>
                 {onRemove && (
                   <button
                     className="btn ghost sm"

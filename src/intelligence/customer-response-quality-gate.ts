@@ -288,6 +288,86 @@ function ruleToneMismatch(
 }
 
 // ============================================================
+// Rules v0.2 — 5 reglas adicionales
+// ============================================================
+
+/** Rule 11 (warn): falta de cierre profesional ("Saludos", etc.). */
+function ruleMissingProfessionalClosing(resp: QualityInputResponse): QualityIssue | null {
+  const tail = resp.body.slice(-200).toLowerCase();
+  if (!/saludos|atentos|cordialmente|sinceramente|equipo|regards|respetuosamente/i.test(tail)) {
+    return {
+      ruleId: "missing_professional_closing",
+      severity: "warn",
+      message: "Falta cierre profesional al final del cuerpo.",
+      suggestedFix: 'Cerrar con "Saludos," + firma del equipo.',
+    };
+  }
+  return null;
+}
+
+/** Rule 12 (warn): respuesta excesivamente larga (>3000 chars). */
+function ruleBodyTooLong(resp: QualityInputResponse): QualityIssue | null {
+  if (resp.body.length > 3000) {
+    return {
+      ruleId: "body_too_long",
+      severity: "warn",
+      message: `Respuesta demasiado larga (${resp.body.length} chars). Cliente puede no leer todo.`,
+      suggestedFix: "Mover detalles técnicos a un adjunto. Mantener body en <2000 chars.",
+    };
+  }
+  return null;
+}
+
+/** Rule 13 (warn): jerga técnica SAP excesiva sin glosario para audiencias funcionales. */
+function ruleExcessiveJargon(
+  resp: QualityInputResponse, ctx: QualityContext,
+): QualityIssue | null {
+  if (ctx.audience !== "FUNCTIONAL_USER" && ctx.audience !== "MANAGER") return null;
+  // Cuenta acrónimos SAP en el body
+  const acronyms = resp.body.match(/\b(?:OMB1|VOFM|NACE|MIRO|MIGO|VKOA|OVKK|OB52|VFX3|VL\d{2}N?|VA\d{2}|ME\d{2}N?|MD\d{2}|WE\d{2}|BD\d{2}|SU\d{2}|ST\d{2}|SM\d{2}|FB\d{2}|MM\d{2}|XK\d{2}|FK\d{2}|XD\d{2}|FD\d{2}|OB\w{2,3}|OV\w{2,3})\b/g) || [];
+  if (acronyms.length >= 5) {
+    return {
+      ruleId: "excessive_jargon",
+      severity: "warn",
+      message: `${acronyms.length} acrónimos SAP — exceso de jerga para audiencia ${ctx.audience.toLowerCase()}.`,
+      suggestedFix: "Simplificar o agregar explicación entre paréntesis (ej. 'OMB1 — customizing de stock').",
+    };
+  }
+  return null;
+}
+
+/** Rule 14 (info): falta confidence label visible en el cuerpo. */
+function ruleNoConfidenceDisclosure(
+  resp: QualityInputResponse, ctx: QualityContext,
+): QualityIssue | null {
+  if (ctx.responseType === "ACKNOWLEDGEMENT" || ctx.responseType === "DUPLICATE_CASE") return null;
+  if (!/confianza|preliminar|sujeto a|hip[oó]tesis/i.test(resp.body)) {
+    return {
+      ruleId: "no_confidence_disclosure",
+      severity: "info",
+      message: "Body no explicita confianza ni naturaleza preliminar del análisis.",
+      suggestedFix: "Agregar frase del tipo 'confianza media' o 'análisis preliminar sujeto a validación'.",
+    };
+  }
+  return null;
+}
+
+/** Rule 15 (block): subject NO incluye ticket key. */
+function ruleSubjectMissingTicketKey(
+  resp: QualityInputResponse, ctx: QualityContext,
+): QualityIssue | null {
+  if (!resp.subject.includes(ctx.context.ticketKey)) {
+    return {
+      ruleId: "subject_missing_ticket_key",
+      severity: "warn",
+      message: "Subject no incluye la clave del ticket.",
+      suggestedFix: `Incluir ${ctx.context.ticketKey} al inicio del subject para tracking del cliente.`,
+    };
+  }
+  return null;
+}
+
+// ============================================================
 // Safe version builder — reescribe con lenguaje condicional
 // ============================================================
 
@@ -383,6 +463,12 @@ const ALL_RULES = [
   ruleBodyTooShort,
   ruleMissingNextSteps,
   ruleToneMismatch,
+  // v0.2
+  ruleMissingProfessionalClosing,
+  ruleBodyTooLong,
+  ruleExcessiveJargon,
+  ruleNoConfidenceDisclosure,
+  ruleSubjectMissingTicketKey,
 ];
 
 /**
