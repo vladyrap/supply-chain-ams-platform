@@ -1,67 +1,44 @@
 "use client";
 
+// =============================================================================
+// Sidebar — Navegación lateral con RBAC fail-closed
+// =============================================================================
+// El menú se construye dinámicamente desde MODULES + GROUP_ORDER. Cada módulo
+// declara su `permissionKey` (PlatformScreen) y se filtra con `canSeeModule`
+// del hook `usePermissions`. No hay SECTIONS hardcoded ni fallback a
+// `rolesAllowed` legacy.
+//
+// Reglas fail-closed:
+//   - Módulo sin `permissionKey` → oculto (salvo `public: true`).
+//   - User sin permiso "view" sobre la screen → oculto.
+//   - Grupo sin ningún módulo visible → todo el grupo se oculta.
+//
+// Re-rendea automáticamente al cambiar permisos (vía hook usePermissions →
+// storage event + custom "ams-rbac-changed").
+// =============================================================================
+
 import { useEffect, useState } from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { MODULES } from "@/lib/modules";
-import { usePlatform } from "@/context/PlatformContext";
-import { useAuth } from "@/context/AuthContext";
-import { canAccess } from "@/lib/roles";
-import { hasPermission, buildDefaultRoles, buildDefaultUsers, legacyRoleToCode, migrateRolesAddingMissingScreens } from "@/utils/rbac";
-import { screenForModule } from "@/utils/permissions";
-import { RBAC_STORAGE, type PlatformRole, type PlatformUser } from "@/types/rbac";
+import {
+  MODULES, modulesByGroup, GROUP_ORDER, GROUP_LABELS,
+} from "@/lib/modules";
+import { usePermissions } from "@/hooks/usePermissions";
 import type { ModuleDef } from "@/types";
 import { useSidebarPrefs } from "@/hooks/useSidebarPrefs";
 import { useSidebarBadges, badgeForModule } from "@/hooks/useSidebarBadges";
 import CommandPalette from "./CommandPalette";
 
-function readRbacState(): { roles: PlatformRole[]; users: PlatformUser[]; currentUserId: string | null } {
-  if (typeof window === "undefined") {
-    return { roles: buildDefaultRoles(), users: buildDefaultUsers(), currentUserId: null };
-  }
-  let roles: PlatformRole[] = buildDefaultRoles();
-  let users: PlatformUser[] = buildDefaultUsers();
-  try { const r = localStorage.getItem(RBAC_STORAGE.roles);   if (r) roles = JSON.parse(r); } catch {}
-  try { const u = localStorage.getItem(RBAC_STORAGE.users);   if (u) users = JSON.parse(u); } catch {}
-  roles = migrateRolesAddingMissingScreens(roles);
-  const currentUserId = localStorage.getItem(RBAC_STORAGE.currentUser);
-  return { roles, users, currentUserId };
-}
-
-const SECTIONS: { name: string; ids: string[] }[] = [
-  { name: "Operación",       ids: ["welcome", "mission-control", "topology", "tv", "demo", "dashboard", "agent", "history"] },
-  { name: "Visualizaciones", ids: ["launchpad", "wallboard", "war-room", "brain", "terminal", "hud", "forecast", "flow"] },
-  { name: "AMS avanzado",    ids: ["support-desk", "agent-lab", "voice-calls", "knowledge", "playbooks", "document-factory", "quality-evaluator", "escalation-n2", "testing-intelligence", "time-estimator", "tickets", "integrations", "sap-readonly", "meetings"] },
-  { name: "Sistema",         ids: ["executive", "business-value", "agent-readiness", "audit", "settings", "admin"] },
-];
-
 export default function Sidebar() {
   const pathname = usePathname();
-  const { role } = usePlatform();
-  const { user: authUser } = useAuth();
   const prefs = useSidebarPrefs();
   const badges = useSidebarBadges();
 
-  const [rbac, setRbac] = useState(readRbacState);
+  // Fuente única de verdad de RBAC efectivo (usuario, rol, can/canSeeModule)
+  const { effectiveUser, roleCode, canSeeModule } = usePermissions();
+
   const [paletteOpen, setPaletteOpen] = useState(false);
   const [backendOnline, setBackendOnline] = useState<boolean | null>(null);
-
-  // RBAC sync
-  useEffect(() => {
-    function onStorage(e: StorageEvent) {
-      if (e.key && (e.key === RBAC_STORAGE.roles || e.key === RBAC_STORAGE.users || e.key === RBAC_STORAGE.currentUser)) {
-        setRbac(readRbacState());
-      }
-    }
-    setRbac(readRbacState());
-    window.addEventListener("storage", onStorage);
-    const refresh = () => setRbac(readRbacState());
-    window.addEventListener("ams-rbac-changed", refresh);
-    return () => {
-      window.removeEventListener("storage", onStorage);
-      window.removeEventListener("ams-rbac-changed", refresh);
-    };
-  }, []);
 
   // Backend health ping
   useEffect(() => {
@@ -83,7 +60,7 @@ export default function Sidebar() {
     return () => { cancelled = true; clearInterval(i); };
   }, []);
 
-  // Cmd+K abre paleta
+  // Cmd+K abre paleta global
   useEffect(() => {
     function onKey(e: KeyboardEvent) {
       if ((e.metaKey || e.ctrlKey) && e.key.toLowerCase() === "k") {
@@ -95,33 +72,13 @@ export default function Sidebar() {
     return () => window.removeEventListener("keydown", onKey);
   }, []);
 
-  const effectiveUser: PlatformUser | null = (() => {
-    if (rbac.currentUserId) {
-      const overridden = rbac.users.find((u) => u.id === rbac.currentUserId);
-      if (overridden) return overridden;
-    }
-    if (!authUser) return null;
-    return {
-      id: `auth_${authUser.id}`,
-      name: authUser.name || authUser.email,
-      email: authUser.email,
-      roleCode: legacyRoleToCode(authUser.role),
-      serviceLevel: "ENTERPRISE",
-      status: authUser.active ? "ACTIVE" : "INACTIVE",
-      createdAt: authUser.created_at,
-    };
-  })();
-
-  function isAllowed(m: ModuleDef): boolean {
-    const screen = screenForModule(m.id);
-    if (screen && effectiveUser) {
-      return hasPermission(effectiveUser, screen, "view", rbac.roles);
-    }
-    return canAccess(role, m.rolesAllowed);
-  }
+  // ¿El user está simulando otro user vía RBAC override?
+  const isSimulating = effectiveUser?.id.startsWith("auth_") === false;
 
   // Favoritos visibles primero (sección virtual)
-  const favoriteModules = MODULES.filter((m) => prefs.favorites.has(m.id) && isAllowed(m));
+  const favoriteModules = MODULES.filter(
+    (m) => prefs.favorites.has(m.id) && canSeeModule(m),
+  );
 
   return (
     <>
@@ -159,7 +116,7 @@ export default function Sidebar() {
         </button>
 
         <nav className="nav" aria-label="Módulos">
-          {/* Favoritos */}
+          {/* Favoritos (sección virtual) */}
           {favoriteModules.length > 0 && (
             <Section
               name="Favoritos"
@@ -173,15 +130,20 @@ export default function Sidebar() {
             </Section>
           )}
 
-          {SECTIONS.map((sec) => {
-            const visible = MODULES.filter((m) => sec.ids.includes(m.id) && isAllowed(m) && !prefs.favorites.has(m.id));
+          {/* Grupos dinámicos derivados de MODULES + permissionKey */}
+          {GROUP_ORDER.map((g) => {
+            const groupLabel = GROUP_LABELS[g];
+            const visible = modulesByGroup(g).filter(
+              (m) => canSeeModule(m) && !prefs.favorites.has(m.id),
+            );
+            // Fail-closed por grupo: si nadie es visible, ocultar header
             if (visible.length === 0) return null;
             return (
               <Section
-                key={sec.name}
-                name={sec.name}
-                collapsed={prefs.collapsed.has(sec.name)}
-                onToggle={() => prefs.toggleSection(sec.name)}>
+                key={g}
+                name={groupLabel}
+                collapsed={prefs.collapsed.has(groupLabel)}
+                onToggle={() => prefs.toggleSection(groupLabel)}>
                 {visible.map((m) => (
                   <NavLink key={m.id} m={m} active={!!pathname?.startsWith(m.href)}
                     isFavorite={false} onToggleFavorite={() => prefs.toggleFavorite(m.id)}
@@ -192,7 +154,7 @@ export default function Sidebar() {
           })}
         </nav>
 
-        {effectiveUser && rbac.currentUserId && (
+        {isSimulating && effectiveUser && (
           <div style={{
             padding: "8px 10px", margin: "10px 0",
             background: "rgba(251, 191, 36, 0.10)",
@@ -213,7 +175,7 @@ export default function Sidebar() {
             {backendOnline === null ? "verificando…" : backendOnline ? "backend online" : "backend offline"}
           </span>
           <span style={{ marginLeft: "auto", color: "var(--text-dim)" }}>
-            {effectiveUser ? effectiveUser.roleCode : "—"}
+            {roleCode ?? "—"}
           </span>
         </div>
       </aside>
@@ -223,7 +185,7 @@ export default function Sidebar() {
         onClose={() => setPaletteOpen(false)}
         favorites={prefs.favorites}
         onToggleFavorite={prefs.toggleFavorite}
-        isModuleVisible={isAllowed}
+        isModuleVisible={canSeeModule}
       />
     </>
   );

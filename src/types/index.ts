@@ -20,6 +20,9 @@ export type SapModule =
 
 export type ModuleStatus = "available" | "coming_soon" | "restricted";
 
+/** Grupos del sidebar — cada uno tiene un header. Grupos sin items visibles se ocultan. */
+export type ModuleGroup = "operacion" | "visualizaciones" | "ams_avanzado" | "sistema";
+
 export interface ModuleDef {
   id: string;
   label: string;
@@ -28,7 +31,21 @@ export interface ModuleDef {
   description: string;
   status: ModuleStatus;
   phase: number;
+  /** Legacy — fallback si permissionKey no está. Para retrocompat. */
   rolesAllowed: Role[];
+  /**
+   * Screen RBAC asociada — fuente única de verdad de permisos.
+   * Si NO se setea → módulo se oculta por default (fail-closed).
+   * El sidebar consulta hasPermission(user, permissionKey, "view").
+   */
+  permissionKey?: import("./rbac").PlatformScreen;
+  /** Grupo donde aparece en el sidebar. Default "ams_avanzado". */
+  group?: ModuleGroup;
+  /**
+   * Si true, el módulo se muestra sin chequeo de permisos (welcome, settings).
+   * Use con cuidado — anula fail-closed.
+   */
+  public?: boolean;
 }
 
 export type ConfidenceLevel = "baja" | "media" | "alta" | "no_detectada";

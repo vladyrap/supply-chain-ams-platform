@@ -6,15 +6,17 @@ import UserManagement from "./UserManagement";
 import RoleManagement from "./RoleManagement";
 import PermissionMatrix from "./PermissionMatrix";
 import AccessPreview from "./AccessPreview";
+import RbacAuditLogPanel from "./RbacAuditLogPanel";
 import { ALL_SCREENS, ALL_ACTIONS } from "@/types/rbac";
 
-type Tab = "users" | "roles" | "matrix" | "preview";
+type Tab = "users" | "roles" | "matrix" | "preview" | "audit";
 
 const TABS: { id: Tab; label: string; icon: string }[] = [
   { id: "users",   label: "Usuarios",            icon: "👥" },
   { id: "roles",   label: "Roles",               icon: "🧩" },
   { id: "matrix",  label: "Matriz de permisos",  icon: "🔐" },
   { id: "preview", label: "Vista previa",        icon: "👁" },
+  { id: "audit",   label: "Log de auditoría",    icon: "📜" },
 ];
 
 export default function AdminAccessPanel() {
@@ -81,6 +83,7 @@ export default function AdminAccessPanel() {
         {tab === "roles"   && <RoleManagement   admin={admin} />}
         {tab === "matrix"  && <PermissionMatrix admin={admin} />}
         {tab === "preview" && <AccessPreview    admin={admin} />}
+        {tab === "audit"   && <RbacAuditLogPanel />}
       </div>
 
       <div className="alert info" style={{ marginTop: 18, fontSize: 12 }}>

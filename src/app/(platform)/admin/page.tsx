@@ -1,21 +1,19 @@
 "use client";
 
-import { useAuth } from "@/context/AuthContext";
-import AccessLockedCard from "@/components/admin/AccessLockedCard";
+import RequirePermission from "@/components/admin/RequirePermission";
 import AdminAccessPanel from "@/components/admin/AdminAccessPanel";
 
 export default function AdminPage() {
-  const { user, loading } = useAuth();
-
-  if (loading) {
-    return <div style={{ padding: 30, color: "var(--text-dim)" }}>cargando…</div>;
-  }
-
-  // Esta sección solo es para admins reales del backend (acceso al panel).
-  // Dentro del panel se simulan usuarios demo con localStorage para preview.
-  if (user && user.role !== "admin") {
-    return <AccessLockedCard screen="administracion" reason="Esta sección requiere rol admin del backend." />;
-  }
-
-  return <AdminAccessPanel />;
+  // El panel de administración requiere permiso "configure" sobre
+  // la screen "administracion" — sólo ADMIN por default. Usamos
+  // RequirePermission para registrar también UNAUTHORIZED_ROUTE_ACCESS_ATTEMPT.
+  return (
+    <RequirePermission
+      screen="administracion"
+      action="configure"
+      reason="Esta sección requiere rol con permiso de configuración sobre administración."
+    >
+      <AdminAccessPanel />
+    </RequirePermission>
+  );
 }

@@ -12,6 +12,7 @@ import StackedLine from "@/components/charts/StackedLine";
 import { fetchAdvanced, type DashboardAdvanced } from "@/services/dashboard.api";
 import { usePlatform } from "@/context/PlatformContext";
 import { useAuth } from "@/context/AuthContext";
+import { usePermissions } from "@/hooks/usePermissions";
 import { ROLES } from "@/lib/roles";
 import { usePlaybooks } from "@/hooks/usePlaybooks";
 import { useDocumentFactory } from "@/hooks/useDocumentFactory";
@@ -48,6 +49,7 @@ function colorForModule(k: string): string {
 export default function DashboardPage() {
   const { role, client, environment } = usePlatform();
   const { user } = useAuth();
+  const { can } = usePermissions();
   const roleDef = ROLES.find((r) => r.id === role);
   const [d, setD] = useState<DashboardAdvanced | null>(null);
   const [loading, setLoading] = useState(true);
@@ -405,9 +407,15 @@ export default function DashboardPage() {
       </div>
 
       <div className="row" style={{ gap: 10, flexWrap: "wrap" }}>
-        <Link href="/agent" className="btn primary">🤖 Agente AMS</Link>
-        <Link href="/support-desk" className="btn">📞 Mesa de Soporte</Link>
-        <Link href="/history" className="btn">📜 Historial</Link>
+        {can("agente_ams", "view") && (
+          <Link href="/agent" className="btn primary">🤖 Agente AMS</Link>
+        )}
+        {can("servicios", "view") && (
+          <Link href="/support-desk" className="btn">📞 Mesa de Soporte</Link>
+        )}
+        {can("incidentes", "view") && (
+          <Link href="/history" className="btn">📜 Historial</Link>
+        )}
       </div>
 
       <footer className="foot">AMS Platform · 12 módulos activos · sin conexión real a SAP</footer>

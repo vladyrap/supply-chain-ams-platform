@@ -8,9 +8,11 @@ import {
 import {
   buildDefaultRoles, buildDefaultUsers, getRoleByCode,
   normalizeRoleCode, suggestDuplicatedCode, validateRoleCode,
-  migrateRolesAddingMissingScreens,
+  migrateRolesAddingMissingScreens, legacyRoleToCode,
 } from "@/utils/rbac";
 import * as rbacApi from "@/services/rbac.api";
+import { useAuth } from "@/context/AuthContext";
+import { appendRbacAuditEvent } from "@/lib/rbac-audit";
 
 const log = {
   debug: (...a: unknown[]) => { if (process.env.NODE_ENV !== "production") console.debug("[rbac]", ...a); },
@@ -97,10 +99,22 @@ export interface UseAccessAdmin {
 }
 
 export function useAccessAdmin(): UseAccessAdmin {
+  const { user: authUser } = useAuth();
   const [roles, setRoles]               = useState<PlatformRole[]>([]);
   const [users, setUsers]               = useState<PlatformUser[]>([]);
   const [currentUserId, setCurrentUId]  = useState<string | null>(null);
   const [loading, setLoading]           = useState(true);
+
+  // Resuelve quién está realizando la mutación RBAC (siempre el user real
+  // autenticado, NUNCA el simulado, para que la auditoría refleje al
+  // operador humano detrás del cambio).
+  const actorIdentity = useMemo(() => {
+    if (!authUser) return { actor: "system", actorRoleCode: undefined };
+    return {
+      actor: authUser.email || authUser.name || authUser.id,
+      actorRoleCode: legacyRoleToCode(authUser.role),
+    };
+  }, [authUser]);
 
   // Load on mount (offline-first: localStorage primero, después hidratar desde backend)
   useEffect(() => {
@@ -145,8 +159,15 @@ export function useAccessAdmin(): UseAccessAdmin {
       return next;
     });
     fireSync(rbacApi.upsertRole(fresh));
+    appendRbacAuditEvent({
+      eventType: "ROLE_CREATED",
+      actor: actorIdentity.actor,
+      actorRoleCode: actorIdentity.actorRoleCode,
+      subject: fresh.code,
+      metadata: { roleId: fresh.id, roleName: fresh.name },
+    });
     return { ok: true, role: fresh };
-  }, [roles]);
+  }, [roles, actorIdentity]);
 
   const updateRole: UseAccessAdmin["updateRole"] = useCallback((id, patch) => {
     const target = roles.find((r) => r.id === id);
@@ -201,8 +222,15 @@ export function useAccessAdmin(): UseAccessAdmin {
       return next;
     });
     fireSync(rbacApi.deleteRole(id));
+    appendRbacAuditEvent({
+      eventType: "ROLE_DELETED",
+      actor: actorIdentity.actor,
+      actorRoleCode: actorIdentity.actorRoleCode,
+      subject: target.code,
+      metadata: { roleId: target.id, roleName: target.name },
+    });
     return { ok: true };
-  }, [roles, users]);
+  }, [roles, users, actorIdentity]);
 
   const duplicateRole: UseAccessAdmin["duplicateRole"] = useCallback((id) => {
     const target = roles.find((r) => r.id === id);
@@ -229,9 +257,11 @@ export function useAccessAdmin(): UseAccessAdmin {
   const togglePermission: UseAccessAdmin["togglePermission"] = useCallback((roleId, screen, action) => {
     setRoles((rs) => {
       let updated: PlatformRole | null = null;
+      let previousValue: boolean | undefined = undefined;
       const next = rs.map((r) => {
         if (r.id !== roleId) return r;
         const screenPerm = r.permissions[screen];
+        previousValue = screenPerm[action];
         updated = {
           ...r,
           updatedAt: now(),
@@ -243,24 +273,61 @@ export function useAccessAdmin(): UseAccessAdmin {
         return updated;
       });
       persistRoles(next);
-      if (updated) fireSync(rbacApi.upsertRole(updated));
+      if (updated) {
+        fireSync(rbacApi.upsertRole(updated));
+        const u = updated as PlatformRole;
+        appendRbacAuditEvent({
+          eventType: "ROLE_PERMISSIONS_UPDATED",
+          actor: actorIdentity.actor,
+          actorRoleCode: actorIdentity.actorRoleCode,
+          subject: u.code,
+          screen,
+          action,
+          metadata: {
+            roleId: u.id,
+            roleName: u.name,
+            from: previousValue,
+            to: !previousValue,
+            change: "toggle",
+          },
+        });
+      }
       return next;
     });
-  }, []);
+  }, [actorIdentity]);
 
   const setRolePermissions: UseAccessAdmin["setRolePermissions"] = useCallback((roleId, screen, perm) => {
     setRoles((rs) => {
       let updated: PlatformRole | null = null;
+      let previousPerm: RolePermission | undefined = undefined;
       const next = rs.map((r) => {
         if (r.id !== roleId) return r;
+        previousPerm = r.permissions[screen];
         updated = { ...r, updatedAt: now(), permissions: { ...r.permissions, [screen]: { ...perm } } };
         return updated;
       });
       persistRoles(next);
-      if (updated) fireSync(rbacApi.upsertRole(updated));
+      if (updated) {
+        fireSync(rbacApi.upsertRole(updated));
+        const u = updated as PlatformRole;
+        appendRbacAuditEvent({
+          eventType: "ROLE_PERMISSIONS_UPDATED",
+          actor: actorIdentity.actor,
+          actorRoleCode: actorIdentity.actorRoleCode,
+          subject: u.code,
+          screen,
+          metadata: {
+            roleId: u.id,
+            roleName: u.name,
+            from: previousPerm,
+            to: perm,
+            change: "bulk_set",
+          },
+        });
+      }
       return next;
     });
-  }, []);
+  }, [actorIdentity]);
 
   // -------- users --------
   const createUser: UseAccessAdmin["createUser"] = useCallback((input) => {
@@ -306,8 +373,22 @@ export function useAccessAdmin(): UseAccessAdmin {
       return next;
     });
     fireSync(rbacApi.upsertUser(updated));
+    // Audit USER_ROLE_CHANGED si cambió el roleCode
+    if (patch.roleCode && patch.roleCode !== target.roleCode) {
+      appendRbacAuditEvent({
+        eventType: "USER_ROLE_CHANGED",
+        actor: actorIdentity.actor,
+        actorRoleCode: actorIdentity.actorRoleCode,
+        subject: updated.email || updated.id,
+        metadata: {
+          userId: updated.id,
+          from: target.roleCode,
+          to: updated.roleCode,
+        },
+      });
+    }
     return { ok: true, user: updated };
-  }, [users, roles]);
+  }, [users, roles, actorIdentity]);
 
   const deleteUser: UseAccessAdmin["deleteUser"] = useCallback((id) => {
     if (!users.find((u) => u.id === id)) return { ok: false, error: "Usuario no encontrado." };
@@ -341,7 +422,27 @@ export function useAccessAdmin(): UseAccessAdmin {
   const setCurrentUser: UseAccessAdmin["setCurrentUser"] = useCallback((id) => {
     setCurrentUId(id);
     persistCurrent(id);
-  }, []);
+    if (id) {
+      const target = users.find((u) => u.id === id);
+      appendRbacAuditEvent({
+        eventType: "RBAC_OVERRIDE_ACTIVATED",
+        actor: actorIdentity.actor,
+        actorRoleCode: actorIdentity.actorRoleCode,
+        subject: target?.email || id,
+        metadata: {
+          simulatedUserId: id,
+          simulatedRoleCode: target?.roleCode,
+          simulatedName: target?.name,
+        },
+      });
+    } else {
+      appendRbacAuditEvent({
+        eventType: "RBAC_OVERRIDE_CLEARED",
+        actor: actorIdentity.actor,
+        actorRoleCode: actorIdentity.actorRoleCode,
+      });
+    }
+  }, [users, actorIdentity]);
 
   // -------- reset --------
   const resetDemoData: UseAccessAdmin["resetDemoData"] = useCallback(() => {
