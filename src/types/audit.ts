@@ -75,7 +75,12 @@ export type TicketAuditEventType =
   // TCC v0.12 — edición y cambios críticos de campos
   | "TICKET_EDITED"
   | "TICKET_CRITICAL_FIELDS_CHANGED"
-  | "TICKET_ANALYSIS_HASH_CHANGED";
+  | "TICKET_ANALYSIS_HASH_CHANGED"
+  // Gemini Governance v0.13
+  | "GEMINI_CALL_STARTED"
+  | "GEMINI_CALL_COMPLETED"
+  | "GEMINI_CALL_FAILED"
+  | "GEMINI_FALLBACK_USED";
 
 export interface TicketAuditEvent {
   id: string;
@@ -162,6 +167,10 @@ export const EVENT_LABELS: Record<TicketAuditEventType, string> = {
   TICKET_EDITED:                       "Ticket editado",
   TICKET_CRITICAL_FIELDS_CHANGED:      "Campos críticos modificados",
   TICKET_ANALYSIS_HASH_CHANGED:        "Hash de análisis cambió",
+  GEMINI_CALL_STARTED:                 "Gemini · llamada iniciada",
+  GEMINI_CALL_COMPLETED:               "Gemini · llamada completada",
+  GEMINI_CALL_FAILED:                  "Gemini · llamada falló",
+  GEMINI_FALLBACK_USED:                "Gemini · fallback determinístico",
 };
 
 export const EVENT_ICONS: Record<TicketAuditEventType, string> = {
@@ -230,6 +239,10 @@ export const EVENT_ICONS: Record<TicketAuditEventType, string> = {
   TICKET_EDITED:                       "✎",
   TICKET_CRITICAL_FIELDS_CHANGED:      "⚠",
   TICKET_ANALYSIS_HASH_CHANGED:        "#",
+  GEMINI_CALL_STARTED:                 "▶",
+  GEMINI_CALL_COMPLETED:               "✓",
+  GEMINI_CALL_FAILED:                  "✕",
+  GEMINI_FALLBACK_USED:                "⤺",
 };
 
 export const EVENT_COLORS: Record<TicketAuditEventType, string> = {
@@ -298,4 +311,8 @@ export const EVENT_COLORS: Record<TicketAuditEventType, string> = {
   TICKET_EDITED:                       "#22d3ee",
   TICKET_CRITICAL_FIELDS_CHANGED:      "#f59e0b",
   TICKET_ANALYSIS_HASH_CHANGED:        "#a855f7",
+  GEMINI_CALL_STARTED:                 "#64748b",
+  GEMINI_CALL_COMPLETED:               "#10b981",
+  GEMINI_CALL_FAILED:                  "#ef4444",
+  GEMINI_FALLBACK_USED:                "#f59e0b",
 };
