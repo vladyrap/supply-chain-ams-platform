@@ -5,6 +5,7 @@ import Badge from "@/components/ui/Badge";
 import MarkdownView from "@/components/agent/MarkdownView";
 import { listTickets, getProviderStatus, type Ticket } from "@/services/tickets.api";
 import CreateTicketModal from "@/components/tickets/CreateTicketModal";
+import GuidedTicketIntakeModal from "@/components/tickets/GuidedTicketIntakeModal";
 import TicketEstimateBadge from "@/components/estimation/TicketEstimateBadge";
 import TicketCommandCenter from "@/components/tickets/TicketCommandCenter";
 import GuidedAmsDemo from "@/components/demo/GuidedAmsDemo";
@@ -34,6 +35,7 @@ export default function TicketsPage() {
   const [error, setError] = useState<string | null>(null);
   const [selectedKey, setSelectedKey] = useState<string | null>(null);
   const [createOpen, setCreateOpen] = useState(false);
+  const [guidedOpen, setGuidedOpen] = useState(false);
   const [createdMsg, setCreatedMsg] = useState<string | null>(null);
   const [demoOpen, setDemoOpen] = useState(false);
 
@@ -91,8 +93,20 @@ export default function TicketsPage() {
             >
               🎬 Ejecutar demo completa
             </button>
-            <button className="btn primary" onClick={() => setCreateOpen(true)}>
-              ＋ Crear ticket
+            <button
+              className="btn primary"
+              onClick={() => setGuidedOpen(true)}
+              title="Wizard guiado de 6 pasos · prepara paquete N1 automáticamente (recomendado)"
+              style={{ background: "linear-gradient(135deg, #10b981, #22d3ee)", borderColor: "#10b981" }}
+            >
+              🧭 Crear ticket guiado
+            </button>
+            <button
+              className="btn ghost"
+              onClick={() => setCreateOpen(true)}
+              title="Formulario rápido (1 paso) — para usuarios que ya saben qué información dar"
+            >
+              ＋ Crear rápido
             </button>
             <button className="btn ghost" onClick={refresh} disabled={loading}>
               {loading ? <><span className="spinner" /> cargando</> : "↻ Refrescar"}
@@ -192,6 +206,23 @@ export default function TicketsPage() {
       {demoOpen && (
         <GuidedAmsDemo onClose={() => { setDemoOpen(false); refresh(); }} />
       )}
+
+      <GuidedTicketIntakeModal
+        open={guidedOpen}
+        defaultReporter={authUser?.name || authUser?.email || null}
+        onClose={() => setGuidedOpen(false)}
+        onCreated={(t, opts) => {
+          setGuidedOpen(false);
+          setTickets((cur) => [t, ...cur]);
+          setSelectedKey(t.key);
+          const tag = opts.waitingInformation
+            ? ` · ⏳ Espera información`
+            : ` · ✓ Listo para resolución N1`;
+          setCreatedMsg(`✓ Ticket ${t.key} creado vía intake guiado${tag}.`);
+          setTimeout(() => setCreatedMsg(null), 8000);
+          refresh();
+        }}
+      />
     </div>
   );
 }

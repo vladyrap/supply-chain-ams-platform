@@ -65,6 +65,8 @@ import PlaybookQuickAction from "@/components/playbooks/PlaybookQuickAction";
 import { ticketToIncidentLike } from "@/utils/ticket-to-incident-adapter";
 // DH v0.9 — Intelligence Core unificado
 import { analyzeTicket } from "@/intelligence/core";
+// GTI v0.9.1 — Paquete N1 del Guided Ticket Intake
+import N1PackageSection from "./N1PackageSection";
 import AmsIntelligenceSummaryCard from "@/components/intelligence/AmsIntelligenceSummaryCard";
 
 // --------------------------------------------------------------------
@@ -910,6 +912,40 @@ export default function TicketCommandCenter({ ticket, onTicketUpdated }: Props) 
         />
         <TicketReadinessScore ticket={ticket} />
       </div>
+
+      {/* GTI v0.9.1 — Paquete N1 (resolución guiada) */}
+      <N1PackageSection
+        ticket={ticket}
+        intakeDraft={null}
+        actor={actor}
+        onResolveN1={(note) => {
+          audit.record({
+            ticketId: ticket.key,
+            eventType: "TICKET_RESOLVED_BY_N1",
+            title: "Ticket resuelto en N1",
+            description: note.slice(0, 200),
+            actor, actorRole, source: "ui",
+            metadata: { note },
+          });
+          notify("✓ Ticket resuelto en N1 (registrado en auditoría)");
+        }}
+        onEscalateWithPackage={(payload) => {
+          audit.record({
+            ticketId: ticket.key,
+            eventType: "TICKET_ESCALATED_TO_N2_WITH_PACKAGE",
+            title: `Escalado a N2 con paquete · ${payload.primaryEscalationCriterion}`,
+            description: payload.escalationReason.slice(0, 200),
+            actor, actorRole, source: "ui",
+            metadata: {
+              criterion: payload.primaryEscalationCriterion,
+              actionsTaken: payload.n1ActionsTaken.length,
+              eta: payload.suggestedEta,
+              priority: payload.priority,
+            },
+          });
+          notify(`🚀 Escalado a N2 con paquete completo (${payload.n1ActionsTaken.length} acciones registradas)`);
+        }}
+      />
 
       {/* Sección 1: Resumen / descripción */}
       <Section id="section-summary" title="RESUMEN" icon="📝" accent="#22d3ee">

@@ -44,7 +44,17 @@ export type TicketAuditEventType =
   | "KB_CURATION_CANDIDATE_PROPOSED"
   | "KB_CURATION_APPROVED"
   | "KB_CURATION_REJECTED"
-  | "KB_CURATION_PUBLISHED";
+  | "KB_CURATION_PUBLISHED"
+  // Guided Ticket Intake (v0.9.1)
+  | "GUIDED_TICKET_INTAKE_STARTED"
+  | "GUIDED_TICKET_INTAKE_COMPLETED"
+  | "TICKET_READINESS_CALCULATED"
+  | "TICKET_CREATED_WITH_N1_PACKAGE"
+  | "TICKET_CREATED_WAITING_INFORMATION"
+  | "N1_CHECKLIST_GENERATED"
+  | "N1_CHECKLIST_COMPLETED"
+  | "TICKET_RESOLVED_BY_N1"
+  | "TICKET_ESCALATED_TO_N2_WITH_PACKAGE";
 
 export interface TicketAuditEvent {
   id: string;
@@ -102,6 +112,16 @@ export const EVENT_LABELS: Record<TicketAuditEventType, string> = {
   KB_CURATION_APPROVED: "Candidato KB aprobado",
   KB_CURATION_REJECTED: "Candidato KB rechazado",
   KB_CURATION_PUBLISHED: "KB publicado desde curación",
+  // Guided Ticket Intake v0.9.1
+  GUIDED_TICKET_INTAKE_STARTED:        "Intake guiado iniciado",
+  GUIDED_TICKET_INTAKE_COMPLETED:      "Intake guiado completado",
+  TICKET_READINESS_CALCULATED:         "Readiness calculado",
+  TICKET_CREATED_WITH_N1_PACKAGE:      "Ticket creado con paquete N1",
+  TICKET_CREATED_WAITING_INFORMATION:  "Ticket creado · espera info",
+  N1_CHECKLIST_GENERATED:              "Checklist N1 generado",
+  N1_CHECKLIST_COMPLETED:              "Checklist N1 completado",
+  TICKET_RESOLVED_BY_N1:               "Resuelto por N1",
+  TICKET_ESCALATED_TO_N2_WITH_PACKAGE: "Escalado a N2 con paquete",
 };
 
 export const EVENT_ICONS: Record<TicketAuditEventType, string> = {
@@ -143,6 +163,15 @@ export const EVENT_ICONS: Record<TicketAuditEventType, string> = {
   KB_CURATION_APPROVED: "✅",
   KB_CURATION_REJECTED: "✕",
   KB_CURATION_PUBLISHED: "📚",
+  GUIDED_TICKET_INTAKE_STARTED:        "🧭",
+  GUIDED_TICKET_INTAKE_COMPLETED:      "🎯",
+  TICKET_READINESS_CALCULATED:         "📊",
+  TICKET_CREATED_WITH_N1_PACKAGE:      "📦",
+  TICKET_CREATED_WAITING_INFORMATION:  "⏳",
+  N1_CHECKLIST_GENERATED:              "📝",
+  N1_CHECKLIST_COMPLETED:              "✅",
+  TICKET_RESOLVED_BY_N1:               "🟢",
+  TICKET_ESCALATED_TO_N2_WITH_PACKAGE: "🚀",
 };
 
 export const EVENT_COLORS: Record<TicketAuditEventType, string> = {
@@ -184,4 +213,13 @@ export const EVENT_COLORS: Record<TicketAuditEventType, string> = {
   KB_CURATION_APPROVED: "#10b981",
   KB_CURATION_REJECTED: "#ef4444",
   KB_CURATION_PUBLISHED: "#a855f7",
+  GUIDED_TICKET_INTAKE_STARTED:        "#22d3ee",
+  GUIDED_TICKET_INTAKE_COMPLETED:      "#10b981",
+  TICKET_READINESS_CALCULATED:         "#a855f7",
+  TICKET_CREATED_WITH_N1_PACKAGE:      "#10b981",
+  TICKET_CREATED_WAITING_INFORMATION:  "#fbbf24",
+  N1_CHECKLIST_GENERATED:              "#22d3ee",
+  N1_CHECKLIST_COMPLETED:              "#10b981",
+  TICKET_RESOLVED_BY_N1:               "#10b981",
+  TICKET_ESCALATED_TO_N2_WITH_PACKAGE: "#ef4444",
 };
