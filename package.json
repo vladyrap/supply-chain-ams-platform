@@ -7,7 +7,10 @@
     "build": "next build",
     "start": "next start -p 3000",
     "lint": "next lint",
-    "typecheck": "tsc --noEmit"
+    "typecheck": "tsc --noEmit",
+    "test:smoke": "tsx scripts/smoke-rbac-coverage.ts && tsx scripts/smoke-tcc-happy-path.ts",
+    "test:smoke:coverage": "tsx scripts/smoke-rbac-coverage.ts",
+    "test:smoke:engines": "tsx scripts/smoke-tcc-happy-path.ts"
   },
   "dependencies": {
     "@sentry/nextjs": "^7.120.4",
@@ -23,6 +26,7 @@
     "@types/react": "18.3.12",
     "@types/react-dom": "18.3.1",
     "@types/three": "^0.169.0",
+    "tsx": "^4.19.2",
     "typescript": "5.6.3"
   }
 }

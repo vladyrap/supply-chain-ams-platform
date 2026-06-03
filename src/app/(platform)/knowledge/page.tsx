@@ -10,6 +10,7 @@ import {
   type KnowledgeDocument, type KnowledgeStats, type KnowledgeChunk, type RagSearchHit,
 } from "@/services/knowledge.api";
 import type { SapModule } from "@/types";
+import RequirePermission from "@/components/admin/RequirePermission";
 
 type Tab = "docs" | "playground" | "quick";
 
@@ -62,7 +63,7 @@ function fileToBase64(file: File): Promise<string> {
   });
 }
 
-export default function KnowledgePage() {
+function KnowledgePageInner() {
   const [tab, setTab] = useState<Tab>("docs");
   const [stats, setStats] = useState<KnowledgeStats | null>(null);
   const [docs, setDocs] = useState<KnowledgeDocument[]>([]);
@@ -796,5 +797,14 @@ function ChunksModal({ data, onClose }: {
         </div>
       </div>
     </div>
+  );
+}
+
+
+export default function KnowledgePage() {
+  return (
+    <RequirePermission screen="conocimiento_rag" action="view">
+      <KnowledgePageInner />
+    </RequirePermission>
   );
 }

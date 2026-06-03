@@ -63,6 +63,9 @@ import QualityQuickAction from "@/components/quality/QualityQuickAction";
 import QualityEvaluationsCard from "@/components/quality/QualityEvaluationsCard";
 import PlaybookQuickAction from "@/components/playbooks/PlaybookQuickAction";
 import { ticketToIncidentLike } from "@/utils/ticket-to-incident-adapter";
+// DH v0.9 — Intelligence Core unificado
+import { analyzeTicket } from "@/intelligence/core";
+import AmsIntelligenceSummaryCard from "@/components/intelligence/AmsIntelligenceSummaryCard";
 
 // --------------------------------------------------------------------
 // Sección colapsable
@@ -877,6 +880,26 @@ export default function TicketCommandCenter({ ticket, onTicketUpdated }: Props) 
           onConfirm={handleCloseTicket}
         />
       )}
+
+      {/* DH v0.9 — Intelligence Summary Card (orquestador unificado) */}
+      <AmsIntelligenceSummaryCard
+        analysis={useMemo(() => analyzeTicket(ticket, {
+          hasKnowledgeMatch: ticketKnowledge.length > 0,
+          hasPlaybook: ticketPlaybooks.length > 0,
+          playbookTitle: ticketPlaybooks[0]?.title,
+          hasScopeItem: scopeItems.length > 0,
+          scopeItemIds: scopeItems.map((s) => s.code),
+          hasErrorEvidence: (ticket.description || "").length > 80,
+          hasVisualEvidence: !!(ticket.visualEvidenceNotes && ticket.visualEvidenceNotes.length > 0),
+          hasEscalationN2: ticketEscalations.length > 0,
+          escalationKey: ticketEscalations[0]?.escalationNumber,
+          similarPastTicketsCount,
+          hasReusableResolution: similarPastTicketsCount > 0 && ticketKnowledge.length > 0,
+          daysSinceLastUpdate,
+          isProductive: (ticket.environment || "").toUpperCase() === "PRD",
+          actor,
+        }), [ticket, ticketKnowledge.length, ticketPlaybooks, scopeItems, ticketEscalations, similarPastTicketsCount, daysSinceLastUpdate, actor])}
+      />
 
       {/* Top: NBA + Readiness Score lado a lado */}
       <div style={{ display: "grid", gridTemplateColumns: "1.4fr 1fr", gap: 10 }}>

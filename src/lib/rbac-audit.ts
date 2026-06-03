@@ -64,13 +64,12 @@ export function appendRbacAuditEvent(
     createdAt: new Date().toISOString(),
   };
   if (typeof window === "undefined") return full;
+  // 1) Mirror local SIEMPRE (offline-friendly)
   try {
     const events = readRbacAuditEvents();
     events.unshift(full);
-    // Trim si excede MAX_EVENTS
     const trimmed = events.slice(0, MAX_EVENTS);
     localStorage.setItem(RBAC_AUDIT_STORAGE, JSON.stringify(trimmed));
-    // Telemetría dev — útil para inspección en consola
     if (process.env.NODE_ENV !== "production") {
       // eslint-disable-next-line no-console
       console.info("[rbac-audit]", full.eventType, full);
@@ -78,6 +77,29 @@ export function appendRbacAuditEvent(
   } catch {
     /* ignore quota errors */
   }
+  // 2) Backend best-effort (DH v0.9) — no bloquea retorno
+  // Dynamic import para evitar dependencia circular y mantener este archivo
+  // utilizable desde tests/SSR sin tocar la red.
+  void import("@/services/audit-events.api")
+    .then(({ recordEventRemote }) => recordEventRemote({
+      eventType: event.eventType,
+      category: "rbac",
+      severity: event.eventType === "UNAUTHORIZED_ROUTE_ACCESS_ATTEMPT" ? "warning" : "info",
+      source: "ui",
+      ticketId: null,
+      actorName: event.actor,
+      actorRole: event.actorRoleCode,
+      payload: {
+        subject: event.subject,
+        screen: event.screen,
+        action: event.action,
+        route: event.route,
+        ...(event.metadata ?? {}),
+      },
+    }))
+    .catch(() => {
+      // Backend offline → ya quedó en local. No hacemos nada.
+    });
   return full;
 }
 

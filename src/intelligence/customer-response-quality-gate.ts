@@ -452,6 +452,68 @@ function buildSuggestions(issues: QualityIssue[]): string[] {
 // API pública
 // ============================================================
 
+// ============================================================
+// DH v0.9 — Reglas adicionales (hardening Customer Response)
+// ============================================================
+
+/** Rule 16: Workaround debe marcarse explícitamente como temporal. */
+function ruleWorkaroundNotMarkedTemporary(
+  resp: QualityInputResponse, ctx: QualityContext,
+): QualityIssue | null {
+  if (ctx.responseType !== "WORKAROUND") return null;
+  // Buscar señales de "temporal" / "provisional" / "mientras tanto"
+  const hasTemporaryFlag = /\b(temporal(?:mente)?|provisional|mientras tanto|hasta que|solución parche|workaround temporal)\b/i.test(resp.body);
+  if (!hasTemporaryFlag) {
+    return {
+      ruleId: "workaround_not_marked_temporary",
+      severity: "warn",
+      message: "Tipo WORKAROUND debe indicar explícitamente que es una solución temporal.",
+      suggestedFix: 'Agregar frase como "Esta es una solución temporal mientras trabajamos en la corrección definitiva."',
+    };
+  }
+  return null;
+}
+
+/** Rule 17: RCA preliminar debe llevar disclaimer "preliminar" / "sujeto a validación". */
+function ruleRcaPreliminaryMissingDisclaimer(
+  resp: QualityInputResponse, ctx: QualityContext,
+): QualityIssue | null {
+  if (ctx.responseType !== "RCA_PRELIMINARY") return null;
+  const hasDisclaimer = /\b(preliminar|sujeto a validaci[oó]n|pendiente de confirmaci[oó]n|hip[oó]tesis|análisis inicial)\b/i.test(resp.body);
+  if (!hasDisclaimer) {
+    return {
+      ruleId: "rca_preliminary_missing_disclaimer",
+      severity: "warn",
+      message: "RCA preliminar debe declararse explícitamente como tal, no como conclusión definitiva.",
+      suggestedFix: 'Agregar "Análisis preliminar — sujeto a validación" al inicio del bloque RCA.',
+    };
+  }
+  return null;
+}
+
+/** Rule 18: Closure debe incluir acción, validación y recomendación preventiva. */
+function ruleClosureMissingPreventionOrValidation(
+  resp: QualityInputResponse, ctx: QualityContext,
+): QualityIssue | null {
+  if (ctx.responseType !== "CLOSURE") return null;
+  const hasValidation = /\b(validad[ao]|verificad[ao]|confirmad[ao]|prob[ae]?d[ao])\b/i.test(resp.body)
+    || ctx.context.validationSummary;
+  const hasPrevention = /\b(prevenc[ií]ón|para evitar|recomend(?:ación|amos)|en el futuro|a futuro)\b/i.test(resp.body)
+    || ctx.context.preventionRecommendation;
+  if (!hasValidation || !hasPrevention) {
+    const missing: string[] = [];
+    if (!hasValidation) missing.push("validación documentada");
+    if (!hasPrevention) missing.push("recomendación preventiva");
+    return {
+      ruleId: "closure_missing_prevention_or_validation",
+      severity: "warn",
+      message: `Cierre debería incluir ${missing.join(" y ")}.`,
+      suggestedFix: "Completar con qué se validó después del fix + una recomendación para evitar recurrencia.",
+    };
+  }
+  return null;
+}
+
 const ALL_RULES = [
   ruleClaimRootCauseLowConfidence,
   ruleClaimResolvedNoEvidence,
@@ -469,6 +531,10 @@ const ALL_RULES = [
   ruleExcessiveJargon,
   ruleNoConfidenceDisclosure,
   ruleSubjectMissingTicketKey,
+  // DH v0.9 — hardening
+  ruleWorkaroundNotMarkedTemporary,
+  ruleRcaPreliminaryMissingDisclaimer,
+  ruleClosureMissingPreventionOrValidation,
 ];
 
 /**

@@ -12,6 +12,7 @@ import {
   type DestinationConfig,
   type SapAdapter,
 } from "@/services/integrations.api";
+import RequirePermission from "@/components/admin/RequirePermission";
 
 type Tab = "destinations" | "deliveries" | "events";
 
@@ -38,7 +39,7 @@ const SAP_ADAPTER_HINT: Record<SapAdapter, string> = {
   solman:       "POST SOAP a Service Desk Web Service. Body por defecto: <CreateNotification/>. SOAPAction configurable en headers.",
 };
 
-export default function IntegrationsPage() {
+function IntegrationsPageInner() {
   const toast = useToast();
   const [tab, setTab] = useState<Tab>("destinations");
 
@@ -602,5 +603,14 @@ export default function IntegrationsPage() {
         </div>
       )}
     </div>
+  );
+}
+
+
+export default function IntegrationsPage() {
+  return (
+    <RequirePermission screen="integraciones" action="view">
+      <IntegrationsPageInner />
+    </RequirePermission>
   );
 }

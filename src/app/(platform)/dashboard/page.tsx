@@ -26,6 +26,7 @@ import { listIncidents, type IncidentSummary } from "@/services/agent.api";
 import { listTickets, type Ticket } from "@/services/tickets.api";
 import { calculateBusinessValue } from "@/utils/business-value-engine";
 import AgentReadinessCenter from "@/components/readiness/AgentReadinessCenter";
+import RequirePermission from "@/components/admin/RequirePermission";
 
 const MODULE_COLORS: Record<string, string> = {
   MM: "#5b8def", SD: "#c780f0", PP: "#4dd0c5", WM: "#f0b66c",
@@ -46,7 +47,7 @@ function colorForModule(k: string): string {
   return MODULE_COLORS[k] ?? "#5b8def";
 }
 
-export default function DashboardPage() {
+function DashboardPageInner() {
   const { role, client, environment } = usePlatform();
   const { user } = useAuth();
   const { can } = usePermissions();
@@ -420,5 +421,14 @@ export default function DashboardPage() {
 
       <footer className="foot">AMS Platform · 12 módulos activos · sin conexión real a SAP</footer>
     </div>
+  );
+}
+
+
+export default function DashboardPage() {
+  return (
+    <RequirePermission screen="dashboard" action="view">
+      <DashboardPageInner />
+    </RequirePermission>
   );
 }

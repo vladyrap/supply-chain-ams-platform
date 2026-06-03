@@ -5,6 +5,7 @@ import Badge from "@/components/ui/Badge";
 import KPI from "@/components/ui/KPI";
 import BarList from "@/components/ui/BarList";
 import { fetchExecutive, fetchUsage, type DashboardExecutive, type UsageSummary } from "@/services/dashboard.api";
+import RequirePermission from "@/components/admin/RequirePermission";
 
 const RANGE_OPTIONS: { label: string; days: number }[] = [
   { label: "7d",   days: 7 },
@@ -33,7 +34,7 @@ function fmtMins(m: number): string {
   return `${Math.round(h / 24)} d`;
 }
 
-export default function ExecutivePage() {
+function ExecutivePageInner() {
   const [data, setData] = useState<DashboardExecutive | null>(null);
   const [usage, setUsage] = useState<UsageSummary | null>(null);
   const [days, setDays] = useState(30);
@@ -259,5 +260,14 @@ export default function ExecutivePage() {
         </Badge>
       </div>
     </div>
+  );
+}
+
+
+export default function ExecutivePage() {
+  return (
+    <RequirePermission screen="reportes" action="view">
+      <ExecutivePageInner />
+    </RequirePermission>
   );
 }

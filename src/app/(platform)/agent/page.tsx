@@ -3,8 +3,9 @@
 import Link from "next/link";
 import ChatPanel from "@/components/agent/ChatPanel";
 import Badge from "@/components/ui/Badge";
+import RequirePermission from "@/components/admin/RequirePermission";
 
-export default function AgentPage() {
+function AgentPageInner() {
   return (
     <div>
       <div className="page-title">
@@ -30,5 +31,14 @@ export default function AgentPage() {
 
       <ChatPanel />
     </div>
+  );
+}
+
+
+export default function AgentPage() {
+  return (
+    <RequirePermission screen="agente_ams" action="view">
+      <AgentPageInner />
+    </RequirePermission>
   );
 }

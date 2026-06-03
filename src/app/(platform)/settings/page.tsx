@@ -7,6 +7,7 @@ import { useSpeechSynthesis } from "@/hooks/useSpeechSynthesis";
 import { cleanForTTS } from "@/lib/tts";
 import { ROLES } from "@/lib/roles";
 import Badge from "@/components/ui/Badge";
+import RequirePermission from "@/components/admin/RequirePermission";
 import type { Environment } from "@/types";
 
 type Tab = "profile" | "appearance" | "voice" | "workspace" | "shortcuts";
@@ -21,7 +22,7 @@ const TABS: { id: Tab; label: string; icon: string }[] = [
 
 const ENVS: Environment[] = ["NO_INFORMADO", "DEV", "QA", "PRD", "SANDBOX"];
 
-export default function SettingsPage() {
+function SettingsPageInner() {
   const [tab, setTab] = useState<Tab>("profile");
   const plat = usePlatform();
   const { user } = useAuth();
@@ -1256,5 +1257,14 @@ ${signature || "Equipo AMS"}${brand ? `\n${brand}` : ""}`}</pre>
         </div>
       </div>
     </div>
+  );
+}
+
+
+export default function SettingsPage() {
+  return (
+    <RequirePermission screen="configuracion" action="view">
+      <SettingsPageInner />
+    </RequirePermission>
   );
 }

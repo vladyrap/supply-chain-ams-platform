@@ -2,6 +2,7 @@
 
 import { useEffect, useState, useCallback } from "react";
 import Badge from "@/components/ui/Badge";
+import RequirePermission from "@/components/admin/RequirePermission";
 import {
   sapApi,
   type SapStatus,
@@ -17,7 +18,7 @@ function fmtMoney(n: number, c: string) {
   return `${c} ${n.toLocaleString("es-CL", { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
 }
 
-export default function SapReadonlyPage() {
+function SapReadonlyPageInner() {
   const [status, setStatus] = useState<SapStatus | null>(null);
   const [tab, setTab] = useState<Tab>("po");
 
@@ -304,3 +305,12 @@ function MovementsTable({ items }: { items: StockMovement[] }) {
 const th: React.CSSProperties = { padding: "8px 6px", borderBottom: "1px solid var(--border-soft)" };
 const td: React.CSSProperties = { padding: "8px 6px" };
 const tr: React.CSSProperties = { borderBottom: "1px solid var(--border-soft)" };
+
+
+export default function SapReadonlyPage() {
+  return (
+    <RequirePermission screen="modulos_sap" action="view">
+      <SapReadonlyPageInner />
+    </RequirePermission>
+  );
+}

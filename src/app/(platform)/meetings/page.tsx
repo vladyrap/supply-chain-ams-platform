@@ -13,6 +13,7 @@ import {
 } from "@/services/meetings.api";
 import { useToast } from "@/context/ToastContext";
 import { exportMeetingMarkdown } from "@/lib/export";
+import RequirePermission from "@/components/admin/RequirePermission";
 
 const ALLOWED_MIME = new Set<string>([
   "audio/mpeg", "audio/mp3", "audio/wav", "audio/wave", "audio/x-wav",
@@ -56,7 +57,7 @@ const PRIORITY_VARIANT: Record<string, "ok" | "warn" | "error" | "muted"> = {
   alta: "error", media: "warn", baja: "ok",
 };
 
-export default function MeetingsPage() {
+function MeetingsPageInner() {
   const { client } = usePlatform();
   const toast = useToast();
   const [meetings, setMeetings] = useState<Meeting[]>([]);
@@ -376,5 +377,14 @@ export default function MeetingsPage() {
         </div>
       </div>
     </div>
+  );
+}
+
+
+export default function MeetingsPage() {
+  return (
+    <RequirePermission screen="servicios" action="view">
+      <MeetingsPageInner />
+    </RequirePermission>
   );
 }

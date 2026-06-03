@@ -11,6 +11,7 @@ import TicketEstimateDetail from "@/components/estimation/TicketEstimateDetail";
 import { buildEstimateInputFromIncident, recalculateTicketEstimate, applyManualAdjustment } from "@/utils/ticket-factory";
 import { useAuth } from "@/context/AuthContext";
 import type { SapModule, Environment } from "@/types";
+import RequirePermission from "@/components/admin/RequirePermission";
 
 const SAP_MODULES: ("ALL" | SapModule)[] = [
   "ALL", "NO_INFORMADO", "MM", "SD", "PP", "WM", "EWM",
@@ -29,7 +30,7 @@ function fmt(ts: string) {
   return new Date(ts).toLocaleString();
 }
 
-export default function HistoryPage() {
+function HistoryPageInner() {
   const { user: authUser } = useAuth();
   const [filterModule, setFilterModule] = useState<("ALL" | SapModule)>("ALL");
   const [filterEnv, setFilterEnv] = useState<("ALL" | Environment)>("ALL");
@@ -317,5 +318,14 @@ export default function HistoryPage() {
         </div>
       </div>
     </div>
+  );
+}
+
+
+export default function HistoryPage() {
+  return (
+    <RequirePermission screen="incidentes" action="view">
+      <HistoryPageInner />
+    </RequirePermission>
   );
 }

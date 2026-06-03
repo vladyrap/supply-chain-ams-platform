@@ -13,6 +13,7 @@ import {
 } from "@/services/agent-lab.api";
 import { supportApi, type SupportConversation } from "@/services/support.api";
 import MarkdownView from "@/components/agent/MarkdownView";
+import RequirePermission from "@/components/admin/RequirePermission";
 
 type Tab = "feedback" | "replay" | "training" | "wizard" | "playground";
 
@@ -31,7 +32,7 @@ const SOURCE_META: Record<FeedbackSource, { label: string; icon: string; color: 
   other:       { label: "Otro",         icon: "•",  color: "#64748b" },
 };
 
-export default function AgentLabPage() {
+function AgentLabPageInner() {
   const [tab, setTab] = useState<Tab>("feedback");
   const [stats, setStats] = useState<FeedbackStats | null>(null);
 
@@ -997,5 +998,14 @@ function PlaygroundSlot({
         </div>
       )}
     </div>
+  );
+}
+
+
+export default function AgentLabPage() {
+  return (
+    <RequirePermission screen="agente_ams" action="view">
+      <AgentLabPageInner />
+    </RequirePermission>
   );
 }
