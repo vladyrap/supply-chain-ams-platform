@@ -223,6 +223,8 @@ export async function runAutoEnrichmentPipeline(
   }
 
   // 5. Construir resultado
+  // TCC v0.12 — incrementar analysisVersion respecto al previo (si existía)
+  const prevVersion = ticket.intelligence?.analysisVersion ?? 0;
   const intelligence: TicketIntelligence = {
     status: "enriched",
     enrichedAt: new Date().toISOString(),
@@ -232,6 +234,7 @@ export async function runAutoEnrichmentPipeline(
     n1Package,
     agentClassification,
     specialistAnalysis,
+    analysisVersion: prevVersion + 1,
   };
 
   return {

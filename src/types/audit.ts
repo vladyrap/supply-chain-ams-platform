@@ -71,7 +71,11 @@ export type TicketAuditEventType =
   | "AMS_SPECIALIST_ANALYSIS_FAILED"
   | "AMS_ORCHESTRATOR_ANALYSIS_COMPLETED"
   | "AMS_SPECIALIST_REANALYSIS_REQUESTED"
-  | "AMS_SPECIALIST_REANALYSIS_COMPLETED";
+  | "AMS_SPECIALIST_REANALYSIS_COMPLETED"
+  // TCC v0.12 — edición y cambios críticos de campos
+  | "TICKET_EDITED"
+  | "TICKET_CRITICAL_FIELDS_CHANGED"
+  | "TICKET_ANALYSIS_HASH_CHANGED";
 
 export interface TicketAuditEvent {
   id: string;
@@ -155,6 +159,9 @@ export const EVENT_LABELS: Record<TicketAuditEventType, string> = {
   AMS_ORCHESTRATOR_ANALYSIS_COMPLETED: "Orquestador AMS consolidado",
   AMS_SPECIALIST_REANALYSIS_REQUESTED: "Reanálisis especialistas solicitado",
   AMS_SPECIALIST_REANALYSIS_COMPLETED: "Reanálisis especialistas completado",
+  TICKET_EDITED:                       "Ticket editado",
+  TICKET_CRITICAL_FIELDS_CHANGED:      "Campos críticos modificados",
+  TICKET_ANALYSIS_HASH_CHANGED:        "Hash de análisis cambió",
 };
 
 export const EVENT_ICONS: Record<TicketAuditEventType, string> = {
@@ -220,6 +227,9 @@ export const EVENT_ICONS: Record<TicketAuditEventType, string> = {
   AMS_ORCHESTRATOR_ANALYSIS_COMPLETED: "🤝",
   AMS_SPECIALIST_REANALYSIS_REQUESTED: "↻",
   AMS_SPECIALIST_REANALYSIS_COMPLETED: "🔁",
+  TICKET_EDITED:                       "✎",
+  TICKET_CRITICAL_FIELDS_CHANGED:      "⚠",
+  TICKET_ANALYSIS_HASH_CHANGED:        "#",
 };
 
 export const EVENT_COLORS: Record<TicketAuditEventType, string> = {
@@ -285,4 +295,7 @@ export const EVENT_COLORS: Record<TicketAuditEventType, string> = {
   AMS_ORCHESTRATOR_ANALYSIS_COMPLETED: "#10b981",
   AMS_SPECIALIST_REANALYSIS_REQUESTED: "#a855f7",
   AMS_SPECIALIST_REANALYSIS_COMPLETED: "#10b981",
+  TICKET_EDITED:                       "#22d3ee",
+  TICKET_CRITICAL_FIELDS_CHANGED:      "#f59e0b",
+  TICKET_ANALYSIS_HASH_CHANGED:        "#a855f7",
 };

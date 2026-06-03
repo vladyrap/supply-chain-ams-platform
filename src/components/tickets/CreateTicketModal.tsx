@@ -10,6 +10,8 @@ import VisualEvidenceUploader from "./VisualEvidenceUploader";
 import type { TemporaryVisualEvidence } from "@/types/visual-evidence";
 import { temporaryToNote } from "@/types/visual-evidence";
 import ModalPortal from "@/components/ui/ModalPortal";
+import { kickoffEnrichmentForNewTicket } from "@/intelligence/enrichment-kickoff";
+import { useAuth } from "@/context/AuthContext";
 
 const SAP_MODULES = ["", "MM", "SD", "PP", "WM", "EWM", "QM", "PM", "ARIBA", "IBP", "BTP", "INTEGRACION"];
 const PRIORITIES = ["Highest", "High", "Medium", "Low"];
@@ -37,9 +39,11 @@ const EMPTY: CreateTicketInput = {
 };
 
 export default function CreateTicketModal({ open, defaultReporter, onClose, onCreated }: Props) {
+  const { user: authUser } = useAuth();
   const [form, setForm] = useState<CreateTicketInput>(EMPTY);
   const [evidence, setEvidence] = useState<TemporaryVisualEvidence[]>([]);
   const [busy, setBusy] = useState(false);
+  const [enriching, setEnriching] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
   if (!open) return null;
@@ -73,15 +77,26 @@ export default function CreateTicketModal({ open, defaultReporter, onClose, onCr
       visualEvidenceNotes: notes.length > 0 ? notes : undefined,
     };
     const res = await createTicket(payload);
-    setBusy(false);
-    if ("success" in res && res.success) {
-      onCreated(res.ticket);
-      cleanupPreviews();
-      setEvidence([]);
-      setForm(EMPTY);
-    } else {
+    if (!("success" in res) || !res.success) {
+      setBusy(false);
       setError("error" in res ? res.error : "Error al crear");
+      return;
     }
+
+    // TCC v0.12 — disparar AIE inmediatamente, antes de cerrar el modal.
+    // El usuario ve "🤖 Analizando con Agente AMS..." durante ~1-3s.
+    setEnriching(true);
+    const actor = authUser?.name || authUser?.email || "Consultor AMS";
+    const enriched = await kickoffEnrichmentForNewTicket(res.ticket, { actor });
+    setEnriching(false);
+    setBusy(false);
+
+    // Hidratar el ticket con la intelligence recién persistida
+    const finalTicket: Ticket = { ...res.ticket, intelligence: enriched };
+    onCreated(finalTicket);
+    cleanupPreviews();
+    setEvidence([]);
+    setForm(EMPTY);
   }
 
   return (
@@ -167,6 +182,15 @@ export default function CreateTicketModal({ open, defaultReporter, onClose, onCr
 
         {error && <div className="alert error" style={{ marginTop: 10 }}>{error}</div>}
 
+        {/* TCC v0.12 — banner enriching: el modal queda visible mientras el
+            pipeline AIE corre. El usuario ve que el agente ya está trabajando
+            sobre su ticket recién creado. */}
+        {enriching && (
+          <div className="alert info" style={{ marginTop: 10, fontSize: 12, display: "flex", alignItems: "center", gap: 8 }}>
+            <span className="spinner" /> 🤖 Agente AMS está analizando el ticket…
+          </div>
+        )}
+
         <div className="row between" style={{ gap: 8, marginTop: 14, alignItems: "center" }}>
           <div style={{ fontSize: 11, color: "var(--text-dim)" }}>
             {evidence.filter((e) => e.visualAnalysis && e.consideredForEstimate).length > 0
@@ -176,9 +200,10 @@ export default function CreateTicketModal({ open, defaultReporter, onClose, onCr
                 : ""}
           </div>
           <div className="row" style={{ gap: 8 }}>
-            <button className="btn ghost" onClick={() => { cleanupPreviews(); setEvidence([]); onClose(); }} disabled={busy}>cancelar</button>
-            <button className="btn primary" onClick={submit} disabled={busy}>
-              {busy ? <><span className="spinner" /> creando…</> : "＋ crear ticket"}
+            <button className="btn ghost" onClick={() => { cleanupPreviews(); setEvidence([]); onClose(); }} disabled={busy || enriching}>cancelar</button>
+            <button className="btn primary" onClick={submit} disabled={busy || enriching}>
+              {enriching ? <><span className="spinner" /> analizando…</> :
+               busy ? <><span className="spinner" /> creando…</> : "＋ crear ticket"}
             </button>
           </div>
         </div>

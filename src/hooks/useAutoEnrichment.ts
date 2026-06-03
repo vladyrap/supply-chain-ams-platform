@@ -226,19 +226,33 @@ export function useAutoEnrichment(
   }, [ticket?.key, ticket?.intelligence]);
 
   // Auto-trigger: ejecutar pipeline si pending O hash cambió
+  // TCC v0.12 — anti-loop reforzado:
+  //   1. Si hay lock en vuelo para este ticketKey → skip
+  //   2. Si status=enriching → skip (alguien más lo está corriendo)
+  //   3. Si status=enriched + hash igual → skip
+  //   4. Solo dispara si pending o sin status
   useEffect(() => {
     if (!autoTrigger || !ticket) return;
     let cancelled = false;
     (async () => {
+      // Guard 1: lock en vuelo
+      if (inFlightLocks.has(ticket.key)) return;
+
       const newHash = await computeAnalysisInputHash(ticket);
       const cachedHash = ticket.intelligence?.inputHash;
       const status = ticket.intelligence?.status;
+
+      // Guard 2: ya está enriching (otro caller en otro mount)
+      if (status === "enriching") return;
 
       // Detectar "datos nuevos" para mostrar badge en UI
       if (status === "enriched" && cachedHash && cachedHash !== newHash) {
         if (!cancelled) setHasNewData(true);
         return;  // No re-disparar automáticamente, solo avisar
       }
+
+      // Guard 3: enriched + hash igual → nothing to do
+      if (status === "enriched" && cachedHash === newHash) return;
 
       // Disparar si pending o nunca enriquecido
       if (status === "pending_enrichment" || !status || status === undefined) {

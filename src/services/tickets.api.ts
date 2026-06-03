@@ -1,6 +1,6 @@
 import type { TicketEstimatedResolution } from "@/types/estimation";
 import type { VisualEvidenceNote } from "@/types/visual-evidence";
-import type { TicketIntelligence } from "@/types/ticket-intelligence";
+import type { TicketIntelligence, IntelligenceHistoryEntry } from "@/types/ticket-intelligence";
 
 const API_BASE =
   (process.env.NEXT_PUBLIC_AGENT_API_URL || "http://localhost:6601").replace(/\/+$/, "");
@@ -181,5 +181,36 @@ export async function updateTicketIntelligence(
 export async function getTicketIntelligence(key: string) {
   return call<{ success: true; intelligence: TicketIntelligence | null } | { success: false; error: string }>(
     `/api/tickets/${encodeURIComponent(key)}/intelligence`
+  );
+}
+
+// =============================================================================
+// TCC v0.12 — Historial de intelligence + Edición general del ticket
+// =============================================================================
+
+/** GET /api/tickets/:key/intelligence/history — devuelve max 20 versiones. */
+export async function getIntelligenceHistory(key: string) {
+  return call<{ success: true; entries: IntelligenceHistoryEntry[] } | { success: false; error: string }>(
+    `/api/tickets/${encodeURIComponent(key)}/intelligence/history`
+  );
+}
+
+/** Campos editables del ticket via PATCH /api/tickets/:key. */
+export interface UpdateTicketInput {
+  title?: string;
+  description?: string;
+  sapModule?: string | null;
+  environment?: string | null;
+  priority?: string;
+  assignee?: string | null;
+  reporter?: string | null;
+  status?: string;
+}
+
+/** PATCH /api/tickets/:key — actualiza campos generales (whitelist en backend). */
+export async function updateTicket(key: string, patch: UpdateTicketInput) {
+  return call<{ success: true; ticket: Ticket } | { success: false; error: string }>(
+    `/api/tickets/${encodeURIComponent(key)}`,
+    { method: "PATCH", body: JSON.stringify(patch) }
   );
 }

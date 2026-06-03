@@ -74,6 +74,12 @@ import TicketEnrichmentBadge from "./TicketEnrichmentBadge";
 import ReanalyzeButton from "./ReanalyzeButton";
 // SA v0.11 — AMS Specialists (interno, agente único de cara al usuario)
 import AmsSpecialistsSection from "./AmsSpecialistsSection";
+// TCC v0.12 — Historial de versiones del análisis
+import IntelligenceHistorySection from "./IntelligenceHistorySection";
+// TCC v0.12 — Edición de campos generales + reanalyze on critical change
+import EditTicketModal from "./EditTicketModal";
+import PostEditReanalyzeModal from "./PostEditReanalyzeModal";
+import type { CriticalChangeReport } from "@/intelligence/critical-fields-detector";
 
 // --------------------------------------------------------------------
 // Sección colapsable
@@ -178,6 +184,9 @@ export default function TicketCommandCenter({ ticket, onTicketUpdated }: Props) 
   const [closeError, setCloseError] = useState<string | null>(null);
   const [contextualOpen, setContextualOpen] = useState(false);
   const [contextualRefresh, setContextualRefresh] = useState(0);
+  // TCC v0.12 — edit flow
+  const [editOpen, setEditOpen] = useState(false);
+  const [postEditReport, setPostEditReport] = useState<CriticalChangeReport | null>(null);
   const [responseModalOpen, setResponseModalOpen] = useState(false);
   const [responseInitialType, setResponseInitialType] = useState<CustomerResponseType | undefined>(undefined);
   const [closureExtras, setClosureExtras] = useState<import("@/types/customer-response").CustomerResponseContext | null>(null);
@@ -404,6 +413,44 @@ export default function TicketCommandCenter({ ticket, onTicketUpdated }: Props) 
     } else {
       setClassifyError("error" in res ? res.error : "Error");
     }
+  }
+
+  // TCC v0.12 — Edit + post-edit reanalyze handlers
+  async function handleEditSaved(newTicket: Ticket, report: CriticalChangeReport) {
+    onTicketUpdated(newTicket);
+    setEditOpen(false);
+    audit.record({
+      ticketId: ticket.key,
+      eventType: "TICKET_EDITED",
+      title: `Ticket editado · ${report.fieldsChanged.length} campo(s)`,
+      description: report.fieldsChanged.join(", "),
+      actor, actorRole, source: "ui",
+      metadata: { fieldsChanged: report.fieldsChanged, critical: report.criticalChanged },
+    });
+    if (report.criticalChanged) {
+      audit.record({
+        ticketId: ticket.key,
+        eventType: "TICKET_CRITICAL_FIELDS_CHANGED",
+        title: `Campos críticos modificados: ${report.criticalFieldsChanged.join(", ")}`,
+        actor, actorRole, source: "ui",
+        metadata: { criticalFieldsChanged: report.criticalFieldsChanged },
+      });
+      setPostEditReport(report);
+    } else {
+      notify("✓ Cambios cosméticos guardados (sin reanálisis)");
+    }
+  }
+
+  async function handlePostEditReanalyze() {
+    if (!postEditReport) return;
+    audit.record({
+      ticketId: ticket.key,
+      eventType: "TICKET_ANALYSIS_HASH_CHANGED",
+      title: "Reanálisis solicitado tras edición de campos críticos",
+      actor, actorRole, source: "ui",
+    });
+    await aie.reanalyze();
+    notify("✓ Análisis reejecutado con los datos editados");
   }
 
   async function handleRecalculate() {
@@ -1076,57 +1123,136 @@ export default function TicketCommandCenter({ ticket, onTicketUpdated }: Props) 
         </div>
       </Section>
 
-      {/* Sección 3-4: Clasificación + diagnóstico */}
+      {/* Sección 3-4: Clasificación + diagnóstico — TCC v0.12 con 4 estados */}
       <Section id="section-classification" title="CLASIFICACIÓN AMS · DIAGNÓSTICO" icon="🤖" accent="#10b981">
-        {/* AIE v0.10 — Reanalyze con Agente AMS (pipeline completo) */}
-        <div className="row" style={{ gap: 8, marginBottom: 10, alignItems: "center", flexWrap: "wrap" }}>
-          <ReanalyzeButton
-            intelligence={aie.intelligence}
-            onReanalyze={aie.reanalyze}
-            hasNewData={aie.hasNewData}
-            variant="full"
-          />
-          {aie.intelligence?.agentClassification && (
-            <span style={{ fontSize: 11, color: "var(--text-soft)" }}>
-              · agente:&nbsp;<Badge variant="tech">{aie.intelligence.agentClassification.model}</Badge>
-              <Badge variant={
-                aie.intelligence.agentClassification.confidence === "alta" ? "ok" :
-                aie.intelligence.agentClassification.confidence === "media" ? "warn" :
-                aie.intelligence.agentClassification.confidence === "baja" ? "error" : "muted"
-              }>conf: {aie.intelligence.agentClassification.confidence}</Badge>
-            </span>
-          )}
-        </div>
+        {(() => {
+          const status = aie.intelligence?.status;
+          const sa = aie.intelligence?.specialistAnalysis;
+          const hasAgentClassification = !!aie.intelligence?.agentClassification?.response;
+          const hasAnyEnrichment = !!aie.intelligence && (
+            status === "enriched" || hasAgentClassification || !!sa
+          );
 
-        {/* Mostrar respuesta cacheada del agente si vino del pipeline */}
-        {aie.intelligence?.agentClassification?.response && !classification && (
-          <div className="msg agent" style={{ marginTop: 4 }}>
-            <div className="body"><MarkdownView text={aie.intelligence.agentClassification.response} /></div>
-          </div>
-        )}
+          // ── Estado 1: enriching ──
+          if (isEnriching) {
+            return (
+              <div className="alert info" style={{ fontSize: 12, display: "flex", alignItems: "center", gap: 8 }}>
+                <span className="spinner" /> 🤖 Agente AMS está analizando este ticket…
+              </div>
+            );
+          }
 
-        {/* Compat: botón manual legacy (Gemini directo) */}
-        {!classification && !aie.intelligence?.agentClassification?.response && !isEnriching && (
-          <button className="btn ghost sm" onClick={handleClassify} disabled={classifying} style={{ fontSize: 11 }}>
-            {classifying ? <><span className="spinner" /> Clasificando…</> : "🤖 Clasificar manualmente"}
-          </button>
-        )}
-        {classifyError && <div className="alert error" style={{ marginTop: 8 }}>{classifyError}</div>}
-        {classification && (
-          <div>
-            <div className="row" style={{ gap: 8, marginBottom: 8, alignItems: "center" }}>
-              <Badge variant="tech">{classification.model}</Badge>
-              <Badge variant={
-                classification.confidence === "alta" ? "ok" :
-                classification.confidence === "media" ? "warn" :
-                classification.confidence === "baja" ? "error" : "muted"
-              }>confianza: {classification.confidence}</Badge>
-              <button className="btn ghost" onClick={handleClassify} style={{ padding: "2px 8px", fontSize: 11 }}>↻ reclasificar</button>
+          // ── Estado 2: enrichment_failed ──
+          if (isEnrichmentFailed) {
+            return (
+              <div className="alert error" style={{ fontSize: 12 }}>
+                <div className="row between" style={{ alignItems: "center", gap: 8, flexWrap: "wrap" }}>
+                  <div>⚠ No se pudo completar el análisis automático: {aie.error || aie.intelligence?.error || "error desconocido"}</div>
+                  <div className="row" style={{ gap: 6 }}>
+                    <ReanalyzeButton
+                      intelligence={aie.intelligence}
+                      onReanalyze={aie.reanalyze}
+                      hasNewData={aie.hasNewData}
+                      variant="compact"
+                    />
+                    <button className="btn ghost sm" onClick={() => setEditOpen(true)} style={{ fontSize: 11 }}>
+                      ✎ Editar datos del ticket
+                    </button>
+                  </div>
+                </div>
+              </div>
+            );
+          }
+
+          // ── Estado 3: enriched (caso común tras pipeline) ──
+          if (hasAnyEnrichment) {
+            return (
+              <div>
+                <div className="row" style={{ gap: 8, marginBottom: 10, alignItems: "center", flexWrap: "wrap" }}>
+                  <ReanalyzeButton
+                    intelligence={aie.intelligence}
+                    onReanalyze={aie.reanalyze}
+                    hasNewData={aie.hasNewData}
+                    variant="full"
+                  />
+                  <button className="btn ghost sm" onClick={() => setEditOpen(true)} style={{ fontSize: 11 }}>
+                    ✎ Editar datos del ticket
+                  </button>
+                  {sa && (
+                    <span style={{ fontSize: 11, color: "var(--text-soft)" }}>
+                      · especialista <Badge variant="tech">{sa.primaryAnalysis.specialist}</Badge>
+                      <Badge variant={sa.confidenceLevel === "HIGH" ? "ok" : sa.confidenceLevel === "MEDIUM" ? "warn" : "error"}>
+                        {sa.confidenceScore}%
+                      </Badge>
+                    </span>
+                  )}
+                  {aie.intelligence?.agentClassification && (
+                    <span style={{ fontSize: 11, color: "var(--text-soft)" }}>
+                      · gemini <Badge variant="tech">{aie.intelligence.agentClassification.model}</Badge>
+                      <Badge variant={
+                        aie.intelligence.agentClassification.confidence === "alta" ? "ok" :
+                        aie.intelligence.agentClassification.confidence === "media" ? "warn" :
+                        aie.intelligence.agentClassification.confidence === "baja" ? "error" : "muted"
+                      }>{aie.intelligence.agentClassification.confidence}</Badge>
+                    </span>
+                  )}
+                </div>
+
+                {hasAgentClassification && !classification && (
+                  <div className="msg agent" style={{ marginTop: 4 }}>
+                    <div className="body"><MarkdownView text={aie.intelligence!.agentClassification!.response} /></div>
+                  </div>
+                )}
+
+                {classification && (
+                  <div style={{ marginTop: 10 }}>
+                    <div className="row" style={{ gap: 8, marginBottom: 8, alignItems: "center" }}>
+                      <Badge variant="tech">{classification.model}</Badge>
+                      <Badge variant={
+                        classification.confidence === "alta" ? "ok" :
+                        classification.confidence === "media" ? "warn" :
+                        classification.confidence === "baja" ? "error" : "muted"
+                      }>{classification.confidence}</Badge>
+                      <button className="btn ghost" onClick={handleClassify} style={{ padding: "2px 8px", fontSize: 11 }}>↻ reclasificar</button>
+                    </div>
+                    <div className="msg agent"><div className="body"><MarkdownView text={classification.response} /></div></div>
+                    <AgentMetadataPanel meta={classMetadata} />
+                  </div>
+                )}
+              </div>
+            );
+          }
+
+          // ── Estado 4: legacy / pending_enrichment (ticket sin intelligence) ──
+          return (
+            <div>
+              <div style={{ fontSize: 12, color: "var(--text-soft)", marginBottom: 8 }}>
+                Este ticket aún no fue analizado por el Agente AMS.
+              </div>
+              <div className="row" style={{ gap: 8, alignItems: "center", flexWrap: "wrap" }}>
+                <button
+                  className="btn primary"
+                  onClick={aie.reanalyze}
+                  style={{ background: "linear-gradient(135deg, #10b981, #22d3ee)" }}
+                >
+                  🤖 Analizar con Agente AMS
+                </button>
+                <button className="btn ghost sm" onClick={() => setEditOpen(true)} style={{ fontSize: 11 }}>
+                  ✎ Editar datos del ticket
+                </button>
+                <button className="btn ghost sm" onClick={handleClassify} disabled={classifying} style={{ fontSize: 11 }}>
+                  {classifying ? <><span className="spinner" /> Clasificando…</> : "(legacy) Solo Gemini directo"}
+                </button>
+              </div>
+              {classifyError && <div className="alert error" style={{ marginTop: 8 }}>{classifyError}</div>}
+              {classification && (
+                <div style={{ marginTop: 10 }}>
+                  <div className="msg agent"><div className="body"><MarkdownView text={classification.response} /></div></div>
+                </div>
+              )}
             </div>
-            <div className="msg agent"><div className="body"><MarkdownView text={classification.response} /></div></div>
-            <AgentMetadataPanel meta={classMetadata} />
-          </div>
-        )}
+          );
+        })()}
       </Section>
 
       {/* Sección 4.5: Análisis visual usado */}
@@ -1398,6 +1524,20 @@ export default function TicketCommandCenter({ ticket, onTicketUpdated }: Props) 
         </div>
       </Section>
 
+      {/* TCC v0.12 — Histórico de versiones del análisis */}
+      <Section
+        title="HISTÓRICO DE ANÁLISIS"
+        icon="📜"
+        accent="#64748b"
+        defaultOpen={false}
+        count={aie.intelligence?.analysisVersion ?? 0}
+      >
+        <IntelligenceHistorySection
+          ticketKey={ticket.key}
+          refreshKey={aie.intelligence?.analysisVersion ?? 0}
+        />
+      </Section>
+
       {/* Sección 14: Auditoría */}
       <Section title="AUDITORÍA · TIMELINE" icon="📜" accent="#64748b" count={ticketAuditEvents.length}>
         <TicketAuditTimeline events={ticketAuditEvents} compact />
@@ -1541,6 +1681,23 @@ export default function TicketCommandCenter({ ticket, onTicketUpdated }: Props) 
           onMarkSent={handleResponseSent}
           onSendToHumanReview={handleResponseReview}
           onBlocked={handleResponseBlocked}
+        />
+      )}
+
+      {/* TCC v0.12 — Edición + post-edit reanalyze */}
+      <EditTicketModal
+        open={editOpen}
+        ticket={ticket}
+        onClose={() => setEditOpen(false)}
+        onSaved={handleEditSaved}
+      />
+      {postEditReport && (
+        <PostEditReanalyzeModal
+          open
+          report={postEditReport}
+          onClose={() => setPostEditReport(null)}
+          onReanalyze={handlePostEditReanalyze}
+          onSkip={() => notify("Cambios guardados — análisis vigente conservado")}
         />
       )}
     </div>

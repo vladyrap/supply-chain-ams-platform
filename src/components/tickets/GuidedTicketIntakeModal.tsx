@@ -21,6 +21,8 @@ import { createTicket, type CreateTicketInput, type Ticket } from "@/services/ti
 import { getSapIntakeSpec, SAP_MODULES_WITH_SPEC } from "@/lib/sap-intake-fields";
 import { calculateDraftReadiness, READINESS_COLORS, READINESS_LABELS } from "@/utils/ticket-readiness-engine";
 import { buildN1Package, buildStructuredDescription } from "@/intelligence/n1-package-builder";
+import { kickoffEnrichmentForNewTicket } from "@/intelligence/enrichment-kickoff";
+import { useAuth } from "@/context/AuthContext";
 import type {
   GuidedTicketDraft, IntakeContext, IntakeProblem, IntakeSapData,
   IntakeEvidence, BusinessImpactLevel, IssueFrequency,
@@ -86,12 +88,14 @@ const EMPTY_PROBLEM: IntakeProblem = {
 export default function GuidedTicketIntakeModal({
   open, defaultReporter, onClose, onCreated,
 }: Props) {
+  const { user: authUser } = useAuth();
   const [step, setStep] = useState<Step>(1);
   const [context, setContext] = useState<IntakeContext>(EMPTY_CONTEXT);
   const [problem, setProblem] = useState<IntakeProblem>(EMPTY_PROBLEM);
   const [sapData, setSapData] = useState<IntakeSapData>({});
   const [evidence, setEvidence] = useState<IntakeEvidence>({ items: [], textualLog: "" });
   const [busy, setBusy] = useState(false);
+  const [enriching, setEnriching] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
   // Spec dinámico según módulo
@@ -182,21 +186,30 @@ export default function GuidedTicketIntakeModal({
     };
 
     const res = await createTicket(payload);
+    if (!("success" in res) || !res.success) {
+      setBusy(false);
+      setError("error" in res ? res.error : "Error al crear el ticket");
+      return;
+    }
+
+    // TCC v0.12 — disparar AIE inmediatamente y reusar el N1Package del wizard.
+    const baseTicket: Ticket = opts.waitingInformation
+      ? { ...res.ticket, status: WAITING_INFORMATION_STATUS }
+      : res.ticket;
+
+    setEnriching(true);
+    const actor = authUser?.name || authUser?.email || "Consultor AMS";
+    const enrichedIntelligence = await kickoffEnrichmentForNewTicket(baseTicket, {
+      actor,
+      preloadedN1Package: n1Package, // el wizard ya lo construyó con contexto rico
+    });
+    setEnriching(false);
     setBusy(false);
 
-    if ("success" in res && res.success) {
-      // Si es waiting information, marcamos el status localmente.
-      // Backend acepta string libre — Jira real podría rechazarlo, en ese
-      // caso quedará como "Open" pero el N1Package guarda el estado lógico.
-      const ticket: Ticket = opts.waitingInformation
-        ? { ...res.ticket, status: WAITING_INFORMATION_STATUS }
-        : res.ticket;
-      cleanupPreviews();
-      reset();
-      onCreated(ticket, opts);
-    } else {
-      setError("error" in res ? res.error : "Error al crear el ticket");
-    }
+    const finalTicket: Ticket = { ...baseTicket, intelligence: enrichedIntelligence };
+    cleanupPreviews();
+    reset();
+    onCreated(finalTicket, opts);
   }
 
   // ============================================================
@@ -550,20 +563,21 @@ export default function GuidedTicketIntakeModal({
               <>
                 {readiness.score < 70 && (
                   <button className="btn ghost" onClick={() => submit({ waitingInformation: true })}
-                    disabled={busy}
+                    disabled={busy || enriching}
                     style={{ borderColor: "#fbbf24", color: "#fbbf24" }}>
-                    {busy ? "creando…" : `⏳ Crear como "Espera información"`}
+                    {enriching ? "analizando…" : busy ? "creando…" : `⏳ Crear como "Espera información"`}
                   </button>
                 )}
                 <button className="btn primary" onClick={() => submit({ waitingInformation: false })}
-                  disabled={busy || readiness.score < 40}
+                  disabled={busy || enriching || readiness.score < 40}
                   style={{
                     background: readiness.score >= 70
                       ? "linear-gradient(135deg, #10b981, #22d3ee)"
                       : "linear-gradient(135deg, #6366f1, #a855f7)",
                     borderColor: readiness.score >= 70 ? "#10b981" : "#6366f1",
                   }}>
-                  {busy ? "creando…"
+                  {enriching ? <><span className="spinner" /> analizando…</>
+                    : busy ? "creando…"
                     : readiness.score >= 70 ? "✓ Crear ticket y preparar N1"
                     : "＋ Crear ticket"}
                 </button>
@@ -571,6 +585,13 @@ export default function GuidedTicketIntakeModal({
             )}
           </div>
         </div>
+
+        {/* TCC v0.12 — banner enriching post-create */}
+        {enriching && (
+          <div className="alert info" style={{ marginTop: 10, fontSize: 12, display: "flex", alignItems: "center", gap: 8 }}>
+            <span className="spinner" /> 🤖 Agente AMS está analizando el ticket recién creado…
+          </div>
+        )}
       </div>
     </ModalPortal>
   );

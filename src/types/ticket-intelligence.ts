@@ -36,8 +36,21 @@ export interface TicketIntelligence {
   agentClassification?: AgentClassificationResult;
   /** AMS Specialists v0.11 — análisis del orchestrator (router + specialists). */
   specialistAnalysis?: OrchestratedAMSAnalysis;
+  /** TCC v0.12 — versión incremental del análisis (incrementa cada reanalyze). */
+  analysisVersion?: number;
   /** Mensaje de error si status=enrichment_failed. */
   error?: string;
+}
+
+/** Entrada del historial de análisis (TCC v0.12). */
+export interface IntelligenceHistoryEntry {
+  id: string;
+  ticketKey: string;
+  version: number;
+  intelligence: TicketIntelligence;
+  inputHash: string | null;
+  snapshotAt: string;
+  snapshotReason: string | null;
 }
 
 export const ENRICHMENT_LABELS: Record<IntelligenceStatus, string> = {
