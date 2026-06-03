@@ -56,93 +56,105 @@ export default function TicketsPage() {
   const selected = tickets.find((t) => t.key === selectedKey) ?? null;
 
   return (
-    <div>
-      <div className="page-title">
-        <h1>🎫 Tickets</h1>
-        <p>Listado de tickets desde Jira (si hay credenciales) o set de demo. Cada ticket se puede clasificar con el Agente AMS.</p>
+    <div className="tickets-page">
+      {/* ── Header de página (flex-shrink: 0, altura estable) ───────── */}
+      <div className="tickets-page-header">
+        <div className="page-title" style={{ marginBottom: 8 }}>
+          <h1 style={{ marginBottom: 2 }}>🎫 Tickets</h1>
+          <p style={{ marginBottom: 0 }}>Listado de tickets desde Jira (si hay credenciales) o set de demo. Cada ticket se puede clasificar con el Agente AMS.</p>
+        </div>
+
+        <div className="row between" style={{ flexWrap: "wrap", gap: 10 }}>
+          <div className="row" style={{ gap: 8, flexWrap: "wrap" }}>
+            <Badge variant={source === "jira" ? "ok" : "muted"}>
+              fuente: {source ?? "—"}
+            </Badge>
+            {provider && (
+              <>
+                <Badge variant={provider.jiraConfigured ? "info" : "muted"}>
+                  Jira {provider.jiraConfigured ? "configurado" : "no configurado"}
+                </Badge>
+                {provider.jiraConfigured && (
+                  <Badge variant={provider.jiraReachable ? "ok" : "error"}>
+                    {provider.jiraReachable ? "alcanzable" : "no alcanzable"}
+                  </Badge>
+                )}
+              </>
+            )}
+          </div>
+          <div className="row" style={{ gap: 8 }}>
+            <button
+              className="btn ghost"
+              onClick={() => setDemoOpen(true)}
+              style={{ borderColor: "#fbbf24", color: "#fbbf24" }}
+              title="Ejecuta el flujo completo AMS sobre un ticket demo (crea ticket, clasifica con agente real, RCA, test, etc.)"
+            >
+              🎬 Ejecutar demo completa
+            </button>
+            <button className="btn primary" onClick={() => setCreateOpen(true)}>
+              ＋ Crear ticket
+            </button>
+            <button className="btn ghost" onClick={refresh} disabled={loading}>
+              {loading ? <><span className="spinner" /> cargando</> : "↻ Refrescar"}
+            </button>
+          </div>
+        </div>
+
+        {createdMsg && <div className="alert ok" style={{ marginTop: 8, marginBottom: 0, fontSize: 12.5 }}>{createdMsg}</div>}
+        {error && <div className="alert error" style={{ marginTop: 8, marginBottom: 0 }}>{error}</div>}
       </div>
 
-      <div className="row between" style={{ marginBottom: 14, flexWrap: "wrap", gap: 10 }}>
-        <div className="row" style={{ gap: 8, flexWrap: "wrap" }}>
-          <Badge variant={source === "jira" ? "ok" : "muted"}>
-            fuente: {source ?? "—"}
-          </Badge>
-          {provider && (
-            <>
-              <Badge variant={provider.jiraConfigured ? "info" : "muted"}>
-                Jira {provider.jiraConfigured ? "configurado" : "no configurado"}
-              </Badge>
-              {provider.jiraConfigured && (
-                <Badge variant={provider.jiraReachable ? "ok" : "error"}>
-                  {provider.jiraReachable ? "alcanzable" : "no alcanzable"}
-                </Badge>
-              )}
-            </>
+      {/* ── Body: 2 panes con scroll independiente ─────────────────── */}
+      <div className="tickets-page-body">
+        {/* Pane izquierdo: lista — scroll propio, no se mueve con el TCC */}
+        <div className="tickets-page-pane is-list">
+          <div className="card" style={{ padding: 0, overflow: "hidden" }}>
+            <div style={{ padding: "10px 14px", borderBottom: "1px solid var(--border-soft)", fontSize: 12.5, color: "var(--text-soft)", position: "sticky", top: 0, background: "rgba(19, 26, 48, 0.85)", backdropFilter: "blur(10px)", zIndex: 1 }}>
+              {loading ? "Cargando…" : `${tickets.length} ticket${tickets.length === 1 ? "" : "s"}`}
+            </div>
+            <div>
+              {tickets.map((t) => {
+                const active = t.key === selectedKey;
+                return (
+                  <button
+                    key={t.key}
+                    onClick={() => setSelectedKey(t.key)}
+                    style={{
+                      display: "block", width: "100%", textAlign: "left",
+                      background: active ? "var(--accent-soft)" : "transparent",
+                      border: 0, borderBottom: "1px solid var(--border-soft)",
+                      color: "inherit", padding: "10px 14px", cursor: "pointer",
+                      fontFamily: "inherit",
+                    }}
+                  >
+                    <div className="row between" style={{ gap: 6 }}>
+                      <span style={{ fontFamily: "ui-monospace, monospace", fontSize: 11.5, color: "var(--text-dim)" }}>{t.key}</span>
+                      <Badge variant={priorityVariant(t.priority)}>{t.priority}</Badge>
+                    </div>
+                    <div style={{ fontWeight: 500, fontSize: 13.5, marginTop: 4 }}>{t.title}</div>
+                    <div className="row" style={{ gap: 6, marginTop: 4, flexWrap: "wrap" }}>
+                      <Badge variant={statusVariant(t.status)}>{t.status}</Badge>
+                      {t.assignee && <Badge variant="muted">@{t.assignee}</Badge>}
+                      {t.sapModule && <Badge variant="muted">{t.sapModule}</Badge>}
+                      {t.source === "user" && <Badge variant="info">creado</Badge>}
+                      <TicketEstimateBadge estimate={t.estimatedResolution} />
+                    </div>
+                  </button>
+                );
+              })}
+            </div>
+          </div>
+
+          {!provider?.jiraConfigured && (
+            <div className="alert warn" style={{ marginTop: 12, fontSize: 11.5 }}>
+              <b>Modo demo:</b> sin credenciales Jira en <code>.env</code>. Para conectar tu Jira real, agrega
+              <code> JIRA_BASE_URL</code>, <code>JIRA_EMAIL</code>, <code>JIRA_API_TOKEN</code> y reinicia el backend.
+            </div>
           )}
         </div>
-        <div className="row" style={{ gap: 8 }}>
-          <button
-            className="btn ghost"
-            onClick={() => setDemoOpen(true)}
-            style={{ borderColor: "#fbbf24", color: "#fbbf24" }}
-            title="Ejecuta el flujo completo AMS sobre un ticket demo (crea ticket, clasifica con agente real, RCA, test, etc.)"
-          >
-            🎬 Ejecutar demo completa
-          </button>
-          <button className="btn primary" onClick={() => setCreateOpen(true)}>
-            ＋ Crear ticket
-          </button>
-          <button className="btn ghost" onClick={refresh} disabled={loading}>
-            {loading ? <><span className="spinner" /> cargando</> : "↻ Refrescar"}
-          </button>
-        </div>
-      </div>
 
-      {createdMsg && <div className="alert ok" style={{ marginBottom: 14, fontSize: 12.5 }}>{createdMsg}</div>}
-
-      {error && <div className="alert error" style={{ marginBottom: 14 }}>{error}</div>}
-
-      <div style={{ display: "grid", gridTemplateColumns: "1fr 1.4fr", gap: 14 }}>
-        {/* Lista */}
-        <div className="card" style={{ padding: 0, overflow: "hidden" }}>
-          <div style={{ padding: "10px 14px", borderBottom: "1px solid var(--border-soft)", fontSize: 12.5, color: "var(--text-soft)" }}>
-            {loading ? "Cargando…" : `${tickets.length} ticket${tickets.length === 1 ? "" : "s"}`}
-          </div>
-          <div style={{ maxHeight: "68vh", overflowY: "auto" }}>
-            {tickets.map((t) => {
-              const active = t.key === selectedKey;
-              return (
-                <button
-                  key={t.key}
-                  onClick={() => setSelectedKey(t.key)}
-                  style={{
-                    display: "block", width: "100%", textAlign: "left",
-                    background: active ? "var(--accent-soft)" : "transparent",
-                    border: 0, borderBottom: "1px solid var(--border-soft)",
-                    color: "inherit", padding: "10px 14px", cursor: "pointer",
-                    fontFamily: "inherit",
-                  }}
-                >
-                  <div className="row between" style={{ gap: 6 }}>
-                    <span style={{ fontFamily: "ui-monospace, monospace", fontSize: 11.5, color: "var(--text-dim)" }}>{t.key}</span>
-                    <Badge variant={priorityVariant(t.priority)}>{t.priority}</Badge>
-                  </div>
-                  <div style={{ fontWeight: 500, fontSize: 13.5, marginTop: 4 }}>{t.title}</div>
-                  <div className="row" style={{ gap: 6, marginTop: 4, flexWrap: "wrap" }}>
-                    <Badge variant={statusVariant(t.status)}>{t.status}</Badge>
-                    {t.assignee && <Badge variant="muted">@{t.assignee}</Badge>}
-                    {t.sapModule && <Badge variant="muted">{t.sapModule}</Badge>}
-                    {t.source === "user" && <Badge variant="info">creado</Badge>}
-                    <TicketEstimateBadge estimate={t.estimatedResolution} />
-                  </div>
-                </button>
-              );
-            })}
-          </div>
-        </div>
-
-        {/* Detalle → Ticket Command Center */}
-        <div>
+        {/* Pane derecho: Ticket Command Center — scroll propio, no empuja la lista */}
+        <div className="tickets-page-pane" id="tickets-detail-pane">
           {!selected && (
             <div className="card" style={{ color: "var(--text-dim)", fontSize: 13 }}>
               Selecciona un ticket para ver su Command Center.
@@ -158,17 +170,6 @@ export default function TicketsPage() {
           )}
         </div>
       </div>
-
-      {!provider?.jiraConfigured && (
-        <div className="alert warn" style={{ marginTop: 14 }}>
-          <b>Modo demo:</b> sin credenciales Jira en <code>.env</code>. Para conectar tu Jira real, agrega:
-          <pre style={{ fontSize: 11, margin: "8px 0 0", overflow: "auto" }}>{`JIRA_BASE_URL=https://tuempresa.atlassian.net
-JIRA_EMAIL=tu@empresa.com
-JIRA_API_TOKEN=ATATT3xFf...
-JIRA_PROJECT_KEY=AMS (opcional)`}</pre>
-          y reinicia el backend.
-        </div>
-      )}
 
       <CreateTicketModal
         open={createOpen}

@@ -60,6 +60,7 @@ import KnowledgeQuickActions from "@/components/knowledge/KnowledgeQuickActions"
 import DocumentFactoryQuickAction from "@/components/documents/DocumentFactoryQuickAction";
 import TestingQuickAction from "@/components/testing/TestingQuickAction";
 import QualityQuickAction from "@/components/quality/QualityQuickAction";
+import QualityEvaluationsCard from "@/components/quality/QualityEvaluationsCard";
 import PlaybookQuickAction from "@/components/playbooks/PlaybookQuickAction";
 import { ticketToIncidentLike } from "@/utils/ticket-to-incident-adapter";
 
@@ -1221,7 +1222,10 @@ export default function TicketCommandCenter({ ticket, onTicketUpdated }: Props) 
         )}
       </Section>
 
-      {/* Sección 12 — Quality · ORQUESTADOR */}
+      {/* Sección 12 — Quality · ORQUESTADOR
+          La <ul> sin tope previa renderizaba 1000 filas cuando el demo seed
+          se ejecutaba varias veces. Reemplazada por QualityEvaluationsCard:
+          resumen + últimas 3 (o 20 al expandir) + scroll interno + cap 20. */}
       <Section title="QUALITY EVALUATOR" icon="🏅" accent="#fbbf24" count={ticketEvaluations.length}>
         <div className="row" style={{ gap: 8, alignItems: "center", flexWrap: "wrap" }}>
           <QualityQuickAction incident={incidentLike} variant="full" />
@@ -1231,15 +1235,15 @@ export default function TicketCommandCenter({ ticket, onTicketUpdated }: Props) 
             </span>
           )}
         </div>
-        {ticketEvaluations.length > 0 && (
-          <ul style={{ margin: "8px 0 0", paddingLeft: 18, fontSize: 11.5, color: "var(--text-soft)" }}>
-            {ticketEvaluations.map((ev) => (
-              <li key={ev.id}>
-                Precisión <strong>{ev.accuracyScore}</strong>/5 · Utilidad <strong>{ev.usefulnessScore}</strong>/5 · Claridad <strong>{ev.clarityScore}</strong>/5 · Riesgo {ev.hallucinationRisk}
-              </li>
-            ))}
-          </ul>
-        )}
+        <QualityEvaluationsCard
+          evaluations={ticketEvaluations}
+          onCompactDuplicates={() => {
+            const { removed } = quality.cleanupQualityEvaluatorDemoData();
+            notify(removed > 0
+              ? `✓ ${removed} evaluacion${removed === 1 ? "" : "es"} duplicada${removed === 1 ? "" : "s"} compactada${removed === 1 ? "" : "s"}`
+              : "Sin duplicados para compactar");
+          }}
+        />
       </Section>
 
       {/* Sección 13 — Convertir en conocimiento · ORQUESTADOR */}

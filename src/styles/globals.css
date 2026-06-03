@@ -136,6 +136,52 @@ button { font-family: inherit; }
 
 .content { padding: 24px 28px 64px; max-width: 1280px; width: 100%; }
 
+/* ============== /tickets page shell ===============
+   Layout aislado para que /tickets NO use el scroll del body.
+   En su lugar, hay dos paneles internos (lista + Command Center)
+   con scroll propio. Esto evita el "salto" que produce
+   scrollIntoView al clickear secciones o abrir cards en el TCC.
+*/
+.tickets-page {
+  display: flex;
+  flex-direction: column;
+  /* 100vh menos el header sticky superior (~48px) + el padding-top
+     que da .content. Si el header cambia de alto, ajustar acá. */
+  height: calc(100vh - 48px);
+  min-height: 0;
+  overflow: hidden;
+  gap: 12px;
+}
+.tickets-page-header {
+  flex-shrink: 0;
+}
+.tickets-page-body {
+  flex: 1;
+  min-height: 0;
+  display: grid;
+  grid-template-columns: 1fr 1.4fr;
+  gap: 14px;
+  align-items: stretch; /* las dos columnas miden lo mismo, no se empujan */
+}
+.tickets-page-pane {
+  min-height: 0;
+  min-width: 0;
+  overflow-y: auto;
+  overflow-x: hidden;
+  /* el scroll vive acá, no en el body — y los scrollIntoView dentro
+     de este pane se quedan dentro de este pane. */
+  scrollbar-gutter: stable;
+}
+.tickets-page-pane.is-list .card {
+  /* dentro de la lista NO queremos parallax 3D que mueve cards */
+  transform: none;
+}
+@media (max-width: 1000px) {
+  .tickets-page { height: auto; overflow: visible; }
+  .tickets-page-body { grid-template-columns: 1fr; }
+  .tickets-page-pane { overflow-y: visible; }
+}
+
 .page-title h1 { margin: 0 0 4px; font-size: 22px; letter-spacing: -0.01em; }
 .page-title p { margin: 0 0 18px; color: var(--text-soft); font-size: 13.5px; }
 

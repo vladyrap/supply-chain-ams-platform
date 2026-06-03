@@ -6,6 +6,7 @@ import {
   type AgentEvaluation, type HallucinationRiskLevel, type TechnicalLevelFit,
 } from "@/types/ams-modules";
 import { qualityApi } from "@/services/ams-modules.api";
+import { dedupeQualityEvaluations } from "@/utils/quality-evaluator-helpers";
 
 const EVT = "ams-evaluations-changed";
 const log = {
@@ -42,6 +43,13 @@ export interface UseQualityEvaluator {
   updateEvaluation: (id: string, patch: Partial<AgentEvaluation>) => void;
   deleteEvaluation: (id: string) => void;
   exportCsv: () => string;
+  /**
+   * Compacta duplicados (id repetido o fingerprint repetido por contenido).
+   * Pensado para limpiar localStorage tras correr la demo guiada varias veces.
+   * NO borra evaluaciones únicas. Devuelve cuántas se compactaron.
+   * No sincroniza al backend — sólo limpia el estado/localStorage local.
+   */
+  cleanupQualityEvaluatorDemoData: () => { removed: number };
 }
 
 function aggregate(evals: AgentEvaluation[], incidents: { id: string; sap_module: string | null }[] = []): QualityMetrics {
@@ -165,6 +173,12 @@ export function useQualityEvaluator(): UseQualityEvaluator {
 
   const metrics = useMemo(() => aggregate(evaluations), [evaluations]);
 
+  const cleanupQualityEvaluatorDemoData: UseQualityEvaluator["cleanupQualityEvaluatorDemoData"] = useCallback(() => {
+    const { unique, removed } = dedupeQualityEvaluations(evaluations);
+    if (removed > 0) save(unique);
+    return { removed };
+  }, [evaluations, save]);
+
   const exportCsv: UseQualityEvaluator["exportCsv"] = useCallback(() => {
     const header = "id,incidentId,accuracyScore,usefulnessScore,clarityScore,completenessScore,hallucinationRisk,technicalLevelFit,needsHumanReview,canBecomeKnowledge,wasUsefulForClient,requiresEscalation,evaluator,role,createdAt";
     const rows = evaluations.map((e) =>
@@ -176,7 +190,11 @@ export function useQualityEvaluator(): UseQualityEvaluator {
     return [header, ...rows].join("\n");
   }, [evaluations]);
 
-  return { evaluations, metrics, createEvaluation, updateEvaluation, deleteEvaluation, exportCsv };
+  return {
+    evaluations, metrics,
+    createEvaluation, updateEvaluation, deleteEvaluation,
+    exportCsv, cleanupQualityEvaluatorDemoData,
+  };
 }
 
 export type { HallucinationRiskLevel, TechnicalLevelFit };
