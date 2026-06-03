@@ -1,0 +1,29 @@
+name: ams-platform-dev
+
+# =============================================================================
+# AMS Platform — ambiente DEV (puerto host 6700)
+# =============================================================================
+# Levantar: docker compose -f docker-compose.dev.yml --env-file .env.dev up -d
+# El backend agent debe estar arriba primero (ams-network compartida).
+
+services:
+  platform-dev:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: ams-platform-dev
+    restart: unless-stopped
+    ports:
+      - "6700:3000"
+    environment:
+      NODE_ENV: ${NODE_ENV:-production}
+      NEXT_PUBLIC_AGENT_API_URL: ${NEXT_PUBLIC_AGENT_API_URL:-http://ams-backend-dev:8000}
+      NEXT_PUBLIC_FORCE_MOCK_LLM: ${NEXT_PUBLIC_FORCE_MOCK_LLM:-}
+      NEXT_PUBLIC_SENTRY_DSN: ${NEXT_PUBLIC_SENTRY_DSN:-}
+    networks:
+      - ams-network
+
+networks:
+  ams-network:
+    name: ams-network
+    external: true   # creado por el stack del agent

@@ -1,0 +1,22 @@
+name: ams-platform-qas
+
+services:
+  platform-qas:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: ams-platform-qas
+    restart: unless-stopped
+    ports:
+      - "6800:3000"
+    environment:
+      NODE_ENV: ${NODE_ENV:-production}
+      NEXT_PUBLIC_AGENT_API_URL: ${NEXT_PUBLIC_AGENT_API_URL:-http://ams-backend-qas:8000}
+      NEXT_PUBLIC_SENTRY_DSN: ${NEXT_PUBLIC_SENTRY_DSN:-}
+    networks:
+      - ams-network
+
+networks:
+  ams-network:
+    name: ams-network
+    external: true

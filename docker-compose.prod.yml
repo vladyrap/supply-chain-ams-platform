@@ -1,0 +1,28 @@
+name: ams-platform-prod
+
+services:
+  platform-prod:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: ams-platform-prod
+    restart: always
+    ports:
+      - "6900:3000"
+    environment:
+      NODE_ENV: production
+      NEXT_PUBLIC_AGENT_API_URL: ${NEXT_PUBLIC_AGENT_API_URL:-http://ams-backend-prod:8000}
+      NEXT_PUBLIC_SENTRY_DSN: ${NEXT_PUBLIC_SENTRY_DSN:-}
+    networks:
+      - ams-network
+    healthcheck:
+      test: ["CMD", "wget", "--quiet", "--spider", "http://localhost:3000/api/health"]
+      interval: 30s
+      timeout: 5s
+      retries: 3
+      start_period: 30s
+
+networks:
+  ams-network:
+    name: ams-network
+    external: true
