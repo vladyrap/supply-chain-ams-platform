@@ -1,5 +1,6 @@
 import type { TicketEstimatedResolution } from "@/types/estimation";
 import type { VisualEvidenceNote } from "@/types/visual-evidence";
+import type { TicketIntelligence } from "@/types/ticket-intelligence";
 
 const API_BASE =
   (process.env.NEXT_PUBLIC_AGENT_API_URL || "http://localhost:6601").replace(/\/+$/, "");
@@ -21,6 +22,8 @@ export interface Ticket {
   estimatedResolution?: TicketEstimatedResolution | null;
   /** Resúmenes textuales del análisis visual de imágenes adjuntas (sin archivos). */
   visualEvidenceNotes?: VisualEvidenceNote[] | null;
+  /** Auto Intelligence Enrichment (AIE v0.10). Null si ticket viejo sin enriquecer. */
+  intelligence?: TicketIntelligence | null;
 }
 
 export interface CreateTicketInput {
@@ -156,5 +159,27 @@ export async function replaceTicketEstimateFull(
   return call<{ success: true; ticket: Ticket } | { success: false; error: string }>(
     `/api/tickets/${encodeURIComponent(key)}/estimate/full`,
     { method: "POST", body: JSON.stringify(input) }
+  );
+}
+
+// =============================================================================
+// AIE v0.10 — Auto Intelligence Enrichment endpoints
+// =============================================================================
+
+/** PUT /api/tickets/:key/intelligence — persiste resultado del pipeline. */
+export async function updateTicketIntelligence(
+  key: string,
+  intelligence: TicketIntelligence,
+) {
+  return call<{ success: true; ticket: Ticket; conflict: { reason: string; serverHash: string } | null } | { success: false; error: string }>(
+    `/api/tickets/${encodeURIComponent(key)}/intelligence`,
+    { method: "PUT", body: JSON.stringify({ intelligence }) }
+  );
+}
+
+/** GET /api/tickets/:key/intelligence — lee solo el intelligence (lighter). */
+export async function getTicketIntelligence(key: string) {
+  return call<{ success: true; intelligence: TicketIntelligence | null } | { success: false; error: string }>(
+    `/api/tickets/${encodeURIComponent(key)}/intelligence`
   );
 }

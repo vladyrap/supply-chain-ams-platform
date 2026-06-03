@@ -54,7 +54,15 @@ export type TicketAuditEventType =
   | "N1_CHECKLIST_GENERATED"
   | "N1_CHECKLIST_COMPLETED"
   | "TICKET_RESOLVED_BY_N1"
-  | "TICKET_ESCALATED_TO_N2_WITH_PACKAGE";
+  | "TICKET_ESCALATED_TO_N2_WITH_PACKAGE"
+  // Auto Intelligence Enrichment (v0.10.0)
+  | "TICKET_AUTO_ENRICHMENT_QUEUED"
+  | "TICKET_AUTO_ENRICHMENT_STARTED"
+  | "TICKET_AUTO_ENRICHMENT_COMPLETED"
+  | "TICKET_AUTO_ENRICHMENT_FAILED"
+  | "TICKET_REANALYSIS_REQUESTED"
+  | "TICKET_REANALYSIS_COMPLETED"
+  | "TICKET_REANALYSIS_FAILED";
 
 export interface TicketAuditEvent {
   id: string;
@@ -122,6 +130,14 @@ export const EVENT_LABELS: Record<TicketAuditEventType, string> = {
   N1_CHECKLIST_COMPLETED:              "Checklist N1 completado",
   TICKET_RESOLVED_BY_N1:               "Resuelto por N1",
   TICKET_ESCALATED_TO_N2_WITH_PACKAGE: "Escalado a N2 con paquete",
+  // AIE v0.10
+  TICKET_AUTO_ENRICHMENT_QUEUED:       "Enriquecimiento encolado",
+  TICKET_AUTO_ENRICHMENT_STARTED:      "Enriquecimiento iniciado",
+  TICKET_AUTO_ENRICHMENT_COMPLETED:    "Enriquecimiento completado",
+  TICKET_AUTO_ENRICHMENT_FAILED:       "Enriquecimiento falló",
+  TICKET_REANALYSIS_REQUESTED:         "Reanálisis solicitado",
+  TICKET_REANALYSIS_COMPLETED:         "Reanálisis completado",
+  TICKET_REANALYSIS_FAILED:            "Reanálisis falló",
 };
 
 export const EVENT_ICONS: Record<TicketAuditEventType, string> = {
@@ -172,6 +188,13 @@ export const EVENT_ICONS: Record<TicketAuditEventType, string> = {
   N1_CHECKLIST_COMPLETED:              "✅",
   TICKET_RESOLVED_BY_N1:               "🟢",
   TICKET_ESCALATED_TO_N2_WITH_PACKAGE: "🚀",
+  TICKET_AUTO_ENRICHMENT_QUEUED:       "⏸",
+  TICKET_AUTO_ENRICHMENT_STARTED:      "🔄",
+  TICKET_AUTO_ENRICHMENT_COMPLETED:    "🤖",
+  TICKET_AUTO_ENRICHMENT_FAILED:       "⚠",
+  TICKET_REANALYSIS_REQUESTED:         "↻",
+  TICKET_REANALYSIS_COMPLETED:         "🔁",
+  TICKET_REANALYSIS_FAILED:            "✕",
 };
 
 export const EVENT_COLORS: Record<TicketAuditEventType, string> = {
@@ -222,4 +245,11 @@ export const EVENT_COLORS: Record<TicketAuditEventType, string> = {
   N1_CHECKLIST_COMPLETED:              "#10b981",
   TICKET_RESOLVED_BY_N1:               "#10b981",
   TICKET_ESCALATED_TO_N2_WITH_PACKAGE: "#ef4444",
+  TICKET_AUTO_ENRICHMENT_QUEUED:       "#64748b",
+  TICKET_AUTO_ENRICHMENT_STARTED:      "#22d3ee",
+  TICKET_AUTO_ENRICHMENT_COMPLETED:    "#10b981",
+  TICKET_AUTO_ENRICHMENT_FAILED:       "#ef4444",
+  TICKET_REANALYSIS_REQUESTED:         "#a855f7",
+  TICKET_REANALYSIS_COMPLETED:         "#10b981",
+  TICKET_REANALYSIS_FAILED:            "#ef4444",
 };

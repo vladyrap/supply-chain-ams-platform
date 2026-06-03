@@ -68,6 +68,10 @@ import { analyzeTicket } from "@/intelligence/core";
 // GTI v0.9.1 — Paquete N1 del Guided Ticket Intake
 import N1PackageSection from "./N1PackageSection";
 import AmsIntelligenceSummaryCard from "@/components/intelligence/AmsIntelligenceSummaryCard";
+// AIE v0.10 — Auto Intelligence Enrichment
+import { useAutoEnrichment } from "@/hooks/useAutoEnrichment";
+import TicketEnrichmentBadge from "./TicketEnrichmentBadge";
+import ReanalyzeButton from "./ReanalyzeButton";
 
 // --------------------------------------------------------------------
 // Sección colapsable
@@ -184,6 +188,17 @@ export default function TicketCommandCenter({ ticket, onTicketUpdated }: Props) 
   const actorRole = authUser?.role;
   const actingUserId = authUser?.id || "anonymous";
 
+  // AIE v0.10 — Auto Intelligence Enrichment (auto-trigger on mount)
+  // Si ticket.intelligence ya está enriched con hash actual → no re-ejecuta.
+  // Si pending o hash cambió → ejecuta pipeline + persiste (excepto jira).
+  const aie = useAutoEnrichment(ticket, { actor, autoTrigger: true, callGeminiAgent: true });
+  const cachedAnalysis = aie.intelligence?.analysis ?? null;
+  const isEnriching = aie.status === "enriching";
+  const isEnrichmentFailed = aie.status === "enrichment_failed";
+
+  // Análisis para el AmsIntelligenceSummaryCard — usar cache si está disponible,
+  // si no, calcular live (siempre se llama para respetar Rules of Hooks).
+
   // Ticket → IncidentLike (memo). Lo consumen los QuickActions Escalation,
   // Knowledge y Quality que esperan IncidentSummary.
   // Cuando el agente clasifique, sustituimos response por la respuesta real.
@@ -250,6 +265,24 @@ export default function TicketCommandCenter({ ticket, onTicketUpdated }: Props) 
     const ms = Date.now() - new Date(ticket.updated).getTime();
     return Math.floor(ms / (1000 * 60 * 60 * 24));
   }, [ticket.updated]);
+
+  // AIE v0.10 — análisis live (fallback cuando intelligence.analysis no está cacheado)
+  const liveAnalysis = useMemo(() => analyzeTicket(ticket, {
+    hasKnowledgeMatch: ticketKnowledge.length > 0,
+    hasPlaybook: ticketPlaybooks.length > 0,
+    playbookTitle: ticketPlaybooks[0]?.title,
+    hasScopeItem: scopeItems.length > 0,
+    scopeItemIds: scopeItems.map((s) => s.code),
+    hasErrorEvidence: (ticket.description || "").length > 80,
+    hasVisualEvidence: !!(ticket.visualEvidenceNotes && ticket.visualEvidenceNotes.length > 0),
+    hasEscalationN2: ticketEscalations.length > 0,
+    escalationKey: ticketEscalations[0]?.escalationNumber,
+    similarPastTicketsCount,
+    hasReusableResolution: similarPastTicketsCount > 0 && ticketKnowledge.length > 0,
+    daysSinceLastUpdate,
+    isProductive: (ticket.environment || "").toUpperCase() === "PRD",
+    actor,
+  }), [ticket, ticketKnowledge.length, ticketPlaybooks, scopeItems, ticketEscalations, similarPastTicketsCount, daysSinceLastUpdate, actor]);
 
   // Decisión del motor
   const decision = useMemo(() => analyzeTicketDecision(ticket, ticket.estimatedResolution, {
@@ -813,6 +846,12 @@ export default function TicketCommandCenter({ ticket, onTicketUpdated }: Props) 
               {ticket.environment && <Badge variant="muted">{ticket.environment}</Badge>}
               {ticket.assignee && <Badge variant="muted">@{ticket.assignee}</Badge>}
               {ticket.url && <a className="badge info" href={ticket.url} target="_blank" rel="noopener noreferrer">↗ Jira</a>}
+              {/* AIE v0.10 — Badge de enrichment */}
+              <TicketEnrichmentBadge
+                intelligence={aie.intelligence}
+                hasNewData={aie.hasNewData}
+                onClick={aie.hasNewData ? aie.reanalyze : undefined}
+              />
             </div>
           </div>
           <div className="col" style={{ gap: 6, alignItems: "flex-end" }}>
@@ -883,25 +922,33 @@ export default function TicketCommandCenter({ ticket, onTicketUpdated }: Props) 
         />
       )}
 
-      {/* DH v0.9 — Intelligence Summary Card (orquestador unificado) */}
-      <AmsIntelligenceSummaryCard
-        analysis={useMemo(() => analyzeTicket(ticket, {
-          hasKnowledgeMatch: ticketKnowledge.length > 0,
-          hasPlaybook: ticketPlaybooks.length > 0,
-          playbookTitle: ticketPlaybooks[0]?.title,
-          hasScopeItem: scopeItems.length > 0,
-          scopeItemIds: scopeItems.map((s) => s.code),
-          hasErrorEvidence: (ticket.description || "").length > 80,
-          hasVisualEvidence: !!(ticket.visualEvidenceNotes && ticket.visualEvidenceNotes.length > 0),
-          hasEscalationN2: ticketEscalations.length > 0,
-          escalationKey: ticketEscalations[0]?.escalationNumber,
-          similarPastTicketsCount,
-          hasReusableResolution: similarPastTicketsCount > 0 && ticketKnowledge.length > 0,
-          daysSinceLastUpdate,
-          isProductive: (ticket.environment || "").toUpperCase() === "PRD",
-          actor,
-        }), [ticket, ticketKnowledge.length, ticketPlaybooks, scopeItems, ticketEscalations, similarPastTicketsCount, daysSinceLastUpdate, actor])}
-      />
+      {/* AIE v0.10 — Banner enriching */}
+      {isEnriching && (
+        <div className="alert info" style={{ fontSize: 12, display: "flex", alignItems: "center", gap: 8 }}>
+          <span className="spinner" /> 🤖 Agente AMS está enriqueciendo el ticket…
+        </div>
+      )}
+
+      {/* AIE v0.10 — Alert enrichment_failed con botón reintentar */}
+      {isEnrichmentFailed && (
+        <div className="alert error" style={{ fontSize: 12 }}>
+          <div className="row between" style={{ alignItems: "center", gap: 8 }}>
+            <div>
+              ⚠ Enriquecimiento falló: {aie.error || aie.intelligence?.error || "error desconocido"}
+            </div>
+            <ReanalyzeButton
+              intelligence={aie.intelligence}
+              onReanalyze={aie.reanalyze}
+              hasNewData={aie.hasNewData}
+              variant="compact"
+            />
+          </div>
+        </div>
+      )}
+
+      {/* DH v0.9 — Intelligence Summary Card (orquestador unificado)
+          AIE v0.10: usa analysis cacheado del pipeline si existe; si no, live. */}
+      <AmsIntelligenceSummaryCard analysis={cachedAnalysis ?? liveAnalysis} />
 
       {/* Top: NBA + Readiness Score lado a lado */}
       <div style={{ display: "grid", gridTemplateColumns: "1.4fr 1fr", gap: 10 }}>
@@ -1023,9 +1070,37 @@ export default function TicketCommandCenter({ ticket, onTicketUpdated }: Props) 
 
       {/* Sección 3-4: Clasificación + diagnóstico */}
       <Section id="section-classification" title="CLASIFICACIÓN AMS · DIAGNÓSTICO" icon="🤖" accent="#10b981">
-        {!classification && (
-          <button className="btn primary" onClick={handleClassify} disabled={classifying}>
-            {classifying ? <><span className="spinner" /> Clasificando…</> : "🤖 Clasificar con Agente AMS"}
+        {/* AIE v0.10 — Reanalyze con Agente AMS (pipeline completo) */}
+        <div className="row" style={{ gap: 8, marginBottom: 10, alignItems: "center", flexWrap: "wrap" }}>
+          <ReanalyzeButton
+            intelligence={aie.intelligence}
+            onReanalyze={aie.reanalyze}
+            hasNewData={aie.hasNewData}
+            variant="full"
+          />
+          {aie.intelligence?.agentClassification && (
+            <span style={{ fontSize: 11, color: "var(--text-soft)" }}>
+              · agente:&nbsp;<Badge variant="tech">{aie.intelligence.agentClassification.model}</Badge>
+              <Badge variant={
+                aie.intelligence.agentClassification.confidence === "alta" ? "ok" :
+                aie.intelligence.agentClassification.confidence === "media" ? "warn" :
+                aie.intelligence.agentClassification.confidence === "baja" ? "error" : "muted"
+              }>conf: {aie.intelligence.agentClassification.confidence}</Badge>
+            </span>
+          )}
+        </div>
+
+        {/* Mostrar respuesta cacheada del agente si vino del pipeline */}
+        {aie.intelligence?.agentClassification?.response && !classification && (
+          <div className="msg agent" style={{ marginTop: 4 }}>
+            <div className="body"><MarkdownView text={aie.intelligence.agentClassification.response} /></div>
+          </div>
+        )}
+
+        {/* Compat: botón manual legacy (Gemini directo) */}
+        {!classification && !aie.intelligence?.agentClassification?.response && !isEnriching && (
+          <button className="btn ghost sm" onClick={handleClassify} disabled={classifying} style={{ fontSize: 11 }}>
+            {classifying ? <><span className="spinner" /> Clasificando…</> : "🤖 Clasificar manualmente"}
           </button>
         )}
         {classifyError && <div className="alert error" style={{ marginTop: 8 }}>{classifyError}</div>}

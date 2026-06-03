@@ -7,6 +7,7 @@ import { listTickets, getProviderStatus, type Ticket } from "@/services/tickets.
 import CreateTicketModal from "@/components/tickets/CreateTicketModal";
 import GuidedTicketIntakeModal from "@/components/tickets/GuidedTicketIntakeModal";
 import TicketEstimateBadge from "@/components/estimation/TicketEstimateBadge";
+import TicketEnrichmentBadge from "@/components/tickets/TicketEnrichmentBadge";
 import TicketCommandCenter from "@/components/tickets/TicketCommandCenter";
 import GuidedAmsDemo from "@/components/demo/GuidedAmsDemo";
 import { useAuth } from "@/context/AuthContext";
@@ -152,6 +153,8 @@ export default function TicketsPage() {
                       {t.sapModule && <Badge variant="muted">{t.sapModule}</Badge>}
                       {t.source === "user" && <Badge variant="info">creado</Badge>}
                       <TicketEstimateBadge estimate={t.estimatedResolution} />
+                      {/* AIE v0.10 — badge compact de enrichment */}
+                      <TicketEnrichmentBadge intelligence={t.intelligence} showLabel={false} />
                     </div>
                   </button>
                 );
