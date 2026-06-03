@@ -102,6 +102,45 @@ export function useAutoEnrichment(
           callGeminiAgent,
         });
 
+        // SA v0.11 — emitir audit trail del orchestrator si corrió
+        const sa = result.intelligence.specialistAnalysis;
+        if (sa) {
+          if (source === "reanalysis") {
+            audit.record({
+              ticketId: key,
+              eventType: "AMS_SPECIALIST_REANALYSIS_REQUESTED",
+              title: "Reanálisis de especialistas solicitado",
+              actor, actorRole: "system", source: "ui",
+            });
+          }
+          audit.record({
+            ticketId: key,
+            eventType: "AMS_ORCHESTRATOR_ANALYSIS_COMPLETED",
+            title: `Orquestador AMS · ${sa.primaryAnalysis.specialist} (${sa.confidenceScore}%)`,
+            description:
+              `${sa.routing.primarySpecialist} primary, ${sa.secondaryAnalyses.length} secondaries. ` +
+              `${sa.nextBestAction}`,
+            actor, actorRole: "system", source: "system",
+            metadata: {
+              primarySpecialist: sa.primaryAnalysis.specialist,
+              secondarySpecialists: sa.secondaryAnalyses.map((s) => s.specialist),
+              routingConfidence: sa.routing.confidenceScore,
+              globalConfidence: sa.confidenceScore,
+              confidenceLevel: sa.confidenceLevel,
+              requiresHumanReview: sa.requiresHumanReview,
+              analysisId: sa.analysisId,
+            },
+          });
+          if (source === "reanalysis") {
+            audit.record({
+              ticketId: key,
+              eventType: "AMS_SPECIALIST_REANALYSIS_COMPLETED",
+              title: "Reanálisis de especialistas completado",
+              actor, actorRole: "system", source: "system",
+            });
+          }
+        }
+
         // Si jira → solo memoria local
         if (t.source === "jira") {
           jiraInMemoryCache.set(key, result.intelligence);
@@ -110,12 +149,14 @@ export function useAutoEnrichment(
             ticketId: key,
             eventType: source === "reanalysis" ? "TICKET_REANALYSIS_COMPLETED" : "TICKET_AUTO_ENRICHMENT_COMPLETED",
             title: `Enriquecimiento ${source === "reanalysis" ? "reejecutado" : "completado"} (jira - local memory)`,
-            description: `readiness ${result.intelligence.analysis?.readinessScore ?? "?"} · gemini=${result.geminiCalled}`,
+            description: `readiness ${result.intelligence.analysis?.readinessScore ?? "?"} · gemini=${result.geminiCalled} · specialists=${result.specialistsCalled}`,
             actor, actorRole: "system", source: "system",
             metadata: {
               readinessScore: result.intelligence.analysis?.readinessScore,
               durationMs: result.durationMs,
               geminiCalled: result.geminiCalled,
+              specialistsCalled: result.specialistsCalled,
+              primarySpecialist: sa?.primaryAnalysis.specialist,
             },
           });
           return result.intelligence;
@@ -139,6 +180,9 @@ export function useAutoEnrichment(
               confidence: finalIntel.analysis?.confidenceGlobal,
               durationMs: result.durationMs,
               geminiCalled: result.geminiCalled,
+              specialistsCalled: result.specialistsCalled,
+              primarySpecialist: finalIntel.specialistAnalysis?.primaryAnalysis.specialist,
+              specialistConfidence: finalIntel.specialistAnalysis?.confidenceScore,
               skipped: result.skipped,
             },
           });

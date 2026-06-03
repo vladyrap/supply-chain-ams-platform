@@ -7,6 +7,7 @@
 
 import type { IntelligenceAnalysis } from "@/intelligence/types";
 import type { N1Package } from "@/types/guided-ticket-intake";
+import type { OrchestratedAMSAnalysis } from "@/intelligence/specialists/types";
 
 export type IntelligenceStatus =
   | "pending_enrichment"
@@ -33,6 +34,8 @@ export interface TicketIntelligence {
   n1Package?: N1Package;
   /** Clasificación de Gemini real (opcional). */
   agentClassification?: AgentClassificationResult;
+  /** AMS Specialists v0.11 — análisis del orchestrator (router + specialists). */
+  specialistAnalysis?: OrchestratedAMSAnalysis;
   /** Mensaje de error si status=enrichment_failed. */
   error?: string;
 }

@@ -72,6 +72,8 @@ import AmsIntelligenceSummaryCard from "@/components/intelligence/AmsIntelligenc
 import { useAutoEnrichment } from "@/hooks/useAutoEnrichment";
 import TicketEnrichmentBadge from "./TicketEnrichmentBadge";
 import ReanalyzeButton from "./ReanalyzeButton";
+// SA v0.11 — AMS Specialists (interno, agente único de cara al usuario)
+import AmsSpecialistsSection from "./AmsSpecialistsSection";
 
 // --------------------------------------------------------------------
 // Sección colapsable
@@ -949,6 +951,12 @@ export default function TicketCommandCenter({ ticket, onTicketUpdated }: Props) 
       {/* DH v0.9 — Intelligence Summary Card (orquestador unificado)
           AIE v0.10: usa analysis cacheado del pipeline si existe; si no, live. */}
       <AmsIntelligenceSummaryCard analysis={cachedAnalysis ?? liveAnalysis} />
+
+      {/* SA v0.11 — AMS Specialists Section (vista interna del orquestador) */}
+      <AmsSpecialistsSection
+        intelligence={aie.intelligence}
+        onReanalyze={aie.reanalyze}
+      />
 
       {/* Top: NBA + Readiness Score lado a lado */}
       <div style={{ display: "grid", gridTemplateColumns: "1.4fr 1fr", gap: 10 }}>

@@ -62,7 +62,16 @@ export type TicketAuditEventType =
   | "TICKET_AUTO_ENRICHMENT_FAILED"
   | "TICKET_REANALYSIS_REQUESTED"
   | "TICKET_REANALYSIS_COMPLETED"
-  | "TICKET_REANALYSIS_FAILED";
+  | "TICKET_REANALYSIS_FAILED"
+  // AMS Specialist Agents (v0.11.0) — orquestador interno, agente único de cara al usuario
+  | "AMS_SPECIALIST_ROUTING_STARTED"
+  | "AMS_SPECIALIST_ROUTING_COMPLETED"
+  | "AMS_SPECIALIST_ANALYSIS_STARTED"
+  | "AMS_SPECIALIST_ANALYSIS_COMPLETED"
+  | "AMS_SPECIALIST_ANALYSIS_FAILED"
+  | "AMS_ORCHESTRATOR_ANALYSIS_COMPLETED"
+  | "AMS_SPECIALIST_REANALYSIS_REQUESTED"
+  | "AMS_SPECIALIST_REANALYSIS_COMPLETED";
 
 export interface TicketAuditEvent {
   id: string;
@@ -138,6 +147,14 @@ export const EVENT_LABELS: Record<TicketAuditEventType, string> = {
   TICKET_REANALYSIS_REQUESTED:         "Reanálisis solicitado",
   TICKET_REANALYSIS_COMPLETED:         "Reanálisis completado",
   TICKET_REANALYSIS_FAILED:            "Reanálisis falló",
+  AMS_SPECIALIST_ROUTING_STARTED:      "Router de especialistas iniciado",
+  AMS_SPECIALIST_ROUTING_COMPLETED:    "Router de especialistas completado",
+  AMS_SPECIALIST_ANALYSIS_STARTED:     "Análisis de especialista iniciado",
+  AMS_SPECIALIST_ANALYSIS_COMPLETED:   "Análisis de especialista completado",
+  AMS_SPECIALIST_ANALYSIS_FAILED:      "Análisis de especialista falló",
+  AMS_ORCHESTRATOR_ANALYSIS_COMPLETED: "Orquestador AMS consolidado",
+  AMS_SPECIALIST_REANALYSIS_REQUESTED: "Reanálisis especialistas solicitado",
+  AMS_SPECIALIST_REANALYSIS_COMPLETED: "Reanálisis especialistas completado",
 };
 
 export const EVENT_ICONS: Record<TicketAuditEventType, string> = {
@@ -195,6 +212,14 @@ export const EVENT_ICONS: Record<TicketAuditEventType, string> = {
   TICKET_REANALYSIS_REQUESTED:         "↻",
   TICKET_REANALYSIS_COMPLETED:         "🔁",
   TICKET_REANALYSIS_FAILED:            "✕",
+  AMS_SPECIALIST_ROUTING_STARTED:      "🧭",
+  AMS_SPECIALIST_ROUTING_COMPLETED:    "🎯",
+  AMS_SPECIALIST_ANALYSIS_STARTED:     "🔍",
+  AMS_SPECIALIST_ANALYSIS_COMPLETED:   "✅",
+  AMS_SPECIALIST_ANALYSIS_FAILED:      "⚠",
+  AMS_ORCHESTRATOR_ANALYSIS_COMPLETED: "🤝",
+  AMS_SPECIALIST_REANALYSIS_REQUESTED: "↻",
+  AMS_SPECIALIST_REANALYSIS_COMPLETED: "🔁",
 };
 
 export const EVENT_COLORS: Record<TicketAuditEventType, string> = {
@@ -252,4 +277,12 @@ export const EVENT_COLORS: Record<TicketAuditEventType, string> = {
   TICKET_REANALYSIS_REQUESTED:         "#a855f7",
   TICKET_REANALYSIS_COMPLETED:         "#10b981",
   TICKET_REANALYSIS_FAILED:            "#ef4444",
+  AMS_SPECIALIST_ROUTING_STARTED:      "#64748b",
+  AMS_SPECIALIST_ROUTING_COMPLETED:    "#22d3ee",
+  AMS_SPECIALIST_ANALYSIS_STARTED:     "#22d3ee",
+  AMS_SPECIALIST_ANALYSIS_COMPLETED:   "#10b981",
+  AMS_SPECIALIST_ANALYSIS_FAILED:      "#ef4444",
+  AMS_ORCHESTRATOR_ANALYSIS_COMPLETED: "#10b981",
+  AMS_SPECIALIST_REANALYSIS_REQUESTED: "#a855f7",
+  AMS_SPECIALIST_REANALYSIS_COMPLETED: "#10b981",
 };

@@ -19,6 +19,8 @@ import { analyzeTicket, invalidateIntelligenceCache } from "./core";
 import { buildN1Package } from "./n1-package-builder";
 import { computeAnalysisInputHash } from "./input-hash";
 import type { GuidedTicketDraft } from "@/types/guided-ticket-intake";
+import { orchestrateAMSAnalysis } from "./ams-orchestrator";
+import type { OrchestratedAMSAnalysis, SpecialistAnalysisInput } from "./specialists/types";
 
 /** Opciones del pipeline. */
 export interface PipelineOptions {
@@ -32,6 +34,8 @@ export interface PipelineOptions {
   actor?: string;
   /** Source del trigger: "auto" | "manual" | "guided_intake" | "demo". */
   source?: "auto" | "manual" | "guided_intake" | "demo";
+  /** Si true, ejecuta AMS Specialists Orchestrator (v0.11). Default true. */
+  callSpecialists?: boolean;
 }
 
 /** Resultado del pipeline. */
@@ -41,6 +45,8 @@ export interface PipelineResult {
   skipped: boolean;
   /** Si llamó Gemini, el resultado o null si falló/timeout. */
   geminiCalled: boolean;
+  /** Si ejecutó AMS Specialists Orchestrator. */
+  specialistsCalled: boolean;
   /** Duración total en ms. */
   durationMs: number;
 }
@@ -102,6 +108,7 @@ export async function runAutoEnrichmentPipeline(
     force = false,
     actor = "system",
     source = "auto",
+    callSpecialists = true,
   } = opts;
 
   // 1. Hash + idempotencia
@@ -114,6 +121,7 @@ export async function runAutoEnrichmentPipeline(
       intelligence: ticket.intelligence as TicketIntelligence,
       skipped: true,
       geminiCalled: false,
+      specialistsCalled: false,
       durationMs: Date.now() - t0,
     };
   }
@@ -145,6 +153,7 @@ export async function runAutoEnrichmentPipeline(
       },
       skipped: false,
       geminiCalled: false,
+      specialistsCalled: false,
       durationMs: Date.now() - t0,
     };
   }
@@ -187,6 +196,32 @@ export async function runAutoEnrichmentPipeline(
     }
   }
 
+  // 4.5. AMS Specialists Orchestrator (v0.11) — best-effort, sin IA externa
+  let specialistAnalysis: OrchestratedAMSAnalysis | undefined;
+  let specialistsCalled = false;
+  if (callSpecialists) {
+    specialistsCalled = true;
+    try {
+      const specInput: SpecialistAnalysisInput = {
+        ticketKey: ticket.key,
+        title: ticket.title,
+        description: ticket.description,
+        module: ticket.sapModule ?? undefined,
+        environment: ticket.environment ?? undefined,
+        priority: ticket.priority ?? undefined,
+        errorMessage: undefined,
+        evidenceNotes: (ticket.visualEvidenceNotes ?? []).map((v) => v.analysisSummary).filter(Boolean),
+        source: ticket.source === "jira" ? "jira" : ticket.source === "user" ? "ticket" : "demo",
+      };
+      specialistAnalysis = orchestrateAMSAnalysis(specInput);
+    } catch (err) {
+      // Best-effort — si falla, conservamos todo el resto
+      if (process.env.NODE_ENV !== "production") {
+        console.warn(`[auto-enrichment] specialists orchestrator failed:`, (err as Error).message);
+      }
+    }
+  }
+
   // 5. Construir resultado
   const intelligence: TicketIntelligence = {
     status: "enriched",
@@ -196,12 +231,14 @@ export async function runAutoEnrichmentPipeline(
     analysis,
     n1Package,
     agentClassification,
+    specialistAnalysis,
   };
 
   return {
     intelligence,
     skipped: false,
     geminiCalled,
+    specialistsCalled,
     durationMs: Date.now() - t0,
   };
 }
