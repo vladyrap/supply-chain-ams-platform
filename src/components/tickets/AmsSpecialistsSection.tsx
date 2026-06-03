@@ -60,15 +60,24 @@ export default function AmsSpecialistsSection({ intelligence, onReanalyze }: Pro
       padding: 12,
       maxHeight: expanded ? 700 : 320,
       overflow: "hidden",
+      minWidth: 0,                          // FIX-1 v0.12.1 — evita overflow del parent grid
+      wordBreak: "normal",                  // FIX-1 — defensivo, evita break-all heredado
+      overflowWrap: "break-word",
       transition: "max-height 0.2s ease",
     }}>
       {/* Header */}
-      <div className="row between" style={{ alignItems: "flex-start", marginBottom: 10 }}>
-        <div>
+      <div className="row between" style={{
+        alignItems: "flex-start", marginBottom: 10,
+        gap: 8, flexWrap: "wrap",           // FIX-1 — el header puede romper en 2 líneas
+      }}>
+        <div style={{ minWidth: 0, flex: "1 1 200px" }}>
           <div style={{ fontSize: 10, letterSpacing: 2.5, color: "var(--text-dim)" }}>
             ▸ AMS · ESPECIALISTAS
           </div>
-          <div style={{ fontSize: 14, fontWeight: 700, marginTop: 2, color: primaryColor }}>
+          <div style={{
+            fontSize: 14, fontWeight: 700, marginTop: 2, color: primaryColor,
+            overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap",
+          }}>
             {primaryIcon} {primaryLabel}
           </div>
           <div style={{ fontSize: 10.5, color: "var(--text-dim)", marginTop: 1 }}>
@@ -79,11 +88,11 @@ export default function AmsSpecialistsSection({ intelligence, onReanalyze }: Pro
             )}
           </div>
         </div>
-        <div className="row" style={{ gap: 6 }}>
+        <div className="row" style={{ gap: 6, flexShrink: 0 }}>
           <button
             className="btn ghost"
             onClick={() => setExpanded((e) => !e)}
-            style={{ fontSize: 11, padding: "4px 10px" }}
+            style={{ fontSize: 11, padding: "4px 10px", whiteSpace: "nowrap" }}
           >
             {expanded ? "▲ Compactar" : "▼ Ver detalle"}
           </button>
@@ -93,12 +102,12 @@ export default function AmsSpecialistsSection({ intelligence, onReanalyze }: Pro
               onClick={handleReanalyze}
               disabled={busy}
               style={{
-                fontSize: 11, padding: "4px 10px",
+                fontSize: 11, padding: "4px 10px", whiteSpace: "nowrap",
                 color: "#22d3ee", borderColor: "#22d3ee55",
               }}
               title="Reejecuta router + especialistas con la data actual"
             >
-              {busy ? <><span className="spinner" /> analizando…</> : "↻ Reanalizar especialistas"}
+              {busy ? <><span className="spinner" /> analizando…</> : "↻ Reanalizar"}
             </button>
           )}
         </div>

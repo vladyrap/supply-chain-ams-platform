@@ -33,17 +33,27 @@ interface Props {
   actor: string;
 }
 
-/** Reconstruye un draft mínimo desde un Ticket — usado cuando no vino del wizard. */
+/** Reconstruye un draft mínimo desde un Ticket — usado cuando no vino del wizard.
+ *  v0.12.1 — usa toda la descripción + datos de intelligence si están disponibles
+ *  para que el N1 package no quede vacío en tickets viejos. */
 function reconstructDraftFromTicket(ticket: Ticket): GuidedTicketDraft {
+  const intel = ticket.intelligence;
+  const analysis = intel?.analysis as { detectedContext?: { issueType?: string; module?: string; process?: string; transaction?: string } } | undefined;
+  const ctx = analysis?.detectedContext;
   return {
     title: ticket.title,
     context: {
       environment: ticket.environment || "",
-      sapModule: ticket.sapModule || "",
+      sapModule: ticket.sapModule || ctx?.module || "",
+      process: ctx?.process || "",
+      transaction: ctx?.transaction || "",
       priority: ticket.priority || "Medium",
     },
     problem: {
-      whatIntended: ticket.description?.slice(0, 200) || "",
+      // FIX-2 — usar descripción completa, no truncar a 200; buildN1Package decide
+      whatIntended: ticket.description || "",
+      // Si tenemos analysis con error code detectado, lo pasamos
+      errorMessageExact: "",
     },
     sapData: {},
     evidence: {

@@ -229,33 +229,63 @@ export function useAutoEnrichment(
   // TCC v0.12 — anti-loop reforzado:
   //   1. Si hay lock en vuelo para este ticketKey → skip
   //   2. Si status=enriching → skip (alguien más lo está corriendo)
-  //   3. Si status=enriched + hash igual → skip
-  //   4. Solo dispara si pending o sin status
+  //   3. Si status=enriched + hash igual + analysis presente → skip
+  //   4. FIX v0.12.1: enriched pero analysis vacío → tratar como pending
+  //   5. Si status=enrichment_failed → NO auto-disparar (loop risk); requiere reanalyze manual
+  //   6. Si pending o sin status → disparar
   useEffect(() => {
     if (!autoTrigger || !ticket) return;
     let cancelled = false;
     (async () => {
       // Guard 1: lock en vuelo
-      if (inFlightLocks.has(ticket.key)) return;
+      if (inFlightLocks.has(ticket.key)) {
+        if (process.env.NODE_ENV !== "production") {
+          console.info(`[AIE] ${ticket.key} skip: lock en vuelo`);
+        }
+        return;
+      }
 
       const newHash = await computeAnalysisInputHash(ticket);
       const cachedHash = ticket.intelligence?.inputHash;
       const status = ticket.intelligence?.status;
+      const hasAnalysis = !!ticket.intelligence?.analysis;
 
-      // Guard 2: ya está enriching (otro caller en otro mount)
+      // Guard 2: ya está enriching
       if (status === "enriching") return;
+
+      // Guard 5: enrichment_failed — no auto-disparar (requiere acción manual)
+      if (status === "enrichment_failed") {
+        if (process.env.NODE_ENV !== "production") {
+          console.info(`[AIE] ${ticket.key} skip: enrichment_failed — usá Reanalizar manualmente`);
+        }
+        return;
+      }
 
       // Detectar "datos nuevos" para mostrar badge en UI
       if (status === "enriched" && cachedHash && cachedHash !== newHash) {
         if (!cancelled) setHasNewData(true);
-        return;  // No re-disparar automáticamente, solo avisar
+        return;
       }
 
-      // Guard 3: enriched + hash igual → nothing to do
-      if (status === "enriched" && cachedHash === newHash) return;
+      // Guard 3: enriched + hash igual + tiene analysis real → skip
+      if (status === "enriched" && cachedHash === newHash && hasAnalysis) return;
 
-      // Disparar si pending o nunca enriquecido
-      if (status === "pending_enrichment" || !status || status === undefined) {
+      // Guard 4: enriched pero analysis vacío/missing (seed antiguo, DB drift) → disparar
+      if (status === "enriched" && !hasAnalysis) {
+        if (process.env.NODE_ENV !== "production") {
+          console.info(`[AIE] ${ticket.key} status=enriched pero analysis vacío — re-disparando`);
+        }
+        if (cancelled) return;
+        await runPipeline(true, "auto"); // force=true para sobrescribir el enriched vacío
+        if (!cancelled) setHasNewData(false);
+        return;
+      }
+
+      // Caso normal: pending o sin status
+      if (status === "pending_enrichment" || !status) {
+        if (process.env.NODE_ENV !== "production") {
+          console.info(`[AIE] ${ticket.key} disparando (status=${status ?? "none"})`);
+        }
         if (cancelled) return;
         await runPipeline(false, "auto");
         if (!cancelled) setHasNewData(false);
