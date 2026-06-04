@@ -236,11 +236,14 @@ export default function N1PackageSection({
         </div>
       </div>
 
-      {/* BODY — scroll interno opcional */}
+      {/* BODY — scroll interno opcional. v0.14.5: display:block forzado para
+          neutralizar cualquier flex/grid heredado del padre que rompa width */}
       <div style={{
+        display: "block",
         flex: 1, minHeight: 0,
         ...(needsScroll ? { overflowY: "auto", overflowX: "hidden" } : {}),
         width: "100%", minWidth: 0,
+        boxSizing: "border-box",
       }}>
         {/* Clasificación + ETA en una fila */}
         <div style={{
@@ -339,24 +342,35 @@ export default function N1PackageSection({
             <div style={{ fontSize: 9.5, letterSpacing: 1.2, color: "var(--text-dim)", marginBottom: 4 }}>
               CHECKLIST N1 ({ui.checklistItems.filter((c) => !c.requiresN2).length} resoluble · {ui.checklistItems.filter((c) => c.requiresN2).length} requiere N2)
             </div>
-            <div style={{ display: "flex", flexDirection: "column", gap: 4, width: "100%", minWidth: 0 }}>
+            <div style={{
+              display: "grid",
+              gridTemplateColumns: "1fr",
+              gap: 4,
+              width: "100%",
+              minWidth: 0,
+            }}>
               {ui.checklistItems.map((c) => {
                 const checked = !!checklistState[c.id];
                 const itemColor = c.requiresN2 ? "#ef4444" : "#10b981";
                 return (
-                  // v0.14.4 — div (no label) para evitar CSS global que rompe flex
+                  // v0.14.5 — CSS Grid en lugar de Flex para forzar columnas
+                  // grid-template-columns: auto 1fr auto = checkbox / texto / badge
                   <div
                     key={c.id}
                     onClick={() => c.requiresN2 ? undefined : toggleChecklist(c.id)}
                     style={{
-                      display: "flex", alignItems: "flex-start", gap: 8,
+                      display: "grid",
+                      gridTemplateColumns: "auto minmax(0, 1fr) auto",
+                      gap: 8,
+                      alignItems: "start",
                       padding: "6px 8px",
                       background: c.requiresN2 ? "rgba(239,68,68,0.05)" : "rgba(16,185,129,0.04)",
                       borderLeft: `3px solid ${itemColor}aa`,
                       borderRadius: 3,
                       cursor: c.requiresN2 ? "not-allowed" : "pointer",
                       fontSize: 11.5,
-                      width: "100%", minWidth: 0, boxSizing: "border-box",
+                      width: "100%",
+                      boxSizing: "border-box",
                       transition: "background 0.15s ease",
                     }}
                   >
@@ -365,12 +379,16 @@ export default function N1PackageSection({
                       checked={checked}
                       onChange={() => toggleChecklist(c.id)}
                       disabled={c.requiresN2}
-                      style={{ marginTop: 2, flexShrink: 0, cursor: c.requiresN2 ? "not-allowed" : "pointer" }}
+                      style={{
+                        marginTop: 3,
+                        cursor: c.requiresN2 ? "not-allowed" : "pointer",
+                      }}
                       onClick={(e) => e.stopPropagation()}
                     />
                     <div style={{
-                      flex: "1 1 0", minWidth: 0,
-                      wordBreak: "normal", overflowWrap: "break-word",
+                      minWidth: 0,
+                      wordBreak: "break-word",
+                      overflowWrap: "anywhere",
                     }}>
                       <div style={{
                         color: c.requiresN2 ? "var(--text-dim)" : "var(--text)",
@@ -391,15 +409,15 @@ export default function N1PackageSection({
                         </div>
                       )}
                     </div>
-                    {/* Badge a la derecha */}
                     <span style={{
-                      flexShrink: 0,
                       fontSize: 9, fontWeight: 700, letterSpacing: 1,
-                      padding: "1px 6px", borderRadius: 3,
+                      padding: "2px 6px", borderRadius: 3,
                       background: c.requiresN2 ? "rgba(239,68,68,0.20)" : "rgba(16,185,129,0.20)",
                       color: itemColor,
                       border: `1px solid ${itemColor}55`,
-                      alignSelf: "center",
+                      alignSelf: "start",
+                      marginTop: 2,
+                      height: "fit-content",
                     }}>
                       {c.requiresN2 ? "N2" : "N1"}
                     </span>
