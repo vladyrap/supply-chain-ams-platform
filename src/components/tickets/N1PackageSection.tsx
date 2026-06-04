@@ -4,21 +4,21 @@
 // N1PackageSection — Sección dedicada en el Ticket Command Center
 // =============================================================================
 // Muestra el "Paquete N1" del ticket (cuando se creó via Guided Intake o se
-// puede inferir). Incluye:
-//   - Readiness score + info recibida + faltantes
-//   - Checklist N1 ejecutable (toggle completado)
-//   - Playbook sugerido
-//   - Respuesta cliente sugerida
-//   - Criterio escalamiento N2
-//   - Botones: "Marcar resuelto N1" / "Escalar con paquete completo"
+// puede inferir). v0.14.4 refactor visual:
+//   - Header con score como mini progress bar (sin número flotante)
+//   - Estados claros: vacío / loading / failed / contenido
+//   - Datos recibidos vs faltantes en dos columnas
+//   - Checklist con <div> clickeable (no <label>) + badge N1/N2
+//   - Scroll interno solo si > 8 items
+//   - Defensivo contra data corrupta via normalizeN1PackageForUI()
 // =============================================================================
 
 import { useMemo, useState } from "react";
 import type { Ticket } from "@/services/tickets.api";
 import type { GuidedTicketDraft, ChecklistN1Item } from "@/types/guided-ticket-intake";
-import { ESCALATION_CRITERION_LABELS } from "@/types/guided-ticket-intake";
 import { buildN1Package, buildEscalationPayload } from "@/intelligence/n1-package-builder";
-import { READINESS_COLORS, READINESS_LABELS } from "@/utils/ticket-readiness-engine";
+import { ESCALATION_CRITERION_LABELS } from "@/types/guided-ticket-intake";
+import { normalizeN1PackageForUI } from "@/intelligence/n1-package-ui-normalizer";
 
 interface Props {
   ticket: Ticket;
@@ -33,9 +33,7 @@ interface Props {
   actor: string;
 }
 
-/** Reconstruye un draft mínimo desde un Ticket — usado cuando no vino del wizard.
- *  v0.12.1 — usa toda la descripción + datos de intelligence si están disponibles
- *  para que el N1 package no quede vacío en tickets viejos. */
+/** Reconstruye un draft mínimo desde un Ticket — usado cuando no vino del wizard. */
 function reconstructDraftFromTicket(ticket: Ticket): GuidedTicketDraft {
   const intel = ticket.intelligence;
   const analysis = intel?.analysis as { detectedContext?: { issueType?: string; module?: string; process?: string; transaction?: string } } | undefined;
@@ -50,9 +48,7 @@ function reconstructDraftFromTicket(ticket: Ticket): GuidedTicketDraft {
       priority: ticket.priority || "Medium",
     },
     problem: {
-      // FIX-2 — usar descripción completa, no truncar a 200; buildN1Package decide
       whatIntended: ticket.description || "",
-      // Si tenemos analysis con error code detectado, lo pasamos
       errorMessageExact: "",
     },
     sapData: {},
@@ -72,6 +68,13 @@ export default function N1PackageSection({
     [intakeDraft, ticket],
   );
   const n1Package = useMemo(() => buildN1Package(draft), [draft]);
+  // v0.14.4 — normalizar para UI (filtra items vacíos, deriva readinessLevel, etc.)
+  const ui = useMemo(() => normalizeN1PackageForUI(n1Package), [n1Package]);
+
+  // Estado del ticket para mostrar loading / failed apropiadamente
+  const enrichStatus = ticket.intelligence?.status;
+  const isEnriching = enrichStatus === "enriching";
+  const isFailed = enrichStatus === "enrichment_failed";
 
   // Estado de checklist (qué items marcó el operador como hechos)
   const [checklistState, setChecklistState] = useState<Record<string, boolean>>({});
@@ -79,7 +82,7 @@ export default function N1PackageSection({
   const [showEscalateForm, setShowEscalateForm] = useState(false);
   const [resolutionNote, setResolutionNote] = useState("");
   const [escalationReason, setEscalationReason] = useState("");
-  const [primaryCriterion, setPrimaryCriterion] = useState(
+  const [primaryCriterion, setPrimaryCriterion] = useState<string>(
     n1Package.escalationCriteria[0] ?? "no_playbook_available",
   );
 
@@ -96,21 +99,18 @@ export default function N1PackageSection({
 
   function handleEscalate() {
     if (!escalationReason.trim()) return;
-    // Convertir checklistState a items
     const completedIds = Object.keys(checklistState).filter((k) => checklistState[k]);
     const updatedChecklist: ChecklistN1Item[] = n1Package.n1Checklist.map((c) =>
-      completedIds.includes(c.id) ? { ...c, completed: true } : c
+      completedIds.includes(c.id) ? { ...c, completed: true } : c,
     );
-    const actionsTaken = updatedChecklist
-      .filter((c) => c.completed)
-      .map((c) => c.label);
+    const actionsTaken = updatedChecklist.filter((c) => c.completed).map((c) => c.label);
 
     const payload = buildEscalationPayload({
       ticketKey: ticket.key,
       draft,
       n1Package: { ...n1Package, n1Checklist: updatedChecklist },
       n1ActionsTaken: actionsTaken,
-      hypothesesRuledOut: [], // futura iteración: form para que el N1 declare hipótesis
+      hypothesesRuledOut: [],
       escalationReason,
       primaryCriterion: primaryCriterion as never,
       escalatedBy: actor,
@@ -120,177 +120,304 @@ export default function N1PackageSection({
     setEscalationReason("");
   }
 
-  const readinessColor = READINESS_COLORS[n1Package.readinessStatus];
+  // ── Estado: loading (enriching) ─────────────────────────────────────────
+  if (isEnriching) {
+    return (
+      <div className="card" style={{
+        borderLeft: "4px solid #22d3ee", padding: 14,
+        display: "flex", flexDirection: "column", gap: 8,
+        width: "100%", minWidth: 0, boxSizing: "border-box",
+      }}>
+        <div style={{ fontSize: 10, letterSpacing: 2.4, color: "var(--text-dim)" }}>
+          ▸ PAQUETE · N1
+        </div>
+        <div style={{ display: "flex", alignItems: "center", gap: 8, fontSize: 13, color: "var(--text-soft)" }}>
+          <span className="spinner" /> 🧭 Generando Paquete N1…
+        </div>
+        {/* skeleton 3 filas */}
+        <div style={{ display: "flex", flexDirection: "column", gap: 6, marginTop: 4 }}>
+          {[1, 2, 3].map((i) => (
+            <div key={i} style={{
+              height: 14, borderRadius: 3,
+              background: "linear-gradient(90deg, rgba(34,211,238,0.10), rgba(34,211,238,0.04))",
+              animation: "amsPulse 1.5s ease-in-out infinite",
+            }} />
+          ))}
+        </div>
+      </div>
+    );
+  }
+
+  // ── Estado: failed ───────────────────────────────────────────────────────
+  if (isFailed) {
+    return (
+      <div className="card" style={{
+        borderLeft: "4px solid #ef4444", padding: 14,
+        display: "flex", flexDirection: "column", gap: 8,
+        width: "100%", minWidth: 0, boxSizing: "border-box",
+      }}>
+        <div style={{ fontSize: 10, letterSpacing: 2.4, color: "var(--text-dim)" }}>
+          ▸ PAQUETE · N1
+        </div>
+        <div style={{ fontSize: 13, color: "#fca5a5" }}>
+          ⚠ No se pudo generar el Paquete N1: {ticket.intelligence?.error || "error desconocido"}
+        </div>
+        <div style={{ fontSize: 11, color: "var(--text-dim)" }}>
+          Tocá <strong>Reanalizar con Agente AMS</strong> arriba para reintentar.
+        </div>
+      </div>
+    );
+  }
+
+  // ── Estado: ui null o sin contenido ──────────────────────────────────────
+  if (!ui || !ui.hasContent) {
+    return (
+      <div className="card" style={{
+        borderLeft: "4px solid #94a3b8", padding: 14,
+        display: "flex", flexDirection: "column", gap: 6,
+        width: "100%", minWidth: 0, boxSizing: "border-box",
+      }}>
+        <div style={{ fontSize: 10, letterSpacing: 2.4, color: "var(--text-dim)" }}>
+          ▸ PAQUETE · N1
+        </div>
+        <div style={{ fontSize: 13, color: "var(--text-soft)" }}>
+          🧭 Este ticket aún no tiene Paquete N1 generado.
+        </div>
+        <div style={{ fontSize: 11, color: "var(--text-dim)" }}>
+          Se generará automáticamente cuando el ticket termine de enriquecerse, o reanalizá manualmente.
+        </div>
+      </div>
+    );
+  }
+
+  // ── Estado: contenido normal ─────────────────────────────────────────────
+  // Scroll interno SOLO si el checklist tiene más de 8 items
+  const needsScroll = ui.checklistItems.length > 8;
+  const maxCardHeight = needsScroll ? 620 : undefined;
 
   return (
     <div className="card" style={{
-      borderLeft: `4px solid ${readinessColor}`,
+      borderLeft: `4px solid ${ui.readinessColor}`,
       padding: 14,
-      // Cap defensivo — la card no debe empujar el TCC
-      maxHeight: 580,
-      overflow: "hidden",
-      display: "flex",
-      flexDirection: "column",
-      // FIX v0.14.2 — anti texto-vertical-roto
-      width: "100%",
-      minWidth: 0,
-      boxSizing: "border-box",
-      wordBreak: "normal",
-      overflowWrap: "break-word",
+      display: "flex", flexDirection: "column",
+      width: "100%", minWidth: 0, boxSizing: "border-box",
+      wordBreak: "normal", overflowWrap: "break-word",
+      ...(maxCardHeight ? { maxHeight: maxCardHeight, overflow: "hidden" } : {}),
     }}>
-      {/* Header */}
-      <div className="row between" style={{
-        alignItems: "center", marginBottom: 10, flexShrink: 0,
-        gap: 8, flexWrap: "wrap",
-      }}>
-        <div style={{ minWidth: 0, flex: "1 1 200px" }}>
-          <div style={{ fontSize: 10, letterSpacing: 2.4, color: "var(--text-dim)" }}>
-            ▸ PAQUETE · N1
+      {/* HEADER — título + score con progress bar integrado */}
+      <div style={{ flexShrink: 0, marginBottom: 10 }}>
+        <div className="row between" style={{ alignItems: "center", gap: 8, flexWrap: "wrap" }}>
+          <div style={{ minWidth: 0, flex: "1 1 200px" }}>
+            <div style={{ fontSize: 10, letterSpacing: 2.4, color: "var(--text-dim)" }}>
+              ▸ PAQUETE · N1
+            </div>
+            <div style={{ fontSize: 14, fontWeight: 700, marginTop: 2 }}>
+              🧭 Resolución guiada N1
+            </div>
           </div>
-          <div style={{ fontSize: 14, fontWeight: 700, marginTop: 2 }}>
-            🧭 Resolución guiada N1
+          <div style={{ flexShrink: 0, textAlign: "right" }}>
+            <div style={{
+              fontSize: 11, color: ui.readinessColor, fontWeight: 700,
+              letterSpacing: 0.5,
+            }}>
+              {ui.readinessScore}/100 · {ui.readinessLabel}
+            </div>
           </div>
         </div>
-        <div style={{ textAlign: "right", flexShrink: 0 }}>
+        {/* Mini progress bar bajo el header */}
+        <div style={{
+          marginTop: 6, height: 4, borderRadius: 2,
+          background: "rgba(100,116,139,0.20)", overflow: "hidden",
+        }}>
           <div style={{
-            fontSize: 22, fontWeight: 800, color: readinessColor,
-            fontVariantNumeric: "tabular-nums", lineHeight: 1,
-          }}>
-            {n1Package.readinessScore}<span style={{ fontSize: 11, color: "var(--text-dim)" }}>/100</span>
-          </div>
-          <div style={{ fontSize: 10, color: readinessColor, fontWeight: 600 }}>
-            {READINESS_LABELS[n1Package.readinessStatus]}
-          </div>
+            width: `${ui.readinessScore}%`, height: "100%",
+            background: ui.readinessColor, transition: "width 0.3s ease",
+          }} />
         </div>
       </div>
 
-      {/* Scroll interno */}
-      <div style={{ flex: 1, minHeight: 0, overflowY: "auto", overflowX: "hidden", width: "100%", minWidth: 0 }}>
-        {/* Clasificación + ETA */}
+      {/* BODY — scroll interno opcional */}
+      <div style={{
+        flex: 1, minHeight: 0,
+        ...(needsScroll ? { overflowY: "auto", overflowX: "hidden" } : {}),
+        width: "100%", minWidth: 0,
+      }}>
+        {/* Clasificación + ETA en una fila */}
         <div style={{
-          display: "grid", gridTemplateColumns: "1fr 1fr", gap: 8, marginBottom: 10,
-          fontSize: 11.5,
+          display: "flex", gap: 8, flexWrap: "wrap", marginBottom: 10, fontSize: 11.5,
         }}>
-          <div>
-            <div style={{ color: "var(--text-dim)", fontSize: 10, letterSpacing: 1.2 }}>CLASIFICACIÓN</div>
-            <div style={{ color: "var(--text)" }}>
-              <strong>{n1Package.sapClassification.module}</strong>
-              {n1Package.sapClassification.process && <> · {n1Package.sapClassification.process}</>}
-              {n1Package.sapClassification.transaction && <> · <code>{n1Package.sapClassification.transaction}</code></>}
+          <div style={{
+            flex: "1 1 180px", padding: "6px 10px",
+            background: "rgba(34,211,238,0.08)",
+            border: "1px solid rgba(34,211,238,0.25)",
+            borderRadius: 4, minWidth: 0,
+          }}>
+            <div style={{ fontSize: 9.5, letterSpacing: 1.2, color: "var(--text-dim)" }}>CLASIFICACIÓN</div>
+            <div style={{ color: "var(--text)", fontWeight: 600, wordBreak: "break-word" }}>
+              {ui.classificationLabel}
             </div>
           </div>
-          <div>
-            <div style={{ color: "var(--text-dim)", fontSize: 10, letterSpacing: 1.2 }}>ETA PRELIMINAR</div>
-            <div style={{ color: "var(--text)" }}>
-              <strong>{n1Package.estimatedHours.min}–{n1Package.estimatedHours.max}h</strong>
-              <span style={{ color: "var(--text-dim)" }}> · {n1Package.estimatedHours.confidence}</span>
-            </div>
+          <div style={{
+            flex: "1 1 140px", padding: "6px 10px",
+            background: "rgba(168,85,247,0.08)",
+            border: "1px solid rgba(168,85,247,0.25)",
+            borderRadius: 4, minWidth: 0,
+          }}>
+            <div style={{ fontSize: 9.5, letterSpacing: 1.2, color: "var(--text-dim)" }}>ETA</div>
+            <div style={{ color: "var(--text)", fontWeight: 600 }}>{ui.etaLabel}</div>
           </div>
         </div>
 
         {/* Playbook sugerido */}
-        {n1Package.suggestedPlaybook && (
+        {ui.suggestedPlaybook && (
           <div style={{
-            padding: 8, marginBottom: 8,
+            padding: 8, marginBottom: 10,
             background: "rgba(168,85,247,0.10)",
             border: "1px solid rgba(168,85,247,0.30)",
             borderRadius: 4, fontSize: 11.5,
           }}>
             <div style={{ color: "#a855f7", fontWeight: 600 }}>📕 Playbook sugerido</div>
-            <div style={{ color: "var(--text-soft)" }}>{n1Package.suggestedPlaybook.title}</div>
-            {n1Package.suggestedPlaybook.reason && (
+            <div style={{ color: "var(--text-soft)" }}>{ui.suggestedPlaybook.title}</div>
+            {ui.suggestedPlaybook.reason && (
               <div style={{ color: "var(--text-dim)", fontSize: 10.5, marginTop: 2 }}>
-                {n1Package.suggestedPlaybook.reason}
+                {ui.suggestedPlaybook.reason}
               </div>
             )}
           </div>
         )}
 
-        {/* Faltantes */}
-        {n1Package.missingInfo.length > 0 && (
-          <div style={{ marginBottom: 10 }}>
-            <div style={{ fontSize: 10, color: "var(--text-dim)", letterSpacing: 1.4, marginBottom: 4 }}>
-              FALTA INFORMACIÓN ({n1Package.missingInfo.length})
-            </div>
-            <ul style={{ margin: 0, paddingLeft: 18, fontSize: 11, color: "#fca5a5" }}>
-              {n1Package.missingInfo.slice(0, 5).map((m) => <li key={m}>{m}</li>)}
-            </ul>
+        {/* Datos recibidos vs faltantes — lado a lado */}
+        {(ui.receivedDataItems.length > 0 || ui.missingDataItems.length > 0) && (
+          <div style={{ display: "flex", gap: 8, marginBottom: 10, flexWrap: "wrap" }}>
+            {ui.receivedDataItems.length > 0 && (
+              <div style={{ flex: "1 1 180px", minWidth: 0 }}>
+                <div style={{ fontSize: 9.5, letterSpacing: 1.2, color: "var(--text-dim)", marginBottom: 3 }}>
+                  DATOS RECIBIDOS ({ui.receivedDataItems.length})
+                </div>
+                <ul style={{ margin: 0, paddingLeft: 16, fontSize: 11, color: "#10b981" }}>
+                  {ui.receivedDataItems.map((d) => <li key={d} style={{ wordBreak: "break-word" }}>✓ {d}</li>)}
+                </ul>
+              </div>
+            )}
+            {ui.missingDataItems.length > 0 && (
+              <div style={{ flex: "1 1 180px", minWidth: 0 }}>
+                <div style={{ fontSize: 9.5, letterSpacing: 1.2, color: "var(--text-dim)", marginBottom: 3 }}>
+                  FALTA INFORMACIÓN ({ui.missingDataItems.length})
+                </div>
+                <ul style={{ margin: 0, paddingLeft: 16, fontSize: 11, color: "#fca5a5" }}>
+                  {ui.missingDataItems.map((m) => <li key={m} style={{ wordBreak: "break-word" }}>⚠ {m}</li>)}
+                </ul>
+              </div>
+            )}
           </div>
         )}
 
-        {/* Criterios escalamiento */}
-        {n1Package.escalationCriteria.length > 0 && (
+        {/* Criterios escalamiento N2 */}
+        {ui.escalationItems.length > 0 && (
           <div style={{
             padding: 8, marginBottom: 10,
             background: "rgba(239,68,68,0.10)",
             border: "1px solid rgba(239,68,68,0.30)",
             borderRadius: 4, fontSize: 11.5,
           }}>
-            <div style={{ color: "#ef4444", fontWeight: 600 }}>⚠ Criterios de escalamiento N2 detectados</div>
-            <ul style={{ margin: "4px 0 0", paddingLeft: 18, fontSize: 11 }}>
-              {n1Package.escalationCriteria.map((c) => (
-                <li key={c}>{ESCALATION_CRITERION_LABELS[c]}</li>
+            <div style={{ color: "#ef4444", fontWeight: 600, marginBottom: 2 }}>
+              ⚠ {ui.escalationItems.length} criterio{ui.escalationItems.length === 1 ? "" : "s"} de escalamiento N2
+            </div>
+            <ul style={{ margin: 0, paddingLeft: 18, fontSize: 11 }}>
+              {ui.escalationItems.map((e) => (
+                <li key={e.criterion} style={{ wordBreak: "break-word" }}>
+                  {ESCALATION_CRITERION_LABELS[e.criterion] || e.label}
+                </li>
               ))}
             </ul>
           </div>
         )}
 
         {/* Checklist N1 */}
-        <div style={{ marginBottom: 10 }}>
-          <div style={{ fontSize: 10, color: "var(--text-dim)", letterSpacing: 1.4, marginBottom: 4 }}>
-            CHECKLIST N1 ({n1Package.n1Checklist.filter((c) => c.resolvableN1).length} resolubles ·
-            {" "}{n1Package.n1Checklist.filter((c) => !c.resolvableN1).length} requieren N2)
-          </div>
-          <div style={{ display: "flex", flexDirection: "column", gap: 4, width: "100%", minWidth: 0 }}>
-            {n1Package.n1Checklist.map((c) => {
-              const checked = !!checklistState[c.id];
-              return (
-                <label key={c.id} style={{
-                  display: "flex", alignItems: "flex-start", gap: 6, padding: "4px 6px",
-                  background: c.resolvableN1 ? "transparent" : "rgba(239,68,68,0.05)",
-                  borderLeft: c.resolvableN1 ? "2px solid #10b98155" : "2px solid #ef4444aa",
-                  borderRadius: 3,
-                  cursor: "pointer", fontSize: 11.5,
-                  // FIX v0.14.2 — anti texto-vertical-roto
-                  width: "100%", minWidth: 0, boxSizing: "border-box",
-                }}>
-                  <input type="checkbox" checked={checked}
-                    onChange={() => toggleChecklist(c.id)}
-                    disabled={!c.resolvableN1}
-                    style={{ marginTop: 2, flexShrink: 0 }} />
-                  <div style={{
-                    flex: "1 1 0", minWidth: 0,
-                    wordBreak: "normal", overflowWrap: "break-word",
-                  }}>
+        {ui.checklistItems.length > 0 ? (
+          <div style={{ marginBottom: 10 }}>
+            <div style={{ fontSize: 9.5, letterSpacing: 1.2, color: "var(--text-dim)", marginBottom: 4 }}>
+              CHECKLIST N1 ({ui.checklistItems.filter((c) => !c.requiresN2).length} resoluble · {ui.checklistItems.filter((c) => c.requiresN2).length} requiere N2)
+            </div>
+            <div style={{ display: "flex", flexDirection: "column", gap: 4, width: "100%", minWidth: 0 }}>
+              {ui.checklistItems.map((c) => {
+                const checked = !!checklistState[c.id];
+                const itemColor = c.requiresN2 ? "#ef4444" : "#10b981";
+                return (
+                  // v0.14.4 — div (no label) para evitar CSS global que rompe flex
+                  <div
+                    key={c.id}
+                    onClick={() => c.requiresN2 ? undefined : toggleChecklist(c.id)}
+                    style={{
+                      display: "flex", alignItems: "flex-start", gap: 8,
+                      padding: "6px 8px",
+                      background: c.requiresN2 ? "rgba(239,68,68,0.05)" : "rgba(16,185,129,0.04)",
+                      borderLeft: `3px solid ${itemColor}aa`,
+                      borderRadius: 3,
+                      cursor: c.requiresN2 ? "not-allowed" : "pointer",
+                      fontSize: 11.5,
+                      width: "100%", minWidth: 0, boxSizing: "border-box",
+                      transition: "background 0.15s ease",
+                    }}
+                  >
+                    <input
+                      type="checkbox"
+                      checked={checked}
+                      onChange={() => toggleChecklist(c.id)}
+                      disabled={c.requiresN2}
+                      style={{ marginTop: 2, flexShrink: 0, cursor: c.requiresN2 ? "not-allowed" : "pointer" }}
+                      onClick={(e) => e.stopPropagation()}
+                    />
                     <div style={{
-                      color: c.resolvableN1 ? "var(--text)" : "var(--text-dim)",
-                      textDecoration: checked ? "line-through" : "none",
+                      flex: "1 1 0", minWidth: 0,
                       wordBreak: "normal", overflowWrap: "break-word",
                     }}>
-                      <strong>{c.order}.</strong> {c.label}
-                      {!c.resolvableN1 && <span style={{ marginLeft: 6, fontSize: 10, color: "#ef4444" }}>(N2)</span>}
+                      <div style={{
+                        color: c.requiresN2 ? "var(--text-dim)" : "var(--text)",
+                        textDecoration: checked ? "line-through" : "none",
+                        lineHeight: 1.4,
+                      }}>
+                        <span style={{ fontWeight: 600, marginRight: 4 }}>{c.order}.</span>
+                        {c.label}
+                      </div>
+                      {c.description && (
+                        <div style={{ fontSize: 10.5, color: "var(--text-dim)", marginTop: 2, lineHeight: 1.35 }}>
+                          {c.description}
+                        </div>
+                      )}
+                      {c.escalateReason && (
+                        <div style={{ fontSize: 10, color: "#fca5a5", marginTop: 2 }}>
+                          ⚠ {c.escalateReason}
+                        </div>
+                      )}
                     </div>
-                    {c.description && (
-                      <div style={{ fontSize: 10.5, color: "var(--text-dim)", marginTop: 1, wordBreak: "normal", overflowWrap: "break-word" }}>
-                        {c.description}
-                      </div>
-                    )}
-                    {c.escalateReason && (
-                      <div style={{ fontSize: 10, color: "#fca5a5", marginTop: 1, wordBreak: "normal", overflowWrap: "break-word" }}>
-                        ⚠ {c.escalateReason}
-                      </div>
-                    )}
+                    {/* Badge a la derecha */}
+                    <span style={{
+                      flexShrink: 0,
+                      fontSize: 9, fontWeight: 700, letterSpacing: 1,
+                      padding: "1px 6px", borderRadius: 3,
+                      background: c.requiresN2 ? "rgba(239,68,68,0.20)" : "rgba(16,185,129,0.20)",
+                      color: itemColor,
+                      border: `1px solid ${itemColor}55`,
+                      alignSelf: "center",
+                    }}>
+                      {c.requiresN2 ? "N2" : "N1"}
+                    </span>
                   </div>
-                </label>
-              );
-            })}
+                );
+              })}
+            </div>
           </div>
-        </div>
+        ) : (
+          <div style={{ fontSize: 11.5, color: "var(--text-dim)", padding: 8, marginBottom: 10 }}>
+            No hay checklist N1 generado. Reanalizá el ticket para producir uno.
+          </div>
+        )}
 
         {/* Forms inline para resolver / escalar */}
         {showResolveForm && (
           <div style={{
-            padding: 10, marginTop: 8,
+            padding: 10, marginTop: 4,
             background: "rgba(16,185,129,0.10)",
             border: "1px solid rgba(16,185,129,0.30)",
             borderRadius: 4,
@@ -300,8 +427,8 @@ export default function N1PackageSection({
             </div>
             <textarea rows={3} value={resolutionNote}
               onChange={(e) => setResolutionNote(e.target.value)}
-              placeholder="Describí qué hiciste para resolver el ticket en N1..."
-              style={{ width: "100%", fontSize: 11.5 }} />
+              placeholder="Describí qué hiciste para resolver el ticket en N1…"
+              style={{ width: "100%", fontSize: 11.5, boxSizing: "border-box" }} />
             <div className="row" style={{ gap: 6, marginTop: 6 }}>
               <button className="btn ghost sm" onClick={() => setShowResolveForm(false)} style={{ fontSize: 11 }}>
                 Cancelar
@@ -317,7 +444,7 @@ export default function N1PackageSection({
 
         {showEscalateForm && (
           <div style={{
-            padding: 10, marginTop: 8,
+            padding: 10, marginTop: 4,
             background: "rgba(239,68,68,0.10)",
             border: "1px solid rgba(239,68,68,0.30)",
             borderRadius: 4,
@@ -329,8 +456,8 @@ export default function N1PackageSection({
               Criterio principal:
             </label>
             <select value={primaryCriterion}
-              onChange={(e) => setPrimaryCriterion(e.target.value as never)}
-              style={{ width: "100%", fontSize: 11.5, marginBottom: 6 }}>
+              onChange={(e) => setPrimaryCriterion(e.target.value)}
+              style={{ width: "100%", fontSize: 11.5, marginBottom: 6, boxSizing: "border-box" }}>
               {Object.entries(ESCALATION_CRITERION_LABELS).map(([k, v]) => (
                 <option key={k} value={k}>{v}</option>
               ))}
@@ -340,8 +467,8 @@ export default function N1PackageSection({
             </label>
             <textarea rows={3} value={escalationReason}
               onChange={(e) => setEscalationReason(e.target.value)}
-              placeholder="Por qué N1 no puede resolver este caso..."
-              style={{ width: "100%", fontSize: 11.5 }} />
+              placeholder="Por qué N1 no puede resolver este caso…"
+              style={{ width: "100%", fontSize: 11.5, boxSizing: "border-box" }} />
             <div className="row" style={{ gap: 6, marginTop: 6 }}>
               <button className="btn ghost sm" onClick={() => setShowEscalateForm(false)} style={{ fontSize: 11 }}>
                 Cancelar
@@ -356,12 +483,20 @@ export default function N1PackageSection({
         )}
       </div>
 
-      {/* Acciones (siempre visibles, fuera del scroll) */}
-      <div className="row" style={{ gap: 8, marginTop: 10, flexShrink: 0, flexWrap: "wrap" }}>
+      {/* ACCIONES — siempre visibles abajo de la card */}
+      <div className="row" style={{
+        gap: 8, marginTop: 10, flexShrink: 0, flexWrap: "wrap",
+      }}>
         {!showResolveForm && !showEscalateForm && (
           <>
             <button className="btn ghost sm" onClick={() => setShowResolveForm(true)}
-              style={{ fontSize: 11, color: "#10b981", borderColor: "#10b98155" }}>
+              disabled={!ui.canResolveAtN1}
+              style={{
+                fontSize: 11,
+                color: ui.canResolveAtN1 ? "#10b981" : "var(--text-dim)",
+                borderColor: ui.canResolveAtN1 ? "#10b98155" : "var(--border-soft)",
+              }}
+              title={ui.canResolveAtN1 ? "Marcar el ticket como resuelto en N1" : "Sin pasos N1 resolubles"}>
               ✓ Marcar resuelto N1
             </button>
             <button className="btn ghost sm" onClick={() => setShowEscalateForm(true)}
