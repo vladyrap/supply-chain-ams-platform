@@ -12,6 +12,10 @@ services:
     environment:
       NODE_ENV: ${NODE_ENV:-production}
       NEXT_PUBLIC_AGENT_API_URL: ${NEXT_PUBLIC_AGENT_API_URL:-http://localhost:6601}
+      # v0.14.3 — flag para saltear Gemini cuando la quota free tier está agotada.
+      # Sin esta var el pipeline AIE llama Gemini normalmente. Con "1" usa solo
+      # engines determinísticos (Intelligence Core + AMS Specialists Orchestrator).
+      NEXT_PUBLIC_FORCE_MOCK_LLM: ${NEXT_PUBLIC_FORCE_MOCK_LLM:-1}
     networks:
       - supply-chain-ams-platform-network
 

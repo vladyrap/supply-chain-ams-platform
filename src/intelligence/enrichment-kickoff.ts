@@ -45,7 +45,9 @@ export async function kickoffEnrichmentForNewTicket(
   ticket: Ticket,
   opts: KickoffOptions = {},
 ): Promise<TicketIntelligence> {
-  const { actor = "system", preloadedN1Package, skipGemini = false } = opts;
+  // v0.14.3 — respetar env force-mock (quota Gemini agotada / demo offline)
+  const envForceMock = typeof process !== "undefined" && process.env?.NEXT_PUBLIC_FORCE_MOCK_LLM === "1";
+  const { actor = "system", preloadedN1Package, skipGemini = envForceMock } = opts;
 
   // Lock: si ya hay run en vuelo para este ticket, esperarlo
   const existing = kickoffLocks.get(ticket.key);

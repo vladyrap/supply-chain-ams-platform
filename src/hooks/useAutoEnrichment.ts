@@ -41,7 +41,10 @@ export function useAutoEnrichment(
   ticket: Ticket | null,
   opts: { actor?: string; autoTrigger?: boolean; callGeminiAgent?: boolean } = {},
 ): UseAutoEnrichmentResult {
-  const { actor = "system", autoTrigger = true, callGeminiAgent = true } = opts;
+  // v0.14.3 — si el env fuerza mock, desactivamos Gemini real en el pipeline.
+  // Útil cuando la quota free tier está agotada (20/día) o en demos sin credenciales.
+  const forceMock = typeof process !== "undefined" && process.env?.NEXT_PUBLIC_FORCE_MOCK_LLM === "1";
+  const { actor = "system", autoTrigger = true, callGeminiAgent = !forceMock } = opts;
   const audit = useTicketAudit();
   const [intelligence, setIntelligence] = useState<TicketIntelligence | null>(
     ticket?.intelligence ?? null,
