@@ -131,10 +131,19 @@ export default function N1PackageSection({
       overflow: "hidden",
       display: "flex",
       flexDirection: "column",
+      // FIX v0.14.2 — anti texto-vertical-roto
+      width: "100%",
+      minWidth: 0,
+      boxSizing: "border-box",
+      wordBreak: "normal",
+      overflowWrap: "break-word",
     }}>
       {/* Header */}
-      <div className="row between" style={{ alignItems: "center", marginBottom: 10, flexShrink: 0 }}>
-        <div>
+      <div className="row between" style={{
+        alignItems: "center", marginBottom: 10, flexShrink: 0,
+        gap: 8, flexWrap: "wrap",
+      }}>
+        <div style={{ minWidth: 0, flex: "1 1 200px" }}>
           <div style={{ fontSize: 10, letterSpacing: 2.4, color: "var(--text-dim)" }}>
             ▸ PAQUETE · N1
           </div>
@@ -142,7 +151,7 @@ export default function N1PackageSection({
             🧭 Resolución guiada N1
           </div>
         </div>
-        <div style={{ textAlign: "right" }}>
+        <div style={{ textAlign: "right", flexShrink: 0 }}>
           <div style={{
             fontSize: 22, fontWeight: 800, color: readinessColor,
             fontVariantNumeric: "tabular-nums", lineHeight: 1,
@@ -156,7 +165,7 @@ export default function N1PackageSection({
       </div>
 
       {/* Scroll interno */}
-      <div style={{ flex: 1, minHeight: 0, overflowY: "auto" }}>
+      <div style={{ flex: 1, minHeight: 0, overflowY: "auto", overflowX: "hidden", width: "100%", minWidth: 0 }}>
         {/* Clasificación + ETA */}
         <div style={{
           display: "grid", gridTemplateColumns: "1fr 1fr", gap: 8, marginBottom: 10,
@@ -232,7 +241,7 @@ export default function N1PackageSection({
             CHECKLIST N1 ({n1Package.n1Checklist.filter((c) => c.resolvableN1).length} resolubles ·
             {" "}{n1Package.n1Checklist.filter((c) => !c.resolvableN1).length} requieren N2)
           </div>
-          <div style={{ display: "flex", flexDirection: "column", gap: 4 }}>
+          <div style={{ display: "flex", flexDirection: "column", gap: 4, width: "100%", minWidth: 0 }}>
             {n1Package.n1Checklist.map((c) => {
               const checked = !!checklistState[c.id];
               return (
@@ -242,26 +251,32 @@ export default function N1PackageSection({
                   borderLeft: c.resolvableN1 ? "2px solid #10b98155" : "2px solid #ef4444aa",
                   borderRadius: 3,
                   cursor: "pointer", fontSize: 11.5,
+                  // FIX v0.14.2 — anti texto-vertical-roto
+                  width: "100%", minWidth: 0, boxSizing: "border-box",
                 }}>
                   <input type="checkbox" checked={checked}
                     onChange={() => toggleChecklist(c.id)}
                     disabled={!c.resolvableN1}
-                    style={{ marginTop: 2 }} />
-                  <div style={{ flex: 1, minWidth: 0 }}>
+                    style={{ marginTop: 2, flexShrink: 0 }} />
+                  <div style={{
+                    flex: "1 1 0", minWidth: 0,
+                    wordBreak: "normal", overflowWrap: "break-word",
+                  }}>
                     <div style={{
                       color: c.resolvableN1 ? "var(--text)" : "var(--text-dim)",
                       textDecoration: checked ? "line-through" : "none",
+                      wordBreak: "normal", overflowWrap: "break-word",
                     }}>
                       <strong>{c.order}.</strong> {c.label}
                       {!c.resolvableN1 && <span style={{ marginLeft: 6, fontSize: 10, color: "#ef4444" }}>(N2)</span>}
                     </div>
                     {c.description && (
-                      <div style={{ fontSize: 10.5, color: "var(--text-dim)", marginTop: 1 }}>
+                      <div style={{ fontSize: 10.5, color: "var(--text-dim)", marginTop: 1, wordBreak: "normal", overflowWrap: "break-word" }}>
                         {c.description}
                       </div>
                     )}
                     {c.escalateReason && (
-                      <div style={{ fontSize: 10, color: "#fca5a5", marginTop: 1 }}>
+                      <div style={{ fontSize: 10, color: "#fca5a5", marginTop: 1, wordBreak: "normal", overflowWrap: "break-word" }}>
                         ⚠ {c.escalateReason}
                       </div>
                     )}
