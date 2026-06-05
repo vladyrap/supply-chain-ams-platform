@@ -93,10 +93,36 @@ export interface UseTicketAudit {
   refreshFromBackend: (ticketId: string) => Promise<void>;
 }
 
+// v0.14.7 — sweep one-time al cargar para dedup de spam pre-existente
+// (eventos generados por el loop de versiones anteriores). Por cada
+// ticket + eventType + minuto deja UN solo evento (el más reciente).
+function dedupOnLoad(raw: TicketAuditEvent[]): TicketAuditEvent[] {
+  if (!Array.isArray(raw) || raw.length === 0) return [];
+  const seen = new Map<string, TicketAuditEvent>();
+  // ordenamos desc por createdAt para que el más reciente gane
+  const sorted = [...raw].sort((a, b) => b.createdAt.localeCompare(a.createdAt));
+  for (const e of sorted) {
+    const minute = (e.createdAt || "").slice(0, 16);
+    const key = `${e.ticketId}|${e.eventType}|${minute}`;
+    if (!seen.has(key)) seen.set(key, e);
+  }
+  return Array.from(seen.values());
+}
+
 export function useTicketAudit(): UseTicketAudit {
   const [events, setEvents] = useState<TicketAuditEvent[]>(() => {
     if (typeof window === "undefined") return [];
-    return safe<TicketAuditEvent[]>(localStorage.getItem(AUDIT_STORAGE.events)) ?? [];
+    const raw = safe<TicketAuditEvent[]>(localStorage.getItem(AUDIT_STORAGE.events)) ?? [];
+    const cleaned = dedupOnLoad(raw);
+    // Si dedup eliminó algo, persistir el cleanup para que el sweep no se repita
+    if (cleaned.length !== raw.length && typeof window !== "undefined") {
+      try {
+        localStorage.setItem(AUDIT_STORAGE.events, JSON.stringify(cleaned));
+        // eslint-disable-next-line no-console
+        console.info(`[audit] dedup limpió ${raw.length - cleaned.length} eventos duplicados`);
+      } catch { /* ignore */ }
+    }
+    return cleaned;
   });
   const [isUsingFallback, setIsUsingFallback] = useState(false);
 
