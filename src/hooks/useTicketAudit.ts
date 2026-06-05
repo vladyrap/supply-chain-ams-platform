@@ -118,10 +118,12 @@ export function useTicketAudit(): UseTicketAudit {
     };
   }, []);
 
-  const save = useCallback((next: TicketAuditEvent[]) => {
-    setEvents(next);
+  // v0.14.7 — TODOS los callbacks usan functional setters → deps vacías → refs
+  // estables. Esto rompe loops downstream: hooks que tienen `record` en deps
+  // de useCallback/useEffect ya NO se re-disparan en cada record().
+
+  const persistAndEmit = useCallback((next: TicketAuditEvent[]) => {
     if (typeof window !== "undefined") {
-      // Cap a 1000 eventos para no llenar localStorage
       const capped = next.slice(0, 1000);
       localStorage.setItem(AUDIT_STORAGE.events, JSON.stringify(capped));
       emit();
@@ -141,8 +143,12 @@ export function useTicketAudit(): UseTicketAudit {
       metadata: input.metadata,
       createdAt: now(),
     };
-    // 1) Mirror local PRIMERO — no bloqueamos UI esperando backend
-    save([ev, ...events]);
+    // 1) Mirror local con functional updater (no depende de events closure)
+    setEvents((prev) => {
+      const next = [ev, ...prev];
+      persistAndEmit(next);
+      return next;
+    });
     // 2) Backend best-effort en background
     recordEventRemote({
       eventType: input.eventType,
@@ -161,7 +167,7 @@ export function useTicketAudit(): UseTicketAudit {
       .then(() => setIsUsingFallback(false))
       .catch(() => setIsUsingFallback(true));
     return ev;
-  }, [events, save]);
+  }, [persistAndEmit]); // stable: persistAndEmit es estable
 
   const byTicket = useCallback((ticketId: string) =>
     events.filter((e) => e.ticketId === ticketId)
@@ -169,27 +175,33 @@ export function useTicketAudit(): UseTicketAudit {
     [events]);
 
   const clearForTicket = useCallback((ticketId: string) => {
-    save(events.filter((e) => e.ticketId !== ticketId));
-  }, [events, save]);
+    setEvents((prev) => {
+      const next = prev.filter((e) => e.ticketId !== ticketId);
+      persistAndEmit(next);
+      return next;
+    });
+  }, [persistAndEmit]);
 
   const refreshFromBackend: UseTicketAudit["refreshFromBackend"] = useCallback(async (ticketId) => {
     try {
       const remote = await getByTicketRemote(ticketId);
       if (remote.length === 0) return;
-      // Merge: backend wins por id, sino agregar al final
       const remoteLocal = remote.map(remoteToLocal);
       const knownIds = new Set(remoteLocal.map((e) => e.id));
-      const merged = [
-        ...remoteLocal,
-        ...events.filter((e) => e.ticketId === ticketId && !knownIds.has(e.id)),
-        ...events.filter((e) => e.ticketId !== ticketId),
-      ];
-      save(merged);
+      setEvents((prev) => {
+        const merged = [
+          ...remoteLocal,
+          ...prev.filter((e) => e.ticketId === ticketId && !knownIds.has(e.id)),
+          ...prev.filter((e) => e.ticketId !== ticketId),
+        ];
+        persistAndEmit(merged);
+        return merged;
+      });
       setIsUsingFallback(false);
     } catch {
       setIsUsingFallback(true);
     }
-  }, [events, save]);
+  }, [persistAndEmit]);
 
   return { events, byTicket, record, clearForTicket, isUsingFallback, refreshFromBackend };
 }
