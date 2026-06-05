@@ -353,17 +353,18 @@ export default function N1PackageSection({
                 const checked = !!checklistState[c.id];
                 const itemColor = c.requiresN2 ? "#ef4444" : "#10b981";
                 return (
-                  // v0.14.5 — CSS Grid en lugar de Flex para forzar columnas
-                  // grid-template-columns: auto 1fr auto = checkbox / texto / badge
+                  // v0.14.6 — Posicionamiento absoluto del checkbox + badge.
+                  // El contenedor es display:block (no flex/grid) para escapar
+                  // de cualquier CSS heredado que rompa los layouts modernos.
+                  // El texto fluye natural con padding-left/right que hace lugar
+                  // al checkbox absoluto a la izquierda y al badge absoluto a la derecha.
                   <div
                     key={c.id}
                     onClick={() => c.requiresN2 ? undefined : toggleChecklist(c.id)}
                     style={{
-                      display: "grid",
-                      gridTemplateColumns: "auto minmax(0, 1fr) auto",
-                      gap: 8,
-                      alignItems: "start",
-                      padding: "6px 8px",
+                      display: "block",
+                      position: "relative",
+                      padding: "8px 48px 8px 30px",   // L: 30 (checkbox) · R: 48 (badge N1/N2)
                       background: c.requiresN2 ? "rgba(239,68,68,0.05)" : "rgba(16,185,129,0.04)",
                       borderLeft: `3px solid ${itemColor}aa`,
                       borderRadius: 3,
@@ -371,56 +372,61 @@ export default function N1PackageSection({
                       fontSize: 11.5,
                       width: "100%",
                       boxSizing: "border-box",
-                      transition: "background 0.15s ease",
+                      minHeight: 32,
+                      wordBreak: "break-word",
+                      overflowWrap: "anywhere",
                     }}
                   >
+                    {/* checkbox absoluto a la izquierda */}
                     <input
                       type="checkbox"
                       checked={checked}
                       onChange={() => toggleChecklist(c.id)}
                       disabled={c.requiresN2}
                       style={{
-                        marginTop: 3,
+                        position: "absolute",
+                        left: 8,
+                        top: 10,
                         cursor: c.requiresN2 ? "not-allowed" : "pointer",
+                        margin: 0,
                       }}
                       onClick={(e) => e.stopPropagation()}
                     />
-                    <div style={{
-                      minWidth: 0,
-                      wordBreak: "break-word",
-                      overflowWrap: "anywhere",
-                    }}>
-                      <div style={{
-                        color: c.requiresN2 ? "var(--text-dim)" : "var(--text)",
-                        textDecoration: checked ? "line-through" : "none",
-                        lineHeight: 1.4,
-                      }}>
-                        <span style={{ fontWeight: 600, marginRight: 4 }}>{c.order}.</span>
-                        {c.label}
-                      </div>
-                      {c.description && (
-                        <div style={{ fontSize: 10.5, color: "var(--text-dim)", marginTop: 2, lineHeight: 1.35 }}>
-                          {c.description}
-                        </div>
-                      )}
-                      {c.escalateReason && (
-                        <div style={{ fontSize: 10, color: "#fca5a5", marginTop: 2 }}>
-                          ⚠ {c.escalateReason}
-                        </div>
-                      )}
-                    </div>
+                    {/* badge absoluto a la derecha */}
                     <span style={{
+                      position: "absolute",
+                      right: 6,
+                      top: 8,
                       fontSize: 9, fontWeight: 700, letterSpacing: 1,
                       padding: "2px 6px", borderRadius: 3,
                       background: c.requiresN2 ? "rgba(239,68,68,0.20)" : "rgba(16,185,129,0.20)",
                       color: itemColor,
                       border: `1px solid ${itemColor}55`,
-                      alignSelf: "start",
-                      marginTop: 2,
-                      height: "fit-content",
                     }}>
                       {c.requiresN2 ? "N2" : "N1"}
                     </span>
+                    {/* contenido — fluye natural en el espacio entre checkbox y badge */}
+                    <div style={{
+                      color: c.requiresN2 ? "var(--text-dim)" : "var(--text)",
+                      textDecoration: checked ? "line-through" : "none",
+                      lineHeight: 1.4,
+                    }}>
+                      <span style={{ fontWeight: 600, marginRight: 4 }}>{c.order}.</span>
+                      {c.label}
+                    </div>
+                    {c.description && (
+                      <div style={{
+                        fontSize: 10.5, color: "var(--text-dim)",
+                        marginTop: 2, lineHeight: 1.35,
+                      }}>
+                        {c.description}
+                      </div>
+                    )}
+                    {c.escalateReason && (
+                      <div style={{ fontSize: 10, color: "#fca5a5", marginTop: 2 }}>
+                        ⚠ {c.escalateReason}
+                      </div>
+                    )}
                   </div>
                 );
               })}
