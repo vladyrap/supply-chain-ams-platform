@@ -204,6 +204,22 @@ export function useAutoEnrichment(
         };
         setIntelligence(failedIntel);
         setError(errMsg);
+        // FIX v0.14.11 — persistir el failed state al backend.
+        // Sin esto, el backend queda en pending_enrichment forever y la próxima carga
+        // del ticket re-dispara el pipeline (que vuelve a fallar) → loop infinito.
+        // Causa real del bug observado el 2026-06-08: tickets "pegados en enriching"
+        // tras quota agotada de Gemini, +16k audit_events duplicados generados.
+        if (t.source !== "jira") {
+          try {
+            await updateTicketIntelligence(key, failedIntel);
+          } catch (persistErr) {
+            if (process.env.NODE_ENV !== "production") {
+              // eslint-disable-next-line no-console
+              console.warn(`[AIE] ${key} no se pudo persistir failed state al backend:`, persistErr);
+            }
+            // best-effort, no rethrow — ya estamos en error path
+          }
+        }
         audit.record({
           ticketId: key,
           eventType: source === "reanalysis" ? "TICKET_REANALYSIS_FAILED" : "TICKET_AUTO_ENRICHMENT_FAILED",
