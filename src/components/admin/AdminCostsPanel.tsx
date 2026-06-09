@@ -555,13 +555,16 @@ export default function AdminCostsPanel() {
   const [loading, setLoading] = useState(true);
   const [lastRefresh, setLastRefresh] = useState<Date | null>(null);
 
-  const refresh = useCallback(async () => {
+  // FIX M9 (audit v1.1.0): AbortController para cancelar fetches pendientes
+  // antes del próximo interval — evita encolar requests si backend tarda.
+  const refresh = useCallback(async (signal?: AbortSignal) => {
     try {
-      const summary = await fetchAdminUsageSummary();
+      const summary = await fetchAdminUsageSummary(signal);
       setData(summary);
       setError(null);
       setLastRefresh(new Date());
     } catch (err) {
+      if ((err as Error).name === "AbortError") return;
       setError((err as Error).message);
     } finally {
       setLoading(false);
@@ -569,9 +572,25 @@ export default function AdminCostsPanel() {
   }, []);
 
   useEffect(() => {
-    refresh();
-    const id = setInterval(refresh, 30_000);
-    return () => clearInterval(id);
+    let cancelled = false;
+    const controllers = new Set<AbortController>();
+    const run = () => {
+      const ctl = new AbortController();
+      controllers.add(ctl);
+      refresh(ctl.signal).finally(() => controllers.delete(ctl));
+    };
+    run();
+    const id = setInterval(() => {
+      for (const c of controllers) c.abort();
+      controllers.clear();
+      if (!cancelled) run();
+    }, 30_000);
+    return () => {
+      cancelled = true;
+      clearInterval(id);
+      for (const c of controllers) c.abort();
+      controllers.clear();
+    };
   }, [refresh]);
 
   function handleExport() {
@@ -585,7 +604,7 @@ export default function AdminCostsPanel() {
     return (
       <div style={{ padding: 14 }}>
         <div className="alert error" style={{ padding: 14, fontSize: 12 }}>⚠ No se pudo cargar: {error}</div>
-        <button className="btn primary" onClick={refresh} style={{ marginTop: 10 }}>🔁 Reintentar</button>
+        <button className="btn primary" onClick={() => { void refresh(); }} style={{ marginTop: 10 }}>🔁 Reintentar</button>
       </div>
     );
   }
@@ -621,7 +640,7 @@ export default function AdminCostsPanel() {
           </p>
         </div>
         <div className="row" style={{ gap: 6 }}>
-          <button className="btn ghost sm" onClick={refresh} style={{ fontSize: 11 }}>🔁 Refresh</button>
+          <button className="btn ghost sm" onClick={() => { void refresh(); }} style={{ fontSize: 11 }}>🔁 Refresh</button>
           <button className="btn ghost sm" onClick={handleExport} style={{ fontSize: 11 }}>📥 CSV</button>
         </div>
       </div>

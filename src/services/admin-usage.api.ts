@@ -63,8 +63,11 @@ export interface UsageSummaryResponse {
   meta: { clpPerUsd: number; lastCallAt: string | null; tableExists: boolean; cachedAt: string; ttlSeconds: number; version: string };
 }
 
-export async function fetchAdminUsageSummary(): Promise<UsageSummaryResponse> {
-  const res = await fetch(`${API_BASE}/api/admin/usage/summary`, { credentials: "include" });
+export async function fetchAdminUsageSummary(signal?: AbortSignal): Promise<UsageSummaryResponse> {
+  const res = await fetch(`${API_BASE}/api/admin/usage/summary`, {
+    credentials: "include",
+    signal,
+  });
   if (!res.ok) throw new Error(`HTTP ${res.status}: ${await res.text()}`);
   return res.json();
 }

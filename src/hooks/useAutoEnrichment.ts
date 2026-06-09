@@ -62,11 +62,15 @@ export function useAutoEnrichment(
     if (!t) return null;
     const key = t.key;
 
-    // Si ya hay run en vuelo, esperar al resultado existente
+    // FIX A16 (audit v1.1.0): el LOCK debe registrarse ANTES del audit
+    // (antes el audit se duplicaba en race conditions porque pasaba el
+    // guard pero todavía no había lock). Igual subsiste el bug multi-tab
+    // (cada tab tiene su Map propio); el verdadero fix es server-side
+    // con UNIQUE constraint en putTicketIntelligence — pendiente para v1.2.
     const existing = inFlightLocks.get(key);
     if (existing) return existing;
 
-    // Hidratación inicial desde memoria local si es jira
+    // Hidratación inicial desde memoria local si es jira (no necesita lock)
     if (t.source === "jira" && !force) {
       const cached = jiraInMemoryCache.get(key);
       if (cached && cached.status === "enriched") {
@@ -75,16 +79,16 @@ export function useAutoEnrichment(
       }
     }
 
-    // Audit: QUEUED
-    audit.record({
-      ticketId: key,
-      eventType: source === "reanalysis" ? "TICKET_REANALYSIS_REQUESTED" : "TICKET_AUTO_ENRICHMENT_QUEUED",
-      title: source === "reanalysis" ? "Reanálisis solicitado manualmente" : "Enriquecimiento encolado",
-      actor, actorRole: "system", source: source === "reanalysis" ? "ui" : "system",
-    });
-
-    // Lanzar pipeline con lock
+    // Lanzar pipeline (audit dentro del closure, después del lock set).
     const promise = (async (): Promise<TicketIntelligence | null> => {
+      // Audit: QUEUED (dentro del closure → solo se emite una vez por lock).
+      audit.record({
+        ticketId: key,
+        eventType: source === "reanalysis" ? "TICKET_REANALYSIS_REQUESTED" : "TICKET_AUTO_ENRICHMENT_QUEUED",
+        title: source === "reanalysis" ? "Reanálisis solicitado manualmente" : "Enriquecimiento encolado",
+        actor, actorRole: "system", source: source === "reanalysis" ? "ui" : "system",
+      });
+
       // Status enriching primero (para UI)
       const enrichingState: TicketIntelligence = { status: "enriching" };
       setIntelligence(enrichingState);

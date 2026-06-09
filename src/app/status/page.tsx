@@ -1,11 +1,11 @@
 "use client";
 
 // =============================================================================
-// /status — Página pública de estado del sistema (v0.14.18)
+// /status — Página pública de estado del sistema (v1.1.2-hotfix)
 // =============================================================================
-// Sin auth · sin RBAC · sin layout privado.
-// Consume GET /api/status del backend cada 30s.
-// Pensada para status.tuempresa.cl + monitoreo externo (UptimeRobot).
+// FIX A15 (audit v1.1.0): NO exponer URL del backend interno.
+// FIX M11/M12: AbortController + timeout + cancelled flag para evitar
+// race conditions y memory leaks post-unmount.
 // =============================================================================
 
 import { useEffect, useState } from "react";
@@ -26,6 +26,13 @@ interface StatusResponse {
 const BACKEND_URL =
   (typeof process !== "undefined" && process.env?.NEXT_PUBLIC_AGENT_API_URL) ||
   "http://localhost:6601";
+
+const SUPPORT_EMAIL =
+  (typeof process !== "undefined" && process.env?.NEXT_PUBLIC_SUPPORT_EMAIL) ||
+  "soporte@tuempresa.cl";
+
+const STATUS_FETCH_TIMEOUT_MS = 10_000;
+const STATUS_REFRESH_MS = 30_000;
 
 function formatUptime(sec: number): string {
   const d = Math.floor(sec / 86400);
@@ -48,21 +55,49 @@ export default function StatusPage() {
   const [lastUpdate, setLastUpdate] = useState<Date | null>(null);
 
   useEffect(() => {
+    // FIX M12: flag para descartar setState post-unmount.
+    let cancelled = false;
+    let intervalId: ReturnType<typeof setInterval> | null = null;
+    // FIX M9: un AbortController por mount; abortable en cleanup.
+    const controllers = new Set<AbortController>();
+
     async function fetchStatus() {
+      const ctl = new AbortController();
+      controllers.add(ctl);
+      // FIX M11: timeout 10s para que el fetch no quede colgado indefinidamente.
+      const tid = setTimeout(() => ctl.abort(), STATUS_FETCH_TIMEOUT_MS);
       try {
-        const res = await fetch(`${BACKEND_URL}/api/status`, { cache: "no-store" });
+        const res = await fetch(`${BACKEND_URL}/api/status`, {
+          cache: "no-store",
+          signal: ctl.signal,
+        });
+        if (cancelled) return;
         if (!res.ok) throw new Error(`HTTP ${res.status}`);
-        const json = await res.json();
+        const json = (await res.json()) as StatusResponse;
+        if (cancelled) return;
         setData(json);
         setError(null);
         setLastUpdate(new Date());
       } catch (err) {
-        setError((err as Error).message);
+        if (cancelled) return;
+        if ((err as Error).name === "AbortError") {
+          setError("timeout esperando backend");
+        } else {
+          setError((err as Error).message);
+        }
+      } finally {
+        clearTimeout(tid);
+        controllers.delete(ctl);
       }
     }
     fetchStatus();
-    const id = setInterval(fetchStatus, 30_000);
-    return () => clearInterval(id);
+    intervalId = setInterval(fetchStatus, STATUS_REFRESH_MS);
+    return () => {
+      cancelled = true;
+      if (intervalId) clearInterval(intervalId);
+      for (const c of controllers) c.abort();
+      controllers.clear();
+    };
   }, []);
 
   const overall = data?.status ?? "down";
@@ -81,7 +116,6 @@ export default function StatusPage() {
           Última actualización: {lastUpdate?.toLocaleString("es-CL") ?? "—"} · Auto-refresh cada 30s
         </p>
 
-        {/* Status global */}
         <div style={{
           background: `${color.bg}22`, border: `2px solid ${color.bg}`,
           borderRadius: 12, padding: 24, marginBottom: 24,
@@ -101,7 +135,6 @@ export default function StatusPage() {
           </div>
         </div>
 
-        {/* Error si no responde */}
         {error && (
           <div style={{
             background: "rgba(239,68,68,0.1)", border: "1px solid #ef4444",
@@ -111,7 +144,6 @@ export default function StatusPage() {
           </div>
         )}
 
-        {/* Checks individuales */}
         {data && (
           <div style={{ display: "flex", flexDirection: "column", gap: 12 }}>
             <ServiceRow name="Backend API" status={data.checks.backend.status}
@@ -123,12 +155,11 @@ export default function StatusPage() {
           </div>
         )}
 
-        {/* Footer */}
+        {/* Footer — FIX A15: ya NO exponemos BACKEND_URL al público */}
         <div style={{ marginTop: 40, fontSize: 11, color: "#64748b", textAlign: "center" }}>
           <p>
-            Para reportar un problema: <a href="mailto:soporte@tuempresa.cl" style={{ color: "#22d3ee" }}>soporte@tuempresa.cl</a>
+            Para reportar un problema: <a href={`mailto:${SUPPORT_EMAIL}`} style={{ color: "#22d3ee" }}>{SUPPORT_EMAIL}</a>
           </p>
-          <p>Endpoint API: <code>GET {BACKEND_URL}/api/status</code></p>
         </div>
       </div>
 

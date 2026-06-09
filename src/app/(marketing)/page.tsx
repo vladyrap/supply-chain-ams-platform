@@ -7,6 +7,15 @@
 
 import Link from "next/link";
 
+// FIX A12 (audit v1.1.0): emails/dominios configurables por env.
+// En prod, setear en .env.production:
+//   NEXT_PUBLIC_SALES_EMAIL=ventas@tudominio.cl
+//   NEXT_PUBLIC_SUPPORT_EMAIL=soporte@tudominio.cl
+//   NEXT_PUBLIC_COMPANY_NAME=${COMPANY_NAME}
+const SALES_EMAIL = process.env.NEXT_PUBLIC_SALES_EMAIL || "ventas@tuempresa.cl";
+const SUPPORT_EMAIL = process.env.NEXT_PUBLIC_SUPPORT_EMAIL || "${SUPPORT_EMAIL}";
+const COMPANY_NAME = process.env.NEXT_PUBLIC_COMPANY_NAME || "${COMPANY_NAME}";
+
 export const metadata = {
   title: "AMS Platform — Soporte SAP con IA · ROI 943×",
   description: "Plataforma SaaS que automatiza el soporte SAP de Nivel 1. Reducí tiempo de resolución de 4h a 1h. Por cada $1 USD invertido en IA, generás $943 USD en valor.",
@@ -42,7 +51,7 @@ export default function MarketingLandingPage() {
             Tu equipo pasa de resolver 3-5 tickets/día a <strong>15-25 tickets/día</strong>.
           </p>
           <div style={{ display: "flex", gap: 12, flexWrap: "wrap", marginBottom: 60 }}>
-            <a href="mailto:ventas@tuempresa.cl?subject=Demo%20AMS%20Platform"
+            <a href={`mailto:${SALES_EMAIL}?subject=Demo%20AMS%20Platform`}
               style={{ background: "#22d3ee", color: "#0b1220", padding: "14px 28px",
                        borderRadius: 8, textDecoration: "none", fontWeight: 700, fontSize: 16 }}>
               🎯 Agendar demo (15 min)
@@ -128,7 +137,7 @@ export default function MarketingLandingPage() {
           <p style={{ color: "#cbd5e1", fontSize: 16, marginBottom: 30 }}>
             15 minutos de demo + 14 días de trial. Si no te convence, no nos debés nada.
           </p>
-          <a href="mailto:ventas@tuempresa.cl?subject=Demo%20AMS%20Platform" style={{
+          <a href={`mailto:${SALES_EMAIL}?subject=Demo%20AMS%20Platform`} style={{
             background: "#22d3ee", color: "#0b1220", padding: "16px 36px",
             borderRadius: 8, textDecoration: "none", fontWeight: 700, fontSize: 18, display: "inline-block",
           }}>
@@ -144,9 +153,9 @@ export default function MarketingLandingPage() {
             <Link href="/legal/privacidad" style={{ color: "#94a3b8", marginRight: 20 }}>Privacidad</Link>
             <Link href="/legal/terminos" style={{ color: "#94a3b8", marginRight: 20 }}>Términos</Link>
             <Link href="/status" style={{ color: "#94a3b8", marginRight: 20 }}>Status</Link>
-            <a href="mailto:soporte@tuempresa.cl" style={{ color: "#94a3b8" }}>Soporte</a>
+            <a href={`mailto:${SUPPORT_EMAIL}`} style={{ color: "#94a3b8" }}>Soporte</a>
           </div>
-          <div>© {new Date().getFullYear()} TU EMPRESA SpA · Hecho en Chile con ❤️</div>
+          <div>© {new Date().getFullYear()} {COMPANY_NAME} · Hecho en Chile con ❤️</div>
         </div>
       </footer>
     </div>
@@ -196,7 +205,7 @@ function PlanCard({ name, price, features, highlight, badge }: {
       <ul style={{ listStyle: "none", padding: 0, marginBottom: 24, fontSize: 14, lineHeight: 1.8 }}>
         {features.map((f, i) => <li key={i}>✓ {f}</li>)}
       </ul>
-      <a href={`mailto:ventas@tuempresa.cl?subject=Plan%20${name}%20AMS`} style={{
+      <a href={`mailto:${SALES_EMAIL}?subject=Plan%20${name}%20AMS`} style={{
         display: "block", textAlign: "center", padding: "10px 20px",
         background: highlight ? "#22d3ee" : "#0b1220", color: highlight ? "#0b1220" : "white",
         borderRadius: 6, textDecoration: "none", fontWeight: 600,

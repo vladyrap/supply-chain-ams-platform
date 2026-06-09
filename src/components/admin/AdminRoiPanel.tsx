@@ -56,12 +56,15 @@ export default function AdminRoiPanel() {
   const [inputs, setInputs] = useState<BusinessValueInput>(DEFAULT_INPUTS);
   const [hourlyCost, setHourlyCost] = useState(60);
 
-  const refresh = useCallback(async () => {
+  // FIX M9 (audit v1.1.0): AbortController para que el siguiente interval
+  // pueda cancelar un fetch lento y evitar requests encolados.
+  const refresh = useCallback(async (signal?: AbortSignal) => {
     try {
-      const data = await fetchAdminUsageSummary();
+      const data = await fetchAdminUsageSummary(signal);
       setCosts(data);
       setError(null);
     } catch (err) {
+      if ((err as Error).name === "AbortError") return;
       setError((err as Error).message);
     } finally {
       setLoading(false);
@@ -69,9 +72,26 @@ export default function AdminRoiPanel() {
   }, []);
 
   useEffect(() => {
-    refresh();
-    const id = setInterval(refresh, 60_000);
-    return () => clearInterval(id);
+    let cancelled = false;
+    const controllers = new Set<AbortController>();
+    const run = () => {
+      const ctl = new AbortController();
+      controllers.add(ctl);
+      refresh(ctl.signal).finally(() => controllers.delete(ctl));
+    };
+    run();
+    const id = setInterval(() => {
+      // Cancelar pendientes antes del próximo
+      for (const c of controllers) c.abort();
+      controllers.clear();
+      if (!cancelled) run();
+    }, 60_000);
+    return () => {
+      cancelled = true;
+      clearInterval(id);
+      for (const c of controllers) c.abort();
+      controllers.clear();
+    };
   }, [refresh]);
 
   const valueCalc = useMemo(
@@ -80,26 +100,29 @@ export default function AdminRoiPanel() {
   );
 
   // Cálculos de ROI
+  // FIX M10 (audit v1.1.0): NO inventar 0.001 si el costo real es 0.
+  // Si el mes es $0 (sin datos / no se llamó nunca a Gemini) → mostrar "—"
+  // en la UI. ROI ratio queda null para que el componente lo skipee.
   const roi = useMemo(() => {
-    const monthCostUsd = costs?.totals.month.usd ?? 0.001; // evita div by zero
-    const monthCostClp = costs?.totals.month.clp ?? 1;
+    const monthCostUsd = costs?.totals.month.usd ?? 0;
+    const monthCostClp = costs?.totals.month.clp ?? 0;
+    const hasCost = monthCostUsd > 0;
     const valueMinUsd = valueCalc.costAvoidedUsd.min;
     const valueMaxUsd = valueCalc.costAvoidedUsd.max;
     const valueAvgUsd = (valueMinUsd + valueMaxUsd) / 2;
     const valueAvgClp = Math.round(valueAvgUsd * (costs?.meta.clpPerUsd ?? 950));
-    const roiMinX = monthCostUsd > 0 ? valueMinUsd / monthCostUsd : 0;
-    const roiMaxX = monthCostUsd > 0 ? valueMaxUsd / monthCostUsd : 0;
-    const roiAvgX = monthCostUsd > 0 ? valueAvgUsd / monthCostUsd : 0;
+    const roiMinX = hasCost ? valueMinUsd / monthCostUsd : null;
+    const roiMaxX = hasCost ? valueMaxUsd / monthCostUsd : null;
+    const roiAvgX = hasCost ? valueAvgUsd / monthCostUsd : null;
     // Payback en días: cuánto le toma al valor generado cubrir el costo del mes
     const dailyValueUsd = valueAvgUsd / 30;
-    const paybackDays = dailyValueUsd > 0 ? monthCostUsd / dailyValueUsd : 0;
-    // Eficiencia: USD valor por USD costo
+    const paybackDays = hasCost && dailyValueUsd > 0 ? monthCostUsd / dailyValueUsd : null;
     return {
-      monthCostUsd, monthCostClp,
+      monthCostUsd, monthCostClp, hasCost,
       valueMinUsd, valueMaxUsd, valueAvgUsd, valueAvgClp,
       roiMinX, roiMaxX, roiAvgX,
       paybackDays,
-      netGainClpAvg: valueAvgClp - monthCostClp,
+      netGainClpAvg: hasCost ? valueAvgClp - monthCostClp : null,
     };
   }, [costs, valueCalc]);
 
@@ -115,7 +138,16 @@ export default function AdminRoiPanel() {
   }
   if (!costs) return null;
 
-  const roiColor = roi.roiAvgX >= 100 ? "#10b981" : roi.roiAvgX >= 10 ? "#22d3ee" : roi.roiAvgX >= 1 ? "#f59e0b" : "#ef4444";
+  // FIX M10: si roiAvgX es null (costo=0), color neutral.
+  const roiColor =
+    roi.roiAvgX == null ? "#64748b" :
+    roi.roiAvgX >= 100 ? "#10b981" :
+    roi.roiAvgX >= 10 ? "#22d3ee" :
+    roi.roiAvgX >= 1 ? "#f59e0b" : "#ef4444";
+  const fmtRoi = (v: number | null) =>
+    v == null ? "—" : v.toLocaleString("es-CL", { maximumFractionDigits: 0 }) + "×";
+  const fmtRoiBare = (v: number | null) =>
+    v == null ? "—" : v.toLocaleString("es-CL", { maximumFractionDigits: 0 });
 
   return (
     <div style={{ display: "flex", flexDirection: "column", gap: 14, padding: 14 }}>
@@ -144,22 +176,26 @@ export default function AdminRoiPanel() {
               💎 ROI DEL AGENTE · ESTE MES
             </div>
             <div style={{ fontSize: 48, fontWeight: 700, color: roiColor, lineHeight: 1 }}>
-              {roi.roiAvgX.toLocaleString("es-CL", { maximumFractionDigits: 0 })}×
+              {fmtRoi(roi.roiAvgX)}
             </div>
             <div style={{ fontSize: 12, color: "var(--text-soft)", marginTop: 4 }}>
-              Rango: {roi.roiMinX.toLocaleString("es-CL", { maximumFractionDigits: 0 })}× — {roi.roiMaxX.toLocaleString("es-CL", { maximumFractionDigits: 0 })}×
+              Rango: {fmtRoi(roi.roiMinX)} — {fmtRoi(roi.roiMaxX)}
             </div>
             <div style={{ fontSize: 14, fontWeight: 600, marginTop: 8 }}>
-              Por cada <span style={{ color: "#ef4444" }}>$1 USD</span> en Gemini, generás <span style={{ color: "#10b981" }}>${roi.roiAvgX.toLocaleString("es-CL", { maximumFractionDigits: 0 })} USD</span> en valor.
+              {roi.hasCost ? (
+                <>Por cada <span style={{ color: "#ef4444" }}>$1 USD</span> en Gemini, generás <span style={{ color: "#10b981" }}>${fmtRoiBare(roi.roiAvgX)} USD</span> en valor.</>
+              ) : (
+                <span style={{ color: "var(--text-dim)" }}>Sin costos Gemini este mes — ROI no calculable.</span>
+              )}
             </div>
           </div>
           <div style={{ minWidth: 240, textAlign: "right" }}>
             <div style={{ fontSize: 10, letterSpacing: 1.4, color: "var(--text-dim)" }}>GANANCIA NETA / MES</div>
-            <div style={{ fontSize: 30, fontWeight: 700, color: roi.netGainClpAvg > 0 ? "#10b981" : "#ef4444" }}>
-              {fmtCLP(roi.netGainClpAvg)}
+            <div style={{ fontSize: 30, fontWeight: 700, color: (roi.netGainClpAvg ?? 0) > 0 ? "#10b981" : "#64748b" }}>
+              {roi.netGainClpAvg == null ? "—" : fmtCLP(roi.netGainClpAvg)}
             </div>
             <div style={{ fontSize: 11, color: "var(--text-dim)", marginTop: 2 }}>
-              Payback: <strong style={{ color: "var(--text)" }}>{roi.paybackDays.toFixed(1)} días</strong>
+              Payback: <strong style={{ color: "var(--text)" }}>{roi.paybackDays == null ? "—" : `${roi.paybackDays.toFixed(1)} días`}</strong>
             </div>
           </div>
         </div>
@@ -284,14 +320,14 @@ export default function AdminRoiPanel() {
         <div className="card" style={{ padding: 14, flex: "1 1 240px", borderLeft: "4px solid #10b981" }}>
           <div style={{ fontSize: 10, letterSpacing: 1.4, color: "var(--text-dim)" }}>💰 EFICIENCIA</div>
           <div style={{ fontSize: 24, fontWeight: 700, color: "#10b981" }}>
-            ${roi.roiAvgX.toLocaleString("es-CL", { maximumFractionDigits: 0 })} valor / $1 costo
+            {roi.roiAvgX == null ? "—" : `$${fmtRoiBare(roi.roiAvgX)} valor / $1 costo`}
           </div>
           <div style={{ fontSize: 11, color: "var(--text-dim)" }}>USD generado por USD invertido</div>
         </div>
         <div className="card" style={{ padding: 14, flex: "1 1 240px", borderLeft: "4px solid #a855f7" }}>
           <div style={{ fontSize: 10, letterSpacing: 1.4, color: "var(--text-dim)" }}>⚡ PAYBACK</div>
           <div style={{ fontSize: 24, fontWeight: 700, color: "#a855f7" }}>
-            {roi.paybackDays.toFixed(1)} días
+            {roi.paybackDays == null ? "—" : `${roi.paybackDays.toFixed(1)} días`}
           </div>
           <div style={{ fontSize: 11, color: "var(--text-dim)" }}>Para recuperar costo de Gemini mensual</div>
         </div>
