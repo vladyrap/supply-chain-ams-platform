@@ -6,6 +6,7 @@ import { PlatformProvider } from "@/context/PlatformContext";
 import { ToastProvider } from "@/context/ToastContext";
 import { CommandPaletteProvider } from "@/context/CommandPaletteContext";
 import BrandSplash from "@/components/fx/BrandSplash";
+import ApiHealthBanner from "@/components/common/ApiHealthBanner";
 
 export const metadata: Metadata = {
   title: "AMS Platform — Supply Chain SAP",
@@ -18,6 +19,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
     <html lang="es">
       <body>
         <BrandSplash />
+        <ApiHealthBanner />
         <ToastProvider>
           <AuthProvider>
             <TenantProvider>

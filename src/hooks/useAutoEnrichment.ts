@@ -27,6 +27,59 @@ const inFlightLocks = new Map<string, Promise<TicketIntelligence | null>>();
 /** Cache en memoria para tickets jira (no se persiste al backend). */
 const jiraInMemoryCache = new Map<string, TicketIntelligence>();
 
+// =============================================================================
+// FIX v1.2.3-qas — Circuit breaker global por ticketKey
+// =============================================================================
+// Antes: cuando un ticket fallaba (Gemini 500, network error), el frontend lo
+// reintentaba en cada re-render del componente. En navegación lateral con
+// muchas tabs/montajes esto generaba 1000+ req/min al backend, saturando rate
+// limit y CPU.
+//
+// Ahora: si un ticket falla 2 veces en 60s, se "abre el circuito" por 5 min
+// para ese ticketKey. Durante ese período el hook ignora el auto-trigger
+// (status quedará en enrichment_failed en UI; el reanalyze manual sí pasa).
+// =============================================================================
+const FAILURE_THRESHOLD = 2;
+const FAILURE_WINDOW_MS = 60_000;
+const CIRCUIT_OPEN_MS = 5 * 60_000; // 5 min
+
+interface CircuitState {
+  failures: number[]; // timestamps recientes
+  openedUntil: number; // 0 = closed
+}
+const circuitByKey = new Map<string, CircuitState>();
+
+function isCircuitOpen(key: string): boolean {
+  const s = circuitByKey.get(key);
+  if (!s) return false;
+  if (s.openedUntil > Date.now()) return true;
+  if (s.openedUntil !== 0 && s.openedUntil <= Date.now()) {
+    // Expiró — limpiar para dar otra chance
+    circuitByKey.delete(key);
+  }
+  return false;
+}
+
+function recordFailure(key: string): void {
+  const now = Date.now();
+  const s = circuitByKey.get(key) ?? { failures: [], openedUntil: 0 };
+  s.failures = [...s.failures.filter((t) => now - t < FAILURE_WINDOW_MS), now];
+  if (s.failures.length >= FAILURE_THRESHOLD) {
+    s.openedUntil = now + CIRCUIT_OPEN_MS;
+    if (process.env.NODE_ENV !== "production") {
+      console.warn(
+        `[AIE] Circuit OPEN para ${key} (${s.failures.length} fallos en ${FAILURE_WINDOW_MS / 1000}s). ` +
+          `Auto-trigger suspendido ${CIRCUIT_OPEN_MS / 1000}s. Usá Reanalizar manualmente.`,
+      );
+    }
+  }
+  circuitByKey.set(key, s);
+}
+
+function recordSuccess(key: string): void {
+  circuitByKey.delete(key);
+}
+
 export interface UseAutoEnrichmentResult {
   status: TicketIntelligence["status"] | "idle";
   intelligence: TicketIntelligence | null;
@@ -193,11 +246,13 @@ export function useAutoEnrichment(
               skipped: result.skipped,
             },
           });
+          recordSuccess(key); // FIX v1.2.3-qas: reset circuit breaker
           return finalIntel;
         } else {
           throw new Error("error" in persisted ? persisted.error : "Backend rechazó PUT");
         }
       } catch (err) {
+        recordFailure(key); // FIX v1.2.3-qas: trip circuit breaker en N fallos
         const errMsg = (err as Error).message;
         const failedIntel: TicketIntelligence = {
           status: "enrichment_failed",
@@ -280,6 +335,15 @@ export function useAutoEnrichment(
       if (status === "enrichment_failed") {
         if (process.env.NODE_ENV !== "production") {
           console.info(`[AIE] ${ticket.key} skip: enrichment_failed — usá Reanalizar manualmente`);
+        }
+        return;
+      }
+
+      // Guard 6 (FIX v1.2.3-qas): circuit breaker — si tuvo >=2 fallos en 60s,
+      // suspender auto-trigger 5 min para evitar saturar backend / LLM caído.
+      if (isCircuitOpen(ticket.key)) {
+        if (process.env.NODE_ENV !== "production") {
+          console.info(`[AIE] ${ticket.key} skip: circuit breaker OPEN`);
         }
         return;
       }

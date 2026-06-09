@@ -56,6 +56,54 @@ export class ApiError extends Error {
   }
 }
 
+// =============================================================================
+// FIX v1.2.3-qas — Notificación global "no llega a la API"
+// =============================================================================
+// Cuando una request al backend falla por motivo de infraestructura (no de
+// negocio), el wrapper dispara un CustomEvent en window para que un banner
+// global del layout muestre el mensaje "Servicio no disponible · Contactar al
+// administrador". Eso reemplaza el comportamiento previo de loop silencioso.
+//
+// Se considera fallo de infraestructura:
+//   - Network error (fetch rejected antes de respuesta) — backend caído / DNS
+//   - HTTP 502 / 503 / 504 — proxy o servicio no disponible
+//   - HTTP 500 con body { error: /token|gemini|api[_ ]?key/i } — auth backend->LLM rota
+//   - HTTP 401/403 NO se consideran (son auth de usuario, no de infra)
+//
+// Ventana de silencio: si ya disparamos el evento en los últimos 15s, no
+// duplicamos (evita 100 banners por minuto durante un outage).
+// =============================================================================
+
+export type ApiHealthReason = "network" | "5xx" | "gateway" | "token";
+export interface ApiHealthEvent {
+  reason: ApiHealthReason;
+  status: number | null;
+  message: string;
+  path: string;
+  timestamp: string;
+}
+
+let _lastNotifiedAt = 0;
+const NOTIFY_COOLDOWN_MS = 15_000;
+
+function notifyApiInfraFailure(detail: ApiHealthEvent): void {
+  if (typeof window === "undefined") return;
+  const now = Date.now();
+  if (now - _lastNotifiedAt < NOTIFY_COOLDOWN_MS) return;
+  _lastNotifiedAt = now;
+  try {
+    window.dispatchEvent(new CustomEvent<ApiHealthEvent>("ams:api-infra-failure", { detail }));
+  } catch {
+    /* no-op */
+  }
+}
+
+function isLikelyTokenError(parsed: unknown): boolean {
+  if (!parsed || typeof parsed !== "object") return false;
+  const msg = ((parsed as { error?: unknown }).error ?? "").toString().toLowerCase();
+  return /token|api[_ ]?key|gemini|llm|credentials|unauthorized.*provider/i.test(msg);
+}
+
 /**
  * Fetch genérico tipado.
  * @example
@@ -117,13 +165,30 @@ export async function apiFetch<T = unknown>(
   }
 
   try {
-    const res = await fetch(url, {
-      ...rest,
-      headers,
-      body: finalBody,
-      credentials: noCredentials ? "omit" : "include",
-      signal: ctl.signal,
-    });
+    let res: Response;
+    try {
+      res = await fetch(url, {
+        ...rest,
+        headers,
+        body: finalBody,
+        credentials: noCredentials ? "omit" : "include",
+        signal: ctl.signal,
+      });
+    } catch (netErr) {
+      // FIX v1.2.3-qas: network error (backend caído, CORS roto, timeout)
+      // → notificar al user + rethrow para que el caller pueda manejarlo.
+      const isAbort = (netErr as { name?: string })?.name === "AbortError";
+      if (!isAbort) {
+        notifyApiInfraFailure({
+          reason: "network",
+          status: null,
+          message: "No se pudo contactar al servicio AMS.",
+          path,
+          timestamp: new Date().toISOString(),
+        });
+      }
+      throw netErr;
+    }
 
     // Parse response
     const contentType = res.headers.get("content-type") || "";
@@ -137,6 +202,33 @@ export async function apiFetch<T = unknown>(
     }
 
     if (!res.ok) {
+      // FIX v1.2.3-qas: detectar fallos de infra → banner global.
+      // 502/503/504 = gateway/proxy. 500 con mensaje de tokens = LLM provider.
+      if (res.status >= 502 && res.status <= 504) {
+        notifyApiInfraFailure({
+          reason: "gateway",
+          status: res.status,
+          message: "Gateway no disponible. Verificá el servicio AMS con el administrador.",
+          path,
+          timestamp: new Date().toISOString(),
+        });
+      } else if (res.status === 500 && isLikelyTokenError(parsed)) {
+        notifyApiInfraFailure({
+          reason: "token",
+          status: 500,
+          message: "El backend no pudo autenticar contra el proveedor LLM. Revisar tokens con el administrador.",
+          path,
+          timestamp: new Date().toISOString(),
+        });
+      } else if (res.status >= 500) {
+        notifyApiInfraFailure({
+          reason: "5xx",
+          status: res.status,
+          message: "Servicio AMS respondió con error. Contactar al administrador.",
+          path,
+          timestamp: new Date().toISOString(),
+        });
+      }
       const parsedErr =
         parsed && typeof parsed === "object" ? (parsed as { error?: string }).error : null;
       const msg: string = parsedErr || `HTTP ${res.status}`;
