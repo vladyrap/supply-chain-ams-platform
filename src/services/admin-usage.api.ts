@@ -1,5 +1,5 @@
 // =============================================================================
-// admin-usage.api.ts — Client del endpoint /api/admin/usage/summary (v0.14.13)
+// admin-usage.api.ts — Client del endpoint /api/admin/usage/summary (v0.14.14)
 // =============================================================================
 
 const API_BASE =
@@ -14,6 +14,26 @@ export interface UsageForecast { eomCalls: number; eomUsd: number; eomClp: numbe
 export interface UsageSavings { ifAllFlashLite: { monthUsd: number; monthClp: number; savedUsd: number; savedClp: number; savedPct: number } }
 export interface UsageTopSource { source: string; calls: number; usd: number; clp: number }
 export interface UsageAnomaly { date: string; usd: number; deviation: number }
+
+export interface UsageTokens { input: number; output: number; total: number; inputUsd: number; outputUsd: number; inputPct: number; outputPct: number }
+export interface UsageBurnRate { lastHourCalls: number; lastHourUsd: number; prevHourCalls: number; deltaPct: number; estimateNext24hUsd: number; estimateNext24hClp: number }
+export interface UsageHistogram { bucket: string; minUsd: number; calls: number; pct: number }
+export interface UsageHealthDim { name: string; score: number; weight: number; reason: string }
+export interface UsageHealth { score: number; status: "excellent" | "good" | "watch" | "warning" | "critical"; dimensions: UsageHealthDim[] }
+export interface UsageRecommendation {
+  id: string;
+  priority: "high" | "medium" | "low";
+  category: "savings" | "performance" | "safety" | "ops";
+  title: string;
+  description: string;
+  estimatedSavingClp?: number;
+  actionable: boolean;
+}
+export interface UsageSameDayComparison {
+  today: UsageWindow;
+  sameDayLastWeek: UsageWindow & { date: string };
+  delta: UsageDelta;
+}
 
 export interface UsageRateLimiterStats {
   enabled: boolean;
@@ -34,7 +54,13 @@ export interface UsageSummaryResponse {
   topSources: UsageTopSource[];
   anomalies: UsageAnomaly[];
   rateLimiter: UsageRateLimiterStats;
-  meta: { clpPerUsd: number; lastCallAt: string | null; tableExists: boolean; cachedAt: string; ttlSeconds: number };
+  tokens: UsageTokens;
+  burnRate: UsageBurnRate;
+  histogram: UsageHistogram[];
+  health: UsageHealth;
+  recommendations: UsageRecommendation[];
+  sameDayLastWeek: UsageSameDayComparison;
+  meta: { clpPerUsd: number; lastCallAt: string | null; tableExists: boolean; cachedAt: string; ttlSeconds: number; version: string };
 }
 
 export async function fetchAdminUsageSummary(): Promise<UsageSummaryResponse> {
@@ -43,7 +69,6 @@ export async function fetchAdminUsageSummary(): Promise<UsageSummaryResponse> {
   return res.json();
 }
 
-/** Genera CSV con la serie diaria. */
 export function dailyToCsv(daily: UsageDailyPoint[]): string {
   const header = "fecha,calls,usd,clp,anomaly";
   const rows = daily.map((d) => `${d.date},${d.calls},${d.usd.toFixed(6)},${d.clp},${d.isAnomaly ? "yes" : "no"}`);
