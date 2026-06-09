@@ -1,5 +1,4 @@
-const API_BASE =
-  (process.env.NEXT_PUBLIC_AGENT_API_URL || "http://localhost:6601").replace(/\/+$/, "");
+import { apiFetch, ApiError, type ApiFetchOptions } from "./_http";
 
 export interface MeetingMinute {
   summary?: string;
@@ -38,37 +37,39 @@ export interface UploadMeetingPayload {
   language?: string;
 }
 
-async function call<T>(path: string, init: RequestInit = {}): Promise<T | { success: false; error: string }> {
+async function call<T>(path: string, opts: ApiFetchOptions = {}): Promise<T | { success: false; error: string }> {
   try {
-    const res = await fetch(`${API_BASE}${path}`, {
-      ...init,
-      credentials: "include",
-      headers: { "Content-Type": "application/json", ...(init.headers || {}) },
-      cache: "no-store",
-    });
-    const data = (await res.json().catch(() => null)) as T | null;
-    if (!data) return { success: false, error: `HTTP ${res.status}` };
+    const data = await apiFetch<T>(path, opts);
+    if (data === null || data === undefined) return { success: false, error: "no data" } as { success: false; error: string };
     return data;
   } catch (err) {
+    if (err instanceof ApiError) return { success: false, error: err.message };
     return { success: false, error: err instanceof Error ? err.message : "error de red" };
   }
 }
 
 export async function uploadMeeting(p: UploadMeetingPayload) {
-  return call<{ success: true; meeting: Meeting } | { success: false; error: string }>("/api/meetings/upload", {
-    method: "POST",
-    body: JSON.stringify(p),
-  });
+  return call<{ success: true; meeting: Meeting } | { success: false; error: string }>(
+    "/api/meetings/upload",
+    { method: "POST", body: p },
+  );
 }
 
 export async function listMeetings() {
-  return call<{ success: true; count: number; meetings: Meeting[] } | { success: false; error: string }>("/api/meetings");
+  return call<{ success: true; count: number; meetings: Meeting[] } | { success: false; error: string }>(
+    "/api/meetings",
+  );
 }
 
 export async function getMeeting(id: string) {
-  return call<{ success: true; meeting: Meeting } | { success: false; error: string }>(`/api/meetings/${id}`);
+  return call<{ success: true; meeting: Meeting } | { success: false; error: string }>(
+    `/api/meetings/${id}`,
+  );
 }
 
 export async function deleteMeeting(id: string) {
-  return call<{ success: true } | { success: false; error: string }>(`/api/meetings/${id}`, { method: "DELETE" });
+  return call<{ success: true } | { success: false; error: string }>(
+    `/api/meetings/${id}`,
+    { method: "DELETE" },
+  );
 }

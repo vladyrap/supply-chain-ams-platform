@@ -49,6 +49,7 @@ import { usePlaybooks } from "@/hooks/usePlaybooks";
 import { useQualityEvaluator } from "@/hooks/useQualityEvaluator";
 import { useAgentTraining } from "@/hooks/useAgentTraining";
 import { useAuth } from "@/context/AuthContext";
+import { useTenant } from "@/context/TenantContext";
 import {
   analyzeTicketDecision, AMS_ACTION_LABELS,
   type AmsRecommendedAction,
@@ -166,6 +167,7 @@ interface Props {
 
 export default function TicketCommandCenter({ ticket, onTicketUpdated }: Props) {
   const { user: authUser } = useAuth();
+  const { tenant } = useTenant();
   const audit = useTicketAudit();
   const docs = useDocumentFactory();
   const escalation = useEscalation();
@@ -1666,9 +1668,11 @@ export default function TicketCommandCenter({ ticket, onTicketUpdated }: Props) 
       {responseModalOpen && (
         <GenerateResponseModal
           context={closureExtras ?? buildResponseContext()}
-          signature={typeof window !== "undefined"
-            ? buildTenantSignature()
-            : "Equipo AMS"}
+          signature={
+            // v1.2.0: prioriza firma del tenant; fallback al localStorage / "Equipo AMS"
+            (typeof tenant?.settings?.signature === "string" && tenant.settings.signature)
+              || (typeof window !== "undefined" ? buildTenantSignature() : "Equipo AMS")
+          }
           generatedBy={actor}
           humanReviewed={actorRole === "admin" || actorRole === "aprobador"}
           initialType={responseInitialType}

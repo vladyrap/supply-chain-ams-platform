@@ -1,8 +1,9 @@
 "use client";
 
-import { createContext, useContext, useEffect, useState } from "react";
+import { createContext, useContext, useEffect, useRef, useState } from "react";
 import type { Environment, Role } from "@/types";
 import { useAuth } from "./AuthContext";
+import { useTenant } from "./TenantContext";
 
 export type Theme = "default" | "cyberpunk";
 export type AccentColor = "cyan" | "violet" | "amber" | "green" | "rose";
@@ -110,13 +111,48 @@ function loadFromStorage(): PersistedState {
 
 export function PlatformProvider({ children }: { children: React.ReactNode }) {
   const { user } = useAuth();
+  const { tenant } = useTenant();
   const [state, setState] = useState<PersistedState>(DEFAULTS);
   const [hydrated, setHydrated] = useState(false);
+  /** Si el user ya tenía preferencia guardada al hidratar, NO pisamos con tenant. */
+  const hadUserAccentRef = useRef<boolean>(false);
+  /** Para aplicar tenant.accent una sola vez por tenant detectado. */
+  const lastTenantAccentRef = useRef<string | null>(null);
 
   useEffect(() => {
+    if (typeof window !== "undefined") {
+      try {
+        const raw = window.localStorage.getItem(STORAGE_KEY);
+        if (raw) {
+          const parsed = JSON.parse(raw) as Partial<PersistedState>;
+          if (parsed && typeof parsed.accentColor === "string") {
+            hadUserAccentRef.current = true;
+          }
+        }
+      } catch { /* ignore */ }
+    }
     setState(loadFromStorage());
     setHydrated(true);
   }, []);
+
+  // Aplicar tenant.brand.accent como default override (solo si user NO eligió otro)
+  useEffect(() => {
+    if (!hydrated) return;
+    if (hadUserAccentRef.current) return; // user ya tiene preferencia explícita
+    const accent = tenant?.brand?.accent;
+    if (!accent) return;
+    if (lastTenantAccentRef.current === accent) return;
+    lastTenantAccentRef.current = accent;
+    // Si el accent del tenant matchea una key conocida (cyan/violet/amber/green/rose),
+    // lo seteamos como AccentColor. Si es un hex libre, lo aplicamos como CSS var
+    // sin modificar state.accentColor (el toggle del user sigue funcionando).
+    const normalized = accent.toLowerCase();
+    if (normalized in ACCENT_COLORS) {
+      setState((s) => ({ ...s, accentColor: normalized as AccentColor }));
+    } else if (typeof document !== "undefined" && /^#[0-9a-f]{6}$/i.test(accent)) {
+      document.documentElement.style.setProperty("--accent", accent);
+    }
+  }, [tenant?.brand?.accent, hydrated]);
 
   useEffect(() => {
     if (!hydrated) return;

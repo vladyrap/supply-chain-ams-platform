@@ -1,5 +1,4 @@
-const API_BASE =
-  (process.env.NEXT_PUBLIC_AGENT_API_URL || "http://localhost:6601").replace(/\/+$/, "");
+import { apiGet, ApiError } from "./_http";
 
 export interface SapStatus {
   mode: "real" | "mock";
@@ -86,11 +85,11 @@ export interface StockMovement {
 
 async function call<T>(path: string): Promise<T | { success: false; error: string }> {
   try {
-    const res = await fetch(`${API_BASE}${path}`, { credentials: "include", cache: "no-store" });
-    const data = (await res.json().catch(() => null)) as T | null;
-    if (!data) return { success: false, error: `HTTP ${res.status}` };
+    const data = await apiGet<T>(path);
+    if (data === null || data === undefined) return { success: false, error: "no data" } as { success: false; error: string };
     return data;
   } catch (err) {
+    if (err instanceof ApiError) return { success: false, error: err.message };
     return { success: false, error: err instanceof Error ? err.message : "error de red" };
   }
 }

@@ -1,26 +1,16 @@
 import type { AuthUser, Role } from "@/types";
-
-const API_BASE =
-  (process.env.NEXT_PUBLIC_AGENT_API_URL || "http://localhost:6601").replace(/\/+$/, "");
+import { apiFetch, ApiError, type ApiFetchOptions } from "./_http";
 
 interface OkUser { success: true; user: AuthUser }
 interface Err    { success: false; error: string }
 
-async function call<T>(path: string, init: RequestInit = {}): Promise<T | { success: false; error: string }> {
+async function call<T>(path: string, opts: ApiFetchOptions = {}): Promise<T | { success: false; error: string }> {
   try {
-    const res = await fetch(`${API_BASE}${path}`, {
-      ...init,
-      credentials: "include",
-      headers: {
-        "Content-Type": "application/json",
-        ...(init.headers || {}),
-      },
-      cache: "no-store",
-    });
-    const data = (await res.json().catch(() => null)) as T | { success: false; error: string } | null;
-    if (!data) return { success: false, error: `HTTP ${res.status}` };
+    const data = await apiFetch<T>(path, opts);
+    if (data === null || data === undefined) return { success: false, error: "no data" } as { success: false; error: string };
     return data;
   } catch (err) {
+    if (err instanceof ApiError) return { success: false, error: err.message };
     return { success: false, error: err instanceof Error ? err.message : "error de red" };
   }
 }
@@ -28,14 +18,14 @@ async function call<T>(path: string, init: RequestInit = {}): Promise<T | { succ
 export async function signup(email: string, password: string, name?: string, role?: Role) {
   return call<OkUser | Err>("/api/auth/signup", {
     method: "POST",
-    body: JSON.stringify({ email, password, name, role }),
+    body: { email, password, name, role },
   });
 }
 
 export async function login(email: string, password: string) {
   return call<OkUser | Err>("/api/auth/login", {
     method: "POST",
-    body: JSON.stringify({ email, password }),
+    body: { email, password },
   });
 }
 
@@ -77,6 +67,6 @@ export async function listUsers() {
 export async function updateUserRole(userId: string, role: Role) {
   return call<OkUser | Err>(`/api/auth/users/${userId}/role`, {
     method: "PATCH",
-    body: JSON.stringify({ role }),
+    body: { role },
   });
 }

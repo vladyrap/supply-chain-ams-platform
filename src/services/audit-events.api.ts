@@ -7,7 +7,7 @@
 // y muestra un indicador "offline".
 // =============================================================================
 
-const BASE = (process.env.NEXT_PUBLIC_AGENT_API_URL || "http://localhost:6601").replace(/\/+$/, "");
+import { apiFetch, ApiError } from "./_http";
 
 export interface AuditEventRemoteInput {
   eventType: string;
@@ -39,27 +39,12 @@ export interface AuditEventRemoteRecord {
   createdAt: string;
 }
 
-/** Timeout helper para no colgar la UI si el backend está caído. */
-async function fetchWithTimeout(url: string, opts: RequestInit, timeoutMs = 3000): Promise<Response> {
-  const ctrl = new AbortController();
-  const t = setTimeout(() => ctrl.abort(), timeoutMs);
-  try {
-    return await fetch(url, { ...opts, signal: ctrl.signal });
-  } finally {
-    clearTimeout(t);
-  }
-}
-
 /** POST evento. Throws si falla — el caller debe hacer fallback local. */
 export async function recordEventRemote(event: AuditEventRemoteInput): Promise<AuditEventRemoteRecord> {
-  const r = await fetchWithTimeout(`${BASE}/api/audit/events`, {
-    method: "POST",
-    headers: { "Content-Type": "application/json" },
-    credentials: "include",
-    body: JSON.stringify(event),
-  });
-  if (!r.ok) throw new Error(`HTTP ${r.status}`);
-  const data = await r.json() as { success: boolean; event?: AuditEventRemoteRecord; error?: string };
+  const data = await apiFetch<{ success: boolean; event?: AuditEventRemoteRecord; error?: string }>(
+    "/api/audit/events",
+    { method: "POST", body: event, timeoutMs: 3000 },
+  );
   if (!data.success || !data.event) throw new Error(data.error || "Backend returned no event");
   return data.event;
 }
@@ -75,22 +60,19 @@ export async function listEventsRemote(filters: {
   for (const [k, v] of Object.entries(filters)) {
     if (v !== undefined && v !== null) qs.set(k, String(v));
   }
-  const r = await fetchWithTimeout(`${BASE}/api/audit/events?${qs.toString()}`, {
-    credentials: "include",
-  });
-  if (!r.ok) throw new Error(`HTTP ${r.status}`);
-  const data = await r.json() as { success: boolean; events?: AuditEventRemoteRecord[] };
+  const data = await apiFetch<{ success: boolean; events?: AuditEventRemoteRecord[] }>(
+    `/api/audit/events?${qs.toString()}`,
+    { timeoutMs: 3000 },
+  );
   return data.events ?? [];
 }
 
 /** GET timeline de un ticket. */
 export async function getByTicketRemote(ticketKey: string): Promise<AuditEventRemoteRecord[]> {
-  const r = await fetchWithTimeout(
-    `${BASE}/api/audit/events/by-ticket/${encodeURIComponent(ticketKey)}`,
-    { credentials: "include" }
+  const data = await apiFetch<{ success: boolean; events?: AuditEventRemoteRecord[] }>(
+    `/api/audit/events/by-ticket/${encodeURIComponent(ticketKey)}`,
+    { timeoutMs: 3000 },
   );
-  if (!r.ok) throw new Error(`HTTP ${r.status}`);
-  const data = await r.json() as { success: boolean; events?: AuditEventRemoteRecord[] };
   return data.events ?? [];
 }
 
@@ -103,18 +85,18 @@ export async function getSummaryRemote(): Promise<{
   last7Days: number;
   last24h: number;
 }> {
-  const r = await fetchWithTimeout(`${BASE}/api/audit/summary`, { credentials: "include" });
-  if (!r.ok) throw new Error(`HTTP ${r.status}`);
-  const data = await r.json() as { success: boolean; summary?: never };
+  const data = await apiFetch<{ success: boolean; summary?: never }>("/api/audit/summary", { timeoutMs: 3000 });
   return data.summary as never;
 }
 
 /** Healthcheck rápido sin throw — devuelve true si backend disponible. */
 export async function isAuditBackendAvailable(): Promise<boolean> {
   try {
-    const r = await fetchWithTimeout(`${BASE}/api/audit/summary`, { credentials: "include" }, 1500);
-    return r.ok || r.status === 401 || r.status === 403; // si responde 401/403 igual está vivo
-  } catch {
+    await apiFetch("/api/audit/summary", { timeoutMs: 1500 });
+    return true;
+  } catch (err) {
+    // 401/403 igual significa que el backend está vivo
+    if (err instanceof ApiError && (err.status === 401 || err.status === 403)) return true;
     return false;
   }
 }

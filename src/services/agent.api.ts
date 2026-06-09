@@ -1,22 +1,19 @@
 import type { AgentChatRequest, AgentChatResponse, AgentChatResponseOk } from "@/types";
+import { apiFetch, ApiError, API_BASE } from "./_http";
 
-const API_BASE =
-  (process.env.NEXT_PUBLIC_AGENT_API_URL || "http://localhost:6601").replace(/\/+$/, "");
+// API_BASE re-export interno para el wrapper SSE más abajo (que NO usa apiFetch).
+const SSE_BASE = API_BASE.replace(/\/+$/, "");
 
 export async function sendChat(payload: AgentChatRequest): Promise<AgentChatResponse> {
   try {
-    const res = await fetch(`${API_BASE}/api/ams/chat`, {
+    const data = await apiFetch<AgentChatResponse>("/api/ams/chat", {
       method: "POST",
-      credentials: "include",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify(payload),
+      body: payload,
     });
-    const data = (await res.json().catch(() => null)) as AgentChatResponse | null;
-    if (!data) {
-      return { success: false, error: `Respuesta inválida del backend (HTTP ${res.status})` };
-    }
+    if (!data) return { success: false, error: "Respuesta inválida del backend" };
     return data;
   } catch (err) {
+    if (err instanceof ApiError) return { success: false, error: err.message };
     return {
       success: false,
       error: err instanceof Error ? `Error de red: ${err.message}` : "Error de red desconocido",
@@ -64,16 +61,14 @@ export interface ResearchResponse {
 
 export async function sendResearch(payload: AgentChatRequest): Promise<ResearchResponse | { success: false; error: string }> {
   try {
-    const res = await fetch(`${API_BASE}/api/ams/research`, {
+    const data = await apiFetch<ResearchResponse | { success: false; error: string }>("/api/ams/research", {
       method: "POST",
-      credentials: "include",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify(payload),
+      body: payload,
     });
-    const data = (await res.json().catch(() => null)) as ResearchResponse | { success: false; error: string } | null;
-    if (!data) return { success: false, error: `HTTP ${res.status}` };
+    if (!data) return { success: false, error: "no data" };
     return data;
   } catch (err) {
+    if (err instanceof ApiError) return { success: false, error: err.message };
     return { success: false, error: err instanceof Error ? `Error de red: ${err.message}` : "Error de red" };
   }
 }
@@ -81,11 +76,14 @@ export async function sendResearch(payload: AgentChatRequest): Promise<ResearchR
 /**
  * Lee un stream SSE de POST /api/ams/chat/stream y dispara handlers.
  * Resuelve cuando el stream termina (normal o por error).
+ *
+ * NOTA: Esta función NO usa apiFetch porque _http.ts no soporta SSE.
+ * Mantiene fetch() raw para acceder al ReadableStream del body.
  */
 export async function sendChatStream(payload: AgentChatRequest, handlers: ChatStreamHandlers): Promise<void> {
   let response: Response;
   try {
-    response = await fetch(`${API_BASE}/api/ams/chat/stream`, {
+    response = await fetch(`${SSE_BASE}/api/ams/chat/stream`, {
       method: "POST",
       credentials: "include",
       headers: { "Content-Type": "application/json", Accept: "text/event-stream" },
@@ -136,10 +134,10 @@ export async function sendChatStream(payload: AgentChatRequest, handlers: ChatSt
 
 export async function getHealth(): Promise<{ ok: boolean; detail?: string }> {
   try {
-    const res = await fetch(`${API_BASE}/health`, { credentials: "include" });
-    if (!res.ok) return { ok: false, detail: `HTTP ${res.status}` };
+    await apiFetch("/health", { method: "GET" });
     return { ok: true };
   } catch (err) {
+    if (err instanceof ApiError) return { ok: false, detail: err.message };
     return { ok: false, detail: err instanceof Error ? err.message : "unknown" };
   }
 }
@@ -193,15 +191,15 @@ export async function listIncidents(filters: ListIncidentsFilters = {}): Promise
   if (filters.limit)          params.set("limit", String(filters.limit));
 
   try {
-    const res = await fetch(`${API_BASE}/api/ams/incidents?${params.toString()}`, { cache: "no-store", credentials: "include" });
-    const data = (await res.json().catch(() => null)) as
-      | { success: boolean; incidents?: IncidentSummary[]; error?: string }
-      | null;
+    const data = await apiFetch<{ success: boolean; incidents?: IncidentSummary[]; error?: string }>(
+      `/api/ams/incidents?${params.toString()}`,
+    );
     if (!data || !data.success || !data.incidents) {
-      return { ok: false, error: data?.error || `HTTP ${res.status}` };
+      return { ok: false, error: data?.error || "no data" };
     }
     return { ok: true, incidents: data.incidents };
   } catch (err) {
+    if (err instanceof ApiError) return { ok: false, error: err.message };
     return { ok: false, error: err instanceof Error ? err.message : "error de red" };
   }
 }
@@ -210,15 +208,15 @@ export async function getIncident(id: string): Promise<
   { ok: true; incident: IncidentDetail } | { ok: false; error: string }
 > {
   try {
-    const res = await fetch(`${API_BASE}/api/ams/incidents/${id}`, { cache: "no-store", credentials: "include" });
-    const data = (await res.json().catch(() => null)) as
-      | { success: boolean; incident?: IncidentDetail; error?: string }
-      | null;
+    const data = await apiFetch<{ success: boolean; incident?: IncidentDetail; error?: string }>(
+      `/api/ams/incidents/${id}`,
+    );
     if (!data || !data.success || !data.incident) {
-      return { ok: false, error: data?.error || `HTTP ${res.status}` };
+      return { ok: false, error: data?.error || "no data" };
     }
     return { ok: true, incident: data.incident };
   } catch (err) {
+    if (err instanceof ApiError) return { ok: false, error: err.message };
     return { ok: false, error: err instanceof Error ? err.message : "error de red" };
   }
 }

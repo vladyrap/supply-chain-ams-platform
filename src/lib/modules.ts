@@ -296,6 +296,13 @@ export const MODULES: ModuleDef[] = [
     permissionKey: "administracion", group: "sistema",
   },
   {
+    id: "admin-tenants", label: "Tenants", icon: "🏢", href: "/admin/tenants",
+    description: "Gestión multi-tenant de la plataforma (super_admin only)",
+    status: "available", phase: 6,
+    rolesAllowed: ["admin"],
+    permissionKey: "administracion", group: "sistema",
+  },
+  {
     id: "admin-costs", label: "Costos Gemini", icon: "💰", href: "/admin/costs",
     description: "Dashboard de costos del agente Gemini con health score, recomendaciones IA, forecast y anomalías (solo admin)",
     status: "available", phase: 6,

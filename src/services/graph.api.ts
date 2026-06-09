@@ -1,5 +1,4 @@
-const API_BASE =
-  (process.env.NEXT_PUBLIC_AGENT_API_URL || "http://localhost:6601").replace(/\/+$/, "");
+import { apiGet, ApiError } from "./_http";
 
 export type GraphNodeType = "incident" | "ticket" | "conversation" | "kb" | "meeting";
 
@@ -26,11 +25,11 @@ export interface GraphPayload {
 
 export async function fetchGraph(limit = 30): Promise<{ ok: true; g: GraphPayload } | { ok: false; error: string }> {
   try {
-    const res = await fetch(`${API_BASE}/api/graph?limit=${limit}`, { credentials: "include", cache: "no-store" });
-    const data = (await res.json().catch(() => null)) as { success: boolean; graph?: GraphPayload; error?: string } | null;
-    if (!data || !data.success || !data.graph) return { ok: false, error: data?.error || `HTTP ${res.status}` };
+    const data = await apiGet<{ success: boolean; graph?: GraphPayload; error?: string }>(`/api/graph?limit=${limit}`);
+    if (!data || !data.success || !data.graph) return { ok: false, error: data?.error || "no data" };
     return { ok: true, g: data.graph };
   } catch (err) {
+    if (err instanceof ApiError) return { ok: false, error: err.message };
     return { ok: false, error: err instanceof Error ? err.message : "error de red" };
   }
 }

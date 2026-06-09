@@ -1,5 +1,4 @@
-const API_BASE =
-  (process.env.NEXT_PUBLIC_AGENT_API_URL || "http://localhost:6601").replace(/\/+$/, "");
+import { apiFetch, ApiError, type ApiFetchOptions } from "./_http";
 
 export type DestinationType = "webhook" | "slack" | "email" | "sap";
 
@@ -59,18 +58,13 @@ export interface IntegrationDelivery {
   created_at: string;
 }
 
-async function call<T>(path: string, init: RequestInit = {}): Promise<T | { success: false; error: string }> {
+async function call<T>(path: string, opts: ApiFetchOptions = {}): Promise<T | { success: false; error: string }> {
   try {
-    const res = await fetch(`${API_BASE}${path}`, {
-      ...init,
-      credentials: "include",
-      headers: { "Content-Type": "application/json", ...(init.headers || {}) },
-      cache: "no-store",
-    });
-    const data = (await res.json().catch(() => null)) as T | null;
-    if (!data) return { success: false, error: `HTTP ${res.status}` };
+    const data = await apiFetch<T>(path, opts);
+    if (data === null || data === undefined) return { success: false, error: "no data" } as { success: false; error: string };
     return data;
   } catch (err) {
+    if (err instanceof ApiError) return { success: false, error: err.message };
     return { success: false, error: err instanceof Error ? err.message : "error de red" };
   }
 }
@@ -84,13 +78,13 @@ export const integrationsApi = {
     event_filter?: string[]; active?: boolean;
   }) => call<{ success: true; destination: IntegrationDestination }>(
     "/api/integrations/destinations",
-    { method: "POST", body: JSON.stringify(p) }
+    { method: "POST", body: p }
   ),
   updateDestination: (id: string, p: Partial<{
     name: string; config: DestinationConfig; event_filter: string[]; active: boolean;
   }>) => call<{ success: true; destination: IntegrationDestination }>(
     `/api/integrations/destinations/${id}`,
-    { method: "PATCH", body: JSON.stringify(p) }
+    { method: "PATCH", body: p }
   ),
   deleteDestination: (id: string) => call<{ success: true }>(
     `/api/integrations/destinations/${id}`,
@@ -117,6 +111,6 @@ export const integrationsApi = {
 
   emit: (eventType: string, data?: Record<string, unknown>) => call<{ success: true }>(
     "/api/integrations/emit",
-    { method: "POST", body: JSON.stringify({ eventType, data: data ?? {} }) }
+    { method: "POST", body: { eventType, data: data ?? {} } }
   ),
 };

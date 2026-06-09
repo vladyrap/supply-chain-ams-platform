@@ -1,5 +1,4 @@
-const API_BASE =
-  (process.env.NEXT_PUBLIC_AGENT_API_URL || "http://localhost:6601").replace(/\/+$/, "");
+import { apiFetch, ApiError, type ApiFetchOptions } from "./_http";
 
 export type ConfidenceLevel = "alta" | "media" | "baja" | "no_detectada";
 
@@ -52,20 +51,13 @@ export interface EvalResult {
   created_at: string;
 }
 
-async function call<T>(path: string, init?: RequestInit): Promise<T | { success: false; error: string }> {
+async function call<T>(path: string, opts?: ApiFetchOptions): Promise<T | { success: false; error: string }> {
   try {
-    const res = await fetch(`${API_BASE}${path}`, {
-      ...init,
-      credentials: "include",
-      headers: {
-        "Content-Type": "application/json",
-        ...(init?.headers ?? {}),
-      },
-    });
-    const body = await res.json();
-    if (!res.ok) return { success: false, error: body?.error ?? `HTTP ${res.status}` };
-    return body as T;
+    const data = await apiFetch<T>(path, opts);
+    if (data === null || data === undefined) return { success: false, error: "no data" } as { success: false; error: string };
+    return data;
   } catch (err) {
+    if (err instanceof ApiError) return { success: false, error: err.message };
     return { success: false, error: err instanceof Error ? err.message : "Network error" };
   }
 }
@@ -74,7 +66,7 @@ export const evalApi = {
   create: (name: string, configs: EvalConfig[], questions: EvalQuestion[]) =>
     call<{ success: true; runIds: string[] }>("/api/eval/runs", {
       method: "POST",
-      body: JSON.stringify({ name, configs, questions }),
+      body: { name, configs, questions },
     }),
   list: () => call<{ success: true; count: number; runs: EvalRun[] }>("/api/eval/runs"),
   detail: (id: string) =>

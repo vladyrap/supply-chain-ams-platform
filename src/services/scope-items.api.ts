@@ -1,7 +1,5 @@
 import type { ConfidenceLevel } from "@/types";
-
-const API_BASE =
-  (process.env.NEXT_PUBLIC_AGENT_API_URL || "http://localhost:6601").replace(/\/+$/, "");
+import { apiFetch, ApiError, type ApiFetchOptions } from "./_http";
 
 export type SapModule = "MM" | "SD" | "PP" | "EWM" | "QM" | "WM" | "ARIBA" | "IBP" | "BTP" | "INTEGRACION";
 
@@ -22,18 +20,13 @@ export interface SapScopeItem {
 // re-export por convención
 export type { ConfidenceLevel };
 
-async function call<T>(path: string, init: RequestInit = {}): Promise<T | { success: false; error: string }> {
+async function call<T>(path: string, opts: ApiFetchOptions = {}): Promise<T | { success: false; error: string }> {
   try {
-    const res = await fetch(`${API_BASE}${path}`, {
-      ...init,
-      credentials: "include",
-      headers: { "Content-Type": "application/json", ...(init.headers || {}) },
-      cache: "no-store",
-    });
-    const data = (await res.json().catch(() => null)) as T | null;
-    if (!data) return { success: false, error: `HTTP ${res.status}` };
+    const data = await apiFetch<T>(path, opts);
+    if (data === null || data === undefined) return { success: false, error: "no data" } as { success: false; error: string };
     return data;
   } catch (err) {
+    if (err instanceof ApiError) return { success: false, error: err.message };
     return { success: false, error: err instanceof Error ? err.message : "error de red" };
   }
 }
@@ -54,6 +47,6 @@ export async function getScopeItem(code: string) {
 export async function suggestScopeItemsForTicket(input: { module?: string; title?: string; description?: string }) {
   return call<{ success: true; items: SapScopeItem[] } | { success: false; error: string }>(
     "/api/scope-items/suggest",
-    { method: "POST", body: JSON.stringify(input) }
+    { method: "POST", body: input }
   );
 }

@@ -1,5 +1,4 @@
-const API_BASE =
-  (process.env.NEXT_PUBLIC_AGENT_API_URL || "http://localhost:6601").replace(/\/+$/, "");
+import { apiFetch, ApiError, type ApiFetchOptions } from "./_http";
 
 // ============ types (idénticos al backend) ============
 export type SupportChannel = "chat" | "whatsapp" | "voice" | "email";
@@ -84,18 +83,13 @@ export interface KbArticle {
 }
 
 // ============ helpers ============
-async function call<T>(path: string, init: RequestInit = {}): Promise<T | { success: false; error: string }> {
+async function call<T>(path: string, opts: ApiFetchOptions = {}): Promise<T | { success: false; error: string }> {
   try {
-    const res = await fetch(`${API_BASE}${path}`, {
-      ...init,
-      credentials: "include",
-      headers: { "Content-Type": "application/json", ...(init.headers || {}) },
-      cache: "no-store",
-    });
-    const data = (await res.json().catch(() => null)) as T | null;
-    if (!data) return { success: false, error: `HTTP ${res.status}` };
+    const data = await apiFetch<T>(path, opts);
+    if (data === null || data === undefined) return { success: false, error: "no data" } as { success: false; error: string };
     return data;
   } catch (err) {
+    if (err instanceof ApiError) return { success: false, error: err.message };
     return { success: false, error: err instanceof Error ? err.message : "error de red" };
   }
 }
@@ -132,14 +126,14 @@ export const supportApi = {
     firstResponse?: FirstResponsePayload;
   }>("/api/support/conversations", {
     method: "POST",
-    body: JSON.stringify(p),
+    body: p,
   }),
 
   sendMessage: (id: string, text: string) => call<{
     success: true;
   } & FirstResponsePayload>(`/api/support/conversations/${id}/messages`, {
     method: "POST",
-    body: JSON.stringify({ text }),
+    body: { text },
   }),
 
   listConversations: (filters?: { status?: SupportStatus; channel?: SupportChannel }) => {
@@ -159,12 +153,12 @@ export const supportApi = {
 
   closeConversation: (id: string, resolved = false) => call<{ success: true }>(
     `/api/support/conversations/${id}/close`,
-    { method: "POST", body: JSON.stringify({ resolved }) }
+    { method: "POST", body: { resolved } }
   ),
 
   escalateConversation: (id: string, reason?: string) => call<{ success: true; ticket: SupportTicket }>(
     `/api/support/conversations/${id}/escalate`,
-    { method: "POST", body: JSON.stringify({ reason: reason ?? "" }) }
+    { method: "POST", body: { reason: reason ?? "" } }
   ),
 
   // tickets de mesa
@@ -179,13 +173,13 @@ export const supportApi = {
   getTicket: (id: string) => call<{ success: true; ticket: SupportTicket }>(`/api/support/tickets/${id}`),
   assignTicket: (id: string) => call<{ success: true; ticket: SupportTicket }>(
     `/api/support/tickets/${id}/assign`,
-    { method: "POST", body: JSON.stringify({}) }
+    { method: "POST", body: {} }
   ),
   resolveTicket: (id: string, resolution: string, createKb: boolean) => call<{
     success: true; ticket: SupportTicket; kbArticle?: KbArticle;
   }>(`/api/support/tickets/${id}/resolve`, {
     method: "POST",
-    body: JSON.stringify({ resolution, create_kb_article: createKb }),
+    body: { resolution, create_kb_article: createKb },
   }),
   closeTicket: (id: string) => call<{ success: true; ticket: SupportTicket }>(
     `/api/support/tickets/${id}/close`,
@@ -193,7 +187,7 @@ export const supportApi = {
   ),
   setTicketStatus: (id: string, status: TicketStatus) => call<{ success: true; ticket: SupportTicket }>(
     `/api/support/tickets/${id}/status`,
-    { method: "PATCH", body: JSON.stringify({ status }) }
+    { method: "PATCH", body: { status } }
   ),
 
   // KB
@@ -211,7 +205,7 @@ export const supportApi = {
     system?: string; category?: string; tags?: string[];
   }) => call<{ success: true; article: KbArticle }>("/api/support/kb", {
     method: "POST",
-    body: JSON.stringify(p),
+    body: p,
   }),
   approveKb: (id: string) => call<{ success: true; article: KbArticle }>(
     `/api/support/kb/${id}/approve`,

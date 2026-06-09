@@ -6,22 +6,10 @@ import type {
   EscalationRule, N2Responsible, EscalationRecord,
   ItsmConnectorConfig, EscalationSettings,
 } from "@/types/escalation";
+import { apiFetch, type ApiFetchOptions } from "./_http";
 
-const API_BASE =
-  (process.env.NEXT_PUBLIC_AGENT_API_URL || "http://localhost:6601").replace(/\/+$/, "");
-
-async function http<T>(path: string, opts: RequestInit = {}): Promise<T> {
-  const res = await fetch(`${API_BASE}${path}`, {
-    headers: { "Content-Type": "application/json", ...(opts.headers || {}) },
-    credentials: "include",
-    ...opts,
-  });
-  if (!res.ok) {
-    let msg = `HTTP ${res.status}`;
-    try { msg = (await res.json()).error || msg; } catch { /* ignore */ }
-    throw new Error(msg);
-  }
-  return res.json() as Promise<T>;
+async function http<T>(path: string, opts: ApiFetchOptions = {}): Promise<T> {
+  return apiFetch<T>(path, opts);
 }
 
 // ============================================================
@@ -53,7 +41,7 @@ export async function getSnapshot(): Promise<EscalationSnapshot> {
 
 export async function upsertRule(rule: EscalationRule): Promise<EscalationRule> {
   const r = await http<{ success: true; rule: EscalationRule }>(
-    "/api/escalation/rules", { method: "POST", body: JSON.stringify(rule) }
+    "/api/escalation/rules", { method: "POST", body: rule }
   );
   return r.rule;
 }
@@ -67,7 +55,7 @@ export async function deleteRule(id: string): Promise<void> {
 
 export async function upsertResponsible(r: N2Responsible): Promise<N2Responsible> {
   const res = await http<{ success: true; responsible: N2Responsible }>(
-    "/api/escalation/responsibles", { method: "POST", body: JSON.stringify(r) }
+    "/api/escalation/responsibles", { method: "POST", body: r }
   );
   return res.responsible;
 }
@@ -81,7 +69,7 @@ export async function deleteResponsible(id: string): Promise<void> {
 
 export async function createRecord(rec: EscalationRecord): Promise<EscalationRecord> {
   const res = await http<{ success: true; record: EscalationRecord }>(
-    "/api/escalation/records", { method: "POST", body: JSON.stringify(rec) }
+    "/api/escalation/records", { method: "POST", body: rec }
   );
   return res.record;
 }
@@ -89,7 +77,7 @@ export async function createRecord(rec: EscalationRecord): Promise<EscalationRec
 export async function updateRecord(id: string, patch: Partial<EscalationRecord>): Promise<EscalationRecord> {
   const res = await http<{ success: true; record: EscalationRecord }>(
     `/api/escalation/records/${encodeURIComponent(id)}`,
-    { method: "PATCH", body: JSON.stringify(patch) }
+    { method: "PATCH", body: patch }
   );
   return res.record;
 }
@@ -100,14 +88,14 @@ export async function updateRecord(id: string, patch: Partial<EscalationRecord>)
 
 export async function updateConnectors(patch: Partial<ItsmConnectorConfig>): Promise<ItsmConnectorConfig> {
   const res = await http<{ success: true; connectors: ItsmConnectorConfig }>(
-    "/api/escalation/connectors", { method: "PATCH", body: JSON.stringify(patch) }
+    "/api/escalation/connectors", { method: "PATCH", body: patch }
   );
   return res.connectors;
 }
 
 export async function updateSettings(patch: Partial<EscalationSettings>): Promise<EscalationSettings> {
   const res = await http<{ success: true; settings: EscalationSettings }>(
-    "/api/escalation/settings", { method: "PATCH", body: JSON.stringify(patch) }
+    "/api/escalation/settings", { method: "PATCH", body: patch }
   );
   return res.settings;
 }
@@ -128,7 +116,9 @@ export async function resetDemo(): Promise<EscalationSnapshot> {
 /** Detecta si el backend está disponible. Usado para decidir online vs fallback localStorage. */
 export async function ping(): Promise<boolean> {
   try {
-    const res = await fetch(`${API_BASE}/health`, { credentials: "include" });
-    return res.ok;
-  } catch { return false; }
+    await apiFetch("/health", { method: "GET", timeoutMs: 3000 });
+    return true;
+  } catch {
+    return false;
+  }
 }

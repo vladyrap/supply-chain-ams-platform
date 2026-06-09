@@ -9,25 +9,15 @@
 // =============================================================================
 
 import type { CustomerResponse, CustomerResponseStatus } from "@/types/customer-response";
+import { apiFetch, ApiError, type ApiFetchOptions } from "./_http";
 
-const API_BASE = (process.env.NEXT_PUBLIC_AGENT_API_URL || "http://localhost:6601").replace(/\/+$/, "");
-
-async function call<T>(path: string, init: RequestInit = {}): Promise<T | { success: false; error: string }> {
+async function call<T>(path: string, opts: ApiFetchOptions = {}): Promise<T | { success: false; error: string }> {
   try {
-    const headers: Record<string, string> = { ...(init.headers as Record<string, string> ?? {}) };
-    if (init.body != null && !headers["Content-Type"]) {
-      headers["Content-Type"] = "application/json";
-    }
-    const res = await fetch(`${API_BASE}${path}`, {
-      ...init,
-      credentials: "include",
-      headers,
-      cache: "no-store",
-    });
-    const data = (await res.json().catch(() => null)) as T | null;
-    if (!data) return { success: false, error: `HTTP ${res.status}` };
+    const data = await apiFetch<T>(path, opts);
+    if (data === null || data === undefined) return { success: false, error: "no data" } as { success: false; error: string };
     return data;
   } catch (err) {
+    if (err instanceof ApiError) return { success: false, error: err.message };
     return { success: false, error: err instanceof Error ? err.message : "error de red" };
   }
 }
@@ -78,7 +68,7 @@ function toBackendPayload(r: CustomerResponse) {
 export async function persistCustomerResponse(r: CustomerResponse) {
   return call<{ success: true; response: CustomerResponseRow } | { success: false; error: string }>(
     `/api/tickets/${encodeURIComponent(r.ticketKey)}/responses`,
-    { method: "POST", body: JSON.stringify(toBackendPayload(r)) },
+    { method: "POST", body: toBackendPayload(r) },
   );
 }
 
@@ -93,7 +83,7 @@ export async function updateCustomerResponseStatusApi(
 ) {
   return call<{ success: true; response: CustomerResponseRow } | { success: false; error: string }>(
     `/api/customer-responses/${encodeURIComponent(responseId)}/status`,
-    { method: "PATCH", body: JSON.stringify({ status }) },
+    { method: "PATCH", body: { status } },
   );
 }
 

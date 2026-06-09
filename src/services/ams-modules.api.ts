@@ -4,22 +4,10 @@
 import type {
   AmsPlaybook, PlaybookExecution, GeneratedDocument, AgentEvaluation,
 } from "@/types/ams-modules";
+import { apiFetch, type ApiFetchOptions } from "./_http";
 
-const API_BASE =
-  (process.env.NEXT_PUBLIC_AGENT_API_URL || "http://localhost:6601").replace(/\/+$/, "");
-
-async function http<T>(path: string, opts: RequestInit = {}): Promise<T> {
-  const res = await fetch(`${API_BASE}${path}`, {
-    headers: { "Content-Type": "application/json", ...(opts.headers || {}) },
-    credentials: "include",
-    ...opts,
-  });
-  if (!res.ok) {
-    let msg = `HTTP ${res.status}`;
-    try { msg = (await res.json()).error || msg; } catch { /* ignore */ }
-    throw new Error(msg);
-  }
-  return res.json() as Promise<T>;
+async function http<T>(path: string, opts: ApiFetchOptions = {}): Promise<T> {
+  return apiFetch<T>(path, opts);
 }
 
 // ============================================================
@@ -35,14 +23,14 @@ export const playbooksApi = {
     return { playbooks: d.playbooks || [], executions: d.executions || [] };
   },
   async upsertPlaybook(p: AmsPlaybook): Promise<AmsPlaybook> {
-    const r = await http<{ success: true; playbook: AmsPlaybook }>("/api/playbooks", { method: "POST", body: JSON.stringify(p) });
+    const r = await http<{ success: true; playbook: AmsPlaybook }>("/api/playbooks", { method: "POST", body: p });
     return r.playbook;
   },
   async deletePlaybook(id: string): Promise<void> {
     await http(`/api/playbooks/${encodeURIComponent(id)}`, { method: "DELETE" });
   },
   async upsertExecution(e: PlaybookExecution): Promise<PlaybookExecution> {
-    const r = await http<{ success: true; execution: PlaybookExecution }>("/api/playbooks/executions", { method: "POST", body: JSON.stringify(e) });
+    const r = await http<{ success: true; execution: PlaybookExecution }>("/api/playbooks/executions", { method: "POST", body: e });
     return r.execution;
   },
   async deleteExecution(id: string): Promise<void> {
@@ -64,7 +52,7 @@ export const documentsApi = {
     return { documents: d.documents || [] };
   },
   async upsertDocument(doc: GeneratedDocument): Promise<GeneratedDocument> {
-    const r = await http<{ success: true; document: GeneratedDocument }>("/api/documents", { method: "POST", body: JSON.stringify(doc) });
+    const r = await http<{ success: true; document: GeneratedDocument }>("/api/documents", { method: "POST", body: doc });
     return r.document;
   },
   async deleteDocument(id: string): Promise<void> {
@@ -86,7 +74,7 @@ export const qualityApi = {
     return { evaluations: d.evaluations || [] };
   },
   async upsertEvaluation(e: AgentEvaluation): Promise<AgentEvaluation> {
-    const r = await http<{ success: true; evaluation: AgentEvaluation }>("/api/quality/evaluations", { method: "POST", body: JSON.stringify(e) });
+    const r = await http<{ success: true; evaluation: AgentEvaluation }>("/api/quality/evaluations", { method: "POST", body: e });
     return r.evaluation;
   },
   async deleteEvaluation(id: string): Promise<void> {

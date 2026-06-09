@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import "@/styles/globals.css";
 import { AuthProvider } from "@/context/AuthContext";
+import { TenantProvider } from "@/context/TenantContext";
 import { PlatformProvider } from "@/context/PlatformContext";
 import { ToastProvider } from "@/context/ToastContext";
 import { CommandPaletteProvider } from "@/context/CommandPaletteContext";
@@ -19,9 +20,11 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
         <BrandSplash />
         <ToastProvider>
           <AuthProvider>
-            <PlatformProvider>
-              <CommandPaletteProvider>{children}</CommandPaletteProvider>
-            </PlatformProvider>
+            <TenantProvider>
+              <PlatformProvider>
+                <CommandPaletteProvider>{children}</CommandPaletteProvider>
+              </PlatformProvider>
+            </TenantProvider>
           </AuthProvider>
         </ToastProvider>
       </body>

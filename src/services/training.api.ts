@@ -7,9 +7,7 @@ import type {
   KnowledgeStatus, KnowledgeType, Priority, ValidationStage,
   TrainingVersionStatus, GapStatus,
 } from "@/types/training";
-
-const API_BASE =
-  (process.env.NEXT_PUBLIC_AGENT_API_URL || "http://localhost:6601").replace(/\/+$/, "");
+import { apiFetch, ApiError, type ApiFetchOptions } from "./_http";
 
 interface ItemRow {
   id: string;
@@ -149,20 +147,15 @@ function mapSettings(r: SettingsRow): TrainingSettings {
   };
 }
 
-async function call<T>(path: string, init?: RequestInit): Promise<{ ok: true; data: T } | { ok: false; error: string }> {
+async function call<T>(path: string, opts?: ApiFetchOptions): Promise<{ ok: true; data: T } | { ok: false; error: string }> {
   try {
-    const res = await fetch(`${API_BASE}${path}`, {
-      credentials: "include",
-      headers: { "Content-Type": "application/json", ...(init?.headers ?? {}) },
-      cache: "no-store",
-      ...init,
-    });
-    const data = await res.json().catch(() => null);
+    const data = await apiFetch<{ success?: boolean; error?: string } & T>(path, opts);
     if (!data || !data.success) {
-      return { ok: false, error: data?.error || `HTTP ${res.status}` };
+      return { ok: false, error: data?.error || "no data" };
     }
     return { ok: true, data: data as T };
   } catch (err) {
+    if (err instanceof ApiError) return { ok: false, error: err.message };
     return { ok: false, error: err instanceof Error ? err.message : "error de red" };
   }
 }
@@ -214,7 +207,7 @@ export async function apiCreateItem(input: {
   status?: KnowledgeStatus; author?: string;
 }): Promise<{ ok: true; item: KnowledgeItem } | { ok: false; error: string }> {
   const r = await call<{ item: ItemRow }>("/api/training/items", {
-    method: "POST", body: JSON.stringify(input),
+    method: "POST", body: input,
   });
   if (!r.ok) return r;
   return { ok: true, item: mapItem(r.data.item) };
@@ -235,7 +228,7 @@ export interface ItemPatch {
 
 export async function apiUpdateItem(id: string, patch: ItemPatch): Promise<{ ok: true; item: KnowledgeItem } | { ok: false; error: string }> {
   const r = await call<{ item: ItemRow }>(`/api/training/items/${id}`, {
-    method: "PATCH", body: JSON.stringify(patch),
+    method: "PATCH", body: patch,
   });
   if (!r.ok) return r;
   return { ok: true, item: mapItem(r.data.item) };
@@ -254,7 +247,7 @@ export async function apiCreateQA(items: { knowledgeItemId: string; question: st
   { ok: true; qa: TrainingQA[] } | { ok: false; error: string }
 > {
   const r = await call<{ qa: QARow[] }>("/api/training/qa", {
-    method: "POST", body: JSON.stringify({ items }),
+    method: "POST", body: { items },
   });
   if (!r.ok) return r;
   return { ok: true, qa: r.data.qa.map(mapQA) };
@@ -262,7 +255,7 @@ export async function apiCreateQA(items: { knowledgeItemId: string; question: st
 
 export async function apiUpdateQA(id: string, patch: { question?: string; expectedAnswer?: string; approved?: boolean }): Promise<{ ok: true; qa: TrainingQA } | { ok: false; error: string }> {
   const r = await call<{ qa: QARow }>(`/api/training/qa/${id}`, {
-    method: "PATCH", body: JSON.stringify(patch),
+    method: "PATCH", body: patch,
   });
   if (!r.ok) return r;
   return { ok: true, qa: mapQA(r.data.qa) };
@@ -283,7 +276,7 @@ export async function apiCreateVersion(input: {
   changelog?: string[];
 }): Promise<{ ok: true; version: TrainingVersion } | { ok: false; error: string }> {
   const r = await call<{ version: VersionRow }>("/api/training/versions", {
-    method: "POST", body: JSON.stringify(input),
+    method: "POST", body: input,
   });
   if (!r.ok) return r;
   return { ok: true, version: mapVersion(r.data.version) };
@@ -291,7 +284,7 @@ export async function apiCreateVersion(input: {
 
 export async function apiSetVersionStatus(id: string, status: TrainingVersionStatus): Promise<{ ok: true; version: TrainingVersion } | { ok: false; error: string }> {
   const r = await call<{ version: VersionRow }>(`/api/training/versions/${id}/status`, {
-    method: "PATCH", body: JSON.stringify({ status }),
+    method: "PATCH", body: { status },
   });
   if (!r.ok) return r;
   return { ok: true, version: mapVersion(r.data.version) };
@@ -305,7 +298,7 @@ export async function apiCreateGap(input: {
   priority: Priority; suggestedAction: string; status?: GapStatus;
 }): Promise<{ ok: true; gap: KnowledgeGap } | { ok: false; error: string }> {
   const r = await call<{ gap: GapRow }>("/api/training/gaps", {
-    method: "POST", body: JSON.stringify(input),
+    method: "POST", body: input,
   });
   if (!r.ok) return r;
   return { ok: true, gap: mapGap(r.data.gap) };
@@ -316,7 +309,7 @@ export async function apiUpdateGap(id: string, patch: Partial<{
   priority: Priority; suggestedAction: string; status: GapStatus;
 }>): Promise<{ ok: true; gap: KnowledgeGap } | { ok: false; error: string }> {
   const r = await call<{ gap: GapRow }>(`/api/training/gaps/${id}`, {
-    method: "PATCH", body: JSON.stringify(patch),
+    method: "PATCH", body: patch,
   });
   if (!r.ok) return r;
   return { ok: true, gap: mapGap(r.data.gap) };
@@ -333,7 +326,7 @@ export async function apiDeleteGap(id: string): Promise<{ ok: boolean; error?: s
 // ============================================================================
 export async function apiUpdateSettings(patch: Partial<TrainingSettings>): Promise<{ ok: true; settings: TrainingSettings } | { ok: false; error: string }> {
   const r = await call<{ settings: SettingsRow }>("/api/training/settings", {
-    method: "PATCH", body: JSON.stringify(patch),
+    method: "PATCH", body: patch,
   });
   if (!r.ok) return r;
   return { ok: true, settings: mapSettings(r.data.settings) };
@@ -352,7 +345,7 @@ export interface GapDetectionReport {
 
 export async function apiRunGapDetection(daysBack = 14): Promise<{ ok: true; report: GapDetectionReport } | { ok: false; error: string }> {
   const r = await call<{ report: GapDetectionReport }>("/api/training/gaps/detect", {
-    method: "POST", body: JSON.stringify({ daysBack }),
+    method: "POST", body: { daysBack },
   });
   if (!r.ok) return r;
   return { ok: true, report: r.data.report };
@@ -403,7 +396,7 @@ export interface EvalRunDetail extends EvalRunSummary {
 
 export async function apiRunQaEval(limit = 20): Promise<{ ok: true; report: EvalRunReport } | { ok: false; error: string }> {
   const r = await call<{ report: EvalRunReport }>("/api/training/eval/run", {
-    method: "POST", body: JSON.stringify({ limit }),
+    method: "POST", body: { limit },
   });
   if (!r.ok) return r;
   return { ok: true, report: r.data.report };
@@ -441,7 +434,7 @@ export async function apiRunAbTest(input: {
   limit?: number;
 }): Promise<{ ok: true; report: AbTestReport } | { ok: false; error: string }> {
   const r = await call<{ report: AbTestReport }>("/api/training/eval/ab", {
-    method: "POST", body: JSON.stringify(input),
+    method: "POST", body: input,
   });
   if (!r.ok) return r;
   return { ok: true, report: r.data.report };
@@ -464,7 +457,7 @@ export async function apiAutoPromote(input: {
   apply?: boolean;
 }): Promise<{ ok: true; result: AutoPromoteResult } | { ok: false; error: string }> {
   const r = await call<AutoPromoteResult>("/api/training/eval/auto-promote", {
-    method: "POST", body: JSON.stringify(input),
+    method: "POST", body: input,
   });
   if (!r.ok) return r;
   return { ok: true, result: r.data };
@@ -522,7 +515,7 @@ export async function apiProposeQasFromTickets(input: { limit?: number; daysBack
   { ok: true; report: TicketToQaReport } | { ok: false; error: string }
 > {
   const r = await call<{ report: TicketToQaReport }>("/api/training/qa/propose-from-tickets", {
-    method: "POST", body: JSON.stringify(input),
+    method: "POST", body: input,
   });
   if (!r.ok) return r;
   return { ok: true, report: r.data.report };
@@ -541,7 +534,7 @@ export interface AutoQaReport {
 
 export async function apiAutoGenerateQas(limit = 100): Promise<{ ok: true; report: AutoQaReport } | { ok: false; error: string }> {
   const r = await call<{ report: AutoQaReport }>("/api/training/qa/auto-generate", {
-    method: "POST", body: JSON.stringify({ limit }),
+    method: "POST", body: { limit },
   });
   if (!r.ok) return r;
   return { ok: true, report: r.data.report };
@@ -595,7 +588,7 @@ export async function apiRunSelfTraining(input: {
   runEval?: boolean;
 } = {}): Promise<{ ok: true; report: SelfTrainingReport } | { ok: false; error: string }> {
   const r = await call<{ report: SelfTrainingReport }>("/api/training/self/run", {
-    method: "POST", body: JSON.stringify(input),
+    method: "POST", body: input,
   });
   if (!r.ok) return r;
   return { ok: true, report: r.data.report };
@@ -633,7 +626,7 @@ export async function apiUpdateSelfTrainingConfig(patch: { enabled?: boolean; in
   { ok: true; config: SelfTrainingCronConfig } | { ok: false; error: string }
 > {
   const r = await call<{ config: SelfTrainingCronConfig }>("/api/training/self/config", {
-    method: "PATCH", body: JSON.stringify(patch),
+    method: "PATCH", body: patch,
   });
   if (!r.ok) return r;
   return { ok: true, config: r.data.config };
@@ -658,7 +651,7 @@ export interface EmbeddingsBackfillReport {
 
 export async function apiBackfillEmbeddings(limit = 200): Promise<{ ok: true; report: EmbeddingsBackfillReport } | { ok: false; error: string }> {
   const r = await call<{ report: EmbeddingsBackfillReport }>("/api/training/embeddings/backfill", {
-    method: "POST", body: JSON.stringify({ limit }),
+    method: "POST", body: { limit },
   });
   if (!r.ok) return r;
   return { ok: true, report: r.data.report };
@@ -718,7 +711,7 @@ export async function apiDetectFeedbackPatterns(daysBack = 14): Promise<
   { ok: true; report: FeedbackPatternReport } | { ok: false; error: string }
 > {
   const r = await call<{ report: FeedbackPatternReport }>("/api/training/feedback/patterns", {
-    method: "POST", body: JSON.stringify({ daysBack, minClusterSize: 3 }),
+    method: "POST", body: { daysBack, minClusterSize: 3 },
   });
   if (!r.ok) return r;
   return { ok: true, report: r.data.report };

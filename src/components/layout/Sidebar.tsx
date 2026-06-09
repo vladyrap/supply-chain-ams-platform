@@ -27,6 +27,7 @@ import { usePermissions } from "@/hooks/usePermissions";
 import type { ModuleDef } from "@/types";
 import { useSidebarPrefs } from "@/hooks/useSidebarPrefs";
 import { useSidebarBadges, badgeForModule } from "@/hooks/useSidebarBadges";
+import { useTenant } from "@/context/TenantContext";
 import CommandPalette from "./CommandPalette";
 
 export default function Sidebar() {
@@ -36,6 +37,14 @@ export default function Sidebar() {
 
   // Fuente única de verdad de RBAC efectivo (usuario, rol, can/canSeeModule)
   const { effectiveUser, roleCode, canSeeModule } = usePermissions();
+
+  // Tenant-aware branding (v1.2.0 multi-tenant)
+  const { tenant } = useTenant();
+  const brandName = tenant?.brand?.name || tenant?.name || "AMS Platform";
+  const brandLogo = tenant?.brand?.logo;
+  const brandSubtitle = tenant?.id && tenant.id !== "default"
+    ? (tenant.plan ? `${tenant.plan.toUpperCase()} · tenant` : "Tenant")
+    : "Supply Chain · SAP";
 
   const [paletteOpen, setPaletteOpen] = useState(false);
   const [backendOnline, setBackendOnline] = useState<boolean | null>(null);
@@ -84,10 +93,19 @@ export default function Sidebar() {
     <>
       <aside className="sidebar">
         <div className="brand">
-          <div className="logo">A</div>
+          {brandLogo ? (
+            <img
+              src={brandLogo}
+              alt={brandName}
+              className="logo"
+              style={{ objectFit: "contain", background: "transparent" }}
+            />
+          ) : (
+            <div className="logo">{brandName.charAt(0).toUpperCase() || "A"}</div>
+          )}
           <div>
-            <div className="title">AMS Platform</div>
-            <div className="subtitle">Supply Chain · SAP</div>
+            <div className="title">{brandName}</div>
+            <div className="subtitle">{brandSubtitle}</div>
           </div>
         </div>
 

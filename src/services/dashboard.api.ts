@@ -1,5 +1,4 @@
-const API_BASE =
-  (process.env.NEXT_PUBLIC_AGENT_API_URL || "http://localhost:6601").replace(/\/+$/, "");
+import { apiGet, ApiError } from "./_http";
 
 export interface DashboardAdvanced {
   totals: {
@@ -54,33 +53,33 @@ export interface UsageSummary {
 
 export async function fetchUsage(days = 30): Promise<{ ok: true; u: UsageSummary } | { ok: false; error: string }> {
   try {
-    const res = await fetch(`${API_BASE}/api/dashboard/usage?days=${days}`, { credentials: "include", cache: "no-store" });
-    const data = (await res.json().catch(() => null)) as { success: boolean; usage?: UsageSummary; error?: string } | null;
-    if (!data || !data.success || !data.usage) return { ok: false, error: data?.error || `HTTP ${res.status}` };
+    const data = await apiGet<{ success: boolean; usage?: UsageSummary; error?: string }>(`/api/dashboard/usage?days=${days}`);
+    if (!data || !data.success || !data.usage) return { ok: false, error: data?.error || "no data" };
     return { ok: true, u: data.usage };
   } catch (err) {
+    if (err instanceof ApiError) return { ok: false, error: err.message };
     return { ok: false, error: err instanceof Error ? err.message : "error de red" };
   }
 }
 
 export async function fetchExecutive(days = 30): Promise<{ ok: true; d: DashboardExecutive } | { ok: false; error: string }> {
   try {
-    const res = await fetch(`${API_BASE}/api/dashboard/executive?days=${days}`, { credentials: "include", cache: "no-store" });
-    const data = (await res.json().catch(() => null)) as { success: boolean; dashboard?: DashboardExecutive; error?: string } | null;
-    if (!data || !data.success || !data.dashboard) return { ok: false, error: data?.error || `HTTP ${res.status}` };
+    const data = await apiGet<{ success: boolean; dashboard?: DashboardExecutive; error?: string }>(`/api/dashboard/executive?days=${days}`);
+    if (!data || !data.success || !data.dashboard) return { ok: false, error: data?.error || "no data" };
     return { ok: true, d: data.dashboard };
   } catch (err) {
+    if (err instanceof ApiError) return { ok: false, error: err.message };
     return { ok: false, error: err instanceof Error ? err.message : "error de red" };
   }
 }
 
 export async function fetchAdvanced(): Promise<{ ok: true; d: DashboardAdvanced } | { ok: false; error: string }> {
   try {
-    const res = await fetch(`${API_BASE}/api/dashboard/advanced`, { credentials: "include", cache: "no-store" });
-    const data = (await res.json().catch(() => null)) as { success: boolean; dashboard?: DashboardAdvanced; error?: string } | null;
-    if (!data || !data.success || !data.dashboard) return { ok: false, error: data?.error || `HTTP ${res.status}` };
+    const data = await apiGet<{ success: boolean; dashboard?: DashboardAdvanced; error?: string }>("/api/dashboard/advanced");
+    if (!data || !data.success || !data.dashboard) return { ok: false, error: data?.error || "no data" };
     return { ok: true, d: data.dashboard };
   } catch (err) {
+    if (err instanceof ApiError) return { ok: false, error: err.message };
     return { ok: false, error: err instanceof Error ? err.message : "error de red" };
   }
 }
@@ -99,11 +98,13 @@ export async function fetchNotifications(since?: string): Promise<{ ok: true; it
   try {
     const params = new URLSearchParams();
     if (since) params.set("since", since);
-    const res = await fetch(`${API_BASE}/api/notifications?${params}`, { credentials: "include", cache: "no-store" });
-    const data = (await res.json().catch(() => null)) as { success: boolean; notifications?: NotificationItem[]; error?: string } | null;
-    if (!data || !data.success || !data.notifications) return { ok: false, error: data?.error || `HTTP ${res.status}` };
+    const data = await apiGet<{ success: boolean; notifications?: NotificationItem[]; error?: string }>(
+      `/api/notifications?${params}`,
+    );
+    if (!data || !data.success || !data.notifications) return { ok: false, error: data?.error || "no data" };
     return { ok: true, items: data.notifications };
   } catch (err) {
+    if (err instanceof ApiError) return { ok: false, error: err.message };
     return { ok: false, error: err instanceof Error ? err.message : "error de red" };
   }
 }

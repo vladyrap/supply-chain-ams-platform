@@ -5,22 +5,10 @@ import type {
   TestingScenario, EvidenceItem, TestDefect,
   GeneratedUserManual, TestingSettings,
 } from "@/types/testing";
+import { apiFetch, API_BASE, type ApiFetchOptions } from "./_http";
 
-const API_BASE =
-  (process.env.NEXT_PUBLIC_AGENT_API_URL || "http://localhost:6601").replace(/\/+$/, "");
-
-async function http<T>(path: string, opts: RequestInit = {}): Promise<T> {
-  const res = await fetch(`${API_BASE}${path}`, {
-    headers: { "Content-Type": "application/json", ...(opts.headers || {}) },
-    credentials: "include",
-    ...opts,
-  });
-  if (!res.ok) {
-    let msg = `HTTP ${res.status}`;
-    try { msg = (await res.json()).error || msg; } catch { /* ignore */ }
-    throw new Error(msg);
-  }
-  return res.json() as Promise<T>;
+async function http<T>(path: string, opts: ApiFetchOptions = {}): Promise<T> {
+  return apiFetch<T>(path, opts);
 }
 
 // ============================================================
@@ -52,7 +40,7 @@ export async function getSnapshot(): Promise<TestingSnapshot> {
 
 export async function upsertScenario(s: TestingScenario): Promise<TestingScenario> {
   const r = await http<{ success: true; scenario: TestingScenario }>(
-    "/api/testing/scenarios", { method: "POST", body: JSON.stringify(s) }
+    "/api/testing/scenarios", { method: "POST", body: s }
   );
   return r.scenario;
 }
@@ -66,7 +54,7 @@ export async function deleteScenario(id: string): Promise<void> {
 
 export async function createEvidenceJson(e: EvidenceItem): Promise<EvidenceItem> {
   const r = await http<{ success: true; evidence: EvidenceItem }>(
-    "/api/testing/evidences", { method: "POST", body: JSON.stringify(e) }
+    "/api/testing/evidences", { method: "POST", body: e }
   );
   return r.evidence;
 }
@@ -104,23 +92,18 @@ export async function uploadEvidence(input: UploadEvidenceInput): Promise<Eviden
     || (input.file instanceof File ? input.file.name : `recording-${Date.now()}.webm`);
   form.append("file", input.file, fileName);
 
-  const res = await fetch(`${API_BASE}/api/testing/evidences/upload`, {
-    method: "POST",
-    credentials: "include",
-    body: form,
-  });
-  if (!res.ok) {
-    let msg = `HTTP ${res.status}`;
-    try { msg = (await res.json()).error || msg; } catch { /* ignore */ }
-    throw new Error(msg);
-  }
-  const json = await res.json() as { success: true; evidence: EvidenceItem };
+  // apiFetch detecta FormData y no setea Content-Type — el browser lo arma con boundary.
+  // Subir vídeo grande puede tardar — desactivar timeout default de 30s.
+  const json = await apiFetch<{ success: true; evidence: EvidenceItem }>(
+    "/api/testing/evidences/upload",
+    { method: "POST", body: form, timeoutMs: null },
+  );
   return json.evidence;
 }
 
 /** URL pública para reproducir el video subido. */
 export function evidenceFileUrl(id: string): string {
-  return `${API_BASE}/api/testing/evidences/${encodeURIComponent(id)}/file`;
+  return `${API_BASE.replace(/\/+$/, "")}/api/testing/evidences/${encodeURIComponent(id)}/file`;
 }
 
 // ============================================================
@@ -129,7 +112,7 @@ export function evidenceFileUrl(id: string): string {
 
 export async function upsertDefect(d: TestDefect): Promise<TestDefect> {
   const r = await http<{ success: true; defect: TestDefect }>(
-    "/api/testing/defects", { method: "POST", body: JSON.stringify(d) }
+    "/api/testing/defects", { method: "POST", body: d }
   );
   return r.defect;
 }
@@ -143,7 +126,7 @@ export async function deleteDefect(id: string): Promise<void> {
 
 export async function upsertManual(m: GeneratedUserManual): Promise<GeneratedUserManual> {
   const r = await http<{ success: true; manual: GeneratedUserManual }>(
-    "/api/testing/manuals", { method: "POST", body: JSON.stringify(m) }
+    "/api/testing/manuals", { method: "POST", body: m }
   );
   return r.manual;
 }
@@ -154,7 +137,7 @@ export async function upsertManual(m: GeneratedUserManual): Promise<GeneratedUse
 
 export async function updateSettings(patch: Partial<TestingSettings>): Promise<TestingSettings> {
   const r = await http<{ success: true; settings: TestingSettings }>(
-    "/api/testing/settings", { method: "PATCH", body: JSON.stringify(patch) }
+    "/api/testing/settings", { method: "PATCH", body: patch }
   );
   return r.settings;
 }

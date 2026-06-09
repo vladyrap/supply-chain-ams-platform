@@ -1,5 +1,4 @@
-const API_BASE =
-  (process.env.NEXT_PUBLIC_AGENT_API_URL || "http://localhost:6601").replace(/\/+$/, "");
+import { apiFetch, ApiError, type ApiFetchOptions } from "./_http";
 
 export interface KnowledgeDocument {
   id: string;
@@ -38,24 +37,27 @@ export interface IngestPayload {
   client?: string;
 }
 
+async function tryFetch<T>(path: string, opts?: ApiFetchOptions): Promise<{ ok: true; data: T } | { ok: false; error: string }> {
+  try {
+    const data = await apiFetch<T>(path, opts);
+    if (data === null || data === undefined) return { ok: false, error: "no data" };
+    return { ok: true, data };
+  } catch (err) {
+    if (err instanceof ApiError) return { ok: false, error: err.message };
+    return { ok: false, error: err instanceof Error ? err.message : "error de red" };
+  }
+}
+
 export async function ingestDocument(p: IngestPayload): Promise<
   { ok: true; document: KnowledgeDocument } | { ok: false; error: string }
 > {
-  try {
-    const res = await fetch(`${API_BASE}/api/knowledge/ingest`, {
-      method: "POST",
-      credentials: "include",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify(p),
-    });
-    const data = (await res.json().catch(() => null)) as { success: boolean; document?: KnowledgeDocument; error?: string } | null;
-    if (!data || !data.success || !data.document) {
-      return { ok: false, error: data?.error || `HTTP ${res.status}` };
-    }
-    return { ok: true, document: data.document };
-  } catch (err) {
-    return { ok: false, error: err instanceof Error ? err.message : "error de red" };
-  }
+  const r = await tryFetch<{ success: boolean; document?: KnowledgeDocument; error?: string }>(
+    "/api/knowledge/ingest",
+    { method: "POST", body: p },
+  );
+  if (!r.ok) return r;
+  if (!r.data.success || !r.data.document) return { ok: false, error: r.data.error || "no data" };
+  return { ok: true, document: r.data.document };
 }
 
 export async function listKnowledgeDocuments(filters: { module?: string; client?: string; status?: string } = {}): Promise<
@@ -65,38 +67,31 @@ export async function listKnowledgeDocuments(filters: { module?: string; client?
   if (filters.module) params.set("module", filters.module);
   if (filters.client) params.set("client", filters.client);
   if (filters.status) params.set("status", filters.status);
-  try {
-    const res = await fetch(`${API_BASE}/api/knowledge/documents?${params.toString()}`, { cache: "no-store", credentials: "include" });
-    const data = (await res.json().catch(() => null)) as { success: boolean; documents?: KnowledgeDocument[]; error?: string } | null;
-    if (!data || !data.success || !data.documents) return { ok: false, error: data?.error || `HTTP ${res.status}` };
-    return { ok: true, documents: data.documents };
-  } catch (err) {
-    return { ok: false, error: err instanceof Error ? err.message : "error de red" };
-  }
+  const r = await tryFetch<{ success: boolean; documents?: KnowledgeDocument[]; error?: string }>(
+    `/api/knowledge/documents?${params.toString()}`,
+  );
+  if (!r.ok) return r;
+  if (!r.data.success || !r.data.documents) return { ok: false, error: r.data.error || "no data" };
+  return { ok: true, documents: r.data.documents };
 }
 
 export async function deleteKnowledgeDocument(id: string): Promise<{ ok: true } | { ok: false; error: string }> {
-  try {
-    const res = await fetch(`${API_BASE}/api/knowledge/documents/${id}`, { method: "DELETE", credentials: "include" });
-    const data = (await res.json().catch(() => null)) as { success: boolean; error?: string } | null;
-    if (!data || !data.success) return { ok: false, error: data?.error || `HTTP ${res.status}` };
-    return { ok: true };
-  } catch (err) {
-    return { ok: false, error: err instanceof Error ? err.message : "error de red" };
-  }
+  const r = await tryFetch<{ success: boolean; error?: string }>(
+    `/api/knowledge/documents/${id}`,
+    { method: "DELETE" },
+  );
+  if (!r.ok) return r;
+  if (!r.data.success) return { ok: false, error: r.data.error || "no data" };
+  return { ok: true };
 }
 
 export async function fetchKnowledgeOverview(): Promise<
   { ok: true; stats: KnowledgeStats } | { ok: false; error: string }
 > {
-  try {
-    const res = await fetch(`${API_BASE}/api/knowledge/overview`, { cache: "no-store", credentials: "include" });
-    const data = (await res.json().catch(() => null)) as { success: boolean; stats?: KnowledgeStats; error?: string } | null;
-    if (!data || !data.success || !data.stats) return { ok: false, error: data?.error || `HTTP ${res.status}` };
-    return { ok: true, stats: data.stats };
-  } catch (err) {
-    return { ok: false, error: err instanceof Error ? err.message : "error de red" };
-  }
+  const r = await tryFetch<{ success: boolean; stats?: KnowledgeStats; error?: string }>("/api/knowledge/overview");
+  if (!r.ok) return r;
+  if (!r.data.success || !r.data.stats) return { ok: false, error: r.data.error || "no data" };
+  return { ok: true, stats: r.data.stats };
 }
 
 // =====================================================
@@ -105,38 +100,26 @@ export async function fetchKnowledgeOverview(): Promise<
 export async function ingestText(p: { title?: string; content: string; module?: string; client?: string }): Promise<
   { ok: true; document: KnowledgeDocument } | { ok: false; error: string }
 > {
-  try {
-    const res = await fetch(`${API_BASE}/api/knowledge/ingest-text`, {
-      method: "POST",
-      credentials: "include",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify(p),
-    });
-    const data = (await res.json().catch(() => null)) as { success: boolean; document?: KnowledgeDocument; error?: string } | null;
-    if (!data || !data.success || !data.document) return { ok: false, error: data?.error || `HTTP ${res.status}` };
-    return { ok: true, document: data.document };
-  } catch (err) {
-    return { ok: false, error: err instanceof Error ? err.message : "error de red" };
-  }
+  const r = await tryFetch<{ success: boolean; document?: KnowledgeDocument; error?: string }>(
+    "/api/knowledge/ingest-text",
+    { method: "POST", body: p },
+  );
+  if (!r.ok) return r;
+  if (!r.data.success || !r.data.document) return { ok: false, error: r.data.error || "no data" };
+  return { ok: true, document: r.data.document };
 }
 
 // Ingest desde URL pública (HTML, MD o TXT)
 export async function ingestUrl(p: { url: string; title?: string; module?: string; client?: string }): Promise<
   { ok: true; document: KnowledgeDocument } | { ok: false; error: string }
 > {
-  try {
-    const res = await fetch(`${API_BASE}/api/knowledge/ingest-url`, {
-      method: "POST",
-      credentials: "include",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify(p),
-    });
-    const data = (await res.json().catch(() => null)) as { success: boolean; document?: KnowledgeDocument; error?: string } | null;
-    if (!data || !data.success || !data.document) return { ok: false, error: data?.error || `HTTP ${res.status}` };
-    return { ok: true, document: data.document };
-  } catch (err) {
-    return { ok: false, error: err instanceof Error ? err.message : "error de red" };
-  }
+  const r = await tryFetch<{ success: boolean; document?: KnowledgeDocument; error?: string }>(
+    "/api/knowledge/ingest-url",
+    { method: "POST", body: p },
+  );
+  if (!r.ok) return r;
+  if (!r.data.success || !r.data.document) return { ok: false, error: r.data.error || "no data" };
+  return { ok: true, document: r.data.document };
 }
 
 // =====================================================
@@ -157,16 +140,12 @@ export interface KnowledgeChunk {
 export async function fetchDocumentChunks(documentId: string, limit = 200): Promise<
   { ok: true; chunks: KnowledgeChunk[] } | { ok: false; error: string }
 > {
-  try {
-    const res = await fetch(`${API_BASE}/api/knowledge/documents/${documentId}/chunks?limit=${limit}`, {
-      cache: "no-store", credentials: "include",
-    });
-    const data = (await res.json().catch(() => null)) as { success: boolean; chunks?: KnowledgeChunk[]; error?: string } | null;
-    if (!data || !data.success || !data.chunks) return { ok: false, error: data?.error || `HTTP ${res.status}` };
-    return { ok: true, chunks: data.chunks };
-  } catch (err) {
-    return { ok: false, error: err instanceof Error ? err.message : "error de red" };
-  }
+  const r = await tryFetch<{ success: boolean; chunks?: KnowledgeChunk[]; error?: string }>(
+    `/api/knowledge/documents/${documentId}/chunks?limit=${limit}`,
+  );
+  if (!r.ok) return r;
+  if (!r.data.success || !r.data.chunks) return { ok: false, error: r.data.error || "no data" };
+  return { ok: true, chunks: r.data.chunks };
 }
 
 // =====================================================
@@ -188,17 +167,11 @@ export interface RagSearchHit {
 export async function searchKnowledge(query: string, filters: { module?: string; client?: string } = {}): Promise<
   { ok: true; chunks: RagSearchHit[]; query: string } | { ok: false; error: string }
 > {
-  try {
-    const res = await fetch(`${API_BASE}/api/knowledge/search`, {
-      method: "POST",
-      credentials: "include",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ query, module: filters.module, client: filters.client }),
-    });
-    const data = (await res.json().catch(() => null)) as { success: boolean; chunks?: RagSearchHit[]; query?: string; error?: string } | null;
-    if (!data || !data.success || !data.chunks) return { ok: false, error: data?.error || `HTTP ${res.status}` };
-    return { ok: true, chunks: data.chunks, query: data.query || query };
-  } catch (err) {
-    return { ok: false, error: err instanceof Error ? err.message : "error de red" };
-  }
+  const r = await tryFetch<{ success: boolean; chunks?: RagSearchHit[]; query?: string; error?: string }>(
+    "/api/knowledge/search",
+    { method: "POST", body: { query, module: filters.module, client: filters.client } },
+  );
+  if (!r.ok) return r;
+  if (!r.data.success || !r.data.chunks) return { ok: false, error: r.data.error || "no data" };
+  return { ok: true, chunks: r.data.chunks, query: r.data.query || query };
 }

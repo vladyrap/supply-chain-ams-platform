@@ -1,5 +1,4 @@
-const API_BASE =
-  (process.env.NEXT_PUBLIC_AGENT_API_URL || "http://localhost:6601").replace(/\/+$/, "");
+import { apiGet, ApiError } from "./_http";
 
 export interface StatsByKey { key: string; count: number }
 export interface StatsByDay { day: string; count: number }
@@ -19,13 +18,13 @@ export interface AmsStats {
 
 export async function fetchStats(): Promise<{ ok: true; stats: AmsStats } | { ok: false; error: string }> {
   try {
-    const res = await fetch(`${API_BASE}/api/ams/stats`, { cache: "no-store", credentials: "include" });
-    const data = (await res.json().catch(() => null)) as { success: boolean; stats?: AmsStats; error?: string } | null;
+    const data = await apiGet<{ success: boolean; stats?: AmsStats; error?: string }>("/api/ams/stats");
     if (!data || !data.success || !data.stats) {
-      return { ok: false, error: data?.error || `HTTP ${res.status}` };
+      return { ok: false, error: data?.error || "no data" };
     }
     return { ok: true, stats: data.stats };
   } catch (err) {
+    if (err instanceof ApiError) return { ok: false, error: err.message };
     return { ok: false, error: err instanceof Error ? err.message : "error de red" };
   }
 }

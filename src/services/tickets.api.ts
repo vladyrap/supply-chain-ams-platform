@@ -1,9 +1,7 @@
 import type { TicketEstimatedResolution } from "@/types/estimation";
 import type { VisualEvidenceNote } from "@/types/visual-evidence";
 import type { TicketIntelligence, IntelligenceHistoryEntry } from "@/types/ticket-intelligence";
-
-const API_BASE =
-  (process.env.NEXT_PUBLIC_AGENT_API_URL || "http://localhost:6601").replace(/\/+$/, "");
+import { apiFetch, ApiError, type ApiFetchOptions } from "./_http";
 
 export interface Ticket {
   source: "jira" | "mock" | "user";
@@ -50,24 +48,13 @@ export interface Classification {
   confidence: "baja" | "media" | "alta" | "no_detectada";
 }
 
-async function call<T>(path: string, init: RequestInit = {}): Promise<T | { success: false; error: string }> {
+async function call<T>(path: string, opts: ApiFetchOptions = {}): Promise<T | { success: false; error: string }> {
   try {
-    // Solo mandar Content-Type cuando hay body real. Fastify rechaza un POST
-    // con Content-Type: application/json y body vacío con "Body cannot be empty".
-    const headers: Record<string, string> = { ...(init.headers as Record<string, string> ?? {}) };
-    if (init.body != null && !headers["Content-Type"]) {
-      headers["Content-Type"] = "application/json";
-    }
-    const res = await fetch(`${API_BASE}${path}`, {
-      ...init,
-      credentials: "include",
-      headers,
-      cache: "no-store",
-    });
-    const data = (await res.json().catch(() => null)) as T | null;
-    if (!data) return { success: false, error: `HTTP ${res.status}` };
+    const data = await apiFetch<T>(path, opts);
+    if (data === null || data === undefined) return { success: false, error: "no data" } as { success: false; error: string };
     return data;
   } catch (err) {
+    if (err instanceof ApiError) return { success: false, error: err.message };
     return { success: false, error: err instanceof Error ? err.message : "error de red" };
   }
 }
@@ -81,14 +68,14 @@ export async function listTickets() {
 export async function createTicket(input: CreateTicketInput) {
   return call<{ success: true; ticket: Ticket } | { success: false; error: string }>(
     "/api/tickets",
-    { method: "POST", body: JSON.stringify(input) }
+    { method: "POST", body: input }
   );
 }
 
 export async function recalculateTicket(key: string, opts: { force?: boolean; actor?: string } = {}) {
   return call<{ success: true; ticket: Ticket } | { success: false; error: string }>(
     `/api/tickets/${encodeURIComponent(key)}/recalculate`,
-    { method: "POST", body: JSON.stringify(opts) }
+    { method: "POST", body: opts }
   );
 }
 
@@ -104,7 +91,7 @@ export interface ManualTicketEstimatePatch {
 export async function adjustTicketEstimate(key: string, patch: ManualTicketEstimatePatch) {
   return call<{ success: true; ticket: Ticket } | { success: false; error: string }>(
     `/api/tickets/${encodeURIComponent(key)}/estimate`,
-    { method: "PATCH", body: JSON.stringify(patch) }
+    { method: "PATCH", body: patch }
   );
 }
 
@@ -143,7 +130,7 @@ export interface CloseTicketInput {
 export async function closeTicket(key: string, input: CloseTicketInput) {
   return call<{ success: true; ticket: Ticket } | { success: false; error: string }>(
     `/api/tickets/${encodeURIComponent(key)}/close`,
-    { method: "POST", body: JSON.stringify(input) }
+    { method: "POST", body: input }
   );
 }
 
@@ -158,7 +145,7 @@ export async function replaceTicketEstimateFull(
 ) {
   return call<{ success: true; ticket: Ticket } | { success: false; error: string }>(
     `/api/tickets/${encodeURIComponent(key)}/estimate/full`,
-    { method: "POST", body: JSON.stringify(input) }
+    { method: "POST", body: input }
   );
 }
 
@@ -173,7 +160,7 @@ export async function updateTicketIntelligence(
 ) {
   return call<{ success: true; ticket: Ticket; conflict: { reason: string; serverHash: string } | null } | { success: false; error: string }>(
     `/api/tickets/${encodeURIComponent(key)}/intelligence`,
-    { method: "PUT", body: JSON.stringify({ intelligence }) }
+    { method: "PUT", body: { intelligence } }
   );
 }
 
@@ -211,6 +198,6 @@ export interface UpdateTicketInput {
 export async function updateTicket(key: string, patch: UpdateTicketInput) {
   return call<{ success: true; ticket: Ticket } | { success: false; error: string }>(
     `/api/tickets/${encodeURIComponent(key)}`,
-    { method: "PATCH", body: JSON.stringify(patch) }
+    { method: "PATCH", body: patch }
   );
 }

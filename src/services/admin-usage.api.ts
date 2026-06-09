@@ -2,8 +2,7 @@
 // admin-usage.api.ts — Client del endpoint /api/admin/usage/summary (v0.14.14)
 // =============================================================================
 
-const API_BASE =
-  (process.env.NEXT_PUBLIC_AGENT_API_URL || "http://localhost:6601").replace(/\/+$/, "");
+import { apiFetch } from "./_http";
 
 export interface UsageWindow { calls: number; usd: number; clp: number }
 export interface UsageDelta { pct: number; direction: "up" | "down" | "flat" }
@@ -64,12 +63,7 @@ export interface UsageSummaryResponse {
 }
 
 export async function fetchAdminUsageSummary(signal?: AbortSignal): Promise<UsageSummaryResponse> {
-  const res = await fetch(`${API_BASE}/api/admin/usage/summary`, {
-    credentials: "include",
-    signal,
-  });
-  if (!res.ok) throw new Error(`HTTP ${res.status}: ${await res.text()}`);
-  return res.json();
+  return apiFetch<UsageSummaryResponse>("/api/admin/usage/summary", { signal });
 }
 
 export function dailyToCsv(daily: UsageDailyPoint[]): string {
