@@ -302,6 +302,13 @@ export const MODULES: ModuleDef[] = [
     rolesAllowed: ["admin"],
     permissionKey: "administracion", group: "sistema",
   },
+  {
+    id: "admin-roi", label: "ROI del Agente", icon: "📈", href: "/admin/roi",
+    description: "Combina costos reales de Gemini con valor económico estimado: ROI, payback, ganancia neta, eficiencia (admin + aprobador)",
+    status: "available", phase: 6,
+    rolesAllowed: ["aprobador", "admin"],
+    permissionKey: "business_value_dashboard", group: "sistema",
+  },
 ];
 
 export function moduleById(id: string): ModuleDef | undefined {
