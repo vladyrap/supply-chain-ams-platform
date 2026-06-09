@@ -295,6 +295,13 @@ export const MODULES: ModuleDef[] = [
     rolesAllowed: ["admin"],
     permissionKey: "administracion", group: "sistema",
   },
+  {
+    id: "admin-costs", label: "Costos Gemini", icon: "💰", href: "/admin/costs",
+    description: "Dashboard de costos del agente Gemini con health score, recomendaciones IA, forecast y anomalías (solo admin)",
+    status: "available", phase: 6,
+    rolesAllowed: ["admin"],
+    permissionKey: "administracion", group: "sistema",
+  },
 ];
 
 export function moduleById(id: string): ModuleDef | undefined {
