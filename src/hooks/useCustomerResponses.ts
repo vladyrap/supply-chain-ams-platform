@@ -3,14 +3,16 @@
 // Hook + persistencia para Customer Responses.
 // Storage por ticket: máx 10 respuestas por ticket (cleanup automático).
 // Sync entre tabs vía storage event + custom event.
+// G8 (v1.2.0): localStorage scoped por tenant via tenantStorage().
 
-import { useCallback, useEffect, useState } from "react";
+import { useCallback, useEffect, useMemo, useState } from "react";
 import type { CustomerResponse, CustomerResponseStatus } from "@/types/customer-response";
 import { CUSTOMER_RESPONSE_STORAGE } from "@/types/customer-response";
 import {
   persistCustomerResponse, updateCustomerResponseStatusApi, deleteCustomerResponseApi,
-  fetchCustomerResponsesByTicket,
 } from "@/services/customer-responses.api";
+import { useTenant } from "@/context/TenantContext";
+import { tenantStorage, isTenantScopedKey } from "@/lib/tenantStorage";
 
 const STORAGE_KEY = CUSTOMER_RESPONSE_STORAGE.responses;
 const EVT = "ams-customer-responses-changed";
@@ -38,19 +40,23 @@ export interface UseCustomerResponses {
 }
 
 export function useCustomerResponses(): UseCustomerResponses {
-  const [responses, setResponses] = useState<CustomerResponse[]>(() => {
-    if (typeof window === "undefined") return [];
-    return safeParse<CustomerResponse[]>(localStorage.getItem(STORAGE_KEY)) ?? [];
-  });
+  const { tenant } = useTenant();
+  const tenantId = tenant?.id || "default";
+  const storage = useMemo(() => tenantStorage(tenantId), [tenantId]);
+
+  const [responses, setResponses] = useState<CustomerResponse[]>([]);
+
+  // Re-cargar cuando cambia el tenant
+  useEffect(() => {
+    setResponses(safeParse<CustomerResponse[]>(storage.get(STORAGE_KEY)) ?? []);
+  }, [storage]);
 
   useEffect(() => {
     function reload() {
-      if (typeof window === "undefined") return;
-      const fresh = safeParse<CustomerResponse[]>(localStorage.getItem(STORAGE_KEY)) ?? [];
-      setResponses(fresh);
+      setResponses(safeParse<CustomerResponse[]>(storage.get(STORAGE_KEY)) ?? []);
     }
     function onStorage(e: StorageEvent) {
-      if (e.key === STORAGE_KEY) reload();
+      if (isTenantScopedKey(e.key, tenantId, STORAGE_KEY)) reload();
     }
     window.addEventListener("storage", onStorage);
     window.addEventListener(EVT, reload);
@@ -58,15 +64,13 @@ export function useCustomerResponses(): UseCustomerResponses {
       window.removeEventListener("storage", onStorage);
       window.removeEventListener(EVT, reload);
     };
-  }, []);
+  }, [storage, tenantId]);
 
   const persist = useCallback((next: CustomerResponse[]) => {
     setResponses(next);
-    if (typeof window !== "undefined") {
-      localStorage.setItem(STORAGE_KEY, JSON.stringify(next));
-      emit();
-    }
-  }, []);
+    storage.set(STORAGE_KEY, JSON.stringify(next));
+    emit();
+  }, [storage]);
 
   const byTicket: UseCustomerResponses["byTicket"] = useCallback(
     (ticketKey: string) =>
@@ -94,15 +98,13 @@ export function useCustomerResponses(): UseCustomerResponses {
         }
       }
       const next = [...kept, ...others];
-      if (typeof window !== "undefined") {
-        localStorage.setItem(STORAGE_KEY, JSON.stringify(next));
-        emit();
-      }
+      storage.set(STORAGE_KEY, JSON.stringify(next));
+      emit();
       return next;
     });
     // Sync best-effort con backend (no bloquea — si falla, queda solo en localStorage)
     persistCustomerResponse(r).catch(() => null);
-  }, []);
+  }, [storage]);
 
   const updateStatus: UseCustomerResponses["updateStatus"] = useCallback(
     (responseId, status, extra) => {
@@ -110,16 +112,14 @@ export function useCustomerResponses(): UseCustomerResponses {
         const next = cur.map((r) =>
           r.responseId === responseId ? { ...r, status, ...(extra ?? {}) } : r,
         );
-        if (typeof window !== "undefined") {
-          localStorage.setItem(STORAGE_KEY, JSON.stringify(next));
-          emit();
-        }
+        storage.set(STORAGE_KEY, JSON.stringify(next));
+        emit();
         return next;
       });
       // Sync best-effort
       updateCustomerResponseStatusApi(responseId, status).catch(() => null);
     },
-    [],
+    [storage],
   );
 
   const remove: UseCustomerResponses["remove"] = useCallback((id) => {

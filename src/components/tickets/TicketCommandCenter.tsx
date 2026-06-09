@@ -22,11 +22,14 @@ import KnowledgeCurationCard from "@/components/knowledge/KnowledgeCurationCard"
 import { useKnowledgeCuration } from "@/hooks/useKnowledgeCuration";
 import { analyzeCurationCandidate } from "@/intelligence/knowledge-curation-engine";
 
-/** Lee la firma del tenant desde /settings (localStorage). */
-function buildTenantSignature(): string {
+import { tenantStorage } from "@/lib/tenantStorage";
+
+/** Lee la firma del tenant desde /settings (localStorage scoped per-tenant). */
+function buildTenantSignature(tenantId: string): string {
   if (typeof window === "undefined") return "Equipo AMS";
-  const sig = window.localStorage.getItem("supply-chain-ams-tenant-signature") || "Equipo AMS";
-  const brand = window.localStorage.getItem("supply-chain-ams-tenant-brand") || "";
+  const storage = tenantStorage(tenantId);
+  const sig = storage.get("supply-chain-ams-tenant-signature") || "Equipo AMS";
+  const brand = storage.get("supply-chain-ams-tenant-brand") || "";
   return brand ? `${sig}\n${brand}` : sig;
 }
 import TicketNextBestAction from "./TicketNextBestAction";
@@ -1671,7 +1674,7 @@ export default function TicketCommandCenter({ ticket, onTicketUpdated }: Props) 
           signature={
             // v1.2.0: prioriza firma del tenant; fallback al localStorage / "Equipo AMS"
             (typeof tenant?.settings?.signature === "string" && tenant.settings.signature)
-              || (typeof window !== "undefined" ? buildTenantSignature() : "Equipo AMS")
+              || (typeof window !== "undefined" ? buildTenantSignature(tenant?.id || "default") : "Equipo AMS")
           }
           generatedBy={actor}
           humanReviewed={actorRole === "admin" || actorRole === "aprobador"}

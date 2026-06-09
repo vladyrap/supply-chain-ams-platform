@@ -15,7 +15,7 @@
 // `clearForTicket()` (solo borra local).
 // =============================================================================
 
-import { useCallback, useEffect, useState } from "react";
+import { useCallback, useEffect, useMemo, useState } from "react";
 import {
   AUDIT_STORAGE,
   type TicketAuditEvent, type TicketAuditEventType,
@@ -24,6 +24,8 @@ import {
   recordEventRemote, getByTicketRemote, isAuditBackendAvailable,
   type AuditEventRemoteRecord,
 } from "@/services/audit-events.api";
+import { useTenant } from "@/context/TenantContext";
+import { tenantStorage, isTenantScopedKey } from "@/lib/tenantStorage";
 
 const EVT = "ams-audit-changed";
 
@@ -110,29 +112,33 @@ function dedupOnLoad(raw: TicketAuditEvent[]): TicketAuditEvent[] {
 }
 
 export function useTicketAudit(): UseTicketAudit {
-  const [events, setEvents] = useState<TicketAuditEvent[]>(() => {
-    if (typeof window === "undefined") return [];
-    const raw = safe<TicketAuditEvent[]>(localStorage.getItem(AUDIT_STORAGE.events)) ?? [];
+  const { tenant } = useTenant();
+  const tenantId = tenant?.id || "default";
+  const storage = useMemo(() => tenantStorage(tenantId), [tenantId]);
+
+  const [events, setEvents] = useState<TicketAuditEvent[]>([]);
+  const [isUsingFallback, setIsUsingFallback] = useState(false);
+
+  // Carga inicial + re-carga cuando cambia el tenant
+  useEffect(() => {
+    const raw = safe<TicketAuditEvent[]>(storage.get(AUDIT_STORAGE.events)) ?? [];
     const cleaned = dedupOnLoad(raw);
-    // Si dedup eliminó algo, persistir el cleanup para que el sweep no se repita
-    if (cleaned.length !== raw.length && typeof window !== "undefined") {
+    if (cleaned.length !== raw.length) {
       try {
-        localStorage.setItem(AUDIT_STORAGE.events, JSON.stringify(cleaned));
+        storage.set(AUDIT_STORAGE.events, JSON.stringify(cleaned));
         // eslint-disable-next-line no-console
         console.info(`[audit] dedup limpió ${raw.length - cleaned.length} eventos duplicados`);
       } catch { /* ignore */ }
     }
-    return cleaned;
-  });
-  const [isUsingFallback, setIsUsingFallback] = useState(false);
+    setEvents(cleaned);
+  }, [storage]);
 
   useEffect(() => {
     function reload() {
-      if (typeof window === "undefined") return;
-      setEvents(safe<TicketAuditEvent[]>(localStorage.getItem(AUDIT_STORAGE.events)) ?? []);
+      setEvents(safe<TicketAuditEvent[]>(storage.get(AUDIT_STORAGE.events)) ?? []);
     }
     function onStorage(e: StorageEvent) {
-      if (e.key === AUDIT_STORAGE.events) reload();
+      if (isTenantScopedKey(e.key, tenantId, AUDIT_STORAGE.events)) reload();
     }
     window.addEventListener("storage", onStorage);
     window.addEventListener(EVT, reload);
@@ -142,19 +148,17 @@ export function useTicketAudit(): UseTicketAudit {
       window.removeEventListener("storage", onStorage);
       window.removeEventListener(EVT, reload);
     };
-  }, []);
+  }, [storage, tenantId]);
 
   // v0.14.7 — TODOS los callbacks usan functional setters → deps vacías → refs
   // estables. Esto rompe loops downstream: hooks que tienen `record` en deps
   // de useCallback/useEffect ya NO se re-disparan en cada record().
 
   const persistAndEmit = useCallback((next: TicketAuditEvent[]) => {
-    if (typeof window !== "undefined") {
-      const capped = next.slice(0, 1000);
-      localStorage.setItem(AUDIT_STORAGE.events, JSON.stringify(capped));
-      emit();
-    }
-  }, []);
+    const capped = next.slice(0, 1000);
+    storage.set(AUDIT_STORAGE.events, JSON.stringify(capped));
+    emit();
+  }, [storage]);
 
   const record: UseTicketAudit["record"] = useCallback((input) => {
     const ev: TicketAuditEvent = {

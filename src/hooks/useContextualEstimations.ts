@@ -2,15 +2,18 @@
 
 // Hook + persistencia para estimaciones contextuales (motor v2).
 //
-// Almacena un array de ContextualEstimationResult en localStorage. Permite
-// guardar, listar, eliminar y exportar — análogo a useTimeEstimator pero
-// para los outputs del Contextual AMS Engine.
+// Almacena un array de ContextualEstimationResult. Permite guardar, listar,
+// eliminar y exportar — análogo a useTimeEstimator pero para los outputs del
+// Contextual AMS Engine.
 //
-// Key: supply-chain-ams-contextual-estimations.
+// Key: supply-chain-ams-contextual-estimations (scoped por tenant en v1.2.0).
 // Sync entre tabs vía storage event + custom event "ams-contextual-changed".
+// G8 (v1.2.0): localStorage scoped por tenant via tenantStorage().
 
-import { useCallback, useEffect, useState } from "react";
+import { useCallback, useEffect, useMemo, useState } from "react";
 import type { ContextualEstimationResult } from "@/types/estimation";
+import { useTenant } from "@/context/TenantContext";
+import { tenantStorage, isTenantScopedKey } from "@/lib/tenantStorage";
 
 const STORAGE_KEY = "supply-chain-ams-contextual-estimations";
 const EVT = "ams-contextual-changed";
@@ -34,19 +37,22 @@ export interface UseContextualEstimations {
 }
 
 export function useContextualEstimations(): UseContextualEstimations {
-  const [estimations, setEstimations] = useState<ContextualEstimationResult[]>(() => {
-    if (typeof window === "undefined") return [];
-    return safe<ContextualEstimationResult[]>(localStorage.getItem(STORAGE_KEY)) ?? [];
-  });
+  const { tenant } = useTenant();
+  const tenantId = tenant?.id || "default";
+  const storage = useMemo(() => tenantStorage(tenantId), [tenantId]);
+
+  const [estimations, setEstimations] = useState<ContextualEstimationResult[]>([]);
+
+  useEffect(() => {
+    setEstimations(safe<ContextualEstimationResult[]>(storage.get(STORAGE_KEY)) ?? []);
+  }, [storage]);
 
   useEffect(() => {
     function reload() {
-      if (typeof window === "undefined") return;
-      const fresh = safe<ContextualEstimationResult[]>(localStorage.getItem(STORAGE_KEY)) ?? [];
-      setEstimations(fresh);
+      setEstimations(safe<ContextualEstimationResult[]>(storage.get(STORAGE_KEY)) ?? []);
     }
     function onStorage(e: StorageEvent) {
-      if (e.key === STORAGE_KEY) reload();
+      if (isTenantScopedKey(e.key, tenantId, STORAGE_KEY)) reload();
     }
     window.addEventListener("storage", onStorage);
     window.addEventListener(EVT, reload);
@@ -54,15 +60,13 @@ export function useContextualEstimations(): UseContextualEstimations {
       window.removeEventListener("storage", onStorage);
       window.removeEventListener(EVT, reload);
     };
-  }, []);
+  }, [storage, tenantId]);
 
   const persist = useCallback((next: ContextualEstimationResult[]) => {
     setEstimations(next);
-    if (typeof window !== "undefined") {
-      localStorage.setItem(STORAGE_KEY, JSON.stringify(next));
-      emit();
-    }
-  }, []);
+    storage.set(STORAGE_KEY, JSON.stringify(next));
+    emit();
+  }, [storage]);
 
   const save: UseContextualEstimations["save"] = useCallback((e) => {
     // Si ya existe con el mismo id, sobreescribir; si no, agregar al principio.
@@ -76,13 +80,11 @@ export function useContextualEstimations(): UseContextualEstimations {
         next = [e, ...cur];
       }
       // Persistir
-      if (typeof window !== "undefined") {
-        localStorage.setItem(STORAGE_KEY, JSON.stringify(next));
-        emit();
-      }
+      storage.set(STORAGE_KEY, JSON.stringify(next));
+      emit();
       return next;
     });
-  }, []);
+  }, [storage]);
 
   const remove: UseContextualEstimations["remove"] = useCallback((id) => {
     persist(estimations.filter((e) => e.estimateId !== id));

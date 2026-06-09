@@ -4,6 +4,7 @@
 // Muestra greeting + clima del sistema + 4 stats hero + decoraciones aurora.
 
 import { useEffect, useState } from "react";
+import { useTenant } from "@/context/TenantContext";
 
 interface Props {
   userName: string;
@@ -32,6 +33,8 @@ function climaIcon(escalations: number, responseRate: number): { icon: string; l
 
 export default function HeroCard({ userName, role, totalIncidents, resolvedToday, activeEscalations, agentResponseRate }: Props) {
   const [now, setNow] = useState(() => new Date());
+  const { tenant } = useTenant();
+  const brandName = tenant?.brand?.name || tenant?.name || "AMS Platform";
   useEffect(() => {
     const i = setInterval(() => setNow(new Date()), 30_000);
     return () => clearInterval(i);
@@ -73,7 +76,7 @@ export default function HeroCard({ userName, role, totalIncidents, resolvedToday
             {greeting(userName)}
           </h1>
           <p style={{ margin: "6px 0 0", fontSize: 13.5, color: "#cbd5e1", maxWidth: 540 }}>
-            Operación AMS Supply Chain SAP. Tu equipo, tu agente y tus clientes desde un solo lugar.
+            Operación {brandName}. Tu equipo, tu agente y tus clientes desde un solo lugar.
           </p>
         </div>
 

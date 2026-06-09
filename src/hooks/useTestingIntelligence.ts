@@ -9,13 +9,15 @@
 //     * Si hay backend → upload real con multipart, el preview usa la URL del backend.
 //     * Si no hay backend → ObjectURL en memoria (legacy, no persiste tras refresh).
 
-import { useCallback, useEffect, useMemo, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import {
   TESTING_STORAGE,
   type TestingScenario, type EvidenceItem, type TestDefect,
   type GeneratedUserManual, type TestingSettings,
   type TestingStatus, type TestingResult, type DefectStatus,
 } from "@/types/testing";
+import { useTenant } from "@/context/TenantContext";
+import { tenantStorage, type TenantScopedStorage } from "@/lib/tenantStorage";
 import {
   buildSeedScenarios, buildSeedEvidences, buildSeedDefects,
   buildSeedManuals, buildSeedTestingSettings,
@@ -35,26 +37,27 @@ function fireSync<T>(p: Promise<T>): void {
   p.catch((err) => log.debug("testing backend sync failed (using local cache):", (err as Error)?.message || err));
 }
 
-function loadList<T>(key: string, seed: () => T[]): T[] {
+// G8 (v1.2.0): localStorage scoped por tenant via tenantStorage().
+function loadList<T>(storage: TenantScopedStorage, key: string, seed: () => T[]): T[] {
   if (typeof window === "undefined") return seed();
   try {
-    const raw = localStorage.getItem(key);
-    if (!raw) { const s = seed(); localStorage.setItem(key, JSON.stringify(s)); return s; }
+    const raw = storage.get(key);
+    if (!raw) { const s = seed(); storage.set(key, JSON.stringify(s)); return s; }
     return JSON.parse(raw) as T[];
   } catch { return seed(); }
 }
-function loadObj<T>(key: string, seed: () => T): T {
+function loadObj<T>(storage: TenantScopedStorage, key: string, seed: () => T): T {
   if (typeof window === "undefined") return seed();
   try {
-    const raw = localStorage.getItem(key);
-    if (!raw) { const s = seed(); localStorage.setItem(key, JSON.stringify(s)); return s; }
+    const raw = storage.get(key);
+    if (!raw) { const s = seed(); storage.set(key, JSON.stringify(s)); return s; }
     return JSON.parse(raw) as T;
   } catch { return seed(); }
 }
-function saveAndEmit(key: string, value: unknown) {
+function saveAndEmit(storage: TenantScopedStorage, key: string, value: unknown) {
   if (typeof window === "undefined") return;
   try {
-    localStorage.setItem(key, JSON.stringify(value));
+    storage.set(key, JSON.stringify(value));
     window.dispatchEvent(new CustomEvent("ams-testing-changed", { detail: { key } }));
   } catch { /* ignore */ }
 }
@@ -71,8 +74,8 @@ function sanitizeEvidenceForStorage(list: EvidenceItem[]): EvidenceItem[] {
     return e;
   });
 }
-function persistEvidences(list: EvidenceItem[]) {
-  saveAndEmit(TESTING_STORAGE.evidences, sanitizeEvidenceForStorage(list));
+function persistEvidences(storage: TenantScopedStorage, list: EvidenceItem[]) {
+  saveAndEmit(storage, TESTING_STORAGE.evidences, sanitizeEvidenceForStorage(list));
 }
 
 // Convierte una evidencia del backend a la forma del frontend, agregando
@@ -89,12 +92,28 @@ function hydrateEvidenceFromServer(e: EvidenceItem): EvidenceItem {
 }
 
 export function useTestingIntelligence() {
-  const [scenarios, setScenarios] = useState<TestingScenario[]>(() => loadList(TESTING_STORAGE.scenarios, buildSeedScenarios));
-  const [evidences, setEvidences] = useState<EvidenceItem[]>(() => loadList(TESTING_STORAGE.evidences, buildSeedEvidences));
-  const [defects, setDefects]     = useState<TestDefect[]>(() => loadList(TESTING_STORAGE.defects, buildSeedDefects));
-  const [manuals, setManuals]     = useState<GeneratedUserManual[]>(() => loadList(TESTING_STORAGE.manuals, buildSeedManuals));
-  const [settings, setSettings]   = useState<TestingSettings>(() => loadObj(TESTING_STORAGE.settings, buildSeedTestingSettings));
+  const { tenant } = useTenant();
+  const tenantId = tenant?.id || "default";
+  // Ref para que los useCallback con [] deps sigan apuntando al storage actual.
+  const storageRef = useRef<TenantScopedStorage>(tenantStorage(tenantId));
+  useEffect(() => { storageRef.current = tenantStorage(tenantId); }, [tenantId]);
+
+  const [scenarios, setScenarios] = useState<TestingScenario[]>([]);
+  const [evidences, setEvidences] = useState<EvidenceItem[]>([]);
+  const [defects, setDefects]     = useState<TestDefect[]>([]);
+  const [manuals, setManuals]     = useState<GeneratedUserManual[]>([]);
+  const [settings, setSettings]   = useState<TestingSettings>(() => buildSeedTestingSettings());
   const [backendOnline, setBackendOnline] = useState(false);
+
+  // Cargar (y reload al cambiar tenant)
+  useEffect(() => {
+    const st = storageRef.current;
+    setScenarios(loadList(st, TESTING_STORAGE.scenarios, buildSeedScenarios));
+    setEvidences(loadList(st, TESTING_STORAGE.evidences, buildSeedEvidences));
+    setDefects(loadList(st, TESTING_STORAGE.defects, buildSeedDefects));
+    setManuals(loadList(st, TESTING_STORAGE.manuals, buildSeedManuals));
+    setSettings(loadObj(st, TESTING_STORAGE.settings, buildSeedTestingSettings));
+  }, [tenantId]);
 
   // Hidratar desde backend
   useEffect(() => {
@@ -109,11 +128,11 @@ export function useTestingIntelligence() {
         setDefects(snap.defects);
         setManuals(snap.manuals);
         setSettings(snap.settings);
-        saveAndEmit(TESTING_STORAGE.scenarios, snap.scenarios);
-        persistEvidences(hydratedEvidences);
-        saveAndEmit(TESTING_STORAGE.defects, snap.defects);
-        saveAndEmit(TESTING_STORAGE.manuals, snap.manuals);
-        saveAndEmit(TESTING_STORAGE.settings, snap.settings);
+        saveAndEmit(storageRef.current, TESTING_STORAGE.scenarios, snap.scenarios);
+        persistEvidences(storageRef.current, hydratedEvidences);
+        saveAndEmit(storageRef.current, TESTING_STORAGE.defects, snap.defects);
+        saveAndEmit(storageRef.current, TESTING_STORAGE.manuals, snap.manuals);
+        saveAndEmit(storageRef.current, TESTING_STORAGE.settings, snap.settings);
         setBackendOnline(true);
       } catch (err) {
         log.debug("testing backend offline, using localStorage cache:", (err as Error)?.message);
@@ -126,11 +145,11 @@ export function useTestingIntelligence() {
   // Sync entre tabs
   useEffect(() => {
     const refresh = () => {
-      setScenarios(loadList(TESTING_STORAGE.scenarios, buildSeedScenarios));
-      setEvidences(loadList(TESTING_STORAGE.evidences, buildSeedEvidences));
-      setDefects(loadList(TESTING_STORAGE.defects, buildSeedDefects));
-      setManuals(loadList(TESTING_STORAGE.manuals, buildSeedManuals));
-      setSettings(loadObj(TESTING_STORAGE.settings, buildSeedTestingSettings));
+      setScenarios(loadList(storageRef.current, TESTING_STORAGE.scenarios, buildSeedScenarios));
+      setEvidences(loadList(storageRef.current, TESTING_STORAGE.evidences, buildSeedEvidences));
+      setDefects(loadList(storageRef.current, TESTING_STORAGE.defects, buildSeedDefects));
+      setManuals(loadList(storageRef.current, TESTING_STORAGE.manuals, buildSeedManuals));
+      setSettings(loadObj(storageRef.current, TESTING_STORAGE.settings, buildSeedTestingSettings));
     };
     window.addEventListener("ams-testing-changed", refresh);
     window.addEventListener("storage", refresh);
@@ -148,7 +167,7 @@ export function useTestingIntelligence() {
     setScenarios((prev) => {
       const idx = prev.findIndex((s) => s.id === sc.id);
       const next = idx >= 0 ? prev.map((s, i) => (i === idx ? updated : s)) : [...prev, updated];
-      saveAndEmit(TESTING_STORAGE.scenarios, next);
+      saveAndEmit(storageRef.current, TESTING_STORAGE.scenarios, next);
       return next;
     });
     fireSync(api.upsertScenario(updated));
@@ -174,7 +193,7 @@ export function useTestingIntelligence() {
     };
     setScenarios((prev) => {
       const next = [sc, ...prev];
-      saveAndEmit(TESTING_STORAGE.scenarios, next);
+      saveAndEmit(storageRef.current, TESTING_STORAGE.scenarios, next);
       return next;
     });
     fireSync(api.upsertScenario(sc));
@@ -186,7 +205,7 @@ export function useTestingIntelligence() {
   const deleteScenario = useCallback((id: string) => {
     setScenarios((prev) => {
       const next = prev.filter((s) => s.id !== id);
-      saveAndEmit(TESTING_STORAGE.scenarios, next);
+      saveAndEmit(storageRef.current, TESTING_STORAGE.scenarios, next);
       return next;
     });
     fireSync(api.deleteScenario(id));
@@ -200,7 +219,7 @@ export function useTestingIntelligence() {
         updated = { ...s, status, ...(result ? { result } : {}), ...(actualResult ? { actualResult } : {}), updatedAt: new Date().toISOString() };
         return updated;
       });
-      saveAndEmit(TESTING_STORAGE.scenarios, next);
+      saveAndEmit(storageRef.current, TESTING_STORAGE.scenarios, next);
       return next;
     });
     if (updated) fireSync(api.upsertScenario(updated));
@@ -232,14 +251,14 @@ export function useTestingIntelligence() {
     };
     setEvidences((prev) => {
       const next = [ev, ...prev];
-      persistEvidences(next);
+      persistEvidences(storageRef.current, next);
       return next;
     });
     setScenarios((prev) => {
       const next = prev.map((s) => s.id === scenarioId
         ? { ...s, evidenceIds: [...s.evidenceIds, ev.id], updatedAt: now }
         : s);
-      saveAndEmit(TESTING_STORAGE.scenarios, next);
+      saveAndEmit(storageRef.current, TESTING_STORAGE.scenarios, next);
       return next;
     });
     // Sync con backend sólo si NO es ObjectURL local (los blob: no se pueden serializar al servidor)
@@ -280,14 +299,14 @@ export function useTestingIntelligence() {
       const now = new Date().toISOString();
       setEvidences((prev) => {
         const next = [hydrated, ...prev];
-        persistEvidences(next);
+        persistEvidences(storageRef.current, next);
         return next;
       });
       setScenarios((prev) => {
         const next = prev.map((s) => s.id === scenarioId
           ? { ...s, evidenceIds: [...s.evidenceIds, hydrated.id], updatedAt: now }
           : s);
-        saveAndEmit(TESTING_STORAGE.scenarios, next);
+        saveAndEmit(storageRef.current, TESTING_STORAGE.scenarios, next);
         return next;
       });
       return hydrated;
@@ -313,7 +332,7 @@ export function useTestingIntelligence() {
   const updateEvidence = useCallback((ev: EvidenceItem) => {
     setEvidences((prev) => {
       const next = prev.map((e) => e.id === ev.id ? ev : e);
-      persistEvidences(next);
+      persistEvidences(storageRef.current, next);
       return next;
     });
     // No hay endpoint update, hacemos un upsert
@@ -327,12 +346,12 @@ export function useTestingIntelligence() {
         try { URL.revokeObjectURL(target.localPreviewUrl); } catch { /* ignore */ }
       }
       const next = prev.filter((e) => e.id !== id);
-      persistEvidences(next);
+      persistEvidences(storageRef.current, next);
       return next;
     });
     setScenarios((prev) => {
       const next = prev.map((s) => ({ ...s, evidenceIds: s.evidenceIds.filter((eid) => eid !== id) }));
-      saveAndEmit(TESTING_STORAGE.scenarios, next);
+      saveAndEmit(storageRef.current, TESTING_STORAGE.scenarios, next);
       return next;
     });
     fireSync(api.deleteEvidence(id));
@@ -350,14 +369,14 @@ export function useTestingIntelligence() {
     };
     setDefects((prev) => {
       const next = [d, ...prev];
-      saveAndEmit(TESTING_STORAGE.defects, next);
+      saveAndEmit(storageRef.current, TESTING_STORAGE.defects, next);
       return next;
     });
     setScenarios((prev) => {
       const next = prev.map((s) => s.id === d.scenarioId
         ? { ...s, defectIds: [...s.defectIds, d.id], updatedAt: now }
         : s);
-      saveAndEmit(TESTING_STORAGE.scenarios, next);
+      saveAndEmit(storageRef.current, TESTING_STORAGE.scenarios, next);
       return next;
     });
     fireSync(api.upsertDefect(d));
@@ -368,7 +387,7 @@ export function useTestingIntelligence() {
     const updated = { ...d, updatedAt: new Date().toISOString() };
     setDefects((prev) => {
       const next = prev.map((x) => x.id === d.id ? updated : x);
-      saveAndEmit(TESTING_STORAGE.defects, next);
+      saveAndEmit(storageRef.current, TESTING_STORAGE.defects, next);
       return next;
     });
     fireSync(api.upsertDefect(updated));
@@ -382,7 +401,7 @@ export function useTestingIntelligence() {
         updated = { ...d, status, updatedAt: new Date().toISOString() };
         return updated;
       });
-      saveAndEmit(TESTING_STORAGE.defects, next);
+      saveAndEmit(storageRef.current, TESTING_STORAGE.defects, next);
       return next;
     });
     if (updated) fireSync(api.upsertDefect(updated));
@@ -396,7 +415,7 @@ export function useTestingIntelligence() {
         updated = { ...d, convertedToIncidentId: incidentId, status: "RESOLVED" as DefectStatus, updatedAt: new Date().toISOString() };
         return updated;
       });
-      saveAndEmit(TESTING_STORAGE.defects, next);
+      saveAndEmit(storageRef.current, TESTING_STORAGE.defects, next);
       return next;
     });
     if (updated) fireSync(api.upsertDefect(updated));
@@ -418,7 +437,7 @@ export function useTestingIntelligence() {
         updated = { ...s, generatedScript: md, status: s.status === "DRAFT" || s.status === "READY" ? "SCRIPT_GENERATED" as TestingStatus : s.status, updatedAt: new Date().toISOString() };
         return updated;
       });
-      saveAndEmit(TESTING_STORAGE.scenarios, next);
+      saveAndEmit(storageRef.current, TESTING_STORAGE.scenarios, next);
       return next;
     });
     if (updated) fireSync(api.upsertScenario(updated));
@@ -450,7 +469,7 @@ export function useTestingIntelligence() {
     setManuals((prev) => {
       const filtered = prev.filter((m) => m.scenarioId !== scenarioId);
       const next = [manual, ...filtered];
-      saveAndEmit(TESTING_STORAGE.manuals, next);
+      saveAndEmit(storageRef.current, TESTING_STORAGE.manuals, next);
       return next;
     });
     let updatedScenario: TestingScenario | null = null;
@@ -460,7 +479,7 @@ export function useTestingIntelligence() {
         updatedScenario = { ...s, generatedManual: content, updatedAt: now };
         return updatedScenario;
       });
-      saveAndEmit(TESTING_STORAGE.scenarios, next);
+      saveAndEmit(storageRef.current, TESTING_STORAGE.scenarios, next);
       return next;
     });
     fireSync(api.upsertManual(manual));
@@ -484,7 +503,7 @@ export function useTestingIntelligence() {
         updated = { ...s, cloudAlmReady: true, status: s.status === "PASSED" ? "EXPORTED" as TestingStatus : s.status, updatedAt: new Date().toISOString() };
         return updated;
       });
-      saveAndEmit(TESTING_STORAGE.scenarios, next);
+      saveAndEmit(storageRef.current, TESTING_STORAGE.scenarios, next);
       return next;
     });
     if (updated) fireSync(api.upsertScenario(updated));
@@ -497,7 +516,7 @@ export function useTestingIntelligence() {
   const updateSettings = useCallback((patch: Partial<TestingSettings>) => {
     setSettings((prev) => {
       const next = { ...prev, ...patch };
-      saveAndEmit(TESTING_STORAGE.settings, next);
+      saveAndEmit(storageRef.current, TESTING_STORAGE.settings, next);
       return next;
     });
     fireSync(api.updateSettings(patch));
@@ -512,21 +531,21 @@ export function useTestingIntelligence() {
       setDefects(snap.defects);
       setManuals(snap.manuals);
       setSettings(snap.settings);
-      saveAndEmit(TESTING_STORAGE.scenarios, snap.scenarios);
-      persistEvidences(hydrated);
-      saveAndEmit(TESTING_STORAGE.defects, snap.defects);
-      saveAndEmit(TESTING_STORAGE.manuals, snap.manuals);
-      saveAndEmit(TESTING_STORAGE.settings, snap.settings);
+      saveAndEmit(storageRef.current, TESTING_STORAGE.scenarios, snap.scenarios);
+      persistEvidences(storageRef.current, hydrated);
+      saveAndEmit(storageRef.current, TESTING_STORAGE.defects, snap.defects);
+      saveAndEmit(storageRef.current, TESTING_STORAGE.manuals, snap.manuals);
+      saveAndEmit(storageRef.current, TESTING_STORAGE.settings, snap.settings);
       setBackendOnline(true);
     } catch {
       const sc = buildSeedScenarios(); const ev = buildSeedEvidences();
       const df = buildSeedDefects(); const mn = buildSeedManuals();
       const st = buildSeedTestingSettings();
-      saveAndEmit(TESTING_STORAGE.scenarios, sc);
-      persistEvidences(ev);
-      saveAndEmit(TESTING_STORAGE.defects, df);
-      saveAndEmit(TESTING_STORAGE.manuals, mn);
-      saveAndEmit(TESTING_STORAGE.settings, st);
+      saveAndEmit(storageRef.current, TESTING_STORAGE.scenarios, sc);
+      persistEvidences(storageRef.current, ev);
+      saveAndEmit(storageRef.current, TESTING_STORAGE.defects, df);
+      saveAndEmit(storageRef.current, TESTING_STORAGE.manuals, mn);
+      saveAndEmit(storageRef.current, TESTING_STORAGE.settings, st);
       setScenarios(sc); setEvidences(ev); setDefects(df); setManuals(mn); setSettings(st);
     }
   }, []);

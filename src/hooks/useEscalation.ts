@@ -7,7 +7,7 @@
 //   y sincroniza cada mutación. Si el backend no responde, sigue funcionando local.
 // - Esto permite que la UI nunca quede bloqueada y soporte trabajo sin conexión.
 
-import { useCallback, useEffect, useMemo, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import {
   ESCALATION_STORAGE,
   type EscalationRule, type N2Responsible, type EscalationRecord,
@@ -15,6 +15,8 @@ import {
   type EscalationStatus, type EscalationChannel, type EscalationEvent,
   type EscalationCandidate, type ItsmTicketPayload,
 } from "@/types/escalation";
+import { useTenant } from "@/context/TenantContext";
+import { tenantStorage, type TenantScopedStorage } from "@/lib/tenantStorage";
 import {
   buildSeedResponsibles, buildSeedRules, buildSeedRecords,
   buildSeedConnectors, buildSeedSettings,
@@ -35,16 +37,16 @@ const log = {
 type AnyIncident = IncidentSummary | IncidentDetail;
 
 // ============================================================
-// Persistencia local (cache)
+// Persistencia local (cache) — scoped por tenant (G8 v1.2.0)
 // ============================================================
 
-function loadList<T>(key: string, seed: () => T[]): T[] {
+function loadList<T>(storage: TenantScopedStorage, key: string, seed: () => T[]): T[] {
   if (typeof window === "undefined") return seed();
   try {
-    const raw = localStorage.getItem(key);
+    const raw = storage.get(key);
     if (!raw) {
       const s = seed();
-      localStorage.setItem(key, JSON.stringify(s));
+      storage.set(key, JSON.stringify(s));
       return s;
     }
     return JSON.parse(raw) as T[];
@@ -52,13 +54,13 @@ function loadList<T>(key: string, seed: () => T[]): T[] {
     return seed();
   }
 }
-function loadObj<T>(key: string, seed: () => T): T {
+function loadObj<T>(storage: TenantScopedStorage, key: string, seed: () => T): T {
   if (typeof window === "undefined") return seed();
   try {
-    const raw = localStorage.getItem(key);
+    const raw = storage.get(key);
     if (!raw) {
       const s = seed();
-      localStorage.setItem(key, JSON.stringify(s));
+      storage.set(key, JSON.stringify(s));
       return s;
     }
     return JSON.parse(raw) as T;
@@ -66,10 +68,10 @@ function loadObj<T>(key: string, seed: () => T): T {
     return seed();
   }
 }
-function saveAndEmit(key: string, value: unknown) {
+function saveAndEmit(storage: TenantScopedStorage, key: string, value: unknown) {
   if (typeof window === "undefined") return;
   try {
-    localStorage.setItem(key, JSON.stringify(value));
+    storage.set(key, JSON.stringify(value));
     window.dispatchEvent(new CustomEvent("ams-escalation-changed", { detail: { key } }));
   } catch { /* ignore */ }
 }
@@ -84,12 +86,28 @@ function fireSync<T>(p: Promise<T>): void {
 // ============================================================
 
 export function useEscalation() {
-  const [rules, setRules] = useState<EscalationRule[]>(() => loadList(ESCALATION_STORAGE.rules, buildSeedRules));
-  const [responsibles, setResponsibles] = useState<N2Responsible[]>(() => loadList(ESCALATION_STORAGE.responsibles, buildSeedResponsibles));
-  const [records, setRecords] = useState<EscalationRecord[]>(() => loadList(ESCALATION_STORAGE.records, buildSeedRecords));
-  const [connectors, setConnectors] = useState<ItsmConnectorConfig>(() => loadObj(ESCALATION_STORAGE.connectors, buildSeedConnectors));
-  const [settings, setSettings] = useState<EscalationSettings>(() => loadObj(ESCALATION_STORAGE.settings, buildSeedSettings));
+  const { tenant } = useTenant();
+  const tenantId = tenant?.id || "default";
+  // Ref para que los useCallback con [] deps sigan apuntando al storage actual.
+  const storageRef = useRef<TenantScopedStorage>(tenantStorage(tenantId));
+  useEffect(() => { storageRef.current = tenantStorage(tenantId); }, [tenantId]);
+
+  const [rules, setRules] = useState<EscalationRule[]>([]);
+  const [responsibles, setResponsibles] = useState<N2Responsible[]>([]);
+  const [records, setRecords] = useState<EscalationRecord[]>([]);
+  const [connectors, setConnectors] = useState<ItsmConnectorConfig>(() => buildSeedConnectors());
+  const [settings, setSettings] = useState<EscalationSettings>(() => buildSeedSettings());
   const [backendOnline, setBackendOnline] = useState(false);
+
+  // Cargar (y reload al cambiar tenant)
+  useEffect(() => {
+    const st = storageRef.current;
+    setRules(loadList(st, ESCALATION_STORAGE.rules, buildSeedRules));
+    setResponsibles(loadList(st, ESCALATION_STORAGE.responsibles, buildSeedResponsibles));
+    setRecords(loadList(st, ESCALATION_STORAGE.records, buildSeedRecords));
+    setConnectors(loadObj(st, ESCALATION_STORAGE.connectors, buildSeedConnectors));
+    setSettings(loadObj(st, ESCALATION_STORAGE.settings, buildSeedSettings));
+  }, [tenantId]);
 
   // -----------------------------
   // Hidratar desde backend al montar (offline-first)
@@ -106,11 +124,11 @@ export function useEscalation() {
         setConnectors(snap.connectors);
         setSettings(snap.settings);
         // Refrescar cache local con la verdad del servidor
-        saveAndEmit(ESCALATION_STORAGE.rules, snap.rules);
-        saveAndEmit(ESCALATION_STORAGE.responsibles, snap.responsibles);
-        saveAndEmit(ESCALATION_STORAGE.records, snap.records);
-        saveAndEmit(ESCALATION_STORAGE.connectors, snap.connectors);
-        saveAndEmit(ESCALATION_STORAGE.settings, snap.settings);
+        saveAndEmit(storageRef.current, ESCALATION_STORAGE.rules, snap.rules);
+        saveAndEmit(storageRef.current, ESCALATION_STORAGE.responsibles, snap.responsibles);
+        saveAndEmit(storageRef.current, ESCALATION_STORAGE.records, snap.records);
+        saveAndEmit(storageRef.current, ESCALATION_STORAGE.connectors, snap.connectors);
+        saveAndEmit(storageRef.current, ESCALATION_STORAGE.settings, snap.settings);
         setBackendOnline(true);
       } catch (err) {
         log.debug("escalation backend offline, using localStorage cache:", (err as Error)?.message);
@@ -123,11 +141,11 @@ export function useEscalation() {
   // Sync entre tabs y otros componentes
   useEffect(() => {
     const refresh = () => {
-      setRules(loadList(ESCALATION_STORAGE.rules, buildSeedRules));
-      setResponsibles(loadList(ESCALATION_STORAGE.responsibles, buildSeedResponsibles));
-      setRecords(loadList(ESCALATION_STORAGE.records, buildSeedRecords));
-      setConnectors(loadObj(ESCALATION_STORAGE.connectors, buildSeedConnectors));
-      setSettings(loadObj(ESCALATION_STORAGE.settings, buildSeedSettings));
+      setRules(loadList(storageRef.current, ESCALATION_STORAGE.rules, buildSeedRules));
+      setResponsibles(loadList(storageRef.current, ESCALATION_STORAGE.responsibles, buildSeedResponsibles));
+      setRecords(loadList(storageRef.current, ESCALATION_STORAGE.records, buildSeedRecords));
+      setConnectors(loadObj(storageRef.current, ESCALATION_STORAGE.connectors, buildSeedConnectors));
+      setSettings(loadObj(storageRef.current, ESCALATION_STORAGE.settings, buildSeedSettings));
     };
     window.addEventListener("ams-escalation-changed", refresh);
     window.addEventListener("storage", refresh);
@@ -145,7 +163,7 @@ export function useEscalation() {
     setRules((prev) => {
       const idx = prev.findIndex((r) => r.id === rule.id);
       const next = idx >= 0 ? prev.map((r, i) => (i === idx ? updated : r)) : [...prev, updated];
-      saveAndEmit(ESCALATION_STORAGE.rules, next);
+      saveAndEmit(storageRef.current, ESCALATION_STORAGE.rules, next);
       return next;
     });
     fireSync(api.upsertRule(updated));
@@ -153,7 +171,7 @@ export function useEscalation() {
   const removeRule = useCallback((id: string) => {
     setRules((prev) => {
       const next = prev.filter((r) => r.id !== id);
-      saveAndEmit(ESCALATION_STORAGE.rules, next);
+      saveAndEmit(storageRef.current, ESCALATION_STORAGE.rules, next);
       return next;
     });
     fireSync(api.deleteRule(id));
@@ -167,7 +185,7 @@ export function useEscalation() {
     setResponsibles((prev) => {
       const idx = prev.findIndex((x) => x.id === r.id);
       const next = idx >= 0 ? prev.map((x, i) => (i === idx ? updated : x)) : [...prev, updated];
-      saveAndEmit(ESCALATION_STORAGE.responsibles, next);
+      saveAndEmit(storageRef.current, ESCALATION_STORAGE.responsibles, next);
       return next;
     });
     fireSync(api.upsertResponsible(updated));
@@ -175,7 +193,7 @@ export function useEscalation() {
   const removeResponsible = useCallback((id: string) => {
     setResponsibles((prev) => {
       const next = prev.filter((r) => r.id !== id);
-      saveAndEmit(ESCALATION_STORAGE.responsibles, next);
+      saveAndEmit(storageRef.current, ESCALATION_STORAGE.responsibles, next);
       return next;
     });
     fireSync(api.deleteResponsible(id));
@@ -186,7 +204,7 @@ export function useEscalation() {
       if (!target) return prev;
       const updated = { ...target, active: !target.active, updatedAt: new Date().toISOString() };
       const next = prev.map((r) => r.id === id ? updated : r);
-      saveAndEmit(ESCALATION_STORAGE.responsibles, next);
+      saveAndEmit(storageRef.current, ESCALATION_STORAGE.responsibles, next);
       fireSync(api.upsertResponsible(updated));
       return next;
     });
@@ -198,7 +216,7 @@ export function useEscalation() {
   const updateConnectors = useCallback((patch: Partial<ItsmConnectorConfig>) => {
     setConnectors((prev) => {
       const next = { ...prev, ...patch };
-      saveAndEmit(ESCALATION_STORAGE.connectors, next);
+      saveAndEmit(storageRef.current, ESCALATION_STORAGE.connectors, next);
       return next;
     });
     fireSync(api.updateConnectors(patch));
@@ -206,7 +224,7 @@ export function useEscalation() {
   const updateSettings = useCallback((patch: Partial<EscalationSettings>) => {
     setSettings((prev) => {
       const next = { ...prev, ...patch };
-      saveAndEmit(ESCALATION_STORAGE.settings, next);
+      saveAndEmit(storageRef.current, ESCALATION_STORAGE.settings, next);
       return next;
     });
     fireSync(api.updateSettings(patch));
@@ -287,7 +305,7 @@ export function useEscalation() {
 
     setRecords((prev) => {
       const next = [rec, ...prev];
-      saveAndEmit(ESCALATION_STORAGE.records, next);
+      saveAndEmit(storageRef.current, ESCALATION_STORAGE.records, next);
       return next;
     });
     fireSync(api.createRecord(rec));
@@ -302,7 +320,7 @@ export function useEscalation() {
         updated = { ...patch(r), updatedAt: new Date().toISOString() };
         return updated;
       });
-      saveAndEmit(ESCALATION_STORAGE.records, next);
+      saveAndEmit(storageRef.current, ESCALATION_STORAGE.records, next);
       return next;
     });
     if (updated) fireSync(api.updateRecord(id, updated));
@@ -413,22 +431,22 @@ export function useEscalation() {
       setRecords(snap.records);
       setConnectors(snap.connectors);
       setSettings(snap.settings);
-      saveAndEmit(ESCALATION_STORAGE.rules, snap.rules);
-      saveAndEmit(ESCALATION_STORAGE.responsibles, snap.responsibles);
-      saveAndEmit(ESCALATION_STORAGE.records, snap.records);
-      saveAndEmit(ESCALATION_STORAGE.connectors, snap.connectors);
-      saveAndEmit(ESCALATION_STORAGE.settings, snap.settings);
+      saveAndEmit(storageRef.current, ESCALATION_STORAGE.rules, snap.rules);
+      saveAndEmit(storageRef.current, ESCALATION_STORAGE.responsibles, snap.responsibles);
+      saveAndEmit(storageRef.current, ESCALATION_STORAGE.records, snap.records);
+      saveAndEmit(storageRef.current, ESCALATION_STORAGE.connectors, snap.connectors);
+      saveAndEmit(storageRef.current, ESCALATION_STORAGE.settings, snap.settings);
       setBackendOnline(true);
       return;
     } catch {
       // Fallback local
       const r = buildSeedRules(); const p = buildSeedResponsibles();
       const h = buildSeedRecords(); const c = buildSeedConnectors(); const s = buildSeedSettings();
-      saveAndEmit(ESCALATION_STORAGE.rules, r);
-      saveAndEmit(ESCALATION_STORAGE.responsibles, p);
-      saveAndEmit(ESCALATION_STORAGE.records, h);
-      saveAndEmit(ESCALATION_STORAGE.connectors, c);
-      saveAndEmit(ESCALATION_STORAGE.settings, s);
+      saveAndEmit(storageRef.current, ESCALATION_STORAGE.rules, r);
+      saveAndEmit(storageRef.current, ESCALATION_STORAGE.responsibles, p);
+      saveAndEmit(storageRef.current, ESCALATION_STORAGE.records, h);
+      saveAndEmit(storageRef.current, ESCALATION_STORAGE.connectors, c);
+      saveAndEmit(storageRef.current, ESCALATION_STORAGE.settings, s);
       setRules(r); setResponsibles(p); setRecords(h); setConnectors(c); setSettings(s);
     }
   }, []);

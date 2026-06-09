@@ -1,11 +1,15 @@
 "use client";
 
-import { useCallback, useEffect, useState } from "react";
+// G8 (v1.2.0): localStorage scoped por tenant via tenantStorage().
+
+import { useCallback, useEffect, useMemo, useState } from "react";
 import {
   ESTIMATION_STORAGE,
   type TimeEstimate, type EstimateInput, type EstimateStatus,
 } from "@/types/estimation";
 import { estimate } from "@/lib/estimation/engine";
+import { useTenant } from "@/context/TenantContext";
+import { tenantStorage, isTenantScopedKey } from "@/lib/tenantStorage";
 
 const EVT = "ams-estimates-changed";
 
@@ -32,19 +36,22 @@ export interface UseTimeEstimator {
 }
 
 export function useTimeEstimator(): UseTimeEstimator {
-  const [estimates, setEstimates] = useState<TimeEstimate[]>(() => {
-    if (typeof window === "undefined") return [];
-    return safe<TimeEstimate[]>(localStorage.getItem(ESTIMATION_STORAGE.estimates)) ?? [];
-  });
+  const { tenant } = useTenant();
+  const tenantId = tenant?.id || "default";
+  const storage = useMemo(() => tenantStorage(tenantId), [tenantId]);
+
+  const [estimates, setEstimates] = useState<TimeEstimate[]>([]);
+
+  useEffect(() => {
+    setEstimates(safe<TimeEstimate[]>(storage.get(ESTIMATION_STORAGE.estimates)) ?? []);
+  }, [storage]);
 
   useEffect(() => {
     function reload() {
-      if (typeof window === "undefined") return;
-      const fresh = safe<TimeEstimate[]>(localStorage.getItem(ESTIMATION_STORAGE.estimates)) ?? [];
-      setEstimates(fresh);
+      setEstimates(safe<TimeEstimate[]>(storage.get(ESTIMATION_STORAGE.estimates)) ?? []);
     }
     function onStorage(e: StorageEvent) {
-      if (e.key === ESTIMATION_STORAGE.estimates) reload();
+      if (isTenantScopedKey(e.key, tenantId, ESTIMATION_STORAGE.estimates)) reload();
     }
     window.addEventListener("storage", onStorage);
     window.addEventListener(EVT, reload);
@@ -52,15 +59,13 @@ export function useTimeEstimator(): UseTimeEstimator {
       window.removeEventListener("storage", onStorage);
       window.removeEventListener(EVT, reload);
     };
-  }, []);
+  }, [storage, tenantId]);
 
   const save = useCallback((next: TimeEstimate[]) => {
     setEstimates(next);
-    if (typeof window !== "undefined") {
-      localStorage.setItem(ESTIMATION_STORAGE.estimates, JSON.stringify(next));
-      emit();
-    }
-  }, []);
+    storage.set(ESTIMATION_STORAGE.estimates, JSON.stringify(next));
+    emit();
+  }, [storage]);
 
   const generate: UseTimeEstimator["generate"] = useCallback((input) => {
     const result = estimate(input);

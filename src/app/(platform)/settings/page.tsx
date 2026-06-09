@@ -3,11 +3,14 @@
 import { useEffect, useMemo, useState } from "react";
 import { usePlatform, ACCENT_COLORS, type AccentColor } from "@/context/PlatformContext";
 import { useAuth } from "@/context/AuthContext";
+import { useTenant } from "@/context/TenantContext";
 import { useSpeechSynthesis } from "@/hooks/useSpeechSynthesis";
 import { cleanForTTS } from "@/lib/tts";
 import { ROLES } from "@/lib/roles";
 import Badge from "@/components/ui/Badge";
 import RequirePermission from "@/components/admin/RequirePermission";
+import { tenantStorage } from "@/lib/tenantStorage";
+import { updateTenant } from "@/services/tenants.api";
 import type { Environment } from "@/types";
 
 type Tab = "profile" | "appearance" | "voice" | "workspace" | "shortcuts";
@@ -1164,31 +1167,53 @@ const SIGNATURE_KEY = "supply-chain-ams-tenant-signature";
 const BRAND_KEY = "supply-chain-ams-tenant-brand";
 
 function CustomerResponseSettingsSection() {
+  const { tenant, reload: reloadTenant } = useTenant();
+  const tenantId = tenant?.id || "default";
+  const storage = useMemo(() => tenantStorage(tenantId), [tenantId]);
+
   const [signature, setSignature] = useState<string>("Equipo AMS");
   const [brand, setBrand] = useState<string>("");
   const [saved, setSaved] = useState(false);
+  const [syncing, setSyncing] = useState(false);
+  const [syncError, setSyncError] = useState<string | null>(null);
 
+  // Carga: prioriza tenant.settings.signature; fallback al localStorage scoped.
   useEffect(() => {
     if (typeof window === "undefined") return;
-    setSignature(localStorage.getItem(SIGNATURE_KEY) || "Equipo AMS");
-    setBrand(localStorage.getItem(BRAND_KEY) || "");
-  }, []);
+    const fromTenant = (typeof tenant?.settings?.signature === "string" && tenant.settings.signature) || null;
+    setSignature(fromTenant || storage.get(SIGNATURE_KEY) || "Equipo AMS");
+    setBrand(storage.get(BRAND_KEY) || "");
+  }, [storage, tenant?.settings?.signature]);
 
-  function save() {
+  async function save() {
     if (typeof window === "undefined") return;
-    localStorage.setItem(SIGNATURE_KEY, signature);
-    localStorage.setItem(BRAND_KEY, brand);
+    // 1) Persist en localStorage scoped por tenant (backup local, instantáneo).
+    storage.set(SIGNATURE_KEY, signature);
+    storage.set(BRAND_KEY, brand);
     setSaved(true);
     setTimeout(() => setSaved(false), 2500);
+    // 2) Persist en tenant.settings.signature via backend (canónico, multi-device).
+    if (tenant?.id) {
+      setSyncing(true);
+      setSyncError(null);
+      try {
+        await updateTenant(tenant.id, {
+          settings: { ...(tenant.settings ?? {}), signature },
+        });
+        await reloadTenant();
+      } catch (err) {
+        setSyncError((err as Error).message || "no se pudo guardar en el tenant");
+      } finally {
+        setSyncing(false);
+      }
+    }
   }
 
   function reset() {
     setSignature("Equipo AMS");
     setBrand("");
-    if (typeof window !== "undefined") {
-      localStorage.removeItem(SIGNATURE_KEY);
-      localStorage.removeItem(BRAND_KEY);
-    }
+    storage.remove(SIGNATURE_KEY);
+    storage.remove(BRAND_KEY);
   }
 
   return (
@@ -1196,8 +1221,9 @@ function CustomerResponseSettingsSection() {
       <h3 style={{ marginTop: 0, fontSize: 14 }}>✉ Customer Response · Firma del tenant</h3>
       <p className="settings-section-desc">
         Firma que se incluye al final de cada respuesta generada con el motor
-        Customer Response Intelligence. Aplica a todas las respuestas que vayan
-        al cliente (no a notas internas).
+        Customer Response Intelligence. <b>Esta firma aplica a TODO tu tenant</b>
+        {" "}— no es per-browser. Se sincroniza al backend para que todos los usuarios
+        del tenant la vean.
       </p>
 
       <div className="col" style={{ gap: 12, marginTop: 10 }}>
@@ -1229,14 +1255,15 @@ function CustomerResponseSettingsSection() {
           </div>
         </div>
 
-        <div className="row" style={{ gap: 8 }}>
-          <button className="btn primary" onClick={save}>
-            💾 Guardar firma
+        <div className="row" style={{ gap: 8, alignItems: "center" }}>
+          <button className="btn primary" onClick={() => void save()} disabled={syncing}>
+            {syncing ? "Guardando…" : "💾 Guardar firma"}
           </button>
-          <button className="btn ghost" onClick={reset}>
+          <button className="btn ghost" onClick={reset} disabled={syncing}>
             ↺ Restaurar default
           </button>
-          {saved && <span style={{ fontSize: 12, color: "#10b981" }}>✓ guardado</span>}
+          {saved && !syncError && <span style={{ fontSize: 12, color: "#10b981" }}>✓ guardado</span>}
+          {syncError && <span style={{ fontSize: 12, color: "#ef4444" }}>⚠ {syncError}</span>}
         </div>
 
         {/* Preview */}

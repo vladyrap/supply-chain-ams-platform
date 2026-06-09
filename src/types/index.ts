@@ -9,6 +9,12 @@ export interface AuthUser {
   role: Role;
   active: boolean;
   created_at: string;
+  /**
+   * Tenant al que pertenece el usuario.
+   * Backend lo expone via /api/auth/me después del session lookup.
+   * Opcional con default 'default' para retrocompat con endpoints que aún no lo devuelven.
+   */
+  tenant_id?: string;
 }
 
 export type Environment = "NO_INFORMADO" | "DEV" | "QA" | "PRD" | "SANDBOX";

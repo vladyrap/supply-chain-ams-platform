@@ -262,6 +262,8 @@ interface FormState {
   brandAccent: string;
   monthlyQuotaTickets: string; // string para input
   monthlyQuotaGeminiUsd: string;
+  /** Firma default del tenant (Customer Response). Se mergea con otros settings. */
+  signature: string;
 }
 
 function TenantFormModal({
@@ -283,6 +285,7 @@ function TenantFormModal({
     brandAccent: initial?.brand?.accent ?? "",
     monthlyQuotaTickets:   initial?.monthlyQuotaTickets   != null ? String(initial.monthlyQuotaTickets)   : "",
     monthlyQuotaGeminiUsd: initial?.monthlyQuotaGeminiUsd != null ? String(initial.monthlyQuotaGeminiUsd) : "",
+    signature: (typeof initial?.settings?.signature === "string" ? initial.settings.signature : "") || "",
   });
 
   function handleSubmit(e: React.FormEvent) {
@@ -295,6 +298,12 @@ function TenantFormModal({
     const quotaTickets = form.monthlyQuotaTickets.trim() === "" ? undefined : Number(form.monthlyQuotaTickets);
     const quotaGemini  = form.monthlyQuotaGeminiUsd.trim() === "" ? undefined : Number(form.monthlyQuotaGeminiUsd);
 
+    // Mergear signature con settings existentes para NO pisar otras keys (timezone, locale, etc.)
+    const mergedSettings = {
+      ...(initial?.settings ?? {}),
+      ...(form.signature.trim() ? { signature: form.signature } : { signature: undefined }),
+    };
+
     if (mode === "create") {
       const input: CreateTenantInput = {
         id:   form.id.trim().toLowerCase(),
@@ -303,6 +312,7 @@ function TenantFormModal({
         plan: form.plan,
         status: form.status,
         ...(Object.keys(brand).length > 0 ? { brand } : {}),
+        ...(form.signature.trim() ? { settings: { signature: form.signature } } : {}),
         ...(quotaTickets != null && !isNaN(quotaTickets) ? { monthlyQuotaTickets: quotaTickets } : {}),
         ...(quotaGemini  != null && !isNaN(quotaGemini)  ? { monthlyQuotaGeminiUsd: quotaGemini }  : {}),
       };
@@ -318,6 +328,7 @@ function TenantFormModal({
         plan: form.plan,
         status: form.status,
         brand,
+        settings: mergedSettings,
         monthlyQuotaTickets:   quotaTickets != null && !isNaN(quotaTickets) ? quotaTickets : null,
         monthlyQuotaGeminiUsd: quotaGemini  != null && !isNaN(quotaGemini)  ? quotaGemini  : null,
       };
@@ -388,6 +399,25 @@ function TenantFormModal({
             <input value={form.brandAccent} onChange={(e) => setForm({ ...form, brandAccent: e.target.value })}
               placeholder="cyan" style={input} />
           </Field>
+        </div>
+
+        <div style={{ marginTop: 12, paddingTop: 12, borderTop: "1px solid rgba(255,255,255,0.08)" }}>
+          <div style={{ fontSize: 11, letterSpacing: 1.4, color: "var(--text-dim)", marginBottom: 8 }}>
+            SETTINGS · CUSTOMER RESPONSE
+          </div>
+          <Field label="Firma default (Customer Response)">
+            <textarea
+              rows={4}
+              value={form.signature}
+              onChange={(e) => setForm({ ...form, signature: e.target.value })}
+              placeholder={"Equipo AMS\ncontacto@miempresa.cl\n+56 9 1234 5678"}
+              style={{ ...input, fontFamily: "monospace", fontSize: 12, resize: "vertical" }}
+            />
+          </Field>
+          <div style={{ fontSize: 10.5, color: "var(--text-dim)", marginTop: -6, marginBottom: 8 }}>
+            Se mergea con otros settings del tenant (timezone, locale, etc).
+            Aplica a TODAS las respuestas Customer Response del tenant.
+          </div>
         </div>
 
         {mode === "edit" && (

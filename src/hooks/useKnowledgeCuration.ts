@@ -1,8 +1,12 @@
 "use client";
 
-import { useCallback, useEffect, useState } from "react";
+// G8 (v1.2.0): localStorage scoped por tenant via tenantStorage().
+
+import { useCallback, useEffect, useMemo, useState } from "react";
 import type { CurationCandidate, CurationStatus } from "@/types/knowledge-curation";
 import { CURATION_STORAGE } from "@/types/knowledge-curation";
+import { useTenant } from "@/context/TenantContext";
+import { tenantStorage, isTenantScopedKey } from "@/lib/tenantStorage";
 
 const STORAGE_KEY = CURATION_STORAGE.candidates;
 const EVT = "ams-curation-changed";
@@ -27,19 +31,22 @@ export interface UseKnowledgeCuration {
 }
 
 export function useKnowledgeCuration(): UseKnowledgeCuration {
-  const [candidates, setCandidates] = useState<CurationCandidate[]>(() => {
-    if (typeof window === "undefined") return [];
-    return safe<CurationCandidate[]>(localStorage.getItem(STORAGE_KEY)) ?? [];
-  });
+  const { tenant } = useTenant();
+  const tenantId = tenant?.id || "default";
+  const storage = useMemo(() => tenantStorage(tenantId), [tenantId]);
+
+  const [candidates, setCandidates] = useState<CurationCandidate[]>([]);
+
+  useEffect(() => {
+    setCandidates(safe<CurationCandidate[]>(storage.get(STORAGE_KEY)) ?? []);
+  }, [storage]);
 
   useEffect(() => {
     function reload() {
-      if (typeof window === "undefined") return;
-      const fresh = safe<CurationCandidate[]>(localStorage.getItem(STORAGE_KEY)) ?? [];
-      setCandidates(fresh);
+      setCandidates(safe<CurationCandidate[]>(storage.get(STORAGE_KEY)) ?? []);
     }
     function onStorage(e: StorageEvent) {
-      if (e.key === STORAGE_KEY) reload();
+      if (isTenantScopedKey(e.key, tenantId, STORAGE_KEY)) reload();
     }
     window.addEventListener("storage", onStorage);
     window.addEventListener(EVT, reload);
@@ -47,15 +54,13 @@ export function useKnowledgeCuration(): UseKnowledgeCuration {
       window.removeEventListener("storage", onStorage);
       window.removeEventListener(EVT, reload);
     };
-  }, []);
+  }, [storage, tenantId]);
 
   const persist = useCallback((next: CurationCandidate[]) => {
     setCandidates(next);
-    if (typeof window !== "undefined") {
-      localStorage.setItem(STORAGE_KEY, JSON.stringify(next));
-      emit();
-    }
-  }, []);
+    storage.set(STORAGE_KEY, JSON.stringify(next));
+    emit();
+  }, [storage]);
 
   return {
     candidates,
@@ -79,13 +84,11 @@ export function useKnowledgeCuration(): UseKnowledgeCuration {
         } else {
           next = [c, ...cur].slice(0, 200);
         }
-        if (typeof window !== "undefined") {
-          localStorage.setItem(STORAGE_KEY, JSON.stringify(next));
-          emit();
-        }
+        storage.set(STORAGE_KEY, JSON.stringify(next));
+        emit();
         return next;
       });
-    }, []),
+    }, [storage]),
     updateStatus: useCallback((id, status, reviewer, reason) => {
       setCandidates((cur) => {
         const next = cur.map((c) =>
@@ -96,13 +99,11 @@ export function useKnowledgeCuration(): UseKnowledgeCuration {
             rejectionReason: status === "REJECTED" ? reason : undefined,
           } : c
         );
-        if (typeof window !== "undefined") {
-          localStorage.setItem(STORAGE_KEY, JSON.stringify(next));
-          emit();
-        }
+        storage.set(STORAGE_KEY, JSON.stringify(next));
+        emit();
         return next;
       });
-    }, []),
+    }, [storage]),
     remove: useCallback((id) => {
       persist(candidates.filter((c) => c.candidateId !== id));
     }, [candidates, persist]),

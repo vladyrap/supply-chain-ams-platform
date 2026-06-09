@@ -1,6 +1,6 @@
 "use client";
 
-import { useCallback, useEffect, useMemo, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import {
   RBAC_STORAGE, type PlatformRole, type PlatformUser, type PlatformScreen,
   type PermissionAction, type RolePermission, type ServiceLevel, ALL_SCREENS,
@@ -12,6 +12,8 @@ import {
 } from "@/utils/rbac";
 import * as rbacApi from "@/services/rbac.api";
 import { useAuth } from "@/context/AuthContext";
+import { useTenant } from "@/context/TenantContext";
+import { tenantStorage, type TenantScopedStorage } from "@/lib/tenantStorage";
 import { appendRbacAuditEvent } from "@/lib/rbac-audit";
 
 const log = {
@@ -29,17 +31,18 @@ function safeJsonParse<T>(raw: string | null): T | null {
   try { return JSON.parse(raw) as T; } catch { return null; }
 }
 
-function loadFromLocalStorage(): { roles: PlatformRole[]; users: PlatformUser[]; currentUserId: string | null } {
+// G8 (v1.2.0): localStorage scoped por tenant via tenantStorage().
+function loadFromLocalStorage(storage: TenantScopedStorage): { roles: PlatformRole[]; users: PlatformUser[]; currentUserId: string | null } {
   if (typeof window === "undefined") {
     return { roles: buildDefaultRoles(), users: buildDefaultUsers(), currentUserId: null };
   }
-  const rawRoles = safeJsonParse<PlatformRole[]>(localStorage.getItem(RBAC_STORAGE.roles)) ?? buildDefaultRoles();
+  const rawRoles = safeJsonParse<PlatformRole[]>(storage.get(RBAC_STORAGE.roles)) ?? buildDefaultRoles();
   // Migración lazy: si el localStorage trae roles viejos sin las nuevas
   // screens (p.ej. "entrenamiento_ia"), las rellenamos con noPerm() para
   // que el lookup nunca devuelva undefined y no rompa Sidebar/AccessPreview.
   const roles = migrateRolesAddingMissingScreens(rawRoles);
-  const users = safeJsonParse<PlatformUser[]>(localStorage.getItem(RBAC_STORAGE.users)) ?? buildDefaultUsers();
-  const currentUserId = localStorage.getItem(RBAC_STORAGE.currentUser);
+  const users = safeJsonParse<PlatformUser[]>(storage.get(RBAC_STORAGE.users)) ?? buildDefaultUsers();
+  const currentUserId = storage.get(RBAC_STORAGE.currentUser);
   return { roles, users, currentUserId };
 }
 
@@ -47,20 +50,17 @@ function notifyRbacChange() {
   if (typeof window === "undefined") return;
   window.dispatchEvent(new CustomEvent("ams-rbac-changed"));
 }
-function persistRoles(roles: PlatformRole[]) {
-  if (typeof window === "undefined") return;
-  localStorage.setItem(RBAC_STORAGE.roles, JSON.stringify(roles));
+function persistRoles(storage: TenantScopedStorage, roles: PlatformRole[]) {
+  storage.set(RBAC_STORAGE.roles, JSON.stringify(roles));
   notifyRbacChange();
 }
-function persistUsers(users: PlatformUser[]) {
-  if (typeof window === "undefined") return;
-  localStorage.setItem(RBAC_STORAGE.users, JSON.stringify(users));
+function persistUsers(storage: TenantScopedStorage, users: PlatformUser[]) {
+  storage.set(RBAC_STORAGE.users, JSON.stringify(users));
   notifyRbacChange();
 }
-function persistCurrent(id: string | null) {
-  if (typeof window === "undefined") return;
-  if (id) localStorage.setItem(RBAC_STORAGE.currentUser, id);
-  else    localStorage.removeItem(RBAC_STORAGE.currentUser);
+function persistCurrent(storage: TenantScopedStorage, id: string | null) {
+  if (id) storage.set(RBAC_STORAGE.currentUser, id);
+  else    storage.remove(RBAC_STORAGE.currentUser);
   notifyRbacChange();
 }
 
@@ -100,6 +100,12 @@ export interface UseAccessAdmin {
 
 export function useAccessAdmin(): UseAccessAdmin {
   const { user: authUser } = useAuth();
+  const { tenant } = useTenant();
+  const tenantId = tenant?.id || "default";
+  // Ref para que los useCallback con deps estables sigan apuntando al storage actual.
+  const storageRef = useRef<TenantScopedStorage>(tenantStorage(tenantId));
+  useEffect(() => { storageRef.current = tenantStorage(tenantId); }, [tenantId]);
+
   const [roles, setRoles]               = useState<PlatformRole[]>([]);
   const [users, setUsers]               = useState<PlatformUser[]>([]);
   const [currentUserId, setCurrentUId]  = useState<string | null>(null);
@@ -118,7 +124,7 @@ export function useAccessAdmin(): UseAccessAdmin {
 
   // Load on mount (offline-first: localStorage primero, después hidratar desde backend)
   useEffect(() => {
-    const data = loadFromLocalStorage();
+    const data = loadFromLocalStorage(storageRef.current);
     setRoles(data.roles);
     setUsers(data.users);
     setCurrentUId(data.currentUserId);
@@ -129,8 +135,8 @@ export function useAccessAdmin(): UseAccessAdmin {
         const snap = await rbacApi.getSnapshot();
         setRoles(snap.roles);
         setUsers(snap.users);
-        persistRoles(snap.roles);
-        persistUsers(snap.users);
+        persistRoles(storageRef.current, snap.roles);
+        persistUsers(storageRef.current, snap.users);
       } catch (err) {
         log.debug("rbac backend offline:", (err as Error)?.message);
       }
@@ -155,7 +161,7 @@ export function useAccessAdmin(): UseAccessAdmin {
     };
     setRoles((rs) => {
       const next = [...rs, fresh];
-      persistRoles(next);
+      persistRoles(storageRef.current, next);
       return next;
     });
     fireSync(rbacApi.upsertRole(fresh));
@@ -188,7 +194,7 @@ export function useAccessAdmin(): UseAccessAdmin {
     };
     setRoles((rs) => {
       const next = rs.map((r) => (r.id === id ? updated : r));
-      persistRoles(next);
+      persistRoles(storageRef.current, next);
       return next;
     });
     fireSync(rbacApi.upsertRole(updated));
@@ -201,7 +207,7 @@ export function useAccessAdmin(): UseAccessAdmin {
           fireSync(rbacApi.upsertUser(updatedUser));
           return updatedUser;
         });
-        persistUsers(next);
+        persistUsers(storageRef.current, next);
         return next;
       });
     }
@@ -218,7 +224,7 @@ export function useAccessAdmin(): UseAccessAdmin {
     }
     setRoles((rs) => {
       const next = rs.filter((r) => r.id !== id);
-      persistRoles(next);
+      persistRoles(storageRef.current, next);
       return next;
     });
     fireSync(rbacApi.deleteRole(id));
@@ -247,7 +253,7 @@ export function useAccessAdmin(): UseAccessAdmin {
     };
     setRoles((rs) => {
       const next = [...rs, dup];
-      persistRoles(next);
+      persistRoles(storageRef.current, next);
       return next;
     });
     fireSync(rbacApi.upsertRole(dup));
@@ -272,7 +278,7 @@ export function useAccessAdmin(): UseAccessAdmin {
         };
         return updated;
       });
-      persistRoles(next);
+      persistRoles(storageRef.current, next);
       if (updated) {
         fireSync(rbacApi.upsertRole(updated));
         const u = updated as PlatformRole;
@@ -306,7 +312,7 @@ export function useAccessAdmin(): UseAccessAdmin {
         updated = { ...r, updatedAt: now(), permissions: { ...r.permissions, [screen]: { ...perm } } };
         return updated;
       });
-      persistRoles(next);
+      persistRoles(storageRef.current, next);
       if (updated) {
         fireSync(rbacApi.upsertRole(updated));
         const u = updated as PlatformRole;
@@ -350,7 +356,7 @@ export function useAccessAdmin(): UseAccessAdmin {
     };
     setUsers((us) => {
       const next = [...us, fresh];
-      persistUsers(next);
+      persistUsers(storageRef.current, next);
       return next;
     });
     fireSync(rbacApi.upsertUser(fresh));
@@ -369,7 +375,7 @@ export function useAccessAdmin(): UseAccessAdmin {
     const updated: PlatformUser = { ...target, ...patch };
     setUsers((us) => {
       const next = us.map((u) => (u.id === id ? updated : u));
-      persistUsers(next);
+      persistUsers(storageRef.current, next);
       return next;
     });
     fireSync(rbacApi.upsertUser(updated));
@@ -394,13 +400,13 @@ export function useAccessAdmin(): UseAccessAdmin {
     if (!users.find((u) => u.id === id)) return { ok: false, error: "Usuario no encontrado." };
     setUsers((us) => {
       const next = us.filter((u) => u.id !== id);
-      persistUsers(next);
+      persistUsers(storageRef.current, next);
       return next;
     });
     fireSync(rbacApi.deleteUser(id));
     if (currentUserId === id) {
       setCurrentUId(null);
-      persistCurrent(null);
+      persistCurrent(storageRef.current, null);
     }
     return { ok: true };
   }, [users, currentUserId]);
@@ -413,7 +419,7 @@ export function useAccessAdmin(): UseAccessAdmin {
         updated = { ...u, status: u.status === "ACTIVE" ? "INACTIVE" as const : "ACTIVE" as const };
         return updated;
       });
-      persistUsers(next);
+      persistUsers(storageRef.current, next);
       if (updated) fireSync(rbacApi.upsertUser(updated));
       return next;
     });
@@ -421,7 +427,7 @@ export function useAccessAdmin(): UseAccessAdmin {
 
   const setCurrentUser: UseAccessAdmin["setCurrentUser"] = useCallback((id) => {
     setCurrentUId(id);
-    persistCurrent(id);
+    persistCurrent(storageRef.current, id);
     if (id) {
       const target = users.find((u) => u.id === id);
       appendRbacAuditEvent({
@@ -452,21 +458,20 @@ export function useAccessAdmin(): UseAccessAdmin {
         setRoles(snap.roles);
         setUsers(snap.users);
         setCurrentUId(null);
-        persistRoles(snap.roles);
-        persistUsers(snap.users);
-        persistCurrent(null);
+        persistRoles(storageRef.current, snap.roles);
+        persistUsers(storageRef.current, snap.users);
+        persistCurrent(storageRef.current, null);
         return;
       } catch { /* fallback local */ }
-      if (typeof window !== "undefined") {
-        localStorage.removeItem(RBAC_STORAGE.roles);
-        localStorage.removeItem(RBAC_STORAGE.users);
-        localStorage.removeItem(RBAC_STORAGE.currentUser);
-      }
+      // Borrar keys scoped del tenant actual (no afecta otros tenants).
+      storageRef.current.remove(RBAC_STORAGE.roles);
+      storageRef.current.remove(RBAC_STORAGE.users);
+      storageRef.current.remove(RBAC_STORAGE.currentUser);
       const freshRoles = buildDefaultRoles();
       const freshUsers = buildDefaultUsers();
-      persistRoles(freshRoles);
-      persistUsers(freshUsers);
-      persistCurrent(null);
+      persistRoles(storageRef.current, freshRoles);
+      persistUsers(storageRef.current, freshUsers);
+      persistCurrent(storageRef.current, null);
       setRoles(freshRoles);
       setUsers(freshUsers);
       setCurrentUId(null);

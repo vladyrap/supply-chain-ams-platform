@@ -7,6 +7,8 @@ import {
 } from "@/types/ams-modules";
 import { qualityApi } from "@/services/ams-modules.api";
 import { dedupeQualityEvaluations } from "@/utils/quality-evaluator-helpers";
+import { useTenant } from "@/context/TenantContext";
+import { tenantStorage, isTenantScopedKey } from "@/lib/tenantStorage";
 
 const EVT = "ams-evaluations-changed";
 const log = {
@@ -105,18 +107,22 @@ function aggregate(evals: AgentEvaluation[], incidents: { id: string; sap_module
 }
 
 export function useQualityEvaluator(): UseQualityEvaluator {
-  const [evaluations, setEvaluations] = useState<AgentEvaluation[]>(() => {
-    if (typeof window === "undefined") return [];
-    return safe<AgentEvaluation[]>(localStorage.getItem(AMS_MODULES_STORAGE.evaluations)) ?? [];
-  });
+  const { tenant } = useTenant();
+  const tenantId = tenant?.id || "default";
+  const storage = useMemo(() => tenantStorage(tenantId), [tenantId]);
+
+  const [evaluations, setEvaluations] = useState<AgentEvaluation[]>([]);
+
+  useEffect(() => {
+    setEvaluations(safe<AgentEvaluation[]>(storage.get(AMS_MODULES_STORAGE.evaluations)) ?? []);
+  }, [storage]);
 
   useEffect(() => {
     function reload() {
-      if (typeof window === "undefined") return;
-      setEvaluations(safe<AgentEvaluation[]>(localStorage.getItem(AMS_MODULES_STORAGE.evaluations)) ?? []);
+      setEvaluations(safe<AgentEvaluation[]>(storage.get(AMS_MODULES_STORAGE.evaluations)) ?? []);
     }
     function onStorage(e: StorageEvent) {
-      if (e.key === AMS_MODULES_STORAGE.evaluations) reload();
+      if (isTenantScopedKey(e.key, tenantId, AMS_MODULES_STORAGE.evaluations)) reload();
     }
     window.addEventListener("storage", onStorage);
     window.addEventListener(EVT, reload);
@@ -124,7 +130,7 @@ export function useQualityEvaluator(): UseQualityEvaluator {
       window.removeEventListener("storage", onStorage);
       window.removeEventListener(EVT, reload);
     };
-  }, []);
+  }, [storage, tenantId]);
 
   // Hidratar desde backend
   useEffect(() => {
@@ -134,23 +140,21 @@ export function useQualityEvaluator(): UseQualityEvaluator {
         const snap = await qualityApi.getSnapshot();
         if (cancelled) return;
         setEvaluations(snap.evaluations);
-        if (typeof window !== "undefined") {
-          localStorage.setItem(AMS_MODULES_STORAGE.evaluations, JSON.stringify(snap.evaluations));
-        }
+        storage.set(AMS_MODULES_STORAGE.evaluations, JSON.stringify(snap.evaluations));
       } catch (err) {
         log.debug("backend offline:", (err as Error)?.message);
       }
     })();
     return () => { cancelled = true; };
-  }, []);
+  }, [storage]);
 
   const save = useCallback((next: AgentEvaluation[]) => {
     setEvaluations(next);
+    storage.set(AMS_MODULES_STORAGE.evaluations, JSON.stringify(next));
     if (typeof window !== "undefined") {
-      localStorage.setItem(AMS_MODULES_STORAGE.evaluations, JSON.stringify(next));
       window.dispatchEvent(new CustomEvent(EVT));
     }
-  }, []);
+  }, [storage]);
 
   const createEvaluation: UseQualityEvaluator["createEvaluation"] = useCallback((input) => {
     const ev: AgentEvaluation = { ...input, id: uid("ev"), createdAt: now() };

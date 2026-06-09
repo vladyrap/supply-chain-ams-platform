@@ -5,6 +5,7 @@ import { usePathname } from "next/navigation";
 import { MODULES } from "@/lib/modules";
 import { usePlatform } from "@/context/PlatformContext";
 import { useAuth } from "@/context/AuthContext";
+import { useTenant } from "@/context/TenantContext";
 import { useCommandPalette } from "@/context/CommandPaletteContext";
 import { ROLES } from "@/lib/roles";
 import type { Environment } from "@/types";
@@ -18,7 +19,9 @@ export default function Header() {
   const pathname = usePathname();
   const { client, setClient, environment, setEnvironment, theme, setTheme, fxEnabled, setFxEnabled } = usePlatform();
   const { user, logout } = useAuth();
+  const { tenant } = useTenant();
   const { open: openPalette } = useCommandPalette();
+  const brandName = tenant?.brand?.name || tenant?.name || "AMS Platform";
 
   // Detectar Mac para mostrar ⌘ vs Ctrl
   const [isMac, setIsMac] = useState(false);
@@ -35,7 +38,7 @@ export default function Header() {
   return (
     <header className="header">
       <div className="crumbs">
-        AMS Platform <span style={{ opacity: 0.4, margin: "0 6px" }}>/</span>{" "}
+        {brandName} <span style={{ opacity: 0.4, margin: "0 6px" }}>/</span>{" "}
         <b>{active?.label ?? "Inicio"}</b>
       </div>
 
