@@ -13,8 +13,11 @@ import Link from "next/link";
 //   NEXT_PUBLIC_SUPPORT_EMAIL=soporte@tudominio.cl
 //   NEXT_PUBLIC_COMPANY_NAME=${COMPANY_NAME}
 const SALES_EMAIL = process.env.NEXT_PUBLIC_SALES_EMAIL || "ventas@tuempresa.cl";
-const SUPPORT_EMAIL = process.env.NEXT_PUBLIC_SUPPORT_EMAIL || "${SUPPORT_EMAIL}";
-const COMPANY_NAME = process.env.NEXT_PUBLIC_COMPANY_NAME || "${COMPANY_NAME}";
+const SUPPORT_EMAIL = process.env.NEXT_PUBLIC_SUPPORT_EMAIL || "soporte@tuempresa.cl";
+const COMPANY_NAME = process.env.NEXT_PUBLIC_COMPANY_NAME || "Tu Empresa SpA";
+// FIX B1 (audit v1.1.0): year capturado en module init RSC build time.
+// Evita hydration mismatch si alguien convierte el componente a "use client".
+const COPYRIGHT_YEAR = new Date().getFullYear();
 
 export const metadata = {
   title: "AMS Platform — Soporte SAP con IA · ROI 943×",
@@ -155,7 +158,8 @@ export default function MarketingLandingPage() {
             <Link href="/status" style={{ color: "#94a3b8", marginRight: 20 }}>Status</Link>
             <a href={`mailto:${SUPPORT_EMAIL}`} style={{ color: "#94a3b8" }}>Soporte</a>
           </div>
-          <div>© {new Date().getFullYear()} {COMPANY_NAME} · Hecho en Chile con ❤️</div>
+          {/* FIX B1: year capturado en build (RSC) → consistente para todos los usuarios del bundle */}
+          <div>© {COPYRIGHT_YEAR} {COMPANY_NAME} · Hecho en Chile con ❤️</div>
         </div>
       </footer>
     </div>
