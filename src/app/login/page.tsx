@@ -115,6 +115,7 @@ function LoginInner() {
           </div>
 
           <div className="auth-footer-link">
+            <Link href="/forgot-password" style={{ display: "block", marginBottom: 8 }}>¿Olvidaste tu contraseña?</Link>
             ¿No tienes cuenta? <Link href="/signup">Crear una</Link>
           </div>
         </div>
