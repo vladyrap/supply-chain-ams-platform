@@ -55,7 +55,7 @@ export default function UserManagement({ admin }: Props) {
             <option value="INACTIVE">Inactivos</option>
           </select>
         </div>
-        <button className="btn primary" onClick={() => { setEditing(null); setShowModal(true); }}>+ Nuevo usuario demo</button>
+        <button className="btn primary" onClick={() => { setEditing(null); setShowModal(true); }}>+ Nuevo usuario</button>
       </div>
 
       <div className="card flat" style={{ padding: 0, overflowX: "auto" }}>

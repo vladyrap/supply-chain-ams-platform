@@ -35,7 +35,7 @@ export default function AdminAccessPanel() {
       s + ALL_ACTIONS.filter((a) => r.permissions[screen]?.[a]).length, 0), 0);
 
   function handleReset() {
-    if (!window.confirm("¿Restaurar todos los roles, usuarios y permisos a la configuración demo inicial?\n\nSe perderán los cambios que hayas hecho en localStorage.")) return;
+    if (!window.confirm("¿Restaurar la configuración inicial de roles + permisos del sistema?\n\nEsto NO borra usuarios reales, solo restituye los 5 roles base y sus permisos por pantalla a la matriz por defecto del producto.")) return;
     admin.resetDemoData();
   }
 
@@ -46,11 +46,11 @@ export default function AdminAccessPanel() {
           <div>
             <h1 style={{ margin: 0 }}>🛡️ Administración de Accesos</h1>
             <p style={{ margin: "4px 0 0", color: "var(--text-soft)", fontSize: 13 }}>
-              Gestión visual de roles, usuarios y permisos por pantalla. Persistido en <code>localStorage</code>.
+              Gestión visual de roles, usuarios y permisos por pantalla.
             </p>
           </div>
           <button className="btn ghost" onClick={handleReset} style={{ fontSize: 12 }}>
-            ↻ Restaurar configuración demo
+            ↻ Restaurar matriz base de permisos
           </button>
         </div>
       </div>

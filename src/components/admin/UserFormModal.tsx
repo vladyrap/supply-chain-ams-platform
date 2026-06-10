@@ -50,14 +50,14 @@ export default function UserFormModal({ open, initial, roles, onClose, onSave }:
       <div className="admin-modal" onClick={(e) => e.stopPropagation()}>
         <div className="admin-modal-head">
           <h3 style={{ margin: 0, fontSize: 16, letterSpacing: 0.5 }}>
-            {initial ? `Editar usuario · ${initial.name}` : "Nuevo usuario demo"}
+            {initial ? `Editar usuario · ${initial.name}` : "Nuevo usuario"}
           </h3>
           <button className="admin-modal-close" onClick={onClose} aria-label="Cerrar">×</button>
         </div>
 
         <form onSubmit={handleSubmit} className="admin-modal-body">
           <div className="alert info" style={{ fontSize: 12, marginBottom: 12 }}>
-            <b>Usuarios demo.</b> La autenticación real será implementada en una fase posterior. Por ahora todo vive en localStorage del navegador.
+            <b>Acceso a la plataforma.</b> El usuario recibirá un email con un link para definir su contraseña. El permiso aplica según el rol seleccionado.
           </div>
 
           <div className="float-field">
