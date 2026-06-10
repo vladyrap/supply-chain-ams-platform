@@ -87,7 +87,7 @@ export default function AdminAccessPanel() {
       </div>
 
       <div className="alert info" style={{ marginTop: 18, fontSize: 12 }}>
-        <b>Nota importante:</b> Esta versión usa <code>localStorage</code> del navegador. No hay autenticación real ni persistencia en backend. Los cambios se mantienen en este browser hasta que apretes <b>Restaurar demo</b>.
+        <b>Cómo funciona:</b> al crear un usuario nuevo se envía un email con link de bienvenida para que defina su contraseña (válido 2 horas). Los permisos por pantalla se aplican según el rol asignado.
       </div>
     </div>
   );

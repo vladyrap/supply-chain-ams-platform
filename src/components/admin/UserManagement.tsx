@@ -5,6 +5,7 @@ import type { UseAccessAdmin } from "@/hooks/useAccessAdmin";
 import type { PlatformUser } from "@/types/rbac";
 import Badge from "@/components/ui/Badge";
 import UserFormModal from "./UserFormModal";
+import { inviteUser } from "@/services/admin-users.api";
 
 interface Props { admin: UseAccessAdmin }
 
@@ -17,6 +18,7 @@ export default function UserManagement({ admin }: Props) {
   const [editing, setEditing]     = useState<PlatformUser | null>(null);
   const [filterRole, setFilterRole]     = useState<string>("all");
   const [filterStatus, setFilterStatus] = useState<"all" | "ACTIVE" | "INACTIVE">("all");
+  const [inviteMsg, setInviteMsg]       = useState<string | null>(null);
 
   const filtered = useMemo(() => {
     return admin.users.filter((u) => {
@@ -26,13 +28,39 @@ export default function UserManagement({ admin }: Props) {
     });
   }, [admin.users, filterRole, filterStatus]);
 
-  function handleSave(data: { id?: string; name: string; email: string; roleCode: string; serviceLevel: PlatformUser["serviceLevel"] }) {
-    if (data.id) return admin.updateUser(data.id, { name: data.name, email: data.email, roleCode: data.roleCode, serviceLevel: data.serviceLevel });
-    return admin.createUser({ name: data.name, email: data.email, roleCode: data.roleCode, serviceLevel: data.serviceLevel });
+  function handleSave(data: { id?: string; name: string; email: string; roleCode: string; serviceLevel: PlatformUser["serviceLevel"] }):
+    | { ok: true } | { ok: false; error: string } {
+    if (data.id) {
+      // EDIT — sólo metadata RBAC, no toca auth
+      return admin.updateUser(data.id, { name: data.name, email: data.email, roleCode: data.roleCode, serviceLevel: data.serviceLevel });
+    }
+    // CREATE — usar invite real (crea cuenta auth + envía email)
+    // Disparamos en background, no esperamos la respuesta para cerrar el modal.
+    // El UserFormModal se cierra inmediatamente; el resultado se muestra en `inviteMsg`.
+    setInviteMsg("Enviando invitación…");
+    inviteUser({
+      name: data.name, email: data.email, roleCode: data.roleCode,
+      serviceLevel: data.serviceLevel as "BASIC" | "STANDARD" | "PREMIUM" | "ENTERPRISE",
+    })
+      .then((r) => {
+        if (r.success) {
+          setInviteMsg(r.emailSent
+            ? `✓ ${r.message}. Recargá la página para verlo en la lista.`
+            : `⚠ Usuario creado, pero el email NO se pudo enviar (revisá SMTP). El usuario puede usar "Olvidé contraseña".`);
+        } else {
+          setInviteMsg(`✗ ${r.error}`);
+        }
+        setTimeout(() => setInviteMsg(null), 12000);
+      })
+      .catch((err) => {
+        setInviteMsg(`✗ ${(err as Error).message}`);
+        setTimeout(() => setInviteMsg(null), 12000);
+      });
+    return { ok: true };
   }
 
   function handleDelete(u: PlatformUser) {
-    if (!window.confirm(`¿Eliminar el usuario demo "${u.name}"? Esta acción no se puede deshacer.`)) return;
+    if (!window.confirm(`¿Eliminar el usuario "${u.name}"? Esta acción no se puede deshacer.`)) return;
     const r = admin.deleteUser(u.id);
     if (!r.ok) window.alert(r.error);
   }
@@ -58,6 +86,30 @@ export default function UserManagement({ admin }: Props) {
         <button className="btn primary" onClick={() => { setEditing(null); setShowModal(true); }}>+ Nuevo usuario</button>
       </div>
 
+      {inviteMsg && (
+        <div
+          role="status"
+          aria-live="polite"
+          style={{
+            marginBottom: 12,
+            padding: "10px 14px",
+            borderRadius: 8,
+            background: inviteMsg.startsWith("✓") ? "rgba(34, 197, 94, 0.1)"
+                      : inviteMsg.startsWith("✗") ? "rgba(239, 68, 68, 0.1)"
+                      : "rgba(34, 211, 238, 0.1)",
+            border: `1px solid ${inviteMsg.startsWith("✓") ? "rgba(34, 197, 94, 0.4)"
+                              : inviteMsg.startsWith("✗") ? "rgba(239, 68, 68, 0.4)"
+                              : "rgba(34, 211, 238, 0.4)"}`,
+            color: inviteMsg.startsWith("✓") ? "#86efac"
+                 : inviteMsg.startsWith("✗") ? "#fca5a5"
+                 : "#67e8f9",
+            fontSize: 13,
+          }}
+        >
+          {inviteMsg}
+        </div>
+      )}
+
       <div className="card flat" style={{ padding: 0, overflowX: "auto" }}>
         <table style={{ width: "100%", borderCollapse: "collapse", fontSize: 13 }}>
           <thead>
@@ -74,7 +126,7 @@ export default function UserManagement({ admin }: Props) {
           <tbody>
             {filtered.length === 0 && (
               <tr><td colSpan={7} style={{ padding: 30, textAlign: "center", color: "var(--text-dim)" }}>
-                {admin.users.length === 0 ? "Aún no hay usuarios demo." : "Ningún resultado para el filtro actual."}
+                {admin.users.length === 0 ? "Aún no hay usuarios. Click '+ Nuevo usuario' para invitar al primero." : "Ningún resultado para el filtro actual."}
               </td></tr>
             )}
             {filtered.map((u) => {
