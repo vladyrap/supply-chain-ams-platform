@@ -15,7 +15,9 @@ interface AuthState {
 const AuthContext = createContext<AuthState | null>(null);
 
 // Rutas públicas (no requieren sesión)
-const PUBLIC_PATHS = ["/login", "/signup"];
+// v1.2.5-prod: incluir /forgot-password y /reset-password para que el flow
+// de recuperación funcione sin estar autenticado.
+const PUBLIC_PATHS = ["/login", "/signup", "/forgot-password", "/reset-password"];
 
 export function AuthProvider({ children }: { children: React.ReactNode }) {
   const [user, setUser] = useState<AuthUser | null>(null);
