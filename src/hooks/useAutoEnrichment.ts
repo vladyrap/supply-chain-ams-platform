@@ -28,6 +28,21 @@ const inFlightLocks = new Map<string, Promise<TicketIntelligence | null>>();
 const jiraInMemoryCache = new Map<string, TicketIntelligence>();
 
 // =============================================================================
+// FIX v1.2.6-prod — Hard guard: 1 auto-trigger por ticketKey por sesión browser.
+// =============================================================================
+// Problema: después de creación + pipeline OK, si el ticket prop cambia de
+// identidad (refresh del padre, re-mount del TCC), el useEffect se re-dispara
+// y vuelve a correr el pipeline aunque ya esté enriquecido. Esto saturaba
+// el backend (200+ req/min al audit), activaba el rate-limit y dejaba la
+// UI en estado "Demasiadas peticiones".
+//
+// Política nueva: el hook auto-dispara MAXIMO 1 vez por ticket por session.
+// Para re-analizar, el user debe clickear "Reanalizar" (que pasa por
+// reanalyze() y no consulta este set).
+// =============================================================================
+const autoTriggeredThisSession = new Set<string>();
+
+// =============================================================================
 // FIX v1.2.3-qas — Circuit breaker global por ticketKey
 // =============================================================================
 // Antes: cuando un ticket fallaba (Gemini 500, network error), el frontend lo
@@ -323,6 +338,16 @@ export function useAutoEnrichment(
         return;
       }
 
+      // Guard 0 (v1.2.6-prod): hard cap de 1 auto-trigger por sesión por ticket.
+      // El reanalyze() manual NO consulta este set — el user siempre puede
+      // forzar otra ejecución desde el botón "Reanalizar".
+      if (autoTriggeredThisSession.has(ticket.key)) {
+        if (process.env.NODE_ENV !== "production") {
+          console.info(`[AIE] ${ticket.key} skip: ya auto-disparado en esta sesión — usá Reanalizar para forzar`);
+        }
+        return;
+      }
+
       const newHash = await computeAnalysisInputHash(ticket);
       const cachedHash = ticket.intelligence?.inputHash;
       const status = ticket.intelligence?.status;
@@ -363,6 +388,7 @@ export function useAutoEnrichment(
           console.info(`[AIE] ${ticket.key} status=enriched pero analysis vacío — re-disparando`);
         }
         if (cancelled) return;
+        autoTriggeredThisSession.add(ticket.key); // v1.2.6-prod
         await runPipeline(true, "auto"); // force=true para sobrescribir el enriched vacío
         if (!cancelled) setHasNewData(false);
         return;
@@ -374,6 +400,7 @@ export function useAutoEnrichment(
           console.info(`[AIE] ${ticket.key} disparando (status=${status ?? "none"})`);
         }
         if (cancelled) return;
+        autoTriggeredThisSession.add(ticket.key); // v1.2.6-prod
         await runPipeline(false, "auto");
         if (!cancelled) setHasNewData(false);
       }
@@ -381,9 +408,12 @@ export function useAutoEnrichment(
     return () => { cancelled = true; };
   }, [ticket, autoTrigger, runPipeline]);
 
-  // Reanálisis manual
+  // Reanálisis manual — v1.2.6-prod: NO consulta autoTriggeredThisSession.
+  // Lo limpia DESPUÉS para que un futuro re-mount no re-dispare auto.
   const reanalyze = useCallback(async (): Promise<void> => {
+    const k = ticketRef.current?.key;
     await runPipeline(true, "reanalysis");
+    if (k) autoTriggeredThisSession.add(k); // mantener bloqueado el auto
     setHasNewData(false);
   }, [runPipeline]);
 
