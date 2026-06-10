@@ -10,6 +10,7 @@ import TicketEstimateBadge from "@/components/estimation/TicketEstimateBadge";
 import TicketEnrichmentBadge from "@/components/tickets/TicketEnrichmentBadge";
 import TicketCommandCenter from "@/components/tickets/TicketCommandCenter";
 import GuidedAmsDemo from "@/components/demo/GuidedAmsDemo";
+import TicketPdfButton from "@/components/tickets/TicketPdfButton";
 import { useAuth } from "@/context/AuthContext";
 
 function statusVariant(s: string): "ok" | "warn" | "error" | "muted" | "info" {
@@ -112,6 +113,7 @@ export default function TicketsPage() {
             <button className="btn ghost" onClick={refresh} disabled={loading}>
               {loading ? <><span className="spinner" /> cargando</> : "↻ Refrescar"}
             </button>
+            <TicketPdfButton mode="bulk" tickets={tickets} />
           </div>
         </div>
 

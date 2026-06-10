@@ -75,6 +75,7 @@ import AmsIntelligenceSummaryCard from "@/components/intelligence/AmsIntelligenc
 // AIE v0.10 — Auto Intelligence Enrichment
 import { useAutoEnrichment } from "@/hooks/useAutoEnrichment";
 import TicketEnrichmentBadge from "./TicketEnrichmentBadge";
+import TicketPdfButton from "./TicketPdfButton";
 import ReanalyzeButton from "./ReanalyzeButton";
 // SA v0.11 — AMS Specialists (interno, agente único de cara al usuario)
 import AmsSpecialistsSection from "./AmsSpecialistsSection";
@@ -922,6 +923,9 @@ export default function TicketCommandCenter({ ticket, onTicketUpdated }: Props) 
                 confianza {decision.confidence.toLowerCase()}
               </div>
             </div>
+            {/* v1.2.7-prod · Descargar ticket como PDF (todo el análisis) */}
+            <TicketPdfButton mode="single" ticket={ticket} compact />
+
             {/* Cerrar ticket (oculto si ya está resuelto). Captura horas reales
                 que alimentan el tile "Desviación" del dashboard y la calibración
                 del motor de estimación. */}
