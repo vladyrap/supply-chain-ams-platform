@@ -37,7 +37,18 @@ function LoginInner() {
       const next = search.get("next") || "/dashboard";
       router.replace(next);
     } else {
-      setError("error" in res ? res.error : "Error desconocido");
+      // FIX v1.2.5: mejorar mensaje según el tipo de error.
+      // 401 = credenciales mal | 5xx = problema del servicio
+      const raw = "error" in res ? res.error : "";
+      let friendly = raw || "Error desconocido";
+      if (/credenciales/i.test(raw)) {
+        friendly = "Email o contraseña incorrectos. Si olvidaste tu contraseña, hacé click en el link de abajo.";
+      } else if (/error procesando|500/i.test(raw)) {
+        friendly = "Servicio AMS no disponible. Esperá unos segundos y volvé a intentar, o pedile al administrador que revise los logs.";
+      } else if (/rate.*limit|429|demasiadas/i.test(raw)) {
+        friendly = "Demasiados intentos. Esperá un minuto antes de volver a probar.";
+      }
+      setError(friendly);
     }
   }
 
