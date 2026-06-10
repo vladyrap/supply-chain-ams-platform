@@ -196,6 +196,10 @@ export default function Sidebar() {
             {roleCode ?? "—"}
           </span>
         </div>
+        {/* v1.2.7-prod · version tag desde build-arg NEXT_PUBLIC_APP_VERSION */}
+        <div style={{ fontSize: 10, color: "var(--text-dim)", textAlign: "center", marginTop: 4 }}>
+          AMS Platform · v{process.env.NEXT_PUBLIC_APP_VERSION || "dev"}
+        </div>
       </aside>
 
       <CommandPalette
