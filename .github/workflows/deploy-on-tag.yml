@@ -1,0 +1,125 @@
+name: Deploy on tag
+
+# =============================================================================
+# v1.2.4-prod — Deploy platform al VPS cuando se pushea un tag *-prod
+# =============================================================================
+# Convención (clonada del agent repo):
+#   - v1.2.X-qas-*      → solo CI, NO deploya
+#   - v1.2.X-prod       → CI + deploy en VPS
+#
+# Requiere secrets en repo Settings → Secrets:
+#   - VPS_HOST              (82.223.196.65)
+#   - VPS_USER              (root o ams)
+#   - VPS_SSH_KEY           (clave SSH privada)
+#   - VPS_DEPLOY_PATH       (/opt/ams/supply-chain-ams-stack)
+#   - VPS_HOST_FINGERPRINT  (output de ssh-keyscan -t ed25519 IP)
+#   - AMS_DOMAIN            (ams.roccoai.cl)
+# =============================================================================
+
+on:
+  push:
+    tags:
+      - "v*-prod"
+      - "v*-hotfix-*-prod"
+  workflow_dispatch:
+    inputs:
+      tag:
+        description: "Tag a desplegar (debe terminar en -prod)"
+        required: true
+
+jobs:
+  deploy:
+    name: Deploy platform a VPS prod
+    runs-on: ubuntu-latest
+    environment: production
+    steps:
+      - name: Resolve and validate tag
+        id: tagcheck
+        env:
+          INPUT_TAG: ${{ github.event.inputs.tag }}
+          REF_TAG: ${{ github.ref_name }}
+        run: |
+          set -euo pipefail
+          TAG="${INPUT_TAG:-$REF_TAG}"
+          if ! [[ "$TAG" =~ ^v[0-9]+\.[0-9]+\.[0-9]+(-[A-Za-z0-9.-]+)?$ ]]; then
+            echo "::error::Tag inválido: '$TAG'. Esperado: vX.Y.Z[-suffix]"
+            exit 1
+          fi
+          if [[ "$TAG" != *-prod ]]; then
+            echo "::error::Tag '$TAG' no termina en -prod."
+            exit 1
+          fi
+          echo "tag=$TAG" >> "$GITHUB_OUTPUT"
+          echo "Desplegando tag productivo: $TAG"
+
+      - name: Verify required secrets
+        env:
+          VPS_HOST: ${{ secrets.VPS_HOST }}
+          VPS_USER: ${{ secrets.VPS_USER }}
+          VPS_DEPLOY_PATH: ${{ secrets.VPS_DEPLOY_PATH }}
+          AMS_DOMAIN: ${{ secrets.AMS_DOMAIN }}
+          VPS_HOST_FINGERPRINT: ${{ secrets.VPS_HOST_FINGERPRINT }}
+        run: |
+          set -euo pipefail
+          missing=()
+          [ -z "${VPS_HOST:-}" ] && missing+=("VPS_HOST")
+          [ -z "${VPS_USER:-}" ] && missing+=("VPS_USER")
+          [ -z "${VPS_DEPLOY_PATH:-}" ] && missing+=("VPS_DEPLOY_PATH")
+          [ -z "${AMS_DOMAIN:-}" ] && missing+=("AMS_DOMAIN")
+          [ -z "${VPS_HOST_FINGERPRINT:-}" ] && missing+=("VPS_HOST_FINGERPRINT")
+          if [ "${#missing[@]}" -ne 0 ]; then
+            echo "::error::Faltan secrets: ${missing[*]}"
+            exit 1
+          fi
+
+      - name: Setup SSH key
+        uses: webfactory/ssh-agent@v0.9.0
+        with:
+          ssh-private-key: ${{ secrets.VPS_SSH_KEY }}
+
+      - name: Pin VPS host fingerprint
+        run: |
+          set -euo pipefail
+          mkdir -p ~/.ssh && chmod 700 ~/.ssh
+          echo "${{ secrets.VPS_HOST_FINGERPRINT }}" >> ~/.ssh/known_hosts
+          chmod 600 ~/.ssh/known_hosts
+
+      - name: Pull + redeploy platform
+        env:
+          TAG: ${{ steps.tagcheck.outputs.tag }}
+          VPS_HOST: ${{ secrets.VPS_HOST }}
+          VPS_USER: ${{ secrets.VPS_USER }}
+          VPS_DEPLOY_PATH: ${{ secrets.VPS_DEPLOY_PATH }}
+        run: |
+          set -euo pipefail
+          ssh "${VPS_USER}@${VPS_HOST}" bash -s -- "$TAG" "$VPS_DEPLOY_PATH" <<'REMOTE'
+          set -euo pipefail
+          TAG="$1"
+          DEPLOY_PATH="$2"
+          echo "==> Desplegando platform tag $TAG"
+          cd "$DEPLOY_PATH/../supply-chain-ams-platform"
+          git fetch --tags --quiet
+          git checkout "tags/$TAG" --quiet
+          cd "$DEPLOY_PATH"
+          # Rebuild solo platform — sin tocar backend/db/redis.
+          docker compose -f docker-compose.prod.yml build platform
+          docker compose -f docker-compose.prod.yml up -d --no-deps platform
+          echo "==> Deploy platform OK"
+          REMOTE
+
+      - name: Smoke test post-deploy
+        env:
+          AMS_DOMAIN: ${{ secrets.AMS_DOMAIN }}
+        run: |
+          set -euo pipefail
+          for i in $(seq 1 30); do
+            STATUS=$(curl -s -o /dev/null -w "%{http_code}" "https://${AMS_DOMAIN}/" || echo 000)
+            if [ "$STATUS" = "200" ] || [ "$STATUS" = "307" ]; then
+              echo "✓ Platform responde $STATUS después de $((i*5))s"
+              exit 0
+            fi
+            echo "Esperando warmup... (status: $STATUS, intento $i/30)"
+            sleep 5
+          done
+          echo "::error::Timeout esperando warmup post-deploy en https://${AMS_DOMAIN}/"
+          exit 1
