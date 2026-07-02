@@ -15,7 +15,7 @@ import { useRouter } from "next/navigation";
 import Badge from "@/components/ui/Badge";
 import { useAuth } from "@/context/AuthContext";
 import {
-  listAgents, getFavorites, toggleFavorite,
+  listAgents, getFavorites, toggleFavorite, updateAgent, deleteAgent,
   AGENT_CATEGORIES, type CustomAgent,
 } from "@/services/custom-agents.api";
 
@@ -35,6 +35,11 @@ export default function AgentLibraryPage() {
   const [onlyVerified, setOnlyVerified] = useState(false);
   const [sort, setSort] = useState<SortMode>("rating");
   const [favs, setFavs] = useState<Set<string>>(new Set());
+  // F7: edición de agentes propios
+  const [editing, setEditing] = useState<CustomAgent | null>(null);
+  const [editForm, setEditForm] = useState({ name: "", description: "", instructions: "", category: "GENERAL" });
+  const [editBusy, setEditBusy] = useState(false);
+  const [editError, setEditError] = useState<string | null>(null);
 
   const load = useCallback(async () => {
     setLoading(true);
@@ -80,6 +85,40 @@ export default function AgentLibraryPage() {
 
   function onToggleFav(id: string) {
     setFavs(new Set(toggleFavorite(id)));
+  }
+
+  // F7 · Gestión de agentes propios
+  function openEdit(a: CustomAgent) {
+    setEditing(a);
+    setEditForm({ name: a.name, description: a.description, instructions: a.instructions, category: a.category });
+    setEditError(null);
+  }
+
+  async function saveEdit(e: React.FormEvent) {
+    e.preventDefault();
+    if (!editing) return;
+    setEditBusy(true);
+    setEditError(null);
+    const r = await updateAgent(editing.id, {
+      name: editForm.name.trim(),
+      description: editForm.description.trim(),
+      instructions: editForm.instructions.trim(),
+      category: editForm.category,
+    });
+    setEditBusy(false);
+    if (r.success) {
+      setEditing(null);
+      load();
+    } else {
+      setEditError(r.error);
+    }
+  }
+
+  async function handleDelete(a: CustomAgent) {
+    if (!window.confirm(`¿Eliminar el agente "${a.name}"? Sus conversaciones no se pierden pero el agente deja de estar disponible.`)) return;
+    const r = await deleteAgent(a.id);
+    if (r.success) load();
+    else window.alert(r.error);
   }
 
   return (
@@ -206,11 +245,19 @@ export default function AgentLibraryPage() {
                   {a.description || "Sin descripción."}
                 </div>
 
-                {/* Footer: métricas + CTA */}
+                {/* Footer: métricas + gestión propia + CTA */}
                 <div className="row between" style={{ borderTop: "1px solid var(--border-soft)", paddingTop: 10, alignItems: "center" }}>
-                  <div className="row" style={{ gap: 10, fontSize: 11.5, color: "var(--text-dim)" }}>
+                  <div className="row" style={{ gap: 10, fontSize: 11.5, color: "var(--text-dim)", alignItems: "center" }}>
                     <span title="Rating promedio">⭐ {a.ratingCount > 0 ? a.rating.toFixed(1) : "—"}</span>
                     <span title="Conversaciones">💬 {a.chatCount}</span>
+                    {!a.isVerified && a.createdBy === myId && (
+                      <>
+                        <button onClick={() => openEdit(a)} title="Editar agente"
+                          style={{ background: "none", border: 0, cursor: "pointer", fontSize: 13, color: "var(--text-dim)" }}>✎</button>
+                        <button onClick={() => handleDelete(a)} title="Eliminar agente"
+                          style={{ background: "none", border: 0, cursor: "pointer", fontSize: 13, color: "#ef4444" }}>🗑</button>
+                      </>
+                    )}
                   </div>
                   <button
                     className="btn sm primary"
@@ -225,6 +272,64 @@ export default function AgentLibraryPage() {
           </div>
         </div>
       </div>
+
+      {/* F7 · Modal edición de agente propio */}
+      {editing && (
+        <div
+          onClick={() => !editBusy && setEditing(null)}
+          style={{
+            position: "fixed", inset: 0, background: "rgba(0,0,0,0.6)", zIndex: 1000,
+            display: "grid", placeItems: "center", padding: 20,
+          }}
+        >
+          <div
+            onClick={(e) => e.stopPropagation()}
+            className="card"
+            style={{ width: "min(680px, 100%)", maxHeight: "88vh", overflowY: "auto", padding: 24 }}
+          >
+            <div className="row between" style={{ marginBottom: 14 }}>
+              <h2 style={{ margin: 0, fontSize: 19 }}>Editar · {editing.name}</h2>
+              <button onClick={() => setEditing(null)} disabled={editBusy}
+                style={{ background: "none", border: 0, color: "var(--text-dim)", fontSize: 22, cursor: "pointer" }}>×</button>
+            </div>
+            <form onSubmit={saveEdit} style={{ display: "flex", flexDirection: "column", gap: 12 }}>
+              <div style={{ display: "grid", gridTemplateColumns: "1fr 180px", gap: 12 }}>
+                <div>
+                  <label style={{ display: "block", fontSize: 12, marginBottom: 4, color: "var(--text-soft)" }}>Nombre</label>
+                  <input value={editForm.name} onChange={(e) => setEditForm((f) => ({ ...f, name: e.target.value }))} required style={{ width: "100%" }} />
+                </div>
+                <div>
+                  <label style={{ display: "block", fontSize: 12, marginBottom: 4, color: "var(--text-soft)" }}>Categoría</label>
+                  <select value={editForm.category} onChange={(e) => setEditForm((f) => ({ ...f, category: e.target.value }))} style={{ width: "100%" }}>
+                    {AGENT_CATEGORIES.map((c) => <option key={c} value={c}>{c}</option>)}
+                  </select>
+                </div>
+              </div>
+              <div>
+                <label style={{ display: "block", fontSize: 12, marginBottom: 4, color: "var(--text-soft)" }}>Descripción</label>
+                <input value={editForm.description} onChange={(e) => setEditForm((f) => ({ ...f, description: e.target.value }))} style={{ width: "100%" }} />
+              </div>
+              <div>
+                <label style={{ display: "block", fontSize: 12, marginBottom: 4, color: "var(--text-soft)" }}>Instrucciones</label>
+                <textarea
+                  value={editForm.instructions}
+                  onChange={(e) => setEditForm((f) => ({ ...f, instructions: e.target.value }))}
+                  rows={7}
+                  required
+                  style={{ width: "100%", resize: "vertical", fontFamily: "inherit", fontSize: 13, lineHeight: 1.5 }}
+                />
+              </div>
+              {editError && <div className="alert error" style={{ fontSize: 12.5 }}>{editError}</div>}
+              <div className="row" style={{ gap: 8 }}>
+                <button type="button" className="btn ghost" onClick={() => setEditing(null)} disabled={editBusy}>Cancelar</button>
+                <button type="submit" className="btn primary" disabled={editBusy} style={{ marginLeft: "auto" }}>
+                  {editBusy ? "Guardando…" : "Guardar cambios"}
+                </button>
+              </div>
+            </form>
+          </div>
+        </div>
+      )}
     </div>
   );
 }
