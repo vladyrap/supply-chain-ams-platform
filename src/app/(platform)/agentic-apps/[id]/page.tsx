@@ -19,6 +19,7 @@ import {
   getApp, runApp, getRun, listRuns,
   type AgenticApp, type AppRun,
 } from "@/services/custom-agents.api";
+import { exportRunToPdf } from "@/lib/app-run-pdf";
 
 const POLL_MS = 2500;
 
@@ -152,9 +153,21 @@ export default function AgenticAppRunPage() {
               {run.status === "done" && "✅ Pipeline completado"}
               {run.status === "failed" && "❌ Pipeline falló"}
             </h3>
-            <span style={{ fontSize: 11.5, color: "var(--text-dim)" }}>
-              {new Date(run.createdAt).toLocaleTimeString()}
-            </span>
+            <div className="row" style={{ gap: 10, alignItems: "center" }}>
+              {run.status !== "running" && (
+                <button
+                  className="btn ghost"
+                  onClick={() => app && exportRunToPdf(app, run)}
+                  style={{ fontSize: 12, padding: "4px 12px" }}
+                  title="Descargar esta ejecución como PDF"
+                >
+                  📥 PDF
+                </button>
+              )}
+              <span style={{ fontSize: 11.5, color: "var(--text-dim)" }}>
+                {new Date(run.createdAt).toLocaleTimeString()}
+              </span>
+            </div>
           </div>
 
           {/* Timeline de pasos */}

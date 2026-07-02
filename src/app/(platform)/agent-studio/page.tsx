@@ -14,7 +14,7 @@ import { useRouter } from "next/navigation";
 import Badge from "@/components/ui/Badge";
 import { useAuth } from "@/context/AuthContext";
 import {
-  createAgent, listAgents, createApp, listApps, deleteApp,
+  createAgent, listAgents, createApp, listApps, deleteApp, duplicateApp,
   AGENT_CATEGORIES, type CustomAgent, type AgenticApp, type AppStep,
 } from "@/services/custom-agents.api";
 
@@ -131,6 +131,12 @@ export default function AgentStudioPage() {
     else window.alert(r.error);
   }
 
+  async function handleDuplicateApp(app: AgenticApp) {
+    const r = await duplicateApp(app.id, userId ?? undefined);
+    if (r.success) loadApps();
+    else window.alert(r.error);
+  }
+
   return (
     <div>
       {/* Hero */}
@@ -206,8 +212,12 @@ export default function AgentStudioPage() {
                 {app.description || "Sin descripción."}
               </div>
               <div className="row between" style={{ borderTop: "1px solid var(--border-soft)", paddingTop: 10 }}>
-                <button onClick={() => handleDeleteApp(app)} title="Eliminar"
-                  style={{ background: "none", border: 0, cursor: "pointer", fontSize: 13, color: "#ef4444" }}>🗑</button>
+                <div className="row" style={{ gap: 8 }}>
+                  <button onClick={() => handleDeleteApp(app)} title="Eliminar"
+                    style={{ background: "none", border: 0, cursor: "pointer", fontSize: 13, color: "#ef4444" }}>🗑</button>
+                  <button onClick={() => handleDuplicateApp(app)} title="Duplicar como plantilla"
+                    style={{ background: "none", border: 0, cursor: "pointer", fontSize: 13, color: "var(--text-dim)" }}>⧉</button>
+                </div>
                 <button className="btn sm primary" onClick={() => router.push(`/agentic-apps/${app.id}`)}>
                   ▶ Ejecutar
                 </button>

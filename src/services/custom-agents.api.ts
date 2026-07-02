@@ -225,6 +225,13 @@ export async function deleteApp(id: string) {
   return call<Record<string, never>>(`/api/apps/${encodeURIComponent(id)}`, { method: "DELETE" });
 }
 
+export async function duplicateApp(id: string, user?: string) {
+  return call<{ app: AgenticApp }>(`/api/apps/${encodeURIComponent(id)}/duplicate`, {
+    method: "POST",
+    body: { user },
+  });
+}
+
 export async function runApp(id: string, input: string, user?: string) {
   return call<{ run: AppRun }>(`/api/apps/${encodeURIComponent(id)}/run`, {
     method: "POST",
