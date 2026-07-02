@@ -51,6 +51,28 @@ export const MODULES: ModuleDef[] = [
     rolesAllowed: ["viewer", "consultor", "aprobador", "admin"],
     permissionKey: "agente_ams", group: "operacion",
   },
+  // ── v1.3 Agent Hub (estilo IBM Consulting Advantage) ──
+  {
+    id: "agent-library", label: "Biblioteca de Agentes", icon: "📚", href: "/agent-library",
+    description: "Catálogo de agentes verificados, del equipo y propios — con chat directo",
+    status: "available", phase: 8,
+    rolesAllowed: ["viewer", "consultor", "aprobador", "admin"],
+    permissionKey: "agente_ams", group: "operacion",
+  },
+  {
+    id: "agent-studio", label: "Agent Studio", icon: "🧪", href: "/agent-studio",
+    description: "Creá agentes en lenguaje natural con KB asignada — sin código",
+    status: "available", phase: 8,
+    rolesAllowed: ["consultor", "aprobador", "admin"],
+    permissionKey: "agente_ams", group: "operacion",
+  },
+  {
+    id: "marketplace", label: "Marketplace", icon: "🏪", href: "/marketplace",
+    description: "Apps agénticas empaquetadas por categoría, listas para desplegar",
+    status: "available", phase: 8,
+    rolesAllowed: ["viewer", "consultor", "aprobador", "admin"],
+    permissionKey: "servicios", group: "operacion",
+  },
   {
     id: "history", label: "Historial", icon: "📜", href: "/history",
     description: "Listado de incidentes anteriores con filtros y detalle",
