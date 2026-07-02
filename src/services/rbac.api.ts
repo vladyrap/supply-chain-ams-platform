@@ -30,3 +30,5 @@ export async function resetDemo(): Promise<RbacSnapshot> {
   const d = await http<{ success: true } & RbacSnapshot>("/api/rbac/reset-demo", { method: "POST" });
   return { roles: d.roles || [], users: d.users || [] };
 }
+
+// v1.2.8-prod · inviteUser vive en admin-users.api.ts (crea cuenta + email).

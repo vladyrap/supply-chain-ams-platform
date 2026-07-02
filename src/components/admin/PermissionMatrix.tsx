@@ -92,7 +92,7 @@ export default function PermissionMatrix({ admin }: Props) {
       </div>
 
       <div style={{ marginTop: 12, fontSize: 11.5, color: "var(--text-dim)" }}>
-        Cambios guardados automáticamente en <code>localStorage</code> · última edición: {new Date(role.updatedAt).toLocaleString()}
+        Cambios sincronizados con el backend · última edición: {new Date(role.updatedAt).toLocaleString()}
       </div>
     </div>
   );
