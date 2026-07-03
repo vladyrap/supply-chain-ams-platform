@@ -26,8 +26,16 @@ export type SapModule =
 
 export type ModuleStatus = "available" | "coming_soon" | "restricted";
 
-/** Grupos del sidebar — cada uno tiene un header. Grupos sin items visibles se ocultan. */
-export type ModuleGroup = "operacion" | "visualizaciones" | "ams_avanzado" | "sistema";
+/** Grupos del sidebar — cada uno tiene un header. Grupos sin items visibles se ocultan.
+ *  Reestructura onda 5.2: navegación por flujo de trabajo (inicio → operación
+ *  diaria → agentes IA → herramientas → visualizaciones → ejecutivo/sistema). */
+export type ModuleGroup =
+  | "inicio"
+  | "operacion"
+  | "agentes"
+  | "herramientas"
+  | "visualizaciones"
+  | "sistema";
 
 export interface ModuleDef {
   id: string;
@@ -45,7 +53,7 @@ export interface ModuleDef {
    * El sidebar consulta hasPermission(user, permissionKey, "view").
    */
   permissionKey?: import("./rbac").PlatformScreen;
-  /** Grupo donde aparece en el sidebar. Default "ams_avanzado". */
+  /** Grupo donde aparece en el sidebar. Default "herramientas". */
   group?: ModuleGroup;
   /**
    * Si true, el módulo se muestra sin chequeo de permisos (welcome, settings).

@@ -14,27 +14,37 @@ import type { PlatformScreen } from "@/types/rbac";
 //
 // Grupos del sidebar derivan de aquí — no hay configuración duplicada en
 // Sidebar.tsx (eliminado SECTIONS hardcoded).
+//
+// ── Reestructura onda 5.2 — navegación por flujo de trabajo ──
+//   inicio          → puerta de entrada (bienvenida + dashboard)
+//   operacion       → el día a día del servicio (tickets, mesa, escalación…)
+//   agentes         → TODO el ciclo de agentes IA en un lugar
+//   herramientas    → utilitarios AMS (docs, testing, estimador, SAP…)
+//   visualizaciones → las 12 pantallas wow/presentación juntas
+//   sistema         → C-level, ROI, auditoría y administración
 // =============================================================================
 
 export const GROUP_LABELS: Record<ModuleGroup, string> = {
-  operacion:       "Operación",
+  inicio:          "Inicio",
+  operacion:       "Operación diaria",
+  agentes:         "Agentes IA",
+  herramientas:    "Herramientas AMS",
   visualizaciones: "Visualizaciones",
-  ams_avanzado:    "AMS avanzado",
-  sistema:         "Sistema",
+  sistema:         "Ejecutivo & Sistema",
 };
 
 export const GROUP_ORDER: ModuleGroup[] = [
-  "operacion", "visualizaciones", "ams_avanzado", "sistema",
+  "inicio", "operacion", "agentes", "herramientas", "visualizaciones", "sistema",
 ];
 
 export const MODULES: ModuleDef[] = [
-  // ───────────────────────── OPERACIÓN ─────────────────────────
+  // ─────────────────────────── INICIO ───────────────────────────
   {
     id: "welcome", label: "Bienvenida", icon: "🏠", href: "/welcome",
     description: "Landing del cliente: hero animado + módulos destacados + CTA al agente",
     status: "available", phase: 1,
     rolesAllowed: ["viewer", "consultor", "aprobador", "admin"],
-    permissionKey: "dashboard", group: "operacion",
+    permissionKey: "dashboard", group: "inicio",
     public: true,
   },
   {
@@ -42,30 +52,43 @@ export const MODULES: ModuleDef[] = [
     description: "Vista general de actividad, incidentes recientes y KPIs",
     status: "available", phase: 1,
     rolesAllowed: ["viewer", "consultor", "aprobador", "admin"],
-    permissionKey: "dashboard", group: "operacion",
+    permissionKey: "dashboard", group: "inicio",
+  },
+
+  // ─────────────────────── OPERACIÓN DIARIA ─────────────────────
+  {
+    id: "tickets", label: "Tickets", icon: "🎫", href: "/tickets",
+    description: "Conector Jira (real o mock) con Ticket Command Center completo",
+    status: "available", phase: 3,
+    rolesAllowed: ["consultor", "aprobador", "admin"],
+    permissionKey: "ticket_command_center", group: "operacion",
   },
   {
-    id: "agent", label: "Agente AMS", icon: "🤖", href: "/agent",
-    description: "Chat con el agente IA. Diagnóstico, RCA y paso a paso SAP Supply Chain",
-    status: "available", phase: 1,
+    id: "support-desk", label: "Mesa de Soporte", icon: "📞", href: "/support-desk",
+    description: "Soporte AMS con IA de Nivel 1, escalación N2 y KB curada",
+    status: "available", phase: 7,
+    rolesAllowed: ["consultor", "aprobador", "admin"],
+    permissionKey: "servicios", group: "operacion",
+  },
+  {
+    id: "escalation-n2", label: "Escalamiento N2", icon: "🚨", href: "/escalation-n2",
+    description: "Centro N2: deriva incidentes críticos al especialista correcto",
+    status: "available", phase: 7,
     rolesAllowed: ["viewer", "consultor", "aprobador", "admin"],
-    permissionKey: "agente_ams", group: "operacion",
+    permissionKey: "escalamiento_n2", group: "operacion",
   },
-  // ── v1.3 Agent Hub — MÓDULO ÚNICO (onda 5.1) ──
-  // Biblioteca + Builder (elección de LLM Gemini/Claude) + Apps Agénticas
-  // en una sola entrada con tabs. Las rutas viejas redirigen a /agent-hub.
   {
-    id: "agent-hub", label: "Agent Hub", icon: "🤖", href: "/agent-hub",
-    description: "Todo el ciclo de agentes en un módulo: biblioteca del equipo, builder con elección de LLM (Gemini + Claude) y apps agénticas",
+    id: "voice-calls", label: "Canal Telefónico", icon: "☎️", href: "/voice-calls",
+    description: "Llamadas atendidas por IA vía Twilio Voice con transcripción turn-by-turn",
     status: "available", phase: 8,
-    rolesAllowed: ["viewer", "consultor", "aprobador", "admin"],
-    permissionKey: "agente_ams", group: "operacion",
+    rolesAllowed: ["consultor", "aprobador", "admin"],
+    permissionKey: "canal_telefonico", group: "operacion",
   },
   {
-    id: "marketplace", label: "Marketplace", icon: "🏪", href: "/marketplace",
-    description: "Apps agénticas empaquetadas por categoría, listas para desplegar",
-    status: "available", phase: 8,
-    rolesAllowed: ["viewer", "consultor", "aprobador", "admin"],
+    id: "meetings", label: "Reuniones AMS", icon: "🎙️", href: "/meetings",
+    description: "Sube audio, Whisper transcribe local, Gemini extrae minuta + acciones",
+    status: "available", phase: 5,
+    rolesAllowed: ["consultor", "aprobador", "admin"],
     permissionKey: "servicios", group: "operacion",
   },
   {
@@ -75,36 +98,141 @@ export const MODULES: ModuleDef[] = [
     rolesAllowed: ["viewer", "consultor", "aprobador", "admin"],
     permissionKey: "incidentes", group: "operacion",
   },
+
+  // ───────────────────────── AGENTES IA ─────────────────────────
+  {
+    id: "agent", label: "Agente AMS", icon: "🤖", href: "/agent",
+    description: "Chat con el agente IA. Diagnóstico, RCA y paso a paso SAP Supply Chain",
+    status: "available", phase: 1,
+    rolesAllowed: ["viewer", "consultor", "aprobador", "admin"],
+    permissionKey: "agente_ams", group: "agentes",
+  },
+  // v1.3 — MÓDULO ÚNICO del ciclo de agentes (onda 5.1):
+  // Biblioteca + Builder (elección de LLM Gemini/Claude) + Apps Agénticas
+  // en una sola entrada con tabs. Las rutas viejas redirigen a /agent-hub.
+  {
+    id: "agent-hub", label: "Agent Hub", icon: "🛠️", href: "/agent-hub",
+    description: "Todo el ciclo de agentes en un módulo: biblioteca del equipo, builder con elección de LLM (Gemini + Claude) y apps agénticas",
+    status: "available", phase: 8,
+    rolesAllowed: ["viewer", "consultor", "aprobador", "admin"],
+    permissionKey: "agente_ams", group: "agentes",
+  },
+  {
+    id: "marketplace", label: "Marketplace", icon: "🏪", href: "/marketplace",
+    description: "Apps agénticas empaquetadas por categoría, listas para desplegar",
+    status: "available", phase: 8,
+    rolesAllowed: ["viewer", "consultor", "aprobador", "admin"],
+    permissionKey: "servicios", group: "agentes",
+  },
+  {
+    id: "knowledge", label: "Conocimiento", icon: "📚", href: "/knowledge",
+    description: "Base de conocimiento con RAG. PDFs, Word, Excel, minutas",
+    status: "available", phase: 2,
+    rolesAllowed: ["consultor", "aprobador", "admin"],
+    permissionKey: "conocimiento_rag", group: "agentes",
+  },
+  {
+    id: "agent-training", label: "Entrenamiento IA", icon: "🎓", href: "/knowledge/training",
+    description: "Centro de Entrenamiento del Agente: pipeline + simulador + brechas + Q&A",
+    status: "available", phase: 7,
+    rolesAllowed: ["consultor", "aprobador", "admin"],
+    permissionKey: "entrenamiento_ia", group: "agentes",
+  },
+  {
+    id: "agent-lab", label: "Agent Lab", icon: "🧪", href: "/agent-lab",
+    description: "Enseñá al agente con 👍/👎 + replay & debug + casos por curar",
+    status: "available", phase: 7,
+    rolesAllowed: ["consultor", "aprobador", "admin"],
+    permissionKey: "agente_ams", group: "agentes",
+  },
+  {
+    id: "agent-readiness", label: "Agent Readiness", icon: "🎯", href: "/agent-readiness",
+    description: "Score 0-100 de cobertura del agente por módulo SAP",
+    status: "available", phase: 8,
+    rolesAllowed: ["consultor", "aprobador", "admin"],
+    permissionKey: "agent_readiness", group: "agentes",
+  },
+
+  // ─────────────────────── HERRAMIENTAS AMS ─────────────────────
+  {
+    id: "playbooks", label: "Playbooks AMS", icon: "📕", href: "/playbooks",
+    description: "Biblioteca de procedimientos operativos AMS con checklist en vivo",
+    status: "available", phase: 7,
+    rolesAllowed: ["viewer", "consultor", "aprobador", "admin"],
+    permissionKey: "playbooks_ams", group: "herramientas",
+  },
+  {
+    id: "document-factory", label: "Document Factory", icon: "🏭", href: "/document-factory",
+    description: "Generador AMS de RCA, minutas, specs, manuales, hypercare, cutover",
+    status: "available", phase: 7,
+    rolesAllowed: ["consultor", "aprobador", "admin"],
+    permissionKey: "document_factory", group: "herramientas",
+  },
+  {
+    id: "testing-intelligence", label: "Testing Intelligence", icon: "🧪", href: "/testing-intelligence",
+    description: "Graba procesos, genera test scripts, organiza evidencia, Cloud ALM",
+    status: "available", phase: 7,
+    rolesAllowed: ["consultor", "aprobador", "admin"],
+    permissionKey: "testing_intelligence", group: "herramientas",
+  },
+  {
+    id: "time-estimator", label: "Estimador de Tiempos", icon: "⏱", href: "/time-estimator",
+    description: "Convierte requerimiento en banda horas/días con fases, perfiles, riesgos",
+    status: "available", phase: 7,
+    rolesAllowed: ["consultor", "aprobador", "admin"],
+    permissionKey: "time_estimator", group: "herramientas",
+  },
+  {
+    id: "quality-evaluator", label: "Quality Evaluator", icon: "🏅", href: "/quality-evaluator",
+    description: "Evaluación humana de cada respuesta del agente",
+    status: "available", phase: 7,
+    rolesAllowed: ["consultor", "aprobador", "admin"],
+    permissionKey: "quality_evaluator", group: "herramientas",
+  },
+  {
+    id: "sap-readonly", label: "SAP Read-Only", icon: "🏭", href: "/sap-readonly",
+    description: "Consultas S/4HANA: OC, pedidos, materiales, movimientos. Mock o real",
+    status: "available", phase: 4,
+    rolesAllowed: ["aprobador", "admin"],
+    permissionKey: "modulos_sap", group: "herramientas",
+  },
+  {
+    id: "integrations", label: "Integraciones", icon: "🔌", href: "/integrations",
+    description: "Webhooks salientes, Slack y Email para notificar eventos del agente",
+    status: "available", phase: 3,
+    rolesAllowed: ["aprobador", "admin"],
+    permissionKey: "integraciones", group: "herramientas",
+  },
+
+  // ────────────────────── VISUALIZACIONES ──────────────────────
   {
     id: "mission-control", label: "Mission Control", icon: "🎮", href: "/mission-control",
     description: "Wallboard tipo NASA: SLA gauge, contadores en vivo, heatmap y feed",
     status: "available", phase: 7,
     rolesAllowed: ["viewer", "consultor", "aprobador", "admin"],
-    permissionKey: "reportes", group: "operacion",
+    permissionKey: "reportes", group: "visualizaciones",
   },
   {
     id: "topology", label: "Topology", icon: "🌍", href: "/topology",
     description: "Sistema nervioso en vivo: nodos del sistema + pulsos por cada evento real",
     status: "available", phase: 7,
     rolesAllowed: ["viewer", "consultor", "aprobador", "admin"],
-    permissionKey: "reportes", group: "operacion",
-  },
-  {
-    id: "tv", label: "TV Mode", icon: "🎬", href: "/tv",
-    description: "Slideshow auto-rotativo con 6 vistas — modo presentación",
-    status: "available", phase: 7,
-    rolesAllowed: ["aprobador", "admin"],
-    permissionKey: "reportes", group: "operacion",
+    permissionKey: "reportes", group: "visualizaciones",
   },
   {
     id: "demo", label: "Demo en vivo", icon: "🎬", href: "/demo",
     description: "Ejecuta un escenario end-to-end con datos reales — para mostrar a clientes",
     status: "available", phase: 7,
     rolesAllowed: ["consultor", "aprobador", "admin"],
-    permissionKey: "reportes", group: "operacion",
+    permissionKey: "reportes", group: "visualizaciones",
   },
-
-  // ────────────────────── VISUALIZACIONES ──────────────────────
+  {
+    id: "tv", label: "TV Mode", icon: "📺", href: "/tv",
+    description: "Slideshow auto-rotativo con 6 vistas — modo presentación",
+    status: "available", phase: 7,
+    rolesAllowed: ["aprobador", "admin"],
+    permissionKey: "reportes", group: "visualizaciones",
+  },
   {
     id: "launchpad", label: "Launchpad", icon: "🚀", href: "/launchpad",
     description: "NASA mission control: boot cinematográfico, countdown, telemetry",
@@ -162,114 +290,7 @@ export const MODULES: ModuleDef[] = [
     permissionKey: "reportes", group: "visualizaciones",
   },
 
-  // ────────────────────── AMS AVANZADO ─────────────────────────
-  {
-    id: "tickets", label: "Tickets", icon: "🎫", href: "/tickets",
-    description: "Conector Jira (real o mock) con Ticket Command Center completo",
-    status: "available", phase: 3,
-    rolesAllowed: ["consultor", "aprobador", "admin"],
-    permissionKey: "ticket_command_center", group: "ams_avanzado",
-  },
-  {
-    id: "support-desk", label: "Mesa de Soporte", icon: "📞", href: "/support-desk",
-    description: "Soporte AMS con IA de Nivel 1, escalación N2 y KB curada",
-    status: "available", phase: 7,
-    rolesAllowed: ["consultor", "aprobador", "admin"],
-    permissionKey: "servicios", group: "ams_avanzado",
-  },
-  {
-    id: "voice-calls", label: "Canal Telefónico", icon: "☎️", href: "/voice-calls",
-    description: "Llamadas atendidas por IA vía Twilio Voice con transcripción turn-by-turn",
-    status: "available", phase: 8,
-    rolesAllowed: ["consultor", "aprobador", "admin"],
-    permissionKey: "canal_telefonico", group: "ams_avanzado",
-  },
-  {
-    id: "knowledge", label: "Conocimiento", icon: "📚", href: "/knowledge",
-    description: "Base de conocimiento con RAG. PDFs, Word, Excel, minutas",
-    status: "available", phase: 2,
-    rolesAllowed: ["consultor", "aprobador", "admin"],
-    permissionKey: "conocimiento_rag", group: "ams_avanzado",
-  },
-  {
-    id: "agent-training", label: "Entrenamiento IA", icon: "🎓", href: "/knowledge/training",
-    description: "Centro de Entrenamiento del Agente: pipeline + simulador + brechas + Q&A",
-    status: "available", phase: 7,
-    rolesAllowed: ["consultor", "aprobador", "admin"],
-    permissionKey: "entrenamiento_ia", group: "ams_avanzado",
-  },
-  {
-    id: "playbooks", label: "Playbooks AMS", icon: "📕", href: "/playbooks",
-    description: "Biblioteca de procedimientos operativos AMS con checklist en vivo",
-    status: "available", phase: 7,
-    rolesAllowed: ["viewer", "consultor", "aprobador", "admin"],
-    permissionKey: "playbooks_ams", group: "ams_avanzado",
-  },
-  {
-    id: "document-factory", label: "Document Factory", icon: "🏭", href: "/document-factory",
-    description: "Generador AMS de RCA, minutas, specs, manuales, hypercare, cutover",
-    status: "available", phase: 7,
-    rolesAllowed: ["consultor", "aprobador", "admin"],
-    permissionKey: "document_factory", group: "ams_avanzado",
-  },
-  {
-    id: "quality-evaluator", label: "Quality Evaluator", icon: "🏅", href: "/quality-evaluator",
-    description: "Evaluación humana de cada respuesta del agente",
-    status: "available", phase: 7,
-    rolesAllowed: ["consultor", "aprobador", "admin"],
-    permissionKey: "quality_evaluator", group: "ams_avanzado",
-  },
-  {
-    id: "escalation-n2", label: "Escalamiento N2", icon: "🚨", href: "/escalation-n2",
-    description: "Centro N2: deriva incidentes críticos al especialista correcto",
-    status: "available", phase: 7,
-    rolesAllowed: ["viewer", "consultor", "aprobador", "admin"],
-    permissionKey: "escalamiento_n2", group: "ams_avanzado",
-  },
-  {
-    id: "testing-intelligence", label: "Testing Intelligence", icon: "🧪", href: "/testing-intelligence",
-    description: "Graba procesos, genera test scripts, organiza evidencia, Cloud ALM",
-    status: "available", phase: 7,
-    rolesAllowed: ["consultor", "aprobador", "admin"],
-    permissionKey: "testing_intelligence", group: "ams_avanzado",
-  },
-  {
-    id: "time-estimator", label: "Estimador de Tiempos", icon: "⏱", href: "/time-estimator",
-    description: "Convierte requerimiento en banda horas/días con fases, perfiles, riesgos",
-    status: "available", phase: 7,
-    rolesAllowed: ["consultor", "aprobador", "admin"],
-    permissionKey: "time_estimator", group: "ams_avanzado",
-  },
-  {
-    id: "agent-lab", label: "Agent Lab", icon: "🧪", href: "/agent-lab",
-    description: "Enseñá al agente con 👍/👎 + replay & debug + casos por curar",
-    status: "available", phase: 7,
-    rolesAllowed: ["consultor", "aprobador", "admin"],
-    permissionKey: "agente_ams", group: "ams_avanzado",
-  },
-  {
-    id: "integrations", label: "Integraciones", icon: "🔌", href: "/integrations",
-    description: "Webhooks salientes, Slack y Email para notificar eventos del agente",
-    status: "available", phase: 3,
-    rolesAllowed: ["aprobador", "admin"],
-    permissionKey: "integraciones", group: "ams_avanzado",
-  },
-  {
-    id: "sap-readonly", label: "SAP Read-Only", icon: "🏭", href: "/sap-readonly",
-    description: "Consultas S/4HANA: OC, pedidos, materiales, movimientos. Mock o real",
-    status: "available", phase: 4,
-    rolesAllowed: ["aprobador", "admin"],
-    permissionKey: "modulos_sap", group: "ams_avanzado",
-  },
-  {
-    id: "meetings", label: "Reuniones AMS", icon: "🎙️", href: "/meetings",
-    description: "Sube audio, Whisper transcribe local, Gemini extrae minuta + acciones",
-    status: "available", phase: 5,
-    rolesAllowed: ["consultor", "aprobador", "admin"],
-    permissionKey: "servicios", group: "ams_avanzado",
-  },
-
-  // ─────────────────────────── SISTEMA ─────────────────────────
+  // ───────────────────── EJECUTIVO & SISTEMA ────────────────────
   {
     id: "executive", label: "Ejecutivo", icon: "🏢", href: "/executive",
     description: "Dashboard C-level: actividad, % IA, SLA, costo Gemini y top clientes",
@@ -285,11 +306,11 @@ export const MODULES: ModuleDef[] = [
     permissionKey: "business_value_dashboard", group: "sistema",
   },
   {
-    id: "agent-readiness", label: "Agent Readiness", icon: "🎯", href: "/agent-readiness",
-    description: "Score 0-100 de cobertura del agente por módulo SAP",
-    status: "available", phase: 8,
-    rolesAllowed: ["consultor", "aprobador", "admin"],
-    permissionKey: "agent_readiness", group: "sistema",
+    id: "admin-roi", label: "ROI del Agente", icon: "📈", href: "/admin/roi",
+    description: "Combina costos reales de Gemini con valor económico estimado: ROI, payback, ganancia neta, eficiencia (admin + aprobador)",
+    status: "available", phase: 6,
+    rolesAllowed: ["aprobador", "admin"],
+    permissionKey: "business_value_dashboard", group: "sistema",
   },
   {
     id: "audit", label: "Audit Trail", icon: "📜", href: "/audit",
@@ -320,18 +341,11 @@ export const MODULES: ModuleDef[] = [
     permissionKey: "administracion", group: "sistema",
   },
   {
-    id: "admin-costs", label: "Costos Gemini", icon: "💰", href: "/admin/costs",
-    description: "Dashboard de costos del agente Gemini con health score, recomendaciones IA, forecast y anomalías (solo admin)",
+    id: "admin-costs", label: "Costos LLM", icon: "💰", href: "/admin/costs",
+    description: "Dashboard de costos del agente (Gemini + Claude) con health score, recomendaciones IA, forecast y anomalías (solo admin)",
     status: "available", phase: 6,
     rolesAllowed: ["admin"],
     permissionKey: "administracion", group: "sistema",
-  },
-  {
-    id: "admin-roi", label: "ROI del Agente", icon: "📈", href: "/admin/roi",
-    description: "Combina costos reales de Gemini con valor económico estimado: ROI, payback, ganancia neta, eficiencia (admin + aprobador)",
-    status: "available", phase: 6,
-    rolesAllowed: ["aprobador", "admin"],
-    permissionKey: "business_value_dashboard", group: "sistema",
   },
 ];
 
@@ -341,7 +355,7 @@ export function moduleById(id: string): ModuleDef | undefined {
 
 /** Devuelve módulos filtrados por grupo en orden. */
 export function modulesByGroup(group: ModuleGroup): ModuleDef[] {
-  return MODULES.filter((m) => (m.group ?? "ams_avanzado") === group);
+  return MODULES.filter((m) => (m.group ?? "herramientas") === group);
 }
 
 /** Devuelve la permissionKey de un módulo (o null si no tiene). */
