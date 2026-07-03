@@ -8,16 +8,15 @@ import { useAuth } from "@/context/AuthContext";
 import { useTenant } from "@/context/TenantContext";
 import { useCommandPalette } from "@/context/CommandPaletteContext";
 import { ROLES } from "@/lib/roles";
-import type { Environment } from "@/types";
-import Badge from "@/components/ui/Badge";
 import NotificationsBell from "./NotificationsBell";
 import { useDemoMode } from "@/hooks/useDemoMode";
 
-const ENVS: Environment[] = ["NO_INFORMADO", "DEV", "QA", "PRD", "SANDBOX"];
-
 export default function Header() {
   const pathname = usePathname();
-  const { client, setClient, environment, setEnvironment, theme, setTheme, fxEnabled, setFxEnabled } = usePlatform();
+  // Cliente/Ambiente quedan con su valor por defecto en PlatformContext
+  // (el resto de la app los sigue usando como contexto del agente); solo se
+  // quitaron los selectores del header por pedido del usuario.
+  const { theme, setTheme, fxEnabled, setFxEnabled } = usePlatform();
   const { user, logout } = useAuth();
   const { tenant } = useTenant();
   const { open: openPalette } = useCommandPalette();
@@ -69,20 +68,6 @@ export default function Header() {
             {isMac ? "⌘" : "Ctrl"}+K
           </kbd>
         </button>
-
-        <div style={{ width: 1, height: 24, background: "var(--border-soft)" }} />
-
-        <div className="row" style={{ gap: 6 }}>
-          <label className="lab" style={{ marginBottom: 0 }}>Cliente</label>
-          <input value={client} onChange={(e) => setClient(e.target.value)} style={{ width: 130 }} placeholder="demo" />
-        </div>
-
-        <div className="row" style={{ gap: 6 }}>
-          <label className="lab" style={{ marginBottom: 0 }}>Ambiente</label>
-          <select value={environment} onChange={(e) => setEnvironment(e.target.value as Environment)} style={{ width: 130 }}>
-            {ENVS.map((e) => <option key={e} value={e}>{e}</option>)}
-          </select>
-        </div>
 
         <div style={{ width: 1, height: 24, background: "var(--border-soft)" }} />
 
