@@ -59,6 +59,12 @@ export const AGENT_MODELS: AgentModelOption[] = [
     description: "El modelo por defecto de la plataforma. Veloz y sin costo adicional.",
   },
   {
+    id: "gemini-2.5-pro",
+    label: "Gemini 2.5 Pro",
+    tag: "🎯 Potente · Google",
+    description: "El Gemini más capaz para razonamiento complejo — usa la misma key que Flash.",
+  },
+  {
     id: "claude-haiku-4-5-20251001",
     label: "Claude Haiku 4.5",
     tag: "💨 Ágil · económico",

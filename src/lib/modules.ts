@@ -51,26 +51,14 @@ export const MODULES: ModuleDef[] = [
     rolesAllowed: ["viewer", "consultor", "aprobador", "admin"],
     permissionKey: "agente_ams", group: "operacion",
   },
-  // ── v1.3 Agent Hub (estilo IBM Consulting Advantage) ──
+  // ── v1.3 Agent Hub — MÓDULO ÚNICO (onda 5.1) ──
+  // Biblioteca + Builder (elección de LLM Gemini/Claude) + Apps Agénticas
+  // en una sola entrada con tabs. Las rutas viejas redirigen a /agent-hub.
   {
-    id: "agent-library", label: "Biblioteca de Agentes", icon: "📚", href: "/agent-library",
-    description: "Catálogo de agentes verificados, del equipo y propios — con chat directo",
+    id: "agent-hub", label: "Agent Hub", icon: "🤖", href: "/agent-hub",
+    description: "Todo el ciclo de agentes en un módulo: biblioteca del equipo, builder con elección de LLM (Gemini + Claude) y apps agénticas",
     status: "available", phase: 8,
     rolesAllowed: ["viewer", "consultor", "aprobador", "admin"],
-    permissionKey: "agente_ams", group: "operacion",
-  },
-  {
-    id: "agent-studio", label: "Agent Studio", icon: "🧪", href: "/agent-studio",
-    description: "Creá agentes en lenguaje natural con KB asignada — sin código",
-    status: "available", phase: 8,
-    rolesAllowed: ["consultor", "aprobador", "admin"],
-    permissionKey: "agente_ams", group: "operacion",
-  },
-  {
-    id: "agent-builder", label: "Agent Builder", icon: "🛠️", href: "/agent-builder",
-    description: "Diseñá, probá y publicá agentes para todo el equipo — borrador → playground → publicación",
-    status: "available", phase: 8,
-    rolesAllowed: ["consultor", "aprobador", "admin"],
     permissionKey: "agente_ams", group: "operacion",
   },
   {

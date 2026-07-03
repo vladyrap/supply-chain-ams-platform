@@ -54,7 +54,7 @@ const APPS: MarketplaceApp[] = [
     description: "Creá tus propios agentes en lenguaje natural, asignales base de conocimiento y compartilos con el equipo.",
     outcomes: ["Agentes sin código", "KB por módulo SAP", "Biblioteca compartida"],
     status: "available",
-    href: "/agent-library",
+    href: "/agent-hub?tab=library",
   },
   {
     id: "meetings",
@@ -154,7 +154,7 @@ export default function MarketplacePage() {
           <a href="#apps" className="btn" style={{ background: "white", color: "#1d4ed8", fontWeight: 600 }}>
             Explorar aplicaciones
           </a>
-          <Link href="/agent-studio" className="btn ghost" style={{ borderColor: "rgba(255,255,255,0.4)", color: "white" }}>
+          <Link href="/agent-hub?tab=apps" className="btn ghost" style={{ borderColor: "rgba(255,255,255,0.4)", color: "white" }}>
             Crear la mía →
           </Link>
         </div>

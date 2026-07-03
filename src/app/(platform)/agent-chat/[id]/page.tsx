@@ -142,7 +142,7 @@ export default function AgentChatPage() {
     return (
       <div className="card" style={{ padding: 30, textAlign: "center" }}>
         <div style={{ color: "#fca5a5", marginBottom: 12 }}>{loadError}</div>
-        <Link href="/agent-library" className="btn ghost">← Volver a la biblioteca</Link>
+        <Link href="/agent-hub?tab=library" className="btn ghost">← Volver a la biblioteca</Link>
       </div>
     );
   }
@@ -201,7 +201,7 @@ export default function AgentChatPage() {
         <div className="card" style={{ padding: "14px 18px" }}>
           <div className="row between" style={{ alignItems: "center", flexWrap: "wrap", gap: 10 }}>
             <div className="row" style={{ gap: 12, alignItems: "center", minWidth: 0 }}>
-              <Link href="/agent-library" className="btn ghost" style={{ padding: "4px 10px", fontSize: 13 }}>←</Link>
+              <Link href="/agent-hub?tab=library" className="btn ghost" style={{ padding: "4px 10px", fontSize: 13 }}>←</Link>
               <span style={{
                 fontSize: 24, width: 44, height: 44, display: "grid", placeItems: "center",
                 borderRadius: 10, background: "rgba(34,211,238,0.1)", border: "1px solid rgba(34,211,238,0.2)",

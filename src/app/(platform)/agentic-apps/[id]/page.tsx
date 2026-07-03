@@ -91,7 +91,7 @@ export default function AgenticAppRunPage() {
     return (
       <div className="card" style={{ padding: 30, textAlign: "center" }}>
         <div style={{ color: "#fca5a5", marginBottom: 12 }}>{loadError}</div>
-        <Link href="/agent-studio" className="btn ghost">← Volver al Studio</Link>
+        <Link href="/agent-hub?tab=apps" className="btn ghost">← Volver al Studio</Link>
       </div>
     );
   }
@@ -106,7 +106,7 @@ export default function AgenticAppRunPage() {
       {/* Header */}
       <div className="card" style={{ padding: "16px 20px", marginBottom: 14 }}>
         <div className="row" style={{ gap: 12, alignItems: "center" }}>
-          <Link href="/agent-studio" className="btn ghost" style={{ padding: "4px 10px", fontSize: 13 }}>←</Link>
+          <Link href="/agent-hub?tab=apps" className="btn ghost" style={{ padding: "4px 10px", fontSize: 13 }}>←</Link>
           <span style={{
             fontSize: 26, width: 48, height: 48, display: "grid", placeItems: "center",
             borderRadius: 12, background: "rgba(167,139,250,0.12)", border: "1px solid rgba(167,139,250,0.25)",
