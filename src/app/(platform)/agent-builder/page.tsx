@@ -17,7 +17,7 @@ import Badge from "@/components/ui/Badge";
 import { useAuth } from "@/context/AuthContext";
 import {
   getAgent, createAgent, updateAgent, publishAgent, unpublishAgent,
-  chatWithAgent, AGENT_CATEGORIES, type CustomAgent,
+  chatWithAgent, AGENT_CATEGORIES, AGENT_MODELS, modelLabel, type CustomAgent,
 } from "@/services/custom-agents.api";
 
 const ICON_CHOICES = ["🤖", "📦", "🛒", "🏭", "💰", "📊", "🔗", "🏗️", "🧠", "⚡", "🛠️", "📋", "🧮", "🗂️", "🔍", "✉️"];
@@ -49,6 +49,7 @@ function AgentBuilderInner() {
   const [description, setDescription] = useState("");
   const [instructions, setInstructions] = useState("");
   const [kbModules, setKbModules] = useState<string[]>([]);
+  const [model, setModel] = useState<string>("gemini-2.5-flash");
   const [dirty, setDirty] = useState(false);
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -79,6 +80,7 @@ function AgentBuilderInner() {
       setName(a.name); setIcon(a.icon); setCategory(a.category);
       setDescription(a.description); setInstructions(a.instructions);
       setKbModules(a.kbModules);
+      setModel(a.model || "gemini-2.5-flash");
       setDirty(false);
     })();
   }, [editId, userId]);
@@ -117,6 +119,7 @@ function AgentBuilderInner() {
       instructions: instructions.trim(),
       kbModules,
       icon,
+      model,
     };
     const r = agent
       ? await updateAgent(agent.id, payload)
@@ -128,7 +131,7 @@ function AgentBuilderInner() {
     setNotice(agent ? "Cambios guardados." : "Borrador guardado — probalo en el playground antes de publicar.");
     return r.agent;
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [agent, name, category, description, instructions, kbModules, icon, userId]);
+  }, [agent, name, category, description, instructions, kbModules, icon, model, userId]);
 
   async function handlePublish() {
     const v = validate(true);
@@ -323,10 +326,46 @@ function AgentBuilderInner() {
             </div>
           </div>
 
-          {/* 3 · Base de conocimiento */}
+          {/* 3 · Modelo de IA */}
           <div className="card" style={{ padding: 18 }}>
             <div style={{ fontSize: 11, letterSpacing: 1.4, color: "var(--text-dim)", textTransform: "uppercase", marginBottom: 10 }}>
-              3 · Base de conocimiento (módulos que prioriza el RAG)
+              3 · Modelo de IA
+            </div>
+            <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(200px, 1fr))", gap: 10 }}>
+              {AGENT_MODELS.map((m) => {
+                const active = model === m.id;
+                return (
+                  <button type="button" key={m.id} onClick={() => { setModel(m.id); markDirty(); }}
+                    style={{
+                      textAlign: "left", padding: 12, borderRadius: 10, cursor: "pointer",
+                      border: `1px solid ${active ? "#22d3ee" : "var(--border-soft)"}`,
+                      background: active ? "rgba(34,211,238,0.1)" : "transparent",
+                    }}>
+                    <div className="row between" style={{ marginBottom: 4 }}>
+                      <span style={{ fontWeight: 600, fontSize: 13, color: active ? "#22d3ee" : "inherit" }}>{m.label}</span>
+                      {active && <span style={{ color: "#22d3ee", fontSize: 13 }}>●</span>}
+                    </div>
+                    <div style={{ fontSize: 11, color: "var(--text-dim)", marginBottom: 4 }}>{m.tag}</div>
+                    <div style={{ fontSize: 11.5, color: "var(--text-soft)", lineHeight: 1.45 }}>{m.description}</div>
+                  </button>
+                );
+              })}
+            </div>
+            {model.startsWith("claude-") && (
+              <div style={{
+                fontSize: 11.5, marginTop: 10, padding: "8px 12px", borderRadius: 8,
+                background: "rgba(251,191,36,0.08)", border: "1px solid rgba(251,191,36,0.25)", color: "#fbbf24",
+              }}>
+                ⚠ Los modelos Claude requieren <code>ANTHROPIC_API_KEY</code> configurada en el backend
+                y tienen costo por uso. Si no está configurada, el chat devolverá un error claro.
+              </div>
+            )}
+          </div>
+
+          {/* 4 · Base de conocimiento */}
+          <div className="card" style={{ padding: 18 }}>
+            <div style={{ fontSize: 11, letterSpacing: 1.4, color: "var(--text-dim)", textTransform: "uppercase", marginBottom: 10 }}>
+              4 · Base de conocimiento (módulos que prioriza el RAG)
             </div>
             <div className="row" style={{ gap: 6, flexWrap: "wrap" }}>
               {AGENT_CATEGORIES.filter((c) => c !== "GENERAL").map((m) => (
@@ -396,9 +435,10 @@ function AgentBuilderInner() {
                 }}>{icon}</span>
                 <div style={{ minWidth: 0 }}>
                   <div style={{ fontWeight: 600, fontSize: 13.5 }}>{name || "Nombre del agente"}</div>
-                  <div className="row" style={{ gap: 6, marginTop: 3 }}>
+                  <div className="row" style={{ gap: 6, marginTop: 3, flexWrap: "wrap" }}>
                     <Badge variant="muted">{category}</Badge>
                     {isPublished ? <Badge variant="ok">👥 Equipo</Badge> : <Badge variant="info">📝 Borrador</Badge>}
+                    <Badge variant="muted">🧠 {modelLabel(model)}</Badge>
                   </div>
                 </div>
               </div>

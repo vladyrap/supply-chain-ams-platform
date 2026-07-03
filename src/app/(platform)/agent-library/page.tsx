@@ -16,7 +16,7 @@ import Badge from "@/components/ui/Badge";
 import { useAuth } from "@/context/AuthContext";
 import {
   listAgents, getFavorites, toggleFavorite, updateAgent, deleteAgent,
-  publishAgent, unpublishAgent,
+  publishAgent, unpublishAgent, modelLabel,
   AGENT_CATEGORIES, type CustomAgent,
 } from "@/services/custom-agents.api";
 
@@ -241,11 +241,12 @@ export default function AgentLibraryPage() {
                       <div style={{ fontWeight: 600, fontSize: 14.5, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>
                         {a.name}
                       </div>
-                      <div className="row" style={{ gap: 6, marginTop: 3 }}>
+                      <div className="row" style={{ gap: 6, marginTop: 3, flexWrap: "wrap" }}>
                         <Badge variant="muted">{a.category}</Badge>
                         {a.isVerified && <Badge variant="ok">✓ Verificado</Badge>}
                         {!a.isVerified && a.visibility === "private" && <Badge variant="info">📝 Borrador</Badge>}
                         {!a.isVerified && (a.visibility === "team" || a.visibility === "public") && <Badge variant="ok">👥 Equipo</Badge>}
+                        {a.model && a.model.startsWith("claude-") && <Badge variant="info">🧠 {modelLabel(a.model)}</Badge>}
                       </div>
                     </div>
                   </div>

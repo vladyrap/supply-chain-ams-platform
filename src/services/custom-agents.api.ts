@@ -14,6 +14,8 @@ export interface CustomAgent {
   instructions: string;
   kbModules: string[];
   icon: string;
+  /** Modelo LLM del agente — ver AGENT_MODELS. */
+  model: string;
   /** private = borrador (solo el creador) · team = publicado al equipo · public = sistema */
   visibility: "private" | "team" | "public";
   isVerified: boolean;
@@ -35,8 +37,49 @@ export interface CreateAgentInput {
   instructions: string;
   kbModules?: string[];
   icon?: string;
+  model?: string;
   visibility?: "private" | "team" | "public";
   createdBy?: string | null;
+}
+
+// Modelos disponibles para agentes custom (onda 4.1).
+// Los Claude requieren ANTHROPIC_API_KEY configurada en el backend.
+export interface AgentModelOption {
+  id: string;
+  label: string;
+  tag: string;
+  description: string;
+}
+
+export const AGENT_MODELS: AgentModelOption[] = [
+  {
+    id: "gemini-2.5-flash",
+    label: "Gemini 2.5 Flash",
+    tag: "⚡ Rápido · incluido",
+    description: "El modelo por defecto de la plataforma. Veloz y sin costo adicional.",
+  },
+  {
+    id: "claude-haiku-4-5-20251001",
+    label: "Claude Haiku 4.5",
+    tag: "💨 Ágil · económico",
+    description: "Claude liviano para tareas frecuentes con buena calidad a bajo costo.",
+  },
+  {
+    id: "claude-sonnet-5",
+    label: "Claude Sonnet 5",
+    tag: "⚖️ Equilibrado",
+    description: "Excelente razonamiento técnico para diagnósticos SAP complejos.",
+  },
+  {
+    id: "claude-opus-4-8",
+    label: "Claude Opus 4.8",
+    tag: "🏆 Máxima calidad",
+    description: "El Claude más potente — para los casos más críticos y análisis profundos.",
+  },
+];
+
+export function modelLabel(modelId: string): string {
+  return AGENT_MODELS.find((m) => m.id === modelId)?.label ?? modelId;
 }
 
 export interface AgentChatResponse {
