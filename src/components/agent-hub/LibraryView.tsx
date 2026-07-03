@@ -16,7 +16,7 @@ import Badge from "@/components/ui/Badge";
 import { useAuth } from "@/context/AuthContext";
 import {
   listAgents, getFavorites, toggleFavorite, updateAgent, deleteAgent,
-  publishAgent, unpublishAgent, duplicateAgent, modelLabel,
+  publishAgent, unpublishAgent, duplicateAgent, exportAllAgents, modelLabel,
   AGENT_CATEGORIES, type CustomAgent,
 } from "@/services/custom-agents.api";
 
@@ -165,6 +165,19 @@ export function LibraryView() {
     else window.alert(r.error);
   }
 
+  // Onda 7 · respaldo completo (solo admin — el backend valida la sesión)
+  async function handleBackup() {
+    const r = await exportAllAgents();
+    if (!r.success) { window.alert(r.error); return; }
+    const blob = new Blob([JSON.stringify(r, null, 2)], { type: "application/json" });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement("a");
+    a.href = url;
+    a.download = `agentes-respaldo-${new Date().toISOString().slice(0, 10)}.json`;
+    a.click();
+    URL.revokeObjectURL(url);
+  }
+
   return (
     <div>
       {/* Header */}
@@ -176,9 +189,14 @@ export function LibraryView() {
               Explorá agentes verificados del sistema, del equipo y los tuyos.
             </p>
           </div>
-          <Link href="/agent-hub?tab=builder" className="btn primary" style={{ alignSelf: "flex-start" }}>
-            ＋ Crear agente
-          </Link>
+          <div className="row" style={{ gap: 8, alignSelf: "flex-start" }}>
+            <button className="btn ghost" onClick={handleBackup}
+              title="Descargar respaldo JSON de todos los agentes (solo admin)"
+              style={{ fontSize: 12.5 }}>📦 Respaldo</button>
+            <Link href="/agent-hub?tab=builder" className="btn primary">
+              ＋ Crear agente
+            </Link>
+          </div>
         </div>
       </div>
 

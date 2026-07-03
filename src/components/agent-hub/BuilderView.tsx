@@ -168,7 +168,8 @@ function AgentBuilderInner() {
       model,
     };
     const r = agent
-      ? await updateAgent(agent.id, payload)
+      // Onda 7 — expectedUpdatedAt: si otro editó el agente mientras tanto → 409
+      ? await updateAgent(agent.id, { ...payload, expectedUpdatedAt: agent.updatedAt })
       : await createAgent({ ...payload, visibility: "private", createdBy: userId });
     setBusy(false);
     if (!r.success) { setError(r.error); return null; }

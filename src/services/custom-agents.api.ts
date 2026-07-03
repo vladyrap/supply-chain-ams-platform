@@ -300,8 +300,20 @@ export async function createAgent(input: CreateAgentInput) {
   return call<{ agent: CustomAgent }>("/api/agents", { method: "POST", body: input });
 }
 
-export async function updateAgent(id: string, input: Partial<CreateAgentInput> & { status?: "active" | "archived" }) {
+export async function updateAgent(
+  id: string,
+  input: Partial<CreateAgentInput> & {
+    status?: "active" | "archived";
+    /** Onda 7 — bloqueo optimista: updatedAt que el cliente estaba viendo. 409 si cambió. */
+    expectedUpdatedAt?: string;
+  },
+) {
   return call<{ agent: CustomAgent }>(`/api/agents/${encodeURIComponent(id)}`, { method: "PUT", body: input });
+}
+
+/** Onda 7 — respaldo completo de agentes del tenant (solo admin). */
+export async function exportAllAgents() {
+  return call<{ exportedAt: string; exportedBy: string; count: number; agents: unknown[] }>("/api/agents/export");
 }
 
 export async function deleteAgent(id: string) {
