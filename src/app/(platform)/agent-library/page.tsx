@@ -16,6 +16,7 @@ import Badge from "@/components/ui/Badge";
 import { useAuth } from "@/context/AuthContext";
 import {
   listAgents, getFavorites, toggleFavorite, updateAgent, deleteAgent,
+  publishAgent, unpublishAgent,
   AGENT_CATEGORIES, type CustomAgent,
 } from "@/services/custom-agents.api";
 
@@ -33,6 +34,7 @@ export default function AgentLibraryPage() {
   const [onlyFavs, setOnlyFavs] = useState(false);
   const [onlyMine, setOnlyMine] = useState(false);
   const [onlyVerified, setOnlyVerified] = useState(false);
+  const [onlyDrafts, setOnlyDrafts] = useState(false);
   const [sort, setSort] = useState<SortMode>("rating");
   const [favs, setFavs] = useState<Set<string>>(new Set());
   // F7: edición de agentes propios
@@ -41,19 +43,20 @@ export default function AgentLibraryPage() {
   const [editBusy, setEditBusy] = useState(false);
   const [editError, setEditError] = useState<string | null>(null);
 
+  const myId = user?.email ?? user?.name ?? "";
+
   const load = useCallback(async () => {
     setLoading(true);
     setError(null);
-    const r = await listAgents();
+    // forUser: además de los publicados, trae mis borradores privados
+    const r = await listAgents(myId ? { forUser: myId } : {});
     if (r.success) setAgents(r.agents);
     else setError(r.error);
     setLoading(false);
-  }, []);
+  }, [myId]);
 
   useEffect(() => { load(); }, [load]);
   useEffect(() => { setFavs(getFavorites()); }, []);
-
-  const myId = user?.email ?? user?.name ?? "";
 
   const filtered = useMemo(() => {
     let out = agents;
@@ -61,6 +64,7 @@ export default function AgentLibraryPage() {
     if (onlyFavs) out = out.filter((a) => favs.has(a.id));
     if (onlyMine) out = out.filter((a) => a.createdBy === myId);
     if (onlyVerified) out = out.filter((a) => a.isVerified);
+    if (onlyDrafts) out = out.filter((a) => !a.isVerified && a.visibility === "private");
     if (search.trim()) {
       const q = search.trim().toLowerCase();
       out = out.filter((a) =>
@@ -74,13 +78,14 @@ export default function AgentLibraryPage() {
       case "name":   sorted.sort((a, b) => a.name.localeCompare(b.name)); break;
     }
     return sorted;
-  }, [agents, category, onlyFavs, onlyMine, onlyVerified, search, sort, favs, myId]);
+  }, [agents, category, onlyFavs, onlyMine, onlyVerified, onlyDrafts, search, sort, favs, myId]);
 
   const counts = useMemo(() => ({
     total: agents.length,
     verified: agents.filter((a) => a.isVerified).length,
     mine: agents.filter((a) => a.createdBy === myId).length,
     favs: agents.filter((a) => favs.has(a.id)).length,
+    drafts: agents.filter((a) => !a.isVerified && a.visibility === "private").length,
   }), [agents, favs, myId]);
 
   function onToggleFav(id: string) {
@@ -121,6 +126,21 @@ export default function AgentLibraryPage() {
     else window.alert(r.error);
   }
 
+  // Onda 4 · publicación al equipo
+  async function handlePublish(a: CustomAgent) {
+    if (!window.confirm(`¿Publicar "${a.name}" para todo el equipo? Aparecerá en la biblioteca y cualquiera podrá chatear con él.`)) return;
+    const r = await publishAgent(a.id, myId);
+    if (r.success) load();
+    else window.alert(r.error);
+  }
+
+  async function handleUnpublish(a: CustomAgent) {
+    if (!window.confirm(`¿Volver "${a.name}" a borrador privado? El equipo dejará de verlo.`)) return;
+    const r = await unpublishAgent(a.id, myId);
+    if (r.success) load();
+    else window.alert(r.error);
+  }
+
   return (
     <div>
       {/* Header */}
@@ -132,7 +152,7 @@ export default function AgentLibraryPage() {
               Explorá agentes verificados del sistema, del equipo y los tuyos.
             </p>
           </div>
-          <Link href="/agent-studio" className="btn primary" style={{ alignSelf: "flex-start" }}>
+          <Link href="/agent-builder" className="btn primary" style={{ alignSelf: "flex-start" }}>
             ＋ Crear agente
           </Link>
         </div>
@@ -157,6 +177,10 @@ export default function AgentLibraryPage() {
           <label style={{ display: "flex", alignItems: "center", gap: 8, fontSize: 13, padding: "5px 0", cursor: "pointer" }}>
             <input type="checkbox" checked={onlyVerified} onChange={(e) => setOnlyVerified(e.target.checked)} />
             ✓ Verificados ({counts.verified})
+          </label>
+          <label style={{ display: "flex", alignItems: "center", gap: 8, fontSize: 13, padding: "5px 0", cursor: "pointer" }}>
+            <input type="checkbox" checked={onlyDrafts} onChange={(e) => setOnlyDrafts(e.target.checked)} />
+            📝 Mis borradores ({counts.drafts})
           </label>
 
           <div style={{ borderTop: "1px solid var(--border-soft)", margin: "10px 0" }} />
@@ -220,7 +244,8 @@ export default function AgentLibraryPage() {
                       <div className="row" style={{ gap: 6, marginTop: 3 }}>
                         <Badge variant="muted">{a.category}</Badge>
                         {a.isVerified && <Badge variant="ok">✓ Verificado</Badge>}
-                        {!a.isVerified && a.visibility === "private" && <Badge variant="info">privado</Badge>}
+                        {!a.isVerified && a.visibility === "private" && <Badge variant="info">📝 Borrador</Badge>}
+                        {!a.isVerified && (a.visibility === "team" || a.visibility === "public") && <Badge variant="ok">👥 Equipo</Badge>}
                       </div>
                     </div>
                   </div>
@@ -252,8 +277,17 @@ export default function AgentLibraryPage() {
                     <span title="Conversaciones">💬 {a.chatCount}</span>
                     {!a.isVerified && a.createdBy === myId && (
                       <>
-                        <button onClick={() => openEdit(a)} title="Editar agente"
+                        <button onClick={() => router.push(`/agent-builder?id=${a.id}`)} title="Abrir en Agent Builder"
+                          style={{ background: "none", border: 0, cursor: "pointer", fontSize: 13, color: "var(--text-dim)" }}>🛠️</button>
+                        <button onClick={() => openEdit(a)} title="Edición rápida"
                           style={{ background: "none", border: 0, cursor: "pointer", fontSize: 13, color: "var(--text-dim)" }}>✎</button>
+                        {a.visibility === "private" ? (
+                          <button onClick={() => handlePublish(a)} title="Publicar al equipo"
+                            style={{ background: "none", border: 0, cursor: "pointer", fontSize: 12, color: "#34d399", fontWeight: 600 }}>🚀 Publicar</button>
+                        ) : (
+                          <button onClick={() => handleUnpublish(a)} title="Volver a borrador privado"
+                            style={{ background: "none", border: 0, cursor: "pointer", fontSize: 12, color: "#fbbf24" }}>↩</button>
+                        )}
                         <button onClick={() => handleDelete(a)} title="Eliminar agente"
                           style={{ background: "none", border: 0, cursor: "pointer", fontSize: 13, color: "#ef4444" }}>🗑</button>
                       </>

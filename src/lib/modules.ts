@@ -67,6 +67,13 @@ export const MODULES: ModuleDef[] = [
     permissionKey: "agente_ams", group: "operacion",
   },
   {
+    id: "agent-builder", label: "Agent Builder", icon: "🛠️", href: "/agent-builder",
+    description: "Diseñá, probá y publicá agentes para todo el equipo — borrador → playground → publicación",
+    status: "available", phase: 8,
+    rolesAllowed: ["consultor", "aprobador", "admin"],
+    permissionKey: "agente_ams", group: "operacion",
+  },
+  {
     id: "marketplace", label: "Marketplace", icon: "🏪", href: "/marketplace",
     description: "Apps agénticas empaquetadas por categoría, listas para desplegar",
     status: "available", phase: 8,

@@ -14,11 +14,10 @@ import { useRouter } from "next/navigation";
 import Badge from "@/components/ui/Badge";
 import { useAuth } from "@/context/AuthContext";
 import {
-  createAgent, listAgents, createApp, listApps, deleteApp, duplicateApp,
-  AGENT_CATEGORIES, type CustomAgent, type AgenticApp, type AppStep,
+  listAgents, createApp, listApps, deleteApp, duplicateApp,
+  type CustomAgent, type AgenticApp, type AppStep,
 } from "@/services/custom-agents.api";
 
-const ICON_CHOICES = ["🤖", "📦", "🛒", "🏭", "💰", "📊", "🔗", "🏗️", "🧠", "⚡", "🛠️", "📋"];
 const APP_ICONS = ["⚙️", "🚀", "🧩", "🔄", "🎯", "🛰️", "🗓️", "📈"];
 const MAX_STEPS = 4;
 
@@ -26,18 +25,6 @@ export default function AgentStudioPage() {
   const { user } = useAuth();
   const router = useRouter();
   const userId = user?.email ?? user?.name ?? null;
-
-  // ── Modal Agente ──
-  const [agentModal, setAgentModal] = useState(false);
-  const [name, setName] = useState("");
-  const [category, setCategory] = useState<string>("GENERAL");
-  const [description, setDescription] = useState("");
-  const [instructions, setInstructions] = useState("");
-  const [kbModules, setKbModules] = useState<string[]>([]);
-  const [icon, setIcon] = useState("🤖");
-  const [visibility, setVisibility] = useState<"private" | "team" | "public">("private");
-  const [busy, setBusy] = useState(false);
-  const [error, setError] = useState<string | null>(null);
 
   // ── Modal App Agéntica ──
   const [appModal, setAppModal] = useState(false);
@@ -57,37 +44,12 @@ export default function AgentStudioPage() {
     if (r.success) setApps(r.apps);
   }, []);
   const loadAgents = useCallback(async () => {
-    const r = await listAgents();
+    // forUser: permite armar pipelines también con tus borradores privados
+    const r = await listAgents(userId ? { forUser: userId } : {});
     if (r.success) setAgents(r.agents);
-  }, []);
+  }, [userId]);
 
   useEffect(() => { loadApps(); loadAgents(); }, [loadApps, loadAgents]);
-
-  // ── Crear Agente ──
-  function toggleKbModule(m: string) {
-    setKbModules((cur) => cur.includes(m) ? cur.filter((x) => x !== m) : [...cur, m]);
-  }
-
-  async function handleCreateAgent(e: React.FormEvent) {
-    e.preventDefault();
-    setError(null);
-    if (!name.trim()) { setError("El nombre es obligatorio"); return; }
-    if (!instructions.trim() || instructions.trim().length < 30) {
-      setError("Las instrucciones deben tener al menos 30 caracteres.");
-      return;
-    }
-    setBusy(true);
-    const r = await createAgent({
-      name: name.trim(), category, description: description.trim(),
-      instructions: instructions.trim(), kbModules, icon, visibility,
-      createdBy: userId,
-    });
-    setBusy(false);
-    if (r.success) {
-      setAgentModal(false);
-      router.push(`/agent-chat/${r.agent.id}`);
-    } else setError(r.error);
-  }
 
   // ── Crear App ──
   function updateStep(i: number, patch: Partial<AppStep>) {
@@ -158,13 +120,13 @@ export default function AgentStudioPage() {
           <div style={{ padding: 20, flex: 1 }}>
             <h3 style={{ margin: "0 0 8px", fontSize: 17 }}>Crear un Agente o Asistente</h3>
             <p style={{ margin: 0, fontSize: 13, color: "var(--text-soft)", lineHeight: 1.6 }}>
-              Creá un agente describiendo en lenguaje natural qué querés que haga.
-              Asignale módulos de la base de conocimiento. Sin código.
+              Abrí el Agent Builder: diseñá tu agente en lenguaje natural, probalo en el
+              playground y publicalo para todo el equipo cuando esté listo.
             </p>
           </div>
-          <button className="btn primary" onClick={() => setAgentModal(true)}
+          <button className="btn primary" onClick={() => router.push("/agent-builder")}
             style={{ borderRadius: 0, padding: "14px 20px", justifyContent: "space-between", display: "flex", width: "100%" }}>
-            <span>Comenzar</span><span>→</span>
+            <span>Abrir Agent Builder</span><span>→</span>
           </button>
         </div>
 
@@ -224,87 +186,6 @@ export default function AgentStudioPage() {
               </div>
             </div>
           ))}
-        </div>
-      )}
-
-      {/* ═════════ Modal Crear Agente ═════════ */}
-      {agentModal && (
-        <div onClick={() => !busy && setAgentModal(false)}
-          style={{ position: "fixed", inset: 0, background: "rgba(0,0,0,0.6)", zIndex: 1000, display: "grid", placeItems: "center", padding: 20 }}>
-          <div onClick={(e) => e.stopPropagation()} className="card"
-            style={{ width: "min(760px, 100%)", maxHeight: "90vh", overflowY: "auto", padding: 24 }}>
-            <div className="row between" style={{ marginBottom: 4 }}>
-              <h2 style={{ margin: 0, fontSize: 20 }}>Crear nuevo agente</h2>
-              <button onClick={() => setAgentModal(false)} disabled={busy}
-                style={{ background: "none", border: 0, color: "var(--text-dim)", fontSize: 22, cursor: "pointer" }}>×</button>
-            </div>
-            <p style={{ margin: "0 0 18px", fontSize: 12.5, color: "var(--text-soft)" }}>
-              Poné un nombre, elegí categoría y describí el objetivo para crear tu agente.
-            </p>
-            <form onSubmit={handleCreateAgent} style={{ display: "flex", flexDirection: "column", gap: 14 }}>
-              <div style={{ display: "grid", gridTemplateColumns: "1fr 200px", gap: 12 }}>
-                <div>
-                  <label style={{ display: "block", fontSize: 12, marginBottom: 4 }}>Nombre *</label>
-                  <input value={name} onChange={(e) => setName(e.target.value)} placeholder="Ej: Asistente de cierres FI" required style={{ width: "100%" }} />
-                </div>
-                <div>
-                  <label style={{ display: "block", fontSize: 12, marginBottom: 4 }}>Categoría</label>
-                  <select value={category} onChange={(e) => setCategory(e.target.value)} style={{ width: "100%" }}>
-                    {AGENT_CATEGORIES.map((c) => <option key={c} value={c}>{c}</option>)}
-                  </select>
-                </div>
-              </div>
-              <div>
-                <label style={{ display: "block", fontSize: 12, marginBottom: 4 }}>Descripción corta</label>
-                <input value={description} onChange={(e) => setDescription(e.target.value)}
-                  placeholder="Lo que ven los demás en la biblioteca (1-2 frases)" style={{ width: "100%" }} />
-              </div>
-              <div>
-                <label style={{ display: "block", fontSize: 12, marginBottom: 4 }}>
-                  Instrucciones del agente * <span style={{ color: "var(--text-dim)" }}>(lenguaje natural)</span>
-                </label>
-                <textarea value={instructions} onChange={(e) => setInstructions(e.target.value)}
-                  placeholder="Ej: Eres un consultor experto en cierres mensuales FI…"
-                  rows={7} required style={{ width: "100%", resize: "vertical", fontFamily: "inherit", fontSize: 13, lineHeight: 1.5 }} />
-              </div>
-              <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 12 }}>
-                <div>
-                  <label style={{ display: "block", fontSize: 12, marginBottom: 6 }}>Base de conocimiento</label>
-                  <div className="row" style={{ gap: 6, flexWrap: "wrap" }}>
-                    {AGENT_CATEGORIES.filter((c) => c !== "GENERAL").map((m) => (
-                      <button type="button" key={m} onClick={() => toggleKbModule(m)}
-                        style={{
-                          fontSize: 11.5, padding: "4px 10px", borderRadius: 20, cursor: "pointer",
-                          border: `1px solid ${kbModules.includes(m) ? "#22d3ee" : "var(--border-soft)"}`,
-                          background: kbModules.includes(m) ? "rgba(34,211,238,0.15)" : "transparent",
-                          color: kbModules.includes(m) ? "#22d3ee" : "var(--text-soft)",
-                        }}>{m}</button>
-                    ))}
-                  </div>
-                </div>
-                <div>
-                  <label style={{ display: "block", fontSize: 12, marginBottom: 6 }}>Ícono + visibilidad</label>
-                  <div className="row" style={{ gap: 8 }}>
-                    <select value={icon} onChange={(e) => setIcon(e.target.value)} style={{ width: 70, fontSize: 16 }}>
-                      {ICON_CHOICES.map((i) => <option key={i} value={i}>{i}</option>)}
-                    </select>
-                    <select value={visibility} onChange={(e) => setVisibility(e.target.value as typeof visibility)} style={{ flex: 1 }}>
-                      <option value="private">🔒 Privado</option>
-                      <option value="team">👥 Equipo</option>
-                      <option value="public">🌐 Público</option>
-                    </select>
-                  </div>
-                </div>
-              </div>
-              {error && <div className="alert error" style={{ fontSize: 12.5 }}>{error}</div>}
-              <div className="row" style={{ gap: 8, marginTop: 6 }}>
-                <button type="button" className="btn ghost" onClick={() => setAgentModal(false)} disabled={busy}>Cancelar</button>
-                <button type="submit" className="btn primary" disabled={busy} style={{ marginLeft: "auto" }}>
-                  {busy ? "Creando…" : "Crear agente →"}
-                </button>
-              </div>
-            </form>
-          </div>
         </div>
       )}
 

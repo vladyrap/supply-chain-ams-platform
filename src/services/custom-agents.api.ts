@@ -14,6 +14,7 @@ export interface CustomAgent {
   instructions: string;
   kbModules: string[];
   icon: string;
+  /** private = borrador (solo el creador) · team = publicado al equipo · public = sistema */
   visibility: "private" | "team" | "public";
   isVerified: boolean;
   status: "active" | "archived";
@@ -21,6 +22,8 @@ export interface CustomAgent {
   ratingCount: number;
   chatCount: number;
   createdBy: string | null;
+  publishedAt: string | null;
+  publishedBy: string | null;
   createdAt: string;
   updatedAt: string;
 }
@@ -134,18 +137,38 @@ export async function listAgents(filters: {
   createdBy?: string;
   verified?: boolean;
   search?: string;
+  /** Usuario logueado: agrega sus borradores privados al listado de publicados. */
+  forUser?: string;
 } = {}) {
   const params = new URLSearchParams();
   if (filters.category) params.set("category", filters.category);
   if (filters.createdBy) params.set("createdBy", filters.createdBy);
   if (filters.verified) params.set("verified", "true");
   if (filters.search) params.set("search", filters.search);
+  if (filters.forUser) params.set("forUser", filters.forUser);
   const qs = params.toString();
   return call<{ count: number; agents: CustomAgent[] }>(`/api/agents${qs ? `?${qs}` : ""}`);
 }
 
-export async function getAgent(id: string) {
-  return call<{ agent: CustomAgent }>(`/api/agents/${encodeURIComponent(id)}`);
+export async function getAgent(id: string, forUser?: string) {
+  const qs = forUser ? `?forUser=${encodeURIComponent(forUser)}` : "";
+  return call<{ agent: CustomAgent }>(`/api/agents/${encodeURIComponent(id)}${qs}`);
+}
+
+// ── Publicación (onda 4) ──
+
+export async function publishAgent(id: string, user: string) {
+  return call<{ agent: CustomAgent }>(`/api/agents/${encodeURIComponent(id)}/publish`, {
+    method: "POST",
+    body: { user },
+  });
+}
+
+export async function unpublishAgent(id: string, user: string) {
+  return call<{ agent: CustomAgent }>(`/api/agents/${encodeURIComponent(id)}/unpublish`, {
+    method: "POST",
+    body: { user },
+  });
 }
 
 export async function createAgent(input: CreateAgentInput) {
