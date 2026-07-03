@@ -46,8 +46,8 @@ export default function ForgotPasswordPage(): React.ReactElement {
               role="status"
               aria-live="polite"
               style={{
-                background: "rgba(34, 197, 94, 0.1)",
-                border: "1px solid rgba(34, 197, 94, 0.3)",
+                background: "rgba(66,190,101, 0.1)",
+                border: "1px solid rgba(66,190,101, 0.3)",
                 color: "#86efac",
                 padding: 16,
                 borderRadius: 8,
@@ -81,8 +81,8 @@ export default function ForgotPasswordPage(): React.ReactElement {
 
               {err && (
                 <div role="alert" style={{
-                  background: "rgba(239, 68, 68, 0.1)",
-                  border: "1px solid rgba(239, 68, 68, 0.3)",
+                  background: "rgba(250,77,86, 0.1)",
+                  border: "1px solid rgba(250,77,86, 0.3)",
                   color: "#fca5a5",
                   padding: 12,
                   borderRadius: 8,
@@ -97,7 +97,7 @@ export default function ForgotPasswordPage(): React.ReactElement {
                 disabled={busy || !email}
                 style={{
                   padding: "14px",
-                  background: busy ? "rgba(34, 211, 238, 0.5)" : "linear-gradient(to right, #22d3ee, #a78bfa)",
+                  background: busy ? "rgba(69,137,255, 0.5)" : "linear-gradient(to right, #4589ff, #be95ff)",
                   color: "white",
                   border: "none",
                   borderRadius: 8,

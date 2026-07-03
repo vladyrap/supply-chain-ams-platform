@@ -21,10 +21,10 @@ import {
 const EVENT_COLORS: Record<RbacAuditEventType, string> = {
   ROLE_PERMISSIONS_UPDATED: "#a855f7",
   ROLE_CREATED: "#10b981",
-  ROLE_DELETED: "#ef4444",
-  USER_ROLE_CHANGED: "#22d3ee",
-  UNAUTHORIZED_ROUTE_ACCESS_ATTEMPT: "#ef4444",
-  RBAC_OVERRIDE_ACTIVATED: "#fbbf24",
+  ROLE_DELETED: "#fa4d56",
+  USER_ROLE_CHANGED: "#4589ff",
+  UNAUTHORIZED_ROUTE_ACCESS_ATTEMPT: "#fa4d56",
+  RBAC_OVERRIDE_ACTIVATED: "#f1c21b",
   RBAC_OVERRIDE_CLEARED: "#64748b",
 };
 
@@ -94,7 +94,7 @@ export default function RbacAuditLogPanel() {
             ⬇ Exportar JSON
           </button>
           <button className="btn ghost sm" onClick={handleClear} disabled={events.length === 0}
-            style={{ fontSize: 11, color: "#ef4444" }}>
+            style={{ fontSize: 11, color: "#fa4d56" }}>
             🗑 Limpiar log
           </button>
         </div>

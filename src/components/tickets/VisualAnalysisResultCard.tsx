@@ -11,7 +11,7 @@ interface Props {
   onToggleConsider: (next: boolean) => void;
 }
 
-const CONF_COLOR = { HIGH: "#10b981", MEDIUM: "#fbbf24", LOW: "#ef4444" } as const;
+const CONF_COLOR = { HIGH: "#10b981", MEDIUM: "#f1c21b", LOW: "#fa4d56" } as const;
 const CONF_LABEL = { HIGH: "Alta", MEDIUM: "Media", LOW: "Baja" } as const;
 const MODE_LABEL = {
   AI_VISION: "IA Visión",
@@ -40,8 +40,8 @@ export default function VisualAnalysisResultCard({ analysis, consideredForEstima
 
       <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 6, marginTop: 8, fontSize: 11.5 }}>
         <Row label="Transacción"    value={analysis.detectedTransaction} />
-        <Row label="Código error"   value={analysis.detectedErrorCode} accent="#ef4444" />
-        <Row label="Módulo"         value={analysis.detectedSapModule} accent="#22d3ee" />
+        <Row label="Código error"   value={analysis.detectedErrorCode} accent="#fa4d56" />
+        <Row label="Módulo"         value={analysis.detectedSapModule} accent="#4589ff" />
         <Row label="Proceso"        value={analysis.detectedProcess} />
         <Row label="Subproceso"     value={analysis.detectedSubProcess} />
         <Row label="Ambiente"       value={analysis.detectedEnvironment} />
@@ -54,8 +54,8 @@ export default function VisualAnalysisResultCard({ analysis, consideredForEstima
           <div className="row" style={{ gap: 6, flexWrap: "wrap", marginTop: 4 }}>
             {Object.entries(analysis.detectedObjects).map(([k, v]) => v && (
               <span key={k} className="pill" style={{
-                fontSize: 10.5, background: "rgba(34,211,238,0.12)", color: "#22d3ee",
-                border: "1px solid #22d3ee55", padding: "1px 8px", borderRadius: 4,
+                fontSize: 10.5, background: "rgba(69,137,255,0.12)", color: "#4589ff",
+                border: "1px solid #4589ff55", padding: "1px 8px", borderRadius: 4,
               }}>
                 {k}: <strong>{v}</strong>
               </span>
@@ -81,7 +81,7 @@ export default function VisualAnalysisResultCard({ analysis, consideredForEstima
       {analysis.missingData.length > 0 && (
         <div style={{ marginTop: 6 }}>
           <div style={{ fontSize: 10.5, color: "var(--text-dim)", letterSpacing: 1 }}>DATOS FALTANTES SUGERIDOS</div>
-          <ul style={{ margin: "4px 0 0", paddingLeft: 18, fontSize: 11.5, color: "#fbbf24" }}>
+          <ul style={{ margin: "4px 0 0", paddingLeft: 18, fontSize: 11.5, color: "#f1c21b" }}>
             {analysis.missingData.map((m, i) => <li key={i}>{m}</li>)}
           </ul>
         </div>

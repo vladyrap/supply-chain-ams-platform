@@ -33,7 +33,7 @@ export default function N2Responsibles({ escalation, canEdit }: { escalation: Us
               <div className="row" style={{ gap: 10, alignItems: "center" }}>
                 <div style={{
                   width: 40, height: 40, borderRadius: "50%",
-                  background: "linear-gradient(135deg, #a855f7, #22d3ee)",
+                  background: "linear-gradient(135deg, #a855f7, #4589ff)",
                   display: "grid", placeItems: "center",
                   color: "white", fontWeight: 700, fontSize: 16,
                 }}>{r.name.charAt(0).toUpperCase()}</div>
@@ -66,7 +66,7 @@ export default function N2Responsibles({ escalation, canEdit }: { escalation: Us
                 <div style={{ height: 4, borderRadius: 2, background: "rgba(255,255,255,0.08)", marginTop: 3 }}>
                   <div style={{
                     height: "100%", width: `${loadPct}%`, borderRadius: 2,
-                    background: loadPct > 80 ? "#f87171" : loadPct > 60 ? "#fb923c" : "#34d399",
+                    background: loadPct > 80 ? "#ff8389" : loadPct > 60 ? "#fb923c" : "#42be65",
                   }} />
                 </div>
               </div>
@@ -78,7 +78,7 @@ export default function N2Responsibles({ escalation, canEdit }: { escalation: Us
                     {r.active ? "desactivar" : "activar"}
                   </button>
                   <button className="btn ghost"
-                    style={{ fontSize: 11, padding: "3px 10px", borderColor: "rgba(239,68,68,0.5)", color: "#fca5a5", marginLeft: "auto" }}
+                    style={{ fontSize: 11, padding: "3px 10px", borderColor: "rgba(250,77,86,0.5)", color: "#fca5a5", marginLeft: "auto" }}
                     onClick={() => { if (confirm(`¿Eliminar a ${r.name}?`)) escalation.removeResponsible(r.id); }}>
                     eliminar
                   </button>

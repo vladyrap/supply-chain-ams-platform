@@ -210,7 +210,7 @@ export default function EscalationModal({ incident, escalation, createdByUserId,
 
               {/* Aviso modo real */}
               {isRealMode && (
-                <div className="card" style={{ background: "rgba(251,191,36,0.10)", borderColor: "rgba(251,191,36,0.5)", fontSize: 12, color: "#fde68a" }}>
+                <div className="card" style={{ background: "rgba(241,194,27,0.10)", borderColor: "rgba(241,194,27,0.5)", fontSize: 12, color: "#fde68a" }}>
                   ⚠ <b>Modo REAL detectado para {channel}.</b> No se envía desde el frontend. Backend debe estar configurado con variables de entorno y se requerirá confirmación humana adicional.
                   {!realCredsConfigured && <div style={{ marginTop: 4, color: "#fca5a5" }}>Credenciales no marcadas como configuradas — escalación bloqueada hasta que el admin las habilite.</div>}
                 </div>

@@ -146,14 +146,14 @@ export const SPECIALIST_ICONS: Record<SAPModuleSpecialist, string> = {
 };
 
 export const SPECIALIST_COLORS: Record<SAPModuleSpecialist, string> = {
-  MM: "#22d3ee",
+  MM: "#4589ff",
   SD: "#10b981",
   WM: "#a855f7",
   EWM: "#a855f7",
   PP_MRP: "#f59e0b",
-  INTEGRATIONS: "#5b8def",
-  BASIS_AUTH: "#ef4444",
-  ABAP_TECHNICAL: "#fbbf24",
+  INTEGRATIONS: "#4589ff",
+  BASIS_AUTH: "#fa4d56",
+  ABAP_TECHNICAL: "#f1c21b",
   FI_CROSS: "#64748b",
   UNKNOWN: "#94a3b8",
 };

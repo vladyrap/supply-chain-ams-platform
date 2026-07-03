@@ -21,7 +21,7 @@ import {
 interface Props { ctx: UseAgentTraining }
 
 const VERDICT_COLORS: Record<"pass" | "partial" | "fail", string> = {
-  pass: "#10b981", partial: "#fbbf24", fail: "#ef4444",
+  pass: "#10b981", partial: "#f1c21b", fail: "#fa4d56",
 };
 const VERDICT_LABELS: Record<"pass" | "partial" | "fail", string> = {
   pass: "aprobado", partial: "parcial", fail: "fallido",
@@ -284,7 +284,7 @@ export default function LearningDashboard({ ctx }: Props) {
       {/* SELF-TRAINING · pulido del agente en un click                    */}
       {/* ============================================================== */}
       <div className="card" style={{
-        background: "linear-gradient(135deg, rgba(168,85,247,0.15) 0%, rgba(34,211,238,0.10) 100%)",
+        background: "linear-gradient(135deg, rgba(168,85,247,0.15) 0%, rgba(69,137,255,0.10) 100%)",
         borderLeft: "3px solid #a855f7",
         position: "relative", overflow: "hidden",
       }}>
@@ -305,7 +305,7 @@ export default function LearningDashboard({ ctx }: Props) {
               const color = !stageData ? "#64748b"
                           : stageData.status === "ok" ? "#10b981"
                           : stageData.status === "skipped" ? "#94a3b8"
-                          : "#ef4444";
+                          : "#fa4d56";
               const active = stCurrentStage && stCurrentStage.toLowerCase().includes(label.toLowerCase().split("→")[0].trim());
               return (
                 <div key={i} style={{
@@ -344,7 +344,7 @@ export default function LearningDashboard({ ctx }: Props) {
         <div className="row" style={{ gap: 8, marginTop: 12, flexWrap: "wrap" }}>
           <button className="btn primary" onClick={runSelfTrain} disabled={stRunning}
             style={{
-              background: "linear-gradient(135deg, #a855f7 0%, #22d3ee 100%)",
+              background: "linear-gradient(135deg, #a855f7 0%, #4589ff 100%)",
               borderColor: "#a855f7",
               minWidth: 220, fontWeight: 700,
             }}>
@@ -413,7 +413,7 @@ export default function LearningDashboard({ ctx }: Props) {
 
       {/* Hero metric cards */}
       <div className="tc-metric-grid">
-        <div className="tc-metric" style={{ ["--tc-acc" as never]: "#22d3ee" }}>
+        <div className="tc-metric" style={{ ["--tc-acc" as never]: "#4589ff" }}>
           <div className="tc-metric-head"><span className="tc-metric-icon">🧪</span><span className="tc-metric-label">Q&amp;A aprobadas</span></div>
           <div className="tc-metric-value">{totalQAsApproved}</div>
           <div className="tc-metric-foot">de {totalQAs} totales</div>
@@ -438,7 +438,7 @@ export default function LearningDashboard({ ctx }: Props) {
             ) : "sin cambio"}
           </div>
         </div>
-        <div className="tc-metric" style={{ ["--tc-acc" as never]: "#fbbf24" }}>
+        <div className="tc-metric" style={{ ["--tc-acc" as never]: "#f1c21b" }}>
           <div className="tc-metric-head"><span className="tc-metric-icon">📊</span><span className="tc-metric-label">Runs ejecutados</span></div>
           <div className="tc-metric-value">{runs.length}</div>
           <div className="tc-metric-foot">historial completo</div>
@@ -535,10 +535,10 @@ export default function LearningDashboard({ ctx }: Props) {
       {/* ============================================================== */}
       {timeline && (
         <div className="card" style={{
-          borderLeft: timeline.drift.driftDetected ? "3px solid #ef4444" : "3px solid #06b6d4",
+          borderLeft: timeline.drift.driftDetected ? "3px solid #fa4d56" : "3px solid #06b6d4",
         }}>
           <div className="ticket-section-head">
-            <span style={{ color: timeline.drift.driftDetected ? "#ef4444" : "#06b6d4" }}>
+            <span style={{ color: timeline.drift.driftDetected ? "#fa4d56" : "#06b6d4" }}>
               {timeline.drift.driftDetected ? "🚨" : "📈"}
             </span> CURVA DE APRENDIZAJE · {timeline.days} días
           </div>
@@ -566,7 +566,7 @@ export default function LearningDashboard({ ctx }: Props) {
             {timeline.drift.current7dAvgScore !== null && (
               <span>Score 7d: <b>{timeline.drift.current7dAvgScore}</b>
                 {timeline.drift.scoreDeltaPoints !== null && timeline.drift.scoreDeltaPoints !== 0 && (
-                  <span style={{ color: timeline.drift.scoreDeltaPoints > 0 ? "#10b981" : "#ef4444" }}>
+                  <span style={{ color: timeline.drift.scoreDeltaPoints > 0 ? "#10b981" : "#fa4d56" }}>
                     {" "}({timeline.drift.scoreDeltaPoints > 0 ? "+" : ""}{timeline.drift.scoreDeltaPoints})
                   </span>
                 )}
@@ -581,7 +581,7 @@ export default function LearningDashboard({ ctx }: Props) {
       {/* ============================================================== */}
       <div className="card" style={{ borderLeft: "3px solid #f43f5e" }}>
         <div className="ticket-section-head">
-          <span style={{ color: "#f87171" }}>🧬</span> EMBEDDINGS SEMÁNTICOS · few-shot inteligente
+          <span style={{ color: "#ff8389" }}>🧬</span> EMBEDDINGS SEMÁNTICOS · few-shot inteligente
         </div>
         <p className="settings-section-desc">
           Reemplaza el match léxico por embeddings reales de Gemini. El agente encuentra Q&amp;A relevantes
@@ -606,7 +606,7 @@ export default function LearningDashboard({ ctx }: Props) {
       {/* ============================================================== */}
       <div className="card" style={{ borderLeft: "3px solid #f59e0b" }}>
         <div className="ticket-section-head">
-          <span style={{ color: "#fbbf24" }}>🔬</span> DETECTAR PATRONES DE FEEDBACK NEGATIVO
+          <span style={{ color: "#f1c21b" }}>🔬</span> DETECTAR PATRONES DE FEEDBACK NEGATIVO
         </div>
         <p className="settings-section-desc">
           Cluster por embeddings de razones de feedback 👎 recurrentes. Cada cluster ≥ 3 genera una
@@ -652,12 +652,12 @@ export default function LearningDashboard({ ctx }: Props) {
       {/* ============================================================== */}
       {hallucination && (
         <div className="card" style={{
-          borderLeft: hallucination.avgRisk7d >= 50 ? "3px solid #ef4444"
-                    : hallucination.avgRisk7d >= 25 ? "3px solid #fbbf24"
+          borderLeft: hallucination.avgRisk7d >= 50 ? "3px solid #fa4d56"
+                    : hallucination.avgRisk7d >= 25 ? "3px solid #f1c21b"
                     : "3px solid #10b981",
         }}>
           <div className="ticket-section-head">
-            <span style={{ color: hallucination.avgRisk7d >= 50 ? "#ef4444" : hallucination.avgRisk7d >= 25 ? "#fbbf24" : "#10b981" }}>
+            <span style={{ color: hallucination.avgRisk7d >= 50 ? "#fa4d56" : hallucination.avgRisk7d >= 25 ? "#f1c21b" : "#10b981" }}>
               {hallucination.avgRisk7d >= 50 ? "🚨" : hallucination.avgRisk7d >= 25 ? "⚠" : "✓"}
             </span> HALLUCINATION DETECTOR · transacciones SAP fuera del corpus
           </div>
@@ -666,12 +666,12 @@ export default function LearningDashboard({ ctx }: Props) {
             Custom Z* o Y* siempre suspechosas. Riesgo promedio 7d &lt;25% = sano; ≥50% = el agente inventa código.
           </p>
           <div className="tc-metric-grid" style={{ gridTemplateColumns: "repeat(auto-fit, minmax(150px, 1fr))" }}>
-            <div className="tc-metric" style={{ ["--tc-acc" as never]: "#ef4444" }}>
+            <div className="tc-metric" style={{ ["--tc-acc" as never]: "#fa4d56" }}>
               <div className="tc-metric-head"><span className="tc-metric-icon">🎯</span><span className="tc-metric-label">Risk score 7d</span></div>
               <div className="tc-metric-value">{hallucination.avgRisk7d}</div>
               <div className="tc-metric-foot">{hallucination.last7d} respuestas con flags</div>
             </div>
-            <div className="tc-metric" style={{ ["--tc-acc" as never]: "#fbbf24" }}>
+            <div className="tc-metric" style={{ ["--tc-acc" as never]: "#f1c21b" }}>
               <div className="tc-metric-head"><span className="tc-metric-icon">🔍</span><span className="tc-metric-label">Total logueadas</span></div>
               <div className="tc-metric-value">{hallucination.totalLogged}</div>
               <div className="tc-metric-foot">histórico completo</div>
@@ -688,8 +688,8 @@ export default function LearningDashboard({ ctx }: Props) {
               <div className="row" style={{ gap: 6, flexWrap: "wrap" }}>
                 {hallucination.topSuspicious.map((t) => (
                   <span key={t.tx} className="kanban-tag" style={{
-                    borderColor: "rgba(239,68,68,0.4)", color: "#fca5a5",
-                    background: "rgba(239,68,68,0.08)", fontFamily: "var(--font-mono, monospace)",
+                    borderColor: "rgba(250,77,86,0.4)", color: "#fca5a5",
+                    background: "rgba(250,77,86,0.08)", fontFamily: "var(--font-mono, monospace)",
                   }}>
                     {t.tx} <b style={{ marginLeft: 4 }}>×{t.count}</b>
                   </span>
@@ -708,7 +708,7 @@ export default function LearningDashboard({ ctx }: Props) {
       {/* ============================================================== */}
       <div className="card" style={{ borderLeft: "3px solid #06b6d4" }}>
         <div className="ticket-section-head">
-          <span style={{ color: "#22d3ee" }}>🎯</span> ACTIVE LEARNING · Q&amp;A borderline (score 40-69)
+          <span style={{ color: "#4589ff" }}>🎯</span> ACTIVE LEARNING · Q&amp;A borderline (score 40-69)
         </div>
         <p className="settings-section-desc">
           Las Q&amp;A más valiosas para que el humano revise: las que el agente ni acierta ni falla claramente.
@@ -725,7 +725,7 @@ export default function LearningDashboard({ ctx }: Props) {
               {borderline.length} Q&amp;A en zona gris · ordenadas por cercanía al borde (50)
             </div>
             {borderline.slice(0, 10).map((q) => {
-              const color = q.avgScore >= 60 ? "#fbbf24" : q.avgScore >= 50 ? "#f59e0b" : "#ef4444";
+              const color = q.avgScore >= 60 ? "#f1c21b" : q.avgScore >= 50 ? "#f59e0b" : "#fa4d56";
               return (
                 <div key={q.qaId} className="lab-fb-block" style={{ borderLeft: `3px solid ${color}` }}>
                   <div className="row" style={{ gap: 8, alignItems: "center", marginBottom: 4, flexWrap: "wrap" }}>
@@ -733,7 +733,7 @@ export default function LearningDashboard({ ctx }: Props) {
                       score {q.avgScore}/100
                     </span>
                     {q.module && (
-                      <span className="kanban-tag" style={{ borderColor: "rgba(34,211,238,0.4)", color: "#67e8f9", background: "rgba(34,211,238,0.08)" }}>
+                      <span className="kanban-tag" style={{ borderColor: "rgba(69,137,255,0.4)", color: "#67e8f9", background: "rgba(69,137,255,0.08)" }}>
                         {q.module}
                       </span>
                     )}
@@ -805,7 +805,7 @@ export default function LearningDashboard({ ctx }: Props) {
                     <td><span style={{ color: VERDICT_COLORS.fail, fontWeight: 700 }}>{r.failed}</span></td>
                     <td>
                       <div className="tc-score-circle" style={{
-                        ["--sc-color" as never]: r.avg_score >= 75 ? "#10b981" : r.avg_score >= 50 ? "#fbbf24" : "#ef4444",
+                        ["--sc-color" as never]: r.avg_score >= 75 ? "#10b981" : r.avg_score >= 50 ? "#f1c21b" : "#fa4d56",
                       }}>{r.avg_score}</div>
                     </td>
                     <td>
@@ -822,9 +822,9 @@ export default function LearningDashboard({ ctx }: Props) {
       {/* ============================================================== */}
       {/* TICKETS -> Q&A                                                   */}
       {/* ============================================================== */}
-      <div className="card" style={{ borderLeft: "3px solid #fbbf24" }}>
+      <div className="card" style={{ borderLeft: "3px solid #f1c21b" }}>
         <div className="ticket-section-head">
-          <span style={{ color: "#fbbf24" }}>🎫</span> TICKETS RESUELTOS → Q&amp;A PROPUESTAS
+          <span style={{ color: "#f1c21b" }}>🎫</span> TICKETS RESUELTOS → Q&amp;A PROPUESTAS
         </div>
         <p className="settings-section-desc">
           Tomamos tickets cerrados sin Q&amp;A. Gemini lee la conversación, crea un knowledge item base
@@ -838,7 +838,7 @@ export default function LearningDashboard({ ctx }: Props) {
             <span style={{ fontFamily: "var(--font-mono, monospace)", fontWeight: 700, minWidth: 22 }}>{ticketsLimit}</span>
           </label>
           <button className="btn primary" onClick={runTicketsToQa} disabled={ticketsRunning}
-            style={{ background: "linear-gradient(135deg, #fbbf24, #f59e0b)", borderColor: "#fbbf24", marginLeft: "auto" }}>
+            style={{ background: "linear-gradient(135deg, #f1c21b, #f59e0b)", borderColor: "#f1c21b", marginLeft: "auto" }}>
             {ticketsRunning ? <><span className="spinner" /> Gemini proponiendo…</> : "🤖 Generar Q&A desde tickets"}
           </button>
         </div>
@@ -862,7 +862,7 @@ export default function LearningDashboard({ ctx }: Props) {
       {/* ============================================================== */}
       {/* A/B TEST + AUTO-PROMOTE                                          */}
       {/* ============================================================== */}
-      <div className="card" style={{ borderLeft: "3px solid #22d3ee" }}>
+      <div className="card" style={{ borderLeft: "3px solid #4589ff" }}>
         <div className="ticket-section-head" style={{ cursor: "pointer" }} onClick={() => setShowAb(!showAb)}>
           <span style={{ color: "#67e8f9" }}>🆎</span> A/B TEST · COMPARAR PROMPT CANDIDATO VS ACTIVO
           <span style={{ marginLeft: "auto", fontSize: 11, color: "var(--text-dim)" }}>{showAb ? "▼" : "▶"}</span>
@@ -901,7 +901,7 @@ export default function LearningDashboard({ ctx }: Props) {
                 {abRunning ? <><span className="spinner" /> A/B…</> : "▶ Solo comparar"}
               </button>
               <button className="btn primary" onClick={() => runAutoPromote(autoApply)} disabled={abRunning || autoRunning || !abPrompt.trim()}
-                style={{ background: "linear-gradient(135deg, #22d3ee, #06b6d4)", borderColor: "#22d3ee" }}>
+                style={{ background: "linear-gradient(135deg, #4589ff, #06b6d4)", borderColor: "#4589ff" }}>
                 {autoRunning
                   ? <><span className="spinner" /> auto-promote…</>
                   : autoApply ? "✓ Comparar + adoptar si gana" : "📊 Solo evaluar promoción"}
@@ -915,16 +915,16 @@ export default function LearningDashboard({ ctx }: Props) {
             )}
 
             {abReport && (
-              <div className="lab-fb-card" style={{ ["--fb-color" as never]: abReport.winner === "B" ? "#10b981" : abReport.winner === "A" ? "#ef4444" : "#64748b" }}>
+              <div className="lab-fb-card" style={{ ["--fb-color" as never]: abReport.winner === "B" ? "#10b981" : abReport.winner === "A" ? "#fa4d56" : "#64748b" }}>
                 <div style={{ fontSize: 12, fontWeight: 700, letterSpacing: 1, marginBottom: 8 }}>
                   RESULTADO A/B · GANADOR{" "}
-                  <span style={{ color: abReport.winner === "B" ? "#10b981" : abReport.winner === "A" ? "#ef4444" : "#94a3b8" }}>
+                  <span style={{ color: abReport.winner === "B" ? "#10b981" : abReport.winner === "A" ? "#fa4d56" : "#94a3b8" }}>
                     {abReport.winner === "tie" ? "EMPATE" : `VARIANTE ${abReport.winner}`}
                   </span>
                   {" "}· delta <b>{abReport.scoreDelta > 0 ? "+" : ""}{abReport.scoreDelta}</b> pts
                 </div>
                 <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 10 }}>
-                  <div className="lab-fb-block" style={{ borderLeft: "3px solid #ef4444" }}>
+                  <div className="lab-fb-block" style={{ borderLeft: "3px solid #fa4d56" }}>
                     <div className="lab-fb-block-head">A · {abReport.runA.promptLabel ?? "(activo)"}</div>
                     <div>score <b>{abReport.runA.avgScore}</b> · pass <b>{abReport.runA.passed}/{abReport.runA.totalQas}</b></div>
                   </div>
@@ -980,12 +980,12 @@ export default function LearningDashboard({ ctx }: Props) {
         {diffReport && (
           <div className="col" style={{ gap: 10, marginTop: 10 }}>
             <div className="row" style={{ gap: 10, flexWrap: "wrap", fontSize: 12 }}>
-              <span>Score delta: <b style={{ color: diffReport.scoreDelta > 0 ? "#10b981" : diffReport.scoreDelta < 0 ? "#ef4444" : "#94a3b8" }}>
+              <span>Score delta: <b style={{ color: diffReport.scoreDelta > 0 ? "#10b981" : diffReport.scoreDelta < 0 ? "#fa4d56" : "#94a3b8" }}>
                 {diffReport.scoreDelta > 0 ? "+" : ""}{diffReport.scoreDelta} pts
               </b></span>
               <span>Pass delta: <b>{diffReport.passDelta > 0 ? "+" : ""}{diffReport.passDelta}</b></span>
               <span>📈 <b style={{ color: "#10b981" }}>{diffReport.improved.length}</b> mejoraron</span>
-              <span>📉 <b style={{ color: "#ef4444" }}>{diffReport.degraded.length}</b> empeoraron</span>
+              <span>📉 <b style={{ color: "#fa4d56" }}>{diffReport.degraded.length}</b> empeoraron</span>
               <span>= <b>{diffReport.unchanged.length}</b> sin cambio</span>
             </div>
 
@@ -1001,11 +1001,11 @@ export default function LearningDashboard({ ctx }: Props) {
             )}
 
             {diffReport.degraded.slice(0, 5).length > 0 && (
-              <div className="lab-fb-block" style={{ borderLeft: "3px solid #ef4444" }}>
-                <div className="lab-fb-block-head" style={{ color: "#ef4444" }}>▸ TOP 5 DEGRADADAS</div>
+              <div className="lab-fb-block" style={{ borderLeft: "3px solid #fa4d56" }}>
+                <div className="lab-fb-block-head" style={{ color: "#fa4d56" }}>▸ TOP 5 DEGRADADAS</div>
                 {diffReport.degraded.slice(0, 5).map((r) => (
                   <div key={r.qaId} style={{ fontSize: 12, padding: "4px 0", borderBottom: "1px solid var(--border-soft)" }}>
-                    <b style={{ color: "#ef4444" }}>{r.delta}</b> · {r.scoreA} → {r.scoreB} · {r.question.slice(0, 100)}…
+                    <b style={{ color: "#fa4d56" }}>{r.delta}</b> · {r.scoreA} → {r.scoreB} · {r.question.slice(0, 100)}…
                   </div>
                 ))}
               </div>
@@ -1029,7 +1029,7 @@ export default function LearningDashboard({ ctx }: Props) {
                 <div className="row" style={{ gap: 8, marginTop: 6, flexWrap: "wrap", fontSize: 11 }}>
                   <span className="tc-pill ok">{detail.passed} pass</span>
                   <span className="tc-pill pend">{detail.results.filter((r) => r.verdict === "partial").length} partial</span>
-                  <span style={{ background: "rgba(239,68,68,0.18)", border: "1px solid rgba(239,68,68,0.4)", color: "#fca5a5", padding: "2px 8px", borderRadius: 999, fontWeight: 600 }}>
+                  <span style={{ background: "rgba(250,77,86,0.18)", border: "1px solid rgba(250,77,86,0.4)", color: "#fca5a5", padding: "2px 8px", borderRadius: 999, fontWeight: 600 }}>
                     {detail.failed} fail
                   </span>
                 </div>
@@ -1086,7 +1086,7 @@ function delta(before: number, after: number, invert = false): React.ReactNode {
   const d = after - before;
   if (d === 0) return null;
   const positive = invert ? d < 0 : d > 0;
-  const color = positive ? "#10b981" : "#ef4444";
+  const color = positive ? "#10b981" : "#fa4d56";
   const sign = d > 0 ? "+" : "";
   return <span style={{ color, fontSize: 10.5, marginLeft: 4 }}>({sign}{d})</span>;
 }
@@ -1113,12 +1113,12 @@ function SparkChart({ points }: { points: { date: string; avgScore: number; pass
       {/* passRate (verde) */}
       <path d={passPath} stroke="#10b981" strokeWidth="2" fill="none" />
       {/* avgScore (cyan) */}
-      <path d={scorePath} stroke="#22d3ee" strokeWidth="2" fill="none" />
+      <path d={scorePath} stroke="#4589ff" strokeWidth="2" fill="none" />
       {/* dots */}
       {points.map((p, i) => (
         <g key={i}>
           <circle cx={xs(i)} cy={ys(p.passRate)} r="2.5" fill="#10b981" />
-          <circle cx={xs(i)} cy={ys(p.avgScore)} r="2.5" fill="#22d3ee" />
+          <circle cx={xs(i)} cy={ys(p.avgScore)} r="2.5" fill="#4589ff" />
         </g>
       ))}
       {/* labels Y */}
@@ -1127,7 +1127,7 @@ function SparkChart({ points }: { points: { date: string; avgScore: number; pass
       <text x="4" y={ys(0)   + 3} fontSize="9" fill="rgba(148,163,184,0.6)">0</text>
       {/* leyenda */}
       <g transform={`translate(${W - 180}, 10)`}>
-        <circle cx="6" cy="6" r="3" fill="#22d3ee" />
+        <circle cx="6" cy="6" r="3" fill="#4589ff" />
         <text x="14" y="9" fontSize="10" fill="var(--text-soft)">avg score</text>
         <circle cx="90" cy="6" r="3" fill="#10b981" />
         <text x="98" y="9" fontSize="10" fill="var(--text-soft)">pass rate %</text>

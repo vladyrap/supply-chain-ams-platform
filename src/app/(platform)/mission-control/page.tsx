@@ -24,7 +24,7 @@ function usePulseOnChange<T extends number>(value: T): boolean {
 }
 
 function GaugeSLA({ pct }: { pct: number }) {
-  const stroke = pct >= 90 ? "#10b981" : pct >= 75 ? "#f59e0b" : "#ef4444";
+  const stroke = pct >= 90 ? "#10b981" : pct >= 75 ? "#f59e0b" : "#fa4d56";
   const r = 70;
   const c = 2 * Math.PI * r;
   const off = c - (pct / 100) * c;
@@ -208,7 +208,7 @@ export default function MissionControlPage() {
             <BigCounter label="Tickets activos"  value={t?.supportTicketsActive ?? 0}     accent="#3b82f6" />
             <BigCounter label="Conv. abiertas"   value={t?.supportConversationsOpen ?? 0} accent="#a855f7" />
             <BigCounter label="Incidents hoy"    value={t?.incidentsToday ?? 0}           accent="#10b981" />
-            <BigCounter label="SLA vencidos"     value={t?.supportTicketsSlaBreaches ?? 0} accent={t && t.supportTicketsSlaBreaches > 0 ? "#ef4444" : "#6b7280"} />
+            <BigCounter label="SLA vencidos"     value={t?.supportTicketsSlaBreaches ?? 0} accent={t && t.supportTicketsSlaBreaches > 0 ? "#fa4d56" : "#6b7280"} />
           </div>
         </div>
 
@@ -260,7 +260,7 @@ export default function MissionControlPage() {
             <BigCounter label="% IA resuelto"     value={t?.aiResolvedRate ?? 0} accent="#06b6d4" />
             <BigCounter label="Incidents 7d"      value={t?.incidentsLast7d ?? 0} accent="#10b981" />
             <BigCounter label="Reuniones done"    value={t?.meetingsDone ?? 0} accent="#a855f7" />
-            <BigCounter label="KB approved"       value={t?.kbApproved ?? 0} accent="#fbbf24" />
+            <BigCounter label="KB approved"       value={t?.kbApproved ?? 0} accent="#f1c21b" />
             <BigCounter label="Conv. totales"     value={t?.supportConversations ?? 0} accent="#3b82f6" />
             <BigCounter label="Incidents total"   value={t?.incidents ?? 0} accent="#8b5cf6" />
           </div>

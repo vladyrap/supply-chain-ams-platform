@@ -29,22 +29,22 @@ import AgentReadinessCenter from "@/components/readiness/AgentReadinessCenter";
 import RequirePermission from "@/components/admin/RequirePermission";
 
 const MODULE_COLORS: Record<string, string> = {
-  MM: "#5b8def", SD: "#c780f0", PP: "#4dd0c5", WM: "#f0b66c",
-  EWM: "#a78bfa", QM: "#fb7185", PM: "#34d399", ARIBA: "#facc15",
-  IBP: "#22d3ee", BTP: "#fb923c", INTEGRACION: "#94a3b8", NO_INFORMADO: "#6b7280",
+  MM: "#4589ff", SD: "#c780f0", PP: "#4dd0c5", WM: "#f0b66c",
+  EWM: "#be95ff", QM: "#fb7185", PM: "#42be65", ARIBA: "#facc15",
+  IBP: "#4589ff", BTP: "#fb923c", INTEGRACION: "#94a3b8", NO_INFORMADO: "#6b7280",
 };
 const CONF_COLORS: Record<string, string> = {
-  alta: "#4ade80",
+  alta: "#42be65",
   media: "#f0b66c",
   baja: "#f06b6b",
   no_detectada: "#6b7280",
 };
 const URG_COLORS: Record<string, string> = {
-  critica: "#f06b6b", alta: "#f0b66c", media: "#5b8def", baja: "#4ade80",
+  critica: "#f06b6b", alta: "#f0b66c", media: "#4589ff", baja: "#42be65",
 };
 
 function colorForModule(k: string): string {
-  return MODULE_COLORS[k] ?? "#5b8def";
+  return MODULE_COLORS[k] ?? "#4589ff";
 }
 
 function DashboardPageInner() {
@@ -368,7 +368,7 @@ function DashboardPageInner() {
             <StackedLine
               labels={d.timeline.map((t) => t.day)}
               series={[
-                { name: "Incidentes", color: "#5b8def", values: d.timeline.map((t) => t.incidents) },
+                { name: "Incidentes", color: "#4589ff", values: d.timeline.map((t) => t.incidents) },
                 { name: "Tickets mesa", color: "#f0b66c", values: d.timeline.map((t) => t.tickets) },
                 { name: "Reuniones", color: "#c780f0", values: d.timeline.map((t) => t.meetings) },
               ]}

@@ -45,15 +45,15 @@ export default function QualityEvaluatorCenter() {
             </p>
           </div>
           <div className="kanban-stats">
-            <div className="kanban-stat" style={{ ["--accent" as never]: "#22d3ee" }}>
+            <div className="kanban-stat" style={{ ["--accent" as never]: "#4589ff" }}>
               <div className="kanban-stat-val">{hook.evaluations.length}</div>
               <div className="kanban-stat-lbl">EVALUACIONES</div>
             </div>
-            <div className="kanban-stat" style={{ ["--accent" as never]: "#fbbf24" }}>
+            <div className="kanban-stat" style={{ ["--accent" as never]: "#f1c21b" }}>
               <div className="kanban-stat-val">{pending.length}</div>
               <div className="kanban-stat-lbl">PENDIENTES</div>
             </div>
-            <div className="kanban-stat" style={{ ["--accent" as never]: "#ef4444" }}>
+            <div className="kanban-stat" style={{ ["--accent" as never]: "#fa4d56" }}>
               <div className="kanban-stat-val">{hook.metrics.pctHighRisk}%</div>
               <div className="kanban-stat-lbl">RIESGO ALTO</div>
             </div>
@@ -89,9 +89,9 @@ export default function QualityEvaluatorCenter() {
               <div>Sin incidentes pendientes de evaluación.</div></div>
           ) : (
             filteredPending.slice(0, 30).map((inc) => (
-              <div key={inc.id} className="lab-fb-card" style={{ ["--fb-color" as never]: "#fbbf24" }}>
+              <div key={inc.id} className="lab-fb-card" style={{ ["--fb-color" as never]: "#f1c21b" }}>
                 <div className="row" style={{ gap: 8, alignItems: "center", flexWrap: "wrap", marginBottom: 6 }}>
-                  <span className="kanban-tag" style={{ borderColor: "rgba(34,211,238,0.4)", color: "#67e8f9", background: "rgba(34,211,238,0.08)" }}>
+                  <span className="kanban-tag" style={{ borderColor: "rgba(69,137,255,0.4)", color: "#67e8f9", background: "rgba(69,137,255,0.08)" }}>
                     {inc.sap_module ?? "AMS"}
                   </span>
                   <span style={{ fontSize: 11, color: "var(--text-dim)" }}>
@@ -104,7 +104,7 @@ export default function QualityEvaluatorCenter() {
                 <div style={{ fontSize: 12.5, marginBottom: 6 }}>{inc.message.slice(0, 220)}</div>
                 <div className="row" style={{ gap: 6, flexWrap: "wrap", marginTop: 6 }}>
                   <button className="btn primary" onClick={() => setEvaluating(inc)}
-                    style={{ background: "linear-gradient(135deg, #fbbf24, #d97706)", borderColor: "#fbbf24", fontSize: 12, padding: "5px 12px" }}>
+                    style={{ background: "linear-gradient(135deg, #f1c21b, #d97706)", borderColor: "#f1c21b", fontSize: 12, padding: "5px 12px" }}>
                     🏅 Evaluar
                   </button>
                   <KnowledgeQuickActions incident={inc} variant="compact" />
@@ -123,7 +123,7 @@ export default function QualityEvaluatorCenter() {
           ) : (
             hook.evaluations.map((e) => {
               const overall = (e.accuracyScore + e.usefulnessScore + e.clarityScore + e.completenessScore) / 4;
-              const color = overall >= 4 ? "#10b981" : overall >= 3 ? "#fbbf24" : "#ef4444";
+              const color = overall >= 4 ? "#10b981" : overall >= 3 ? "#f1c21b" : "#fa4d56";
               return (
                 <div key={e.id} className="lab-fb-block" style={{ borderLeft: `3px solid ${color}` }}>
                   <div className="row" style={{ gap: 8, alignItems: "center", flexWrap: "wrap" }}>
@@ -141,7 +141,7 @@ export default function QualityEvaluatorCenter() {
                         </div>
                       )}
                     </div>
-                    <button className="tc-iconbtn" onClick={() => hook.deleteEvaluation(e.id)} style={{ color: "#ef4444" }}>🗑</button>
+                    <button className="tc-iconbtn" onClick={() => hook.deleteEvaluation(e.id)} style={{ color: "#fa4d56" }}>🗑</button>
                   </div>
                 </div>
               );

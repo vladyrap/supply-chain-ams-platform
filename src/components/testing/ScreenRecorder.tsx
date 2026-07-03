@@ -50,14 +50,14 @@ export default function ScreenRecorder({ testing, actingUserId }: Props) {
   return (
     <div className="col" style={{ gap: 14 }}>
       {/* Advertencias */}
-      <div className="card" style={{ background: "rgba(251,191,36,0.07)", borderColor: "rgba(251,191,36,0.30)", color: "#fde68a", fontSize: 12 }}>
+      <div className="card" style={{ background: "rgba(241,194,27,0.07)", borderColor: "rgba(241,194,27,0.30)", color: "#fde68a", fontSize: 12 }}>
         ⚠ <b>Esta versión graba localmente en el navegador.</b> Para persistencia real se requiere backend de almacenamiento. Si refrescás la página sin descargar, perdés el video.
         <br />
         🔒 <b>Privacidad:</b> evitá grabar datos productivos sensibles (PII, claves, datos confidenciales).
       </div>
 
       {!rec.isSupported && (
-        <div className="card" style={{ background: "rgba(239,68,68,0.07)", borderColor: "rgba(239,68,68,0.30)", color: "#fca5a5", fontSize: 12 }}>
+        <div className="card" style={{ background: "rgba(250,77,86,0.07)", borderColor: "rgba(250,77,86,0.30)", color: "#fca5a5", fontSize: 12 }}>
           ❌ Tu navegador no soporta <code>getDisplayMedia</code> o <code>MediaRecorder</code>. Usá Chrome / Edge / Firefox actualizados.
         </div>
       )}
@@ -87,18 +87,18 @@ export default function ScreenRecorder({ testing, actingUserId }: Props) {
           {!rec.isRecording ? (
             <button className="btn primary" disabled={!rec.isSupported || !scenarioId}
               onClick={() => rec.startRecording({ audio: includeAudio })}
-              style={{ background: "linear-gradient(135deg, #ef4444, #a855f7)" }}>
+              style={{ background: "linear-gradient(135deg, #fa4d56, #a855f7)" }}>
               ⏺ Iniciar grabación
             </button>
           ) : (
             <button className="btn" onClick={rec.stopRecording}
-              style={{ background: "rgba(239,68,68,0.15)", borderColor: "rgba(239,68,68,0.5)", color: "#fca5a5" }}>
+              style={{ background: "rgba(250,77,86,0.15)", borderColor: "rgba(250,77,86,0.5)", color: "#fca5a5" }}>
               ⏹ Detener
             </button>
           )}
           {rec.isRecording && (
-            <span className="row" style={{ gap: 6, color: "#f87171", fontWeight: 600 }}>
-              <span style={{ width: 10, height: 10, borderRadius: "50%", background: "#ef4444", animation: "pulse 1s infinite" }} />
+            <span className="row" style={{ gap: 6, color: "#ff8389", fontWeight: 600 }}>
+              <span style={{ width: 10, height: 10, borderRadius: "50%", background: "#fa4d56", animation: "pulse 1s infinite" }} />
               REC · {rec.durationSeconds}s
             </span>
           )}

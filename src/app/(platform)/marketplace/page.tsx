@@ -138,7 +138,7 @@ export default function MarketplacePage() {
       <div style={{
         borderRadius: 14, padding: "44px 36px", marginBottom: 20,
         background: "linear-gradient(120deg, #1023a0, #1d4ed8 65%, #2563eb)",
-        border: "1px solid rgba(91,141,239,0.4)",
+        border: "1px solid rgba(69,137,255,0.4)",
       }}>
         <div style={{ fontSize: 11.5, letterSpacing: 2.5, color: "rgba(255,255,255,0.7)", marginBottom: 10 }}>
           ✦ SOLUCIONES EMPRESARIALES CON IA
@@ -168,9 +168,9 @@ export default function MarketplacePage() {
             onClick={() => setCategory(key)}
             style={{
               fontSize: 13, padding: "7px 16px", borderRadius: 20, cursor: "pointer",
-              border: `1px solid ${category === key ? "#22d3ee" : "var(--border-soft)"}`,
-              background: category === key ? "rgba(34,211,238,0.15)" : "transparent",
-              color: category === key ? "#22d3ee" : "var(--text-soft)",
+              border: `1px solid ${category === key ? "#4589ff" : "var(--border-soft)"}`,
+              background: category === key ? "rgba(69,137,255,0.15)" : "transparent",
+              color: category === key ? "#4589ff" : "var(--text-soft)",
             }}
           >
             {label}
@@ -185,7 +185,7 @@ export default function MarketplacePage() {
             <div className="row" style={{ gap: 12, alignItems: "center" }}>
               <span style={{
                 fontSize: 24, width: 46, height: 46, display: "grid", placeItems: "center",
-                borderRadius: 12, background: "rgba(91,141,239,0.12)", border: "1px solid rgba(91,141,239,0.25)",
+                borderRadius: 12, background: "rgba(69,137,255,0.12)", border: "1px solid rgba(69,137,255,0.25)",
               }}>
                 {app.icon}
               </span>

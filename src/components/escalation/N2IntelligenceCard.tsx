@@ -40,8 +40,8 @@ export default function N2IntelligenceCard({ analysis, onEscalateToSpecialist, c
           )}
         </div>
         <div className="row" style={{ gap: 6 }}>
-          <Stat label="Confianza" value={`${analysis.confidenceScore}/100`} color="#22d3ee" />
-          <Stat label="Urgencia" value={`${analysis.urgencyScore}/100`} color={analysis.urgencyScore >= 70 ? "#ef4444" : analysis.urgencyScore >= 40 ? "#f59e0b" : "#10b981"} />
+          <Stat label="Confianza" value={`${analysis.confidenceScore}/100`} color="#4589ff" />
+          <Stat label="Urgencia" value={`${analysis.urgencyScore}/100`} color={analysis.urgencyScore >= 70 ? "#fa4d56" : analysis.urgencyScore >= 40 ? "#f59e0b" : "#10b981"} />
         </div>
       </div>
 
@@ -78,7 +78,7 @@ export default function N2IntelligenceCard({ analysis, onEscalateToSpecialist, c
           <Chip
             label="📋 Regla"
             value={analysis.matchedRule.name}
-            color="#22d3ee"
+            color="#4589ff"
           />
         )}
       </div>
@@ -107,7 +107,7 @@ export default function N2IntelligenceCard({ analysis, onEscalateToSpecialist, c
           {/* Señales push / stay */}
           {(analysis.pushEscalate.length > 0 || analysis.pushStay.length > 0) && (
             <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 10, marginBottom: 12 }}>
-              <SignalList signals={analysis.pushEscalate} title="↑ A favor de escalar" color="#ef4444" />
+              <SignalList signals={analysis.pushEscalate} title="↑ A favor de escalar" color="#fa4d56" />
               <SignalList signals={analysis.pushStay} title="↓ A favor de N1" color="#10b981" />
             </div>
           )}
@@ -128,9 +128,9 @@ export default function N2IntelligenceCard({ analysis, onEscalateToSpecialist, c
           {analysis.risksIfNotEscalated.length > 0 && (
             <div style={{
               padding: 10, borderRadius: 4, marginBottom: 10,
-              background: "#ef444411", border: "1px solid #ef444433",
+              background: "#fa4d5611", border: "1px solid #fa4d5633",
             }}>
-              <div style={{ fontSize: 10, color: "#ef4444", letterSpacing: 1.5, fontWeight: 700, marginBottom: 4 }}>
+              <div style={{ fontSize: 10, color: "#fa4d56", letterSpacing: 1.5, fontWeight: 700, marginBottom: 4 }}>
                 ⚠ RIESGOS DE NO ESCALAR
               </div>
               <ul style={{ margin: 0, paddingLeft: 16, fontSize: 11.5, color: "var(--text-soft)" }}>
@@ -212,19 +212,19 @@ function SpecialistRow({
 }) {
   const avColor = spec.availability === "AVAILABLE" ? "#10b981"
     : spec.availability === "BUSY" ? "#f59e0b"
-    : spec.availability === "ON_CALL" ? "#22d3ee"
-    : "#ef4444";
+    : spec.availability === "ON_CALL" ? "#4589ff"
+    : "#fa4d56";
 
   return (
     <div style={{
       padding: 10, borderRadius: 6,
-      background: isPrimary ? "#22d3ee11" : "var(--bg-elev)",
-      border: isPrimary ? "2px solid #22d3ee55" : "1px solid var(--border-soft)",
+      background: isPrimary ? "#4589ff11" : "var(--bg-elev)",
+      border: isPrimary ? "2px solid #4589ff55" : "1px solid var(--border-soft)",
     }}>
       <div className="row between" style={{ alignItems: "flex-start", gap: 8 }}>
         <div style={{ flex: 1, minWidth: 0 }}>
           <div className="row" style={{ gap: 6, alignItems: "baseline" }}>
-            {isPrimary && <span style={{ fontSize: 11, color: "#22d3ee", fontWeight: 700 }}>★</span>}
+            {isPrimary && <span style={{ fontSize: 11, color: "#4589ff", fontWeight: 700 }}>★</span>}
             <span style={{ fontSize: 14, fontWeight: 600 }}>#{spec.rank} {spec.responsibleName}</span>
             <span style={{ fontSize: 11, color: "var(--text-dim)", fontVariantNumeric: "tabular-nums" }}>
               score {spec.matchScore}/100

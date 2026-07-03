@@ -15,7 +15,7 @@ export default function KnowledgeCurationCard({ candidate, onApprove, onReject, 
   const [rejectReason, setRejectReason] = useState("");
 
   const scoreColor = candidate.brilliantScore >= 85 ? "#10b981"
-    : candidate.brilliantScore >= 70 ? "#22d3ee"
+    : candidate.brilliantScore >= 70 ? "#4589ff"
     : "#f59e0b";
 
   return (
@@ -91,7 +91,7 @@ export default function KnowledgeCurationCard({ candidate, onApprove, onReject, 
           )}
           {onReject && !showRejectForm && (
             <button className="btn ghost sm" onClick={() => setShowRejectForm(true)}
-              style={{ fontSize: 11, color: "#ef4444" }}>
+              style={{ fontSize: 11, color: "#fa4d56" }}>
               ✕ Rechazar
             </button>
           )}
@@ -105,7 +105,7 @@ export default function KnowledgeCurationCard({ candidate, onApprove, onReject, 
       )}
 
       {candidate.status === "REJECTED" && (
-        <div style={{ fontSize: 11, color: "#ef4444" }}>
+        <div style={{ fontSize: 11, color: "#fa4d56" }}>
           ✕ Rechazada: {candidate.rejectionReason ?? "sin razón"}
         </div>
       )}
@@ -128,7 +128,7 @@ export default function KnowledgeCurationCard({ candidate, onApprove, onReject, 
                   setShowRejectForm(false);
                 }
               }}
-              style={{ fontSize: 11, background: "#ef4444", borderColor: "#ef4444" }}
+              style={{ fontSize: 11, background: "#fa4d56", borderColor: "#fa4d56" }}
               disabled={rejectReason.trim().length < 5}
             >
               Confirmar rechazo

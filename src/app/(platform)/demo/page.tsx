@@ -24,9 +24,9 @@ const KIND_META: Record<string, { color: string; icon: string }> = {
   ticket_created:       { color: "#f59e0b", icon: "🎫" },
   ticket_assigned:      { color: "#a855f7", icon: "👨‍💻" },
   ticket_resolved:      { color: "#10b981", icon: "✅" },
-  kb_created:           { color: "#fbbf24", icon: "📘" },
-  done:                 { color: "#22c55e", icon: "🎉" },
-  error:                { color: "#ef4444", icon: "⚠" },
+  kb_created:           { color: "#f1c21b", icon: "📘" },
+  done:                 { color: "#42be65", icon: "🎉" },
+  error:                { color: "#fa4d56", icon: "⚠" },
 };
 
 export default function DemoPage() {
@@ -170,7 +170,7 @@ export default function DemoPage() {
                       {new Date(s.ts).toLocaleTimeString()}
                     </span>
                   </div>
-                  <div style={{ fontSize: 13, color: meta.color === "#ef4444" ? "var(--error)" : "var(--text)" }}>
+                  <div style={{ fontSize: 13, color: meta.color === "#fa4d56" ? "var(--error)" : "var(--text)" }}>
                     {meta.icon}{" "}{s.message}
                   </div>
                   {s.data && Object.keys(s.data).length > 0 && (

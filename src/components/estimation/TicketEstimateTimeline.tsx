@@ -12,7 +12,7 @@ interface Props {
 
 function statusColor(status?: string): string {
   if (status === "done") return "#10b981";
-  if (status === "in_progress") return "#22d3ee";
+  if (status === "in_progress") return "#4589ff";
   if (status === "skipped") return "#64748b";
   return "#a855f7";
 }

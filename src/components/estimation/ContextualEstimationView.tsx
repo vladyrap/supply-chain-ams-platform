@@ -135,7 +135,7 @@ export default function ContextualEstimationView({
   }
 
   const conf = result.confidence;
-  const confColor = conf === "HIGH" ? "#10b981" : conf === "LOW" ? "#ef4444" : "#f59e0b";
+  const confColor = conf === "HIGH" ? "#10b981" : conf === "LOW" ? "#fa4d56" : "#f59e0b";
   const range = result.totalRange;
 
   // Group adjustments by direction
@@ -233,7 +233,7 @@ export default function ContextualEstimationView({
           marginTop: 12, padding: 10, borderRadius: 6,
           background: "var(--bg-elev-2)", border: "1px solid var(--border-soft)",
         }}>
-          <div style={{ fontSize: 10, letterSpacing: 2, color: "#22d3ee", marginBottom: 3 }}>
+          <div style={{ fontSize: 10, letterSpacing: 2, color: "#4589ff", marginBottom: 3 }}>
             NEXT BEST ACTION
           </div>
           <div style={{ fontSize: 14, fontWeight: 600 }}>{result.nextBestAction.label}</div>
@@ -259,10 +259,10 @@ export default function ContextualEstimationView({
             color="#10b981" explanation={result.optimisticScenario.explanation}
             assumptions={result.optimisticScenario.assumptions} />
           <ScenarioCard label="Esperado" hours={result.expectedScenario.hours}
-            color="#22d3ee" explanation={result.expectedScenario.explanation}
+            color="#4589ff" explanation={result.expectedScenario.explanation}
             assumptions={result.expectedScenario.assumptions} highlight />
           <ScenarioCard label="Pesimista" hours={result.pessimisticScenario.hours}
-            color="#ef4444" explanation={result.pessimisticScenario.explanation}
+            color="#fa4d56" explanation={result.pessimisticScenario.explanation}
             assumptions={result.pessimisticScenario.assumptions} />
         </div>
       </div>
@@ -291,7 +291,7 @@ export default function ContextualEstimationView({
             ⚖ FACTORES CONTEXTUALES APLICADOS ({result.contextualAdjustments.length})
           </div>
           <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 12 }}>
-            <AdjustmentList title="↑ Suben la estimación" adjs={incAdj} color="#ef4444" />
+            <AdjustmentList title="↑ Suben la estimación" adjs={incAdj} color="#fa4d56" />
             <AdjustmentList title="↓ Bajan la estimación" adjs={decAdj} color="#10b981" />
           </div>
         </div>
@@ -350,7 +350,7 @@ export default function ContextualEstimationView({
 
       {/* ── 8. Recomendaciones ────────────────────────────── */}
       {result.recommendations.length > 0 && (
-        <div className="card" style={{ padding: 14, borderLeft: "3px solid #22d3ee" }}>
+        <div className="card" style={{ padding: 14, borderLeft: "3px solid #4589ff" }}>
           <div style={{ fontSize: 10, letterSpacing: 2, color: "var(--text-dim)", marginBottom: 10 }}>
             💡 RECOMENDACIONES ({result.recommendations.length})
           </div>
@@ -362,7 +362,7 @@ export default function ContextualEstimationView({
               }}>
                 <div className="row between" style={{ alignItems: "baseline" }}>
                   <div style={{ fontSize: 13, fontWeight: 600 }}>{r.title}</div>
-                  <div style={{ fontSize: 10, color: "#22d3ee", fontWeight: 700 }}>
+                  <div style={{ fontSize: 10, color: "#4589ff", fontWeight: 700 }}>
                     impacto {r.expectedImpact}/5
                   </div>
                 </div>

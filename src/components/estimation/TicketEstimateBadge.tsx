@@ -12,8 +12,8 @@ interface Props {
 
 function confColor(c?: string): string {
   if (c === "HIGH") return "#10b981";
-  if (c === "LOW") return "#ef4444";
-  return "#fbbf24";
+  if (c === "LOW") return "#fa4d56";
+  return "#f1c21b";
 }
 
 export default function TicketEstimateBadge({ estimate, size = "sm" }: Props) {

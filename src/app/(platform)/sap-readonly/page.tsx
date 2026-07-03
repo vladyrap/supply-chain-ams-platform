@@ -109,7 +109,7 @@ function SapReadonlyPageInner() {
             style={{
               background: tab === id ? "var(--accent-soft)" : "transparent",
               border: "1px solid",
-              borderColor: tab === id ? "rgba(91,141,239,0.35)" : "transparent",
+              borderColor: tab === id ? "rgba(69,137,255,0.35)" : "transparent",
               borderRadius: "6px 6px 0 0",
               padding: "6px 12px",
               color: tab === id ? "var(--text)" : "var(--text-soft)",

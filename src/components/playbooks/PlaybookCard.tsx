@@ -3,10 +3,10 @@
 import type { AmsPlaybook } from "@/types/ams-modules";
 
 const SEVERITY_COLORS: Record<string, string> = {
-  P1: "#ef4444", P2: "#f59e0b", P3: "#22d3ee", P4: "#94a3b8",
+  P1: "#fa4d56", P2: "#f59e0b", P3: "#4589ff", P4: "#94a3b8",
 };
 const STATUS_COLORS: Record<string, string> = {
-  ACTIVE: "#10b981", DRAFT: "#64748b", NEEDS_REVIEW: "#fbbf24", ARCHIVED: "#94a3b8",
+  ACTIVE: "#10b981", DRAFT: "#64748b", NEEDS_REVIEW: "#f1c21b", ARCHIVED: "#94a3b8",
 };
 
 interface Props {
@@ -29,7 +29,7 @@ export default function PlaybookCard({ playbook: p, onView, onEdit, onDuplicate,
         <span className="kanban-tag" style={{ borderColor: `${SEVERITY_COLORS[p.severity]}55`, color: SEVERITY_COLORS[p.severity], background: `${SEVERITY_COLORS[p.severity]}10`, fontWeight: 700 }}>
           {p.severity}
         </span>
-        <span className="kanban-tag" style={{ borderColor: "rgba(34,211,238,0.4)", color: "#67e8f9", background: "rgba(34,211,238,0.08)" }}>
+        <span className="kanban-tag" style={{ borderColor: "rgba(69,137,255,0.4)", color: "#67e8f9", background: "rgba(69,137,255,0.08)" }}>
           {p.sapModule}
         </span>
         <span className="kanban-tag" style={{ borderColor: `${STATUS_COLORS[p.status]}55`, color: STATUS_COLORS[p.status], background: `${STATUS_COLORS[p.status]}10`, fontSize: 9.5 }}>
@@ -56,7 +56,7 @@ export default function PlaybookCard({ playbook: p, onView, onEdit, onDuplicate,
         <button className="tc-iconbtn" onClick={onView} title="Ver">👁</button>
         <button className="tc-iconbtn" onClick={onEdit} title="Editar">✎</button>
         <button className="tc-iconbtn" onClick={onDuplicate} title="Duplicar">⎘</button>
-        <button className="tc-iconbtn" onClick={onDelete} title="Eliminar" style={{ color: "#ef4444" }}>🗑</button>
+        <button className="tc-iconbtn" onClick={onDelete} title="Eliminar" style={{ color: "#fa4d56" }}>🗑</button>
       </div>
     </div>
   );

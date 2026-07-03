@@ -52,13 +52,13 @@ export default function BrandSplash() {
         <svg width="140" height="140" viewBox="0 0 64 64" className="brand-splash-mark">
           <defs>
             <linearGradient id="splash-grad" x1="0" y1="0" x2="1" y2="1">
-              <stop offset="0%"  stopColor="#22d3ee" />
+              <stop offset="0%"  stopColor="#4589ff" />
               <stop offset="50%" stopColor="#a855f7" />
               <stop offset="100%" stopColor="#f59e0b" />
             </linearGradient>
             <radialGradient id="splash-glow">
-              <stop offset="0%" stopColor="rgba(34,211,238,0.55)" />
-              <stop offset="100%" stopColor="rgba(34,211,238,0)" />
+              <stop offset="0%" stopColor="rgba(69,137,255,0.55)" />
+              <stop offset="100%" stopColor="rgba(69,137,255,0)" />
             </radialGradient>
           </defs>
           <circle cx="32" cy="32" r="30" fill="url(#splash-glow)" />
@@ -85,7 +85,7 @@ export default function BrandSplash() {
         .brand-splash {
           position: fixed; inset: 0; z-index: 99999;
           background:
-            radial-gradient(ellipse at center, rgba(34, 211, 238, 0.10), transparent 60%),
+            radial-gradient(ellipse at center, rgba(69,137,255, 0.10), transparent 60%),
             #04060f;
           display: grid; place-items: center;
           animation: splashFade 0.25s ease-out reverse 1.45s forwards;
@@ -103,7 +103,7 @@ export default function BrandSplash() {
           to   { opacity: 1; transform: scale(1); }
         }
         .brand-splash-mark {
-          filter: drop-shadow(0 0 24px rgba(34, 211, 238, 0.5));
+          filter: drop-shadow(0 0 24px rgba(69,137,255, 0.5));
         }
         :global(.brand-splash-inner-spin) { animation: splashSpin 4s linear infinite; }
         @keyframes splashSpin {
@@ -113,7 +113,7 @@ export default function BrandSplash() {
         .brand-splash-name {
           font-size: 22px; letter-spacing: 8px; font-weight: 700;
           color: #e2e8f0;
-          text-shadow: 0 0 18px rgba(34, 211, 238, 0.4);
+          text-shadow: 0 0 18px rgba(69,137,255, 0.4);
           font-family: var(--font-mono, "Consolas", monospace);
         }
         .brand-splash-tag {
@@ -123,14 +123,14 @@ export default function BrandSplash() {
         }
         .brand-splash-bar {
           width: 260px; height: 3px;
-          background: rgba(34, 211, 238, 0.12);
+          background: rgba(69,137,255, 0.12);
           border-radius: 2px; overflow: hidden;
           margin-top: 6px;
         }
         .brand-splash-bar-fill {
           height: 100%;
-          background: linear-gradient(90deg, #22d3ee, #a855f7, #f59e0b);
-          box-shadow: 0 0 12px #22d3ee;
+          background: linear-gradient(90deg, #4589ff, #a855f7, #f59e0b);
+          box-shadow: 0 0 12px #4589ff;
         }
         .brand-splash-pct {
           font-size: 10.5px; letter-spacing: 2px; color: #94a3b8;

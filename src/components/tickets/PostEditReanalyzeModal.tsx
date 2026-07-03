@@ -84,7 +84,7 @@ export default function PostEditReanalyzeModal({
               onClose();
             }}
             disabled={busy}
-            style={{ background: "linear-gradient(135deg, #22d3ee, #6366f1)" }}
+            style={{ background: "linear-gradient(135deg, #4589ff, #6366f1)" }}
           >
             {busy ? <><span className="spinner" /> reanalizando…</> : "↻ Reanalizar ahora"}
           </button>

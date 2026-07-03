@@ -127,7 +127,7 @@ export default function SapInboundPage() {
         ] as [Tab, string][]).map(([id, label]) => (
           <button key={id} onClick={() => setTab(id)} style={{
             background: tab === id ? "var(--accent-soft)" : "transparent",
-            border: "1px solid", borderColor: tab === id ? "rgba(91,141,239,0.35)" : "transparent",
+            border: "1px solid", borderColor: tab === id ? "rgba(69,137,255,0.35)" : "transparent",
             borderRadius: "6px 6px 0 0", padding: "6px 14px",
             color: tab === id ? "var(--text)" : "var(--text-soft)",
             cursor: "pointer", fontSize: 13, marginBottom: -1, fontFamily: "inherit",

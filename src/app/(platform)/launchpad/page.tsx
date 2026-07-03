@@ -47,7 +47,7 @@ function nextTarget(): Date {
   return d;
 }
 
-function Tile({ label, value, color = "#22d3ee", small = false }: { label: string; value: string | number; color?: string; small?: boolean }) {
+function Tile({ label, value, color = "#4589ff", small = false }: { label: string; value: string | number; color?: string; small?: boolean }) {
   return (
     <div className="lp-tile" style={{ borderColor: color }}>
       <div style={{ fontSize: 9, color: "#94a3b8", letterSpacing: 2 }}>{label}</div>
@@ -175,7 +175,7 @@ export default function LaunchpadPage() {
               {BOOT_LINES.slice(0, bootStep + 1).map((l, i) => (
                 <div key={i} className="boot-line">
                   <span style={{ color: "#64748b" }}>{new Date().toLocaleTimeString()}</span>{" "}
-                  <span style={{ color: l.includes("NOMINAL") ? "#10b981" : l.includes("[ MOCK ]") ? "#fbbf24" : "#cbd5e1" }}>{l}</span>
+                  <span style={{ color: l.includes("NOMINAL") ? "#10b981" : l.includes("[ MOCK ]") ? "#f1c21b" : "#cbd5e1" }}>{l}</span>
                 </div>
               ))}
             </div>
@@ -192,14 +192,14 @@ export default function LaunchpadPage() {
       {/* Header */}
       <div className="lp-header">
         <div>
-          <h1 style={{ margin: 0, fontSize: 24, letterSpacing: 4, color: "#22d3ee", textShadow: "0 0 12px rgba(34,211,238,0.7)" }}>◤ MISSION LAUNCHPAD ◢</h1>
+          <h1 style={{ margin: 0, fontSize: 24, letterSpacing: 4, color: "#4589ff", textShadow: "0 0 12px rgba(69,137,255,0.7)" }}>◤ MISSION LAUNCHPAD ◢</h1>
           <div style={{ fontSize: 10, letterSpacing: 3, color: "#67e8f9", marginTop: 4 }}>AMS SUPPLY-CHAIN · OPERATIONAL READINESS DASHBOARD</div>
         </div>
         <div className="row" style={{ gap: 12 }}>
           <button onClick={toggleMute} className="btn ghost" style={{ padding: "4px 10px", fontSize: 11 }}>{muted ? "🔇" : "🔊"}</button>
           <div style={{ textAlign: "right" }}>
             <div style={{ fontSize: 11, color: "#67e8f9", letterSpacing: 2 }}>T·MINUS · NEXT WINDOW</div>
-            <div style={{ fontSize: 38, color: "#22d3ee", fontFamily: "var(--font-mono, monospace)", letterSpacing: 4, textShadow: "0 0 14px rgba(34,211,238,0.8)", fontVariantNumeric: "tabular-nums" }}>
+            <div style={{ fontSize: 38, color: "#4589ff", fontFamily: "var(--font-mono, monospace)", letterSpacing: 4, textShadow: "0 0 14px rgba(69,137,255,0.8)", fontVariantNumeric: "tabular-nums" }}>
               {fmtTime(remaining)}
             </div>
           </div>
@@ -213,7 +213,7 @@ export default function LaunchpadPage() {
           <div className="lp-section-title">▸ SYSTEMS·TELEMETRY</div>
           {systems.map((s) => (
             <div key={s.name} className="lp-system-row">
-              <span style={{ color: s.ok ? "#10b981" : "#ef4444", fontSize: 14, textShadow: `0 0 6px ${s.ok ? "#10b981" : "#ef4444"}` }}>●</span>
+              <span style={{ color: s.ok ? "#10b981" : "#fa4d56", fontSize: 14, textShadow: `0 0 6px ${s.ok ? "#10b981" : "#fa4d56"}` }}>●</span>
               <span style={{ color: "#cbd5e1", fontSize: 11, letterSpacing: 1.5, flex: 1 }}>{s.name}</span>
               <span style={{ color: "#64748b", fontSize: 10 }}>{s.detail}</span>
             </div>
@@ -224,14 +224,14 @@ export default function LaunchpadPage() {
         <div className="lp-col lp-center">
           <div className="lp-section-title">▸ LAUNCH·CONTROL</div>
           <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 8 }}>
-            <Tile label="SLA · %"           value={`${Math.round(sla)}%`} color={sla >= 90 ? "#10b981" : sla >= 75 ? "#fbbf24" : "#ef4444"} />
-            <Tile label="ACTIVE · TICKETS"  value={adv?.totals.supportTicketsActive ?? 0} color="#fbbf24" />
+            <Tile label="SLA · %"           value={`${Math.round(sla)}%`} color={sla >= 90 ? "#10b981" : sla >= 75 ? "#f1c21b" : "#fa4d56"} />
+            <Tile label="ACTIVE · TICKETS"  value={adv?.totals.supportTicketsActive ?? 0} color="#f1c21b" />
             <Tile label="IA RESOLVED · %"   value={`${Math.round(exec?.kpis.aiResolutionRate ?? 0)}%`} color="#06b6d4" />
             <Tile label="INTERACTIONS"      value={(exec?.kpis.totalInteractions ?? 0).toLocaleString("es-CL")} color="#a855f7" />
-            <Tile label="TOKENS·7D"         value={usage ? `${(usage.totals.totalTokens / 1000).toFixed(1)}k` : "0"} color="#fbbf24" small />
-            <Tile label="COSTO USD"         value={usage ? `$${usage.totals.costUsd.toFixed(2)}` : "$0.00"} color="#ef4444" small />
-            <Tile label="AVG·RESP·MIN"      value={Math.round(exec?.kpis.avgResponseTimeMin ?? 0)} color="#22d3ee" small />
-            <Tile label="BREACH"            value={breach} color={breach ? "#ef4444" : "#6b7280"} small />
+            <Tile label="TOKENS·7D"         value={usage ? `${(usage.totals.totalTokens / 1000).toFixed(1)}k` : "0"} color="#f1c21b" small />
+            <Tile label="COSTO USD"         value={usage ? `$${usage.totals.costUsd.toFixed(2)}` : "$0.00"} color="#fa4d56" small />
+            <Tile label="AVG·RESP·MIN"      value={Math.round(exec?.kpis.avgResponseTimeMin ?? 0)} color="#4589ff" small />
+            <Tile label="BREACH"            value={breach} color={breach ? "#fa4d56" : "#6b7280"} small />
           </div>
 
           <button className="lp-launch" onClick={launchDemo} disabled={demoFiring}>
@@ -242,7 +242,7 @@ export default function LaunchpadPage() {
         {/* DER waveform + feed */}
         <div className="lp-col">
           <div className="lp-section-title">▸ TOKENS·WAVEFORM</div>
-          <Waveform data={tokensSpark} color="#22d3ee" />
+          <Waveform data={tokensSpark} color="#4589ff" />
           <div style={{ fontSize: 9, color: "#64748b", letterSpacing: 2, marginTop: 6 }}>
             last 7 days · max {Math.max(0, ...tokensSpark).toLocaleString("es-CL")} tok/day
           </div>
@@ -253,7 +253,7 @@ export default function LaunchpadPage() {
             {feed.map((f) => (
               <div key={f.id} className="lp-feed">
                 <span style={{ color: "#0891b2" }}>{new Date(f.createdAt).toLocaleTimeString().slice(0,8)}</span>{" "}
-                <span style={{ color: "#22d3ee" }}>{f.kind.split("_")[0].toUpperCase()}</span>{" "}
+                <span style={{ color: "#4589ff" }}>{f.kind.split("_")[0].toUpperCase()}</span>{" "}
                 <span style={{ color: "#cbd5e1" }}>{f.title.slice(0, 30)}</span>
               </div>
             ))}
@@ -263,7 +263,7 @@ export default function LaunchpadPage() {
 
       {/* Status footer */}
       <div className="lp-footer">
-        <span style={{ color: alertMode ? "#ef4444" : "#10b981", fontWeight: 700 }}>
+        <span style={{ color: alertMode ? "#fa4d56" : "#10b981", fontWeight: 700 }}>
           {alertMode ? "⚠ ALERT · SLA BREACH" : "● ALL NOMINAL · GO FOR OPS"}
         </span>
         <span style={{ marginLeft: "auto", color: "#67e8f9", letterSpacing: 2 }}>
@@ -278,7 +278,7 @@ export default function LaunchpadPage() {
         .lp-root {
           min-height: calc(100vh - 80px);
           background:
-            radial-gradient(circle at 50% 50%, rgba(34,211,238,0.10) 0%, transparent 50%),
+            radial-gradient(circle at 50% 50%, rgba(69,137,255,0.10) 0%, transparent 50%),
             radial-gradient(circle at 50% 100%, rgba(168,85,247,0.06) 0%, transparent 50%),
             #04060f;
           color: #67e8f9;
@@ -290,12 +290,12 @@ export default function LaunchpadPage() {
           animation: alertPulse 1.4s ease-in-out infinite;
         }
         @keyframes alertPulse {
-          0%, 100% { box-shadow: inset 0 0 0 0 rgba(239,68,68,0); }
-          50%      { box-shadow: inset 0 0 120px 0 rgba(239,68,68,0.18); }
+          0%, 100% { box-shadow: inset 0 0 0 0 rgba(250,77,86,0); }
+          50%      { box-shadow: inset 0 0 120px 0 rgba(250,77,86,0.18); }
         }
         .alert-overlay {
           position: absolute; inset: 0; pointer-events: none;
-          border: 3px solid rgba(239,68,68,0.5); border-radius: 8px;
+          border: 3px solid rgba(250,77,86,0.5); border-radius: 8px;
           animation: alertBorder 0.8s ease-in-out infinite;
         }
         @keyframes alertBorder {
@@ -305,8 +305,8 @@ export default function LaunchpadPage() {
         .lp-header {
           display: flex; justify-content: space-between; align-items: center;
           padding: 8px 12px;
-          border-top: 1px solid rgba(34,211,238,0.4);
-          border-bottom: 1px solid rgba(34,211,238,0.4);
+          border-top: 1px solid rgba(69,137,255,0.4);
+          border-bottom: 1px solid rgba(69,137,255,0.4);
           margin-bottom: 16px;
         }
         .lp-grid {
@@ -315,7 +315,7 @@ export default function LaunchpadPage() {
         }
         .lp-col {
           background: linear-gradient(135deg, rgba(15,23,42,0.85), rgba(2,6,23,0.6));
-          border: 1px solid rgba(34,211,238,0.3);
+          border: 1px solid rgba(69,137,255,0.3);
           border-radius: 4px;
           padding: 14px;
           display: flex; flex-direction: column;
@@ -323,63 +323,63 @@ export default function LaunchpadPage() {
         }
         .lp-center { align-items: stretch; }
         .lp-section-title {
-          font-size: 10px; letter-spacing: 3px; color: #22d3ee;
+          font-size: 10px; letter-spacing: 3px; color: #4589ff;
           margin-bottom: 10px; padding-bottom: 4px;
-          border-bottom: 1px solid rgba(34,211,238,0.15);
-          text-shadow: 0 0 6px rgba(34,211,238,0.5);
+          border-bottom: 1px solid rgba(69,137,255,0.15);
+          text-shadow: 0 0 6px rgba(69,137,255,0.5);
         }
         .lp-system-row {
           display: flex; align-items: center; gap: 10px;
           padding: 5px 0; border-bottom: 1px dashed rgba(255,255,255,0.04);
         }
         .lp-tile {
-          background: linear-gradient(135deg, rgba(34,211,238,0.05), rgba(15,23,42,0.4));
+          background: linear-gradient(135deg, rgba(69,137,255,0.05), rgba(15,23,42,0.4));
           border-left: 2px solid;
           padding: 8px 10px; border-radius: 2px;
         }
         .lp-launch {
           margin-top: auto;
           background: linear-gradient(135deg, #1e293b, #0c4a6e);
-          border: 2px solid #22d3ee;
-          color: #22d3ee;
+          border: 2px solid #4589ff;
+          color: #4589ff;
           padding: 14px;
           font-family: var(--font-mono, monospace);
           font-size: 14px; letter-spacing: 4px; font-weight: 700;
           cursor: pointer;
           border-radius: 4px;
           transition: all 0.2s;
-          text-shadow: 0 0 8px rgba(34,211,238,0.7);
-          box-shadow: 0 0 20px rgba(34,211,238,0.2), inset 0 0 20px rgba(34,211,238,0.1);
+          text-shadow: 0 0 8px rgba(69,137,255,0.7);
+          box-shadow: 0 0 20px rgba(69,137,255,0.2), inset 0 0 20px rgba(69,137,255,0.1);
         }
         .lp-launch:hover:not(:disabled) {
           background: linear-gradient(135deg, #0c4a6e, #155e75);
-          box-shadow: 0 0 30px rgba(34,211,238,0.5), inset 0 0 30px rgba(34,211,238,0.2);
+          box-shadow: 0 0 30px rgba(69,137,255,0.5), inset 0 0 30px rgba(69,137,255,0.2);
         }
         .lp-launch:disabled {
           background: linear-gradient(135deg, #1e293b, #831843);
-          border-color: #fbbf24;
-          color: #fbbf24;
+          border-color: #f1c21b;
+          color: #f1c21b;
           animation: launchFire 0.3s ease-in-out infinite alternate;
         }
         @keyframes launchFire {
-          from { box-shadow: 0 0 20px rgba(251,191,36,0.4); }
-          to   { box-shadow: 0 0 40px rgba(251,191,36,0.9); }
+          from { box-shadow: 0 0 20px rgba(241,194,27,0.4); }
+          to   { box-shadow: 0 0 40px rgba(241,194,27,0.9); }
         }
         .lp-feed {
           padding: 3px 6px; margin-bottom: 2px;
-          background: rgba(34,211,238,0.04);
-          border-left: 2px solid rgba(34,211,238,0.3);
+          background: rgba(69,137,255,0.04);
+          border-left: 2px solid rgba(69,137,255,0.3);
           white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
         }
         .lp-footer {
           display: flex; align-items: center; padding: 6px 12px; margin-top: 14px;
-          border-top: 1px solid rgba(34,211,238,0.4);
-          border-bottom: 1px solid rgba(34,211,238,0.4);
+          border-top: 1px solid rgba(69,137,255,0.4);
+          border-bottom: 1px solid rgba(69,137,255,0.4);
           font-size: 11px;
         }
         .scanlines {
           position: absolute; inset: 0; pointer-events: none;
-          background-image: repeating-linear-gradient(0deg, transparent 0 2px, rgba(34,211,238,0.025) 2px 3px);
+          background-image: repeating-linear-gradient(0deg, transparent 0 2px, rgba(69,137,255,0.025) 2px 3px);
           mix-blend-mode: screen;
         }
         .boot-overlay {
@@ -423,7 +423,7 @@ export default function LaunchpadPage() {
         }
         .boot-progress-bar {
           position: absolute; left: 0; top: 0; bottom: 0;
-          background: linear-gradient(90deg, #10b981, #22d3ee);
+          background: linear-gradient(90deg, #10b981, #4589ff);
           box-shadow: 0 0 8px #10b981;
           transition: width 0.15s linear;
         }

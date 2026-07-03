@@ -10,7 +10,7 @@ import { inviteUser } from "@/services/admin-users.api";
 interface Props { admin: UseAccessAdmin }
 
 const SERVICE_COLOR: Record<string, string> = {
-  BASIC: "#6b7280", STANDARD: "#3b82f6", PREMIUM: "#a855f7", ENTERPRISE: "#fbbf24",
+  BASIC: "#6b7280", STANDARD: "#3b82f6", PREMIUM: "#a855f7", ENTERPRISE: "#f1c21b",
 };
 
 export default function UserManagement({ admin }: Props) {
@@ -94,12 +94,12 @@ export default function UserManagement({ admin }: Props) {
             marginBottom: 12,
             padding: "10px 14px",
             borderRadius: 8,
-            background: inviteMsg.startsWith("✓") ? "rgba(34, 197, 94, 0.1)"
-                      : inviteMsg.startsWith("✗") ? "rgba(239, 68, 68, 0.1)"
-                      : "rgba(34, 211, 238, 0.1)",
-            border: `1px solid ${inviteMsg.startsWith("✓") ? "rgba(34, 197, 94, 0.4)"
-                              : inviteMsg.startsWith("✗") ? "rgba(239, 68, 68, 0.4)"
-                              : "rgba(34, 211, 238, 0.4)"}`,
+            background: inviteMsg.startsWith("✓") ? "rgba(66,190,101, 0.1)"
+                      : inviteMsg.startsWith("✗") ? "rgba(250,77,86, 0.1)"
+                      : "rgba(69,137,255, 0.1)",
+            border: `1px solid ${inviteMsg.startsWith("✓") ? "rgba(66,190,101, 0.4)"
+                              : inviteMsg.startsWith("✗") ? "rgba(250,77,86, 0.4)"
+                              : "rgba(69,137,255, 0.4)"}`,
             color: inviteMsg.startsWith("✓") ? "#86efac"
                  : inviteMsg.startsWith("✗") ? "#fca5a5"
                  : "#67e8f9",
@@ -139,7 +139,7 @@ export default function UserManagement({ admin }: Props) {
                   </td>
                   <td style={{ padding: "10px 12px", color: "var(--text-soft)", fontFamily: "var(--font-mono, monospace)", fontSize: 11.5 }}>{u.email}</td>
                   <td style={{ padding: "10px 12px" }}>
-                    <span style={{ fontSize: 11, padding: "2px 8px", borderRadius: 3, background: "rgba(91,141,239,0.15)", border: "1px solid rgba(91,141,239,0.35)", letterSpacing: 0.4 }}>
+                    <span style={{ fontSize: 11, padding: "2px 8px", borderRadius: 3, background: "rgba(69,137,255,0.15)", border: "1px solid rgba(69,137,255,0.35)", letterSpacing: 0.4 }}>
                       {role?.name ?? u.roleCode}
                     </span>
                   </td>
@@ -170,7 +170,7 @@ export default function UserManagement({ admin }: Props) {
                       </button>
                       <button className="btn ghost" style={{ padding: "3px 8px", fontSize: 11 }}
                         onClick={() => { setEditing(u); setShowModal(true); }}>✎</button>
-                      <button className="btn ghost" style={{ padding: "3px 8px", fontSize: 11, color: "#ef4444" }}
+                      <button className="btn ghost" style={{ padding: "3px 8px", fontSize: 11, color: "#fa4d56" }}
                         onClick={() => handleDelete(u)}>🗑</button>
                     </div>
                   </td>

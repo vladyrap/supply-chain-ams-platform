@@ -36,16 +36,16 @@ const fmtNum = (n: number) => n.toLocaleString("es-CL");
 
 const HEALTH_COLORS = {
   excellent: "#10b981",
-  good: "#22d3ee",
+  good: "#4589ff",
   watch: "#f59e0b",
   warning: "#fb923c",
-  critical: "#ef4444",
+  critical: "#fa4d56",
 } as const;
 
 const PRIORITY_COLORS = {
-  high: "#ef4444",
+  high: "#fa4d56",
   medium: "#f59e0b",
-  low: "#22d3ee",
+  low: "#4589ff",
 } as const;
 
 const CATEGORY_ICONS = {
@@ -86,7 +86,7 @@ function HealthScoreRing({ health }: { health: UsageHealth }) {
             <div key={d.name} style={{ marginBottom: 4, fontSize: 11 }}>
               <div style={{ display: "flex", justifyContent: "space-between" }}>
                 <span style={{ color: "var(--text-soft)" }}>{d.name} <span style={{ color: "var(--text-dim)", fontSize: 9 }}>×{d.weight}</span></span>
-                <span style={{ fontWeight: 600, color: d.score >= 80 ? "#10b981" : d.score >= 60 ? "#f59e0b" : "#ef4444" }}>{d.score}</span>
+                <span style={{ fontWeight: 600, color: d.score >= 80 ? "#10b981" : d.score >= 60 ? "#f59e0b" : "#fa4d56" }}>{d.score}</span>
               </div>
               <div style={{ fontSize: 9.5, color: "var(--text-dim)", fontStyle: "italic" }}>{d.reason}</div>
             </div>
@@ -147,7 +147,7 @@ function RecommendationsPanel({ recs }: { recs: UsageRecommendation[] }) {
 // ============================================================================
 function BurnRateWidget({ br }: { br: UsageSummaryResponse["burnRate"] }) {
   const arrow = br.deltaPct > 5 ? "↑" : br.deltaPct < -5 ? "↓" : "→";
-  const color = br.deltaPct > 50 ? "#ef4444" : br.deltaPct > 0 ? "#f59e0b" : "#10b981";
+  const color = br.deltaPct > 50 ? "#fa4d56" : br.deltaPct > 0 ? "#f59e0b" : "#10b981";
   return (
     <div className="card" style={{ padding: 14, flex: "1 1 280px", borderLeft: "4px solid #fb923c" }}>
       <div style={{ fontSize: 10, letterSpacing: 1.4, color: "var(--text-dim)", marginBottom: 4 }}>
@@ -172,13 +172,13 @@ function BurnRateWidget({ br }: { br: UsageSummaryResponse["burnRate"] }) {
 // ============================================================================
 function TokensWidget({ tokens }: { tokens: UsageSummaryResponse["tokens"] }) {
   return (
-    <div className="card" style={{ padding: 14, flex: "1 1 280px", borderLeft: "4px solid #22d3ee" }}>
+    <div className="card" style={{ padding: 14, flex: "1 1 280px", borderLeft: "4px solid #4589ff" }}>
       <div style={{ fontSize: 10, letterSpacing: 1.4, color: "var(--text-dim)", marginBottom: 6 }}>
         🎟️ TOKENS TOTALES · {fmtNum(tokens.total)}
       </div>
       <div style={{ display: "flex", height: 24, borderRadius: 4, overflow: "hidden", marginBottom: 6 }}>
         <div title={`Input: ${fmtNum(tokens.input)} (${tokens.inputPct}%)`}
-          style={{ width: `${tokens.inputPct}%`, background: "linear-gradient(90deg, #0891b2, #22d3ee)", display: "flex", alignItems: "center", justifyContent: "center", fontSize: 10, color: "white", fontWeight: 600 }}>
+          style={{ width: `${tokens.inputPct}%`, background: "linear-gradient(90deg, #0891b2, #4589ff)", display: "flex", alignItems: "center", justifyContent: "center", fontSize: 10, color: "white", fontWeight: 600 }}>
           IN {tokens.inputPct}%
         </div>
         <div title={`Output: ${fmtNum(tokens.output)} (${tokens.outputPct}%)`}
@@ -187,7 +187,7 @@ function TokensWidget({ tokens }: { tokens: UsageSummaryResponse["tokens"] }) {
         </div>
       </div>
       <div className="row between" style={{ fontSize: 11 }}>
-        <span style={{ color: "#22d3ee" }}>● Input: {fmtNum(tokens.input)} tok · {fmtUSD(tokens.inputUsd)}</span>
+        <span style={{ color: "#4589ff" }}>● Input: {fmtNum(tokens.input)} tok · {fmtUSD(tokens.inputUsd)}</span>
         <span style={{ color: "#a855f7" }}>● Output: {fmtNum(tokens.output)} tok · {fmtUSD(tokens.outputUsd)}</span>
       </div>
     </div>
@@ -199,7 +199,7 @@ function TokensWidget({ tokens }: { tokens: UsageSummaryResponse["tokens"] }) {
 // ============================================================================
 function SameDayWidget({ data }: { data: UsageSummaryResponse["sameDayLastWeek"] }) {
   const arrow = data.delta.direction === "up" ? "↑" : data.delta.direction === "down" ? "↓" : "→";
-  const color = data.delta.direction === "up" ? "#ef4444" : data.delta.direction === "down" ? "#10b981" : "#94a3b8";
+  const color = data.delta.direction === "up" ? "#fa4d56" : data.delta.direction === "down" ? "#10b981" : "#94a3b8";
   return (
     <div className="card" style={{ padding: 14, flex: "1 1 280px", borderLeft: "4px solid #0891b2" }}>
       <div style={{ fontSize: 10, letterSpacing: 1.4, color: "var(--text-dim)", marginBottom: 6 }}>
@@ -208,7 +208,7 @@ function SameDayWidget({ data }: { data: UsageSummaryResponse["sameDayLastWeek"]
       <div className="row" style={{ gap: 12, alignItems: "center" }}>
         <div style={{ flex: 1 }}>
           <div style={{ fontSize: 10, color: "var(--text-dim)" }}>HOY</div>
-          <div style={{ fontSize: 16, fontWeight: 700, color: "#22d3ee" }}>{fmtCLP(data.today.clp)}</div>
+          <div style={{ fontSize: 16, fontWeight: 700, color: "#4589ff" }}>{fmtCLP(data.today.clp)}</div>
           <div style={{ fontSize: 10, color: "var(--text-dim)" }}>{data.today.calls} calls</div>
         </div>
         <div style={{ fontSize: 18, color, fontWeight: 700 }}>
@@ -253,7 +253,7 @@ function HistogramWidget({ hist }: { hist: UsageSummaryResponse["histogram"] }) 
             <div style={{ height: 10, borderRadius: 3, background: "rgba(100,116,139,0.2)", overflow: "hidden" }}>
               <div style={{
                 width: `${pct}%`, height: "100%",
-                background: h.bucket === "large" ? "#ef4444" : h.bucket === "medium" ? "#f59e0b" : "#22d3ee",
+                background: h.bucket === "large" ? "#fa4d56" : h.bucket === "medium" ? "#f59e0b" : "#4589ff",
                 transition: "width 0.3s",
               }} />
             </div>
@@ -268,7 +268,7 @@ function HistogramWidget({ hist }: { hist: UsageSummaryResponse["histogram"] }) 
 // HELPERS REUSADOS de v0.14.13
 // ============================================================================
 function DeltaBadge({ delta }: { delta: UsageDelta }) {
-  const color = delta.direction === "up" ? "#ef4444" : delta.direction === "down" ? "#10b981" : "#94a3b8";
+  const color = delta.direction === "up" ? "#fa4d56" : delta.direction === "down" ? "#10b981" : "#94a3b8";
   const arrow = delta.direction === "up" ? "↑" : delta.direction === "down" ? "↓" : "→";
   return (
     <span style={{
@@ -283,14 +283,14 @@ function CostTile({ label, calls, clp, usd, delta, highlight }: {
 }) {
   return (
     <div className="card" style={{
-      padding: 14, borderLeft: `4px solid ${highlight ? "#22d3ee" : "#64748b"}`,
+      padding: 14, borderLeft: `4px solid ${highlight ? "#4589ff" : "#64748b"}`,
       minWidth: 180, flex: "1 1 200px",
     }}>
       <div className="row between" style={{ alignItems: "center", marginBottom: 4 }}>
         <span style={{ fontSize: 10, letterSpacing: 1.4, color: "var(--text-dim)" }}>{label.toUpperCase()}</span>
         {delta ? <DeltaBadge delta={delta} /> : null}
       </div>
-      <div style={{ fontSize: 22, fontWeight: 700, color: highlight ? "#22d3ee" : "var(--text)" }}>
+      <div style={{ fontSize: 22, fontWeight: 700, color: highlight ? "#4589ff" : "var(--text)" }}>
         {fmtCLP(clp)}
       </div>
       <div style={{ fontSize: 11, color: "var(--text-dim)", marginTop: 2 }}>
@@ -301,7 +301,7 @@ function CostTile({ label, calls, clp, usd, delta, highlight }: {
 }
 
 function ForecastWidget({ forecast }: { forecast: UsageSummaryResponse["forecast"] }) {
-  const confColor = forecast.confidence === "high" ? "#10b981" : forecast.confidence === "medium" ? "#22d3ee" : "#f59e0b";
+  const confColor = forecast.confidence === "high" ? "#10b981" : forecast.confidence === "medium" ? "#4589ff" : "#f59e0b";
   return (
     <div className="card" style={{ padding: 14, flex: "1 1 280px", borderLeft: "4px solid #a855f7" }}>
       <div className="row between" style={{ alignItems: "center", marginBottom: 4 }}>
@@ -363,7 +363,7 @@ function RateLimiterStrip({ rl }: { rl: UsageSummaryResponse["rateLimiter"] }) {
         {(["minute", "hour", "day"] as const).map((w) => {
           const cur = rl.current[w], cap = rl.caps[w];
           const pct = Math.min(100, (cur / cap) * 100);
-          const color = pct > 80 ? "#f59e0b" : pct > 50 ? "#22d3ee" : "#10b981";
+          const color = pct > 80 ? "#f59e0b" : pct > 50 ? "#4589ff" : "#10b981";
           return (
             <div key={w} style={{ flex: "1 1 200px", minWidth: 0 }}>
               <div style={{ display: "flex", justifyContent: "space-between", marginBottom: 3 }}>
@@ -392,7 +392,7 @@ function Heatmap({ heatmap }: { heatmap: UsageHeatmapHour[] }) {
       <div style={{ display: "grid", gridTemplateColumns: "repeat(24, 1fr)", gap: 2, marginBottom: 6 }}>
         {heatmap.map((h) => {
           const intensity = h.calls / max;
-          const bg = h.calls === 0 ? "rgba(100,116,139,0.15)" : `rgba(34,211,238,${0.2 + intensity * 0.8})`;
+          const bg = h.calls === 0 ? "rgba(100,116,139,0.15)" : `rgba(69,137,255,${0.2 + intensity * 0.8})`;
           return (
             <div key={h.hour} title={`${h.hour}h: ${h.calls} calls · ${fmtCLP(h.clp)}`}
               style={{
@@ -428,8 +428,8 @@ function DailyChart({ daily }: { daily: UsageSummaryResponse["daily"] }) {
               style={{
                 flex: 1, minWidth: 2, height: `${Math.max(2, pct)}%`,
                 background: d.isAnomaly
-                  ? "linear-gradient(180deg, #ef4444 0%, #b91c1c 100%)"
-                  : "linear-gradient(180deg, #22d3ee 0%, #0891b2 100%)",
+                  ? "linear-gradient(180deg, #fa4d56 0%, #b91c1c 100%)"
+                  : "linear-gradient(180deg, #4589ff 0%, #0891b2 100%)",
                 borderRadius: "2px 2px 0 0", cursor: "help",
               }}/>
           );
@@ -454,14 +454,14 @@ function AnomalyList({ anomalies }: { anomalies: UsageSummaryResponse["anomalies
     );
   }
   return (
-    <div className="card" style={{ padding: 14, flex: "1 1 280px", borderLeft: "4px solid #ef4444" }}>
+    <div className="card" style={{ padding: 14, flex: "1 1 280px", borderLeft: "4px solid #fa4d56" }}>
       <div style={{ fontSize: 10, letterSpacing: 1.4, color: "var(--text-dim)", marginBottom: 6 }}>
         🚨 {anomalies.length} ANOMALÍA{anomalies.length === 1 ? "" : "S"} (μ+2σ)
       </div>
       <ul style={{ margin: 0, paddingLeft: 16, fontSize: 11.5 }}>
         {anomalies.map((a) => (
           <li key={a.date} style={{ marginBottom: 3 }}>
-            <strong>{a.date}</strong> · {fmtUSD(a.usd)} · <span style={{ color: "#ef4444" }}>{a.deviation}σ</span>
+            <strong>{a.date}</strong> · {fmtUSD(a.usd)} · <span style={{ color: "#fa4d56" }}>{a.deviation}σ</span>
           </li>
         ))}
       </ul>
@@ -491,7 +491,7 @@ function ModelTable({ byModel }: { byModel: UsageSummaryResponse["byModel"] }) {
               <td style={{ padding: 6, textAlign: "right", fontWeight: 600 }}>{fmtCLP(m.clp)}</td>
               <td style={{ padding: 6, textAlign: "right" }}>
                 <div style={{ position: "relative", height: 14, background: "rgba(100,116,139,0.2)", borderRadius: 3 }}>
-                  <div style={{ width: `${m.pctOfTotal}%`, height: "100%", background: "#22d3ee", borderRadius: 3 }} />
+                  <div style={{ width: `${m.pctOfTotal}%`, height: "100%", background: "#4589ff", borderRadius: 3 }} />
                   <span style={{ position: "absolute", inset: 0, display: "flex", alignItems: "center", justifyContent: "center", fontSize: 10, color: "white", fontWeight: 600 }}>
                     {m.pctOfTotal}%
                   </span>

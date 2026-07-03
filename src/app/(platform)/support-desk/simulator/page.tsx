@@ -209,7 +209,7 @@ export default function SimulatorPage() {
           <div style={{
             display: "flex", alignItems: "center", gap: 10,
             padding: "12px 16px",
-            background: "linear-gradient(180deg, rgba(91,141,239,0.12), transparent)",
+            background: "linear-gradient(180deg, rgba(69,137,255,0.12), transparent)",
             borderBottom: "1px solid var(--border-soft)",
           }}>
             <div style={{
@@ -232,7 +232,7 @@ export default function SimulatorPage() {
                 title="Crear ticket MESA-NNNN sin esperar a la IA"
                 style={{
                   padding: "4px 10px",
-                  background: "linear-gradient(135deg, #f59e0b, #ef4444)",
+                  background: "linear-gradient(135deg, #f59e0b, #fa4d56)",
                   color: "white",
                   fontWeight: 600,
                   fontSize: 12,
@@ -383,8 +383,8 @@ function Bubble({ msg, conversationId, lastUserQuery }: {
     return (
       <div style={{
         alignSelf: "center",
-        background: "rgba(91,141,239,0.10)",
-        border: "1px solid rgba(91,141,239,0.30)",
+        background: "rgba(69,137,255,0.10)",
+        border: "1px solid rgba(69,137,255,0.30)",
         color: "var(--text-soft)",
         padding: "8px 14px",
         borderRadius: 10,

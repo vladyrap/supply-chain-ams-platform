@@ -175,8 +175,8 @@ export default function Sidebar() {
         {isSimulating && effectiveUser && (
           <div style={{
             padding: "8px 10px", margin: "10px 0",
-            background: "rgba(251, 191, 36, 0.10)",
-            border: "1px solid rgba(251, 191, 36, 0.35)",
+            background: "rgba(241,194,27, 0.10)",
+            border: "1px solid rgba(241,194,27, 0.35)",
             borderRadius: 6, fontSize: 11, color: "#fcd34d",
           }}>
             🎭 Simulando como <b>{effectiveUser.name}</b> · {effectiveUser.roleCode}
@@ -186,8 +186,8 @@ export default function Sidebar() {
         <div className="foot" style={{ display: "flex", alignItems: "center", gap: 6, fontSize: 11 }}>
           <span style={{
             width: 8, height: 8, borderRadius: "50%",
-            background: backendOnline === null ? "#94a3b8" : backendOnline ? "#22c55e" : "#ef4444",
-            boxShadow: backendOnline ? "0 0 6px #22c55e" : undefined,
+            background: backendOnline === null ? "#94a3b8" : backendOnline ? "#42be65" : "#fa4d56",
+            boxShadow: backendOnline ? "0 0 6px #42be65" : undefined,
           }} />
           <span style={{ color: backendOnline ? "var(--text-soft)" : "#fca5a5" }}>
             {backendOnline === null ? "verificando…" : backendOnline ? "backend online" : "backend offline"}
@@ -255,9 +255,9 @@ function NavLink({ m, active, isFavorite, onToggleFavorite, badge }: {
           minWidth: 18, height: 18, padding: "0 5px",
           borderRadius: 9, fontSize: 10, fontWeight: 700,
           display: "inline-flex", alignItems: "center", justifyContent: "center",
-          background: "linear-gradient(135deg, #ef4444, #f43f5e)",
+          background: "linear-gradient(135deg, #fa4d56, #f43f5e)",
           color: "white",
-          boxShadow: "0 0 0 2px rgba(239,68,68,0.18)",
+          boxShadow: "0 0 0 2px rgba(250,77,86,0.18)",
           flexShrink: 0,
         }}>{badge > 99 ? "99+" : badge}</span>
       )}

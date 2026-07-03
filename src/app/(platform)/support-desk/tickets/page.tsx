@@ -7,9 +7,9 @@ import { supportApi, type SupportTicket, type TicketStatus, type Priority } from
 
 const PRIORITY_META: Record<Priority, { color: string; icon: string }> = {
   baja:    { color: "#10b981", icon: "○" },
-  media:   { color: "#22d3ee", icon: "●" },
+  media:   { color: "#4589ff", icon: "●" },
   alta:    { color: "#f59e0b", icon: "▲" },
-  critica: { color: "#ef4444", icon: "🔥" },
+  critica: { color: "#fa4d56", icon: "🔥" },
 };
 
 const STATUS_META: Record<TicketStatus, { color: string; label: string; icon: string }> = {
@@ -42,11 +42,11 @@ function slaState(t: SupportTicket): SLA {
   const pct = Math.max(0, Math.min(100, (remainingMs / totalMs) * 100));
 
   if (remainingMs < 0) {
-    return { text: `vencido hace ${Math.abs(Math.round(remainingMs / 60000))}m`, pct: 0, state: "danger", color: "#ef4444" };
+    return { text: `vencido hace ${Math.abs(Math.round(remainingMs / 60000))}m`, pct: 0, state: "danger", color: "#fa4d56" };
   }
   const m = Math.round(remainingMs / 60000);
   const text = m < 60 ? `${m}m restantes` : `${Math.floor(m / 60)}h ${m % 60}m`;
-  if (pct < 25) return { text, pct, state: "danger", color: "#ef4444" };
+  if (pct < 25) return { text, pct, state: "danger", color: "#fa4d56" };
   if (pct < 50) return { text, pct, state: "warn",   color: "#f59e0b" };
   return { text, pct, state: "ok", color: "#10b981" };
 }
@@ -58,7 +58,7 @@ function avatarInitial(s: string | null | undefined): string {
 function avatarColor(s: string | null | undefined): string {
   if (!s) return "#64748b";
   const hash = s.split("").reduce((a, c) => a + c.charCodeAt(0), 0);
-  const colors = ["#22d3ee", "#a855f7", "#10b981", "#fbbf24", "#3b82f6", "#f43f5e", "#06b6d4"];
+  const colors = ["#4589ff", "#a855f7", "#10b981", "#f1c21b", "#3b82f6", "#f43f5e", "#06b6d4"];
   return colors[hash % colors.length];
 }
 
@@ -184,15 +184,15 @@ export default function MesaTicketsPage() {
             </p>
           </div>
           <div className="kanban-stats">
-            <div className="kanban-stat" style={{ ["--accent" as never]: "#22d3ee" }}>
+            <div className="kanban-stat" style={{ ["--accent" as never]: "#4589ff" }}>
               <div className="kanban-stat-val">{stats.total}</div>
               <div className="kanban-stat-lbl">TOTAL</div>
             </div>
-            <div className="kanban-stat" style={{ ["--accent" as never]: stats.critical ? "#ef4444" : "#64748b" }}>
+            <div className="kanban-stat" style={{ ["--accent" as never]: stats.critical ? "#fa4d56" : "#64748b" }}>
               <div className="kanban-stat-val">{stats.critical}</div>
               <div className="kanban-stat-lbl">CRÍTICOS</div>
             </div>
-            <div className="kanban-stat" style={{ ["--accent" as never]: stats.breaches ? "#ef4444" : "#10b981" }}>
+            <div className="kanban-stat" style={{ ["--accent" as never]: stats.breaches ? "#fa4d56" : "#10b981" }}>
               <div className="kanban-stat-val">{stats.breaches}</div>
               <div className="kanban-stat-lbl">SLA OUT</div>
             </div>
@@ -211,7 +211,7 @@ export default function MesaTicketsPage() {
             return (
               <button key={s} onClick={() => setStatusFilter(s)}
                 className={`ticket-filter ${statusFilter === s ? "active" : ""}`}
-                style={{ ["--filt-color" as never]: meta?.color ?? "#22d3ee" }}>
+                style={{ ["--filt-color" as never]: meta?.color ?? "#4589ff" }}>
                 {meta ? `${meta.icon} ${meta.label}` : "▸ Todos"} <span className="ticket-filter-count">{count}</span>
               </button>
             );
@@ -290,7 +290,7 @@ export default function MesaTicketsPage() {
                     <div className="ticket-title">{t.title}</div>
                     <div className="row" style={{ gap: 6, marginTop: 5, flexWrap: "wrap", alignItems: "center" }}>
                       {t.system_affected && t.system_affected !== "NO_INFORMADO" && (
-                        <span className="kanban-tag" style={{ borderColor: "rgba(34,211,238,0.4)", color: "#67e8f9", background: "rgba(34,211,238,0.08)" }}>{t.system_affected}</span>
+                        <span className="kanban-tag" style={{ borderColor: "rgba(69,137,255,0.4)", color: "#67e8f9", background: "rgba(69,137,255,0.08)" }}>{t.system_affected}</span>
                       )}
                       {t.category && (
                         <span className="kanban-tag" style={{ borderColor: "rgba(168,85,247,0.4)", color: "#c084fc", background: "rgba(168,85,247,0.08)" }}>{t.category}</span>
@@ -383,13 +383,13 @@ function SelectedTicketDetail({
               {status.icon} {status.label}
             </span>
             {t.system_affected && t.system_affected !== "NO_INFORMADO" && (
-              <span className="kanban-tag" style={{ borderColor: "rgba(34,211,238,0.4)", color: "#67e8f9", background: "rgba(34,211,238,0.08)" }}>{t.system_affected}</span>
+              <span className="kanban-tag" style={{ borderColor: "rgba(69,137,255,0.4)", color: "#67e8f9", background: "rgba(69,137,255,0.08)" }}>{t.system_affected}</span>
             )}
             {t.category && (
               <span className="kanban-tag" style={{ borderColor: "rgba(168,85,247,0.4)", color: "#c084fc", background: "rgba(168,85,247,0.08)" }}>{t.category}</span>
             )}
             {t.assigned_role && (
-              <span className="kanban-tag" style={{ borderColor: "rgba(251,191,36,0.4)", color: "#fcd34d", background: "rgba(251,191,36,0.08)" }}>→ {t.assigned_role}</span>
+              <span className="kanban-tag" style={{ borderColor: "rgba(241,194,27,0.4)", color: "#fcd34d", background: "rgba(241,194,27,0.08)" }}>→ {t.assigned_role}</span>
             )}
           </div>
         </div>

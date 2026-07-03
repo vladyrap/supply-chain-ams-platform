@@ -124,7 +124,7 @@ export default function EscalationDetailModal({ record, escalation, actingUserId
                 </div>
                 <div className="col" style={{ gap: 4 }}>
                   {record.events.map((e, i) => (
-                    <div key={i} style={{ fontSize: 11.5, paddingLeft: 10, borderLeft: "2px solid rgba(34,211,238,0.4)" }}>
+                    <div key={i} style={{ fontSize: 11.5, paddingLeft: 10, borderLeft: "2px solid rgba(69,137,255,0.4)" }}>
                       <div style={{ fontFamily: "var(--font-mono, monospace)", color: "#7dd3fc" }}>
                         {e.type}
                       </div>
@@ -148,7 +148,7 @@ export default function EscalationDetailModal({ record, escalation, actingUserId
           <div className="row" style={{ gap: 8, flexWrap: "wrap", justifyContent: "flex-end" }}>
             {record.status === "REVIEW_REQUIRED" && canApprove && (
               <>
-                <button className="btn" style={{ borderColor: "rgba(239,68,68,0.5)", color: "#fca5a5" }} onClick={reject}>✕ Rechazar</button>
+                <button className="btn" style={{ borderColor: "rgba(250,77,86,0.5)", color: "#fca5a5" }} onClick={reject}>✕ Rechazar</button>
                 <button className="btn primary" onClick={approve}>✓ Aprobar</button>
               </>
             )}

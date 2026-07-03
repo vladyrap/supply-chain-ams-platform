@@ -4,14 +4,14 @@ import { ESCALATION_STATUS_LABELS, type EscalationStatus } from "@/types/escalat
 
 const COLORS: Record<EscalationStatus, { bg: string; fg: string; bd: string }> = {
   NEW:                { bg: "rgba(148,163,184,0.10)", fg: "#cbd5e1", bd: "rgba(148,163,184,0.35)" },
-  REVIEW_REQUIRED:    { bg: "rgba(251,191,36,0.15)",  fg: "#fcd34d", bd: "rgba(251,191,36,0.5)"  },
+  REVIEW_REQUIRED:    { bg: "rgba(241,194,27,0.15)",  fg: "#fcd34d", bd: "rgba(241,194,27,0.5)"  },
   READY_TO_ESCALATE:  { bg: "rgba(56,189,248,0.15)",  fg: "#7dd3fc", bd: "rgba(56,189,248,0.45)" },
   ESCALATED:          { bg: "rgba(168,85,247,0.15)",  fg: "#c084fc", bd: "rgba(168,85,247,0.5)"  },
-  ASSIGNED_TO_N2:     { bg: "rgba(34,211,238,0.12)",  fg: "#67e8f9", bd: "rgba(34,211,238,0.45)" },
+  ASSIGNED_TO_N2:     { bg: "rgba(69,137,255,0.12)",  fg: "#67e8f9", bd: "rgba(69,137,255,0.45)" },
   IN_PROGRESS_N2:     { bg: "rgba(59,130,246,0.15)",  fg: "#93c5fd", bd: "rgba(59,130,246,0.5)"  },
-  RESOLVED_BY_N2:     { bg: "rgba(34,197,94,0.15)",   fg: "#86efac", bd: "rgba(34,197,94,0.5)"   },
+  RESOLVED_BY_N2:     { bg: "rgba(66,190,101,0.15)",   fg: "#86efac", bd: "rgba(66,190,101,0.5)"   },
   RETURNED_TO_N1:     { bg: "rgba(244,114,182,0.12)", fg: "#f9a8d4", bd: "rgba(244,114,182,0.45)" },
-  CANCELLED:          { bg: "rgba(239,68,68,0.12)",   fg: "#fca5a5", bd: "rgba(239,68,68,0.45)"  },
+  CANCELLED:          { bg: "rgba(250,77,86,0.12)",   fg: "#fca5a5", bd: "rgba(250,77,86,0.45)"  },
 };
 
 export default function EscalationStatusBadge({ status, size = "md" }: { status: EscalationStatus; size?: "sm" | "md" }) {

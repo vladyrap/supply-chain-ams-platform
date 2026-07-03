@@ -10,11 +10,11 @@ interface Props {
 }
 
 const ACTION_COLORS: Record<PermissionAction, string> = {
-  view:      "#22d3ee",
+  view:      "#4589ff",
   create:    "#10b981",
   edit:      "#3b82f6",
-  delete:    "#ef4444",
-  export:    "#fbbf24",
+  delete:    "#fa4d56",
+  export:    "#f1c21b",
   configure: "#a855f7",
   approve:   "#f97316",
 };

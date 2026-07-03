@@ -297,7 +297,7 @@ function VariancePreview({
 }: { minH: number; maxH: number; actual: number; variancePct: number; withinBand: boolean }) {
   const absPct = Math.abs(variancePct);
   const tone = withinBand ? "ok" : absPct >= 50 ? "error" : "warn";
-  const color = tone === "ok" ? "#10b981" : tone === "error" ? "#ef4444" : "#f59e0b";
+  const color = tone === "ok" ? "#10b981" : tone === "error" ? "#fa4d56" : "#f59e0b";
   const sign = variancePct > 0 ? "+" : variancePct < 0 ? "" : "";
   const label = withinBand
     ? "dentro de la banda estimada"

@@ -24,9 +24,9 @@ interface Props {
 }
 
 const VERDICT_COLORS: Record<string, string> = {
-  ESCALATE_NOW: "#ef4444",
+  ESCALATE_NOW: "#fa4d56",
   ESCALATE_SOON: "#f59e0b",
-  WAIT_AND_SEE: "#22d3ee",
+  WAIT_AND_SEE: "#4589ff",
   RESOLVE_AT_N1: "#10b981",
   INSUFFICIENT_DATA: "#64748b",
 };
@@ -34,7 +34,7 @@ const VERDICT_COLORS: Record<string, string> = {
 function confidenceColor(score: number): string {
   if (score >= 70) return "#10b981";
   if (score >= 40) return "#f59e0b";
-  return "#ef4444";
+  return "#fa4d56";
 }
 
 export default function AmsIntelligenceSummaryCard({ analysis }: Props) {
@@ -97,7 +97,7 @@ export default function AmsIntelligenceSummaryCard({ analysis }: Props) {
         <Tile
           label="ACCIÓN"
           value={analysis.nextBestAction?.label ?? "—"}
-          color="#22d3ee"
+          color="#4589ff"
           hint={analysis.nextBestAction?.confidence}
           small
         />
@@ -120,7 +120,7 @@ export default function AmsIntelligenceSummaryCard({ analysis }: Props) {
           <div style={{ color: "var(--text-soft)" }}>
             {analysis.detectedContext.module && <span><strong>{analysis.detectedContext.module}</strong> · </span>}
             {analysis.detectedContext.transaction && <span>{analysis.detectedContext.transaction} · </span>}
-            {analysis.detectedContext.errorCode && <span style={{ color: "#ef4444" }}>{analysis.detectedContext.errorCode}</span>}
+            {analysis.detectedContext.errorCode && <span style={{ color: "#fa4d56" }}>{analysis.detectedContext.errorCode}</span>}
             {!analysis.detectedContext.module && !analysis.detectedContext.transaction && (
               <span style={{ color: "var(--text-dim)" }}>sin contexto detectado</span>
             )}
@@ -135,7 +135,7 @@ export default function AmsIntelligenceSummaryCard({ analysis }: Props) {
                 {analysis.customerResponseSuggestion.qualityScore}/100
               </span>
               {!analysis.customerResponseSuggestion.canSend && (
-                <span style={{ color: "#ef4444" }}> · ⚠ bloqueada</span>
+                <span style={{ color: "#fa4d56" }}> · ⚠ bloqueada</span>
               )}
             </div>
           </div>
@@ -148,8 +148,8 @@ export default function AmsIntelligenceSummaryCard({ analysis }: Props) {
           {analysis.qualityRisks.length > 0 && (
             <div style={{
               fontSize: 10.5, padding: "2px 8px", borderRadius: 4,
-              background: "rgba(239,68,68,0.10)", color: "#ef4444",
-              border: "1px solid rgba(239,68,68,0.35)",
+              background: "rgba(250,77,86,0.10)", color: "#fa4d56",
+              border: "1px solid rgba(250,77,86,0.35)",
             }}>
               ⚠ {analysis.qualityRisks.length} riesgo{analysis.qualityRisks.length === 1 ? "" : "s"}
             </div>
@@ -157,8 +157,8 @@ export default function AmsIntelligenceSummaryCard({ analysis }: Props) {
           {analysis.missingData.length > 0 && (
             <div style={{
               fontSize: 10.5, padding: "2px 8px", borderRadius: 4,
-              background: "rgba(251,191,36,0.10)", color: "#fbbf24",
-              border: "1px solid rgba(251,191,36,0.35)",
+              background: "rgba(241,194,27,0.10)", color: "#f1c21b",
+              border: "1px solid rgba(241,194,27,0.35)",
             }}>
               📋 {analysis.missingData.length} dato{analysis.missingData.length === 1 ? "" : "s"} faltante{analysis.missingData.length === 1 ? "" : "s"}
             </div>

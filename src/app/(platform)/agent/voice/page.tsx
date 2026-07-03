@@ -118,7 +118,7 @@ export default function AgentVoicePage() {
           style={{
             width: 180, height: 180, borderRadius: "50%",
             background: sr.isListening
-              ? "radial-gradient(circle at 50% 35%, #ef4444, #b91c1c)"
+              ? "radial-gradient(circle at 50% 35%, #fa4d56, #b91c1c)"
               : loading
                 ? "radial-gradient(circle at 50% 35%, #6b7280, #374151)"
                 : "radial-gradient(circle at 50% 35%, #3b82f6, #1d4ed8)",
@@ -127,7 +127,7 @@ export default function AgentVoicePage() {
             fontSize: 64,
             cursor: supported && !loading ? "pointer" : "not-allowed",
             boxShadow: sr.isListening
-              ? "0 0 0 8px rgba(239,68,68,0.15), 0 0 40px rgba(239,68,68,0.5)"
+              ? "0 0 0 8px rgba(250,77,86,0.15), 0 0 40px rgba(250,77,86,0.5)"
               : "0 8px 24px rgba(0,0,0,0.3)",
             animation: sr.isListening ? "pulse 1.4s ease-in-out infinite" : "none",
             transition: "transform .1s",
@@ -152,8 +152,8 @@ export default function AgentVoicePage() {
 
       <style jsx>{`
         @keyframes pulse {
-          0%, 100% { box-shadow: 0 0 0 8px rgba(239,68,68,0.15), 0 0 40px rgba(239,68,68,0.5); }
-          50%      { box-shadow: 0 0 0 20px rgba(239,68,68,0.05), 0 0 60px rgba(239,68,68,0.7); }
+          0%, 100% { box-shadow: 0 0 0 8px rgba(250,77,86,0.15), 0 0 40px rgba(250,77,86,0.5); }
+          50%      { box-shadow: 0 0 0 20px rgba(250,77,86,0.05), 0 0 60px rgba(250,77,86,0.7); }
         }
       `}</style>
 

@@ -103,7 +103,7 @@ export default function AmsSpecialistsSection({ intelligence, onReanalyze }: Pro
               disabled={busy}
               style={{
                 fontSize: 11, padding: "4px 10px", whiteSpace: "nowrap",
-                color: "#22d3ee", borderColor: "#22d3ee55",
+                color: "#4589ff", borderColor: "#4589ff55",
               }}
               title="Reejecuta router + especialistas con la data actual"
             >
@@ -162,11 +162,11 @@ export default function AmsSpecialistsSection({ intelligence, onReanalyze }: Pro
       {/* Next Best Action */}
       <div style={{
         padding: 8, marginBottom: 8,
-        background: "rgba(34,211,238,0.10)",
-        border: "1px solid rgba(34,211,238,0.30)",
+        background: "rgba(69,137,255,0.10)",
+        border: "1px solid rgba(69,137,255,0.30)",
         borderRadius: 4, fontSize: 11.5,
       }}>
-        <div style={{ color: "#22d3ee", fontWeight: 600, fontSize: 10.5, marginBottom: 2 }}>
+        <div style={{ color: "#4589ff", fontWeight: 600, fontSize: 10.5, marginBottom: 2 }}>
           NEXT BEST ACTION
         </div>
         <div style={{ color: "var(--text)" }}>{sa.nextBestAction}</div>
@@ -189,14 +189,14 @@ export default function AmsSpecialistsSection({ intelligence, onReanalyze }: Pro
               ))}
               {sa.routing.detectedSignals.errorCodes.map((e) => (
                 <span key={`err-${e}`} className="pill" style={{
-                  fontSize: 10, background: "rgba(239,68,68,0.12)", color: "#ef4444",
-                  border: "1px solid #ef444455", padding: "1px 6px", borderRadius: 3,
+                  fontSize: 10, background: "rgba(250,77,86,0.12)", color: "#fa4d56",
+                  border: "1px solid #fa4d5655", padding: "1px 6px", borderRadius: 3,
                 }}>err {e}</span>
               ))}
               {sa.routing.detectedSignals.sapObjects.slice(0, 6).map((o) => (
                 <span key={`obj-${o}`} className="pill" style={{
-                  fontSize: 10, background: "rgba(34,211,238,0.12)", color: "#22d3ee",
-                  border: "1px solid #22d3ee55", padding: "1px 6px", borderRadius: 3,
+                  fontSize: 10, background: "rgba(69,137,255,0.12)", color: "#4589ff",
+                  border: "1px solid #4589ff55", padding: "1px 6px", borderRadius: 3,
                 }}>{o}</span>
               ))}
               {sa.routing.detectedSignals.keywords.slice(0, 6).map((k) => (

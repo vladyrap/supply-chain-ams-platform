@@ -278,7 +278,7 @@ export function LibraryView() {
                   <div className="row" style={{ gap: 10, alignItems: "center", minWidth: 0 }}>
                     <span style={{
                       fontSize: 22, width: 40, height: 40, display: "grid", placeItems: "center",
-                      borderRadius: 10, background: "rgba(34,211,238,0.1)", border: "1px solid rgba(34,211,238,0.2)",
+                      borderRadius: 10, background: "rgba(69,137,255,0.1)", border: "1px solid rgba(69,137,255,0.2)",
                       flexShrink: 0,
                     }}>
                       {a.icon}
@@ -301,7 +301,7 @@ export function LibraryView() {
                     title={favs.has(a.id) ? "Quitar de favoritos" : "Agregar a favoritos"}
                     style={{
                       background: "none", border: 0, cursor: "pointer", fontSize: 18,
-                      color: favs.has(a.id) ? "#f87171" : "var(--text-dim)",
+                      color: favs.has(a.id) ? "#ff8389" : "var(--text-dim)",
                       flexShrink: 0, padding: 2,
                     }}
                   >
@@ -326,7 +326,7 @@ export function LibraryView() {
                       style={{ background: "none", border: 0, cursor: "pointer", fontSize: 13, color: "var(--text-dim)" }}>⧉</button>
                     {!a.isVerified && a.createdBy === myId && showArchived && (
                       <button onClick={() => handleReactivate(a)} title="Reactivar agente"
-                        style={{ background: "none", border: 0, cursor: "pointer", fontSize: 12, color: "#34d399", fontWeight: 600 }}>♻ Reactivar</button>
+                        style={{ background: "none", border: 0, cursor: "pointer", fontSize: 12, color: "#42be65", fontWeight: 600 }}>♻ Reactivar</button>
                     )}
                     {!a.isVerified && a.createdBy === myId && !showArchived && (
                       <>
@@ -336,15 +336,15 @@ export function LibraryView() {
                           style={{ background: "none", border: 0, cursor: "pointer", fontSize: 13, color: "var(--text-dim)" }}>✎</button>
                         {a.visibility === "private" ? (
                           <button onClick={() => handlePublish(a)} title="Publicar al equipo"
-                            style={{ background: "none", border: 0, cursor: "pointer", fontSize: 12, color: "#34d399", fontWeight: 600 }}>🚀 Publicar</button>
+                            style={{ background: "none", border: 0, cursor: "pointer", fontSize: 12, color: "#42be65", fontWeight: 600 }}>🚀 Publicar</button>
                         ) : (
                           <button onClick={() => handleUnpublish(a)} title="Volver a borrador privado"
-                            style={{ background: "none", border: 0, cursor: "pointer", fontSize: 12, color: "#fbbf24" }}>↩</button>
+                            style={{ background: "none", border: 0, cursor: "pointer", fontSize: 12, color: "#f1c21b" }}>↩</button>
                         )}
                         <button onClick={() => handleArchive(a)} title="Archivar (reversible)"
                           style={{ background: "none", border: 0, cursor: "pointer", fontSize: 13, color: "var(--text-dim)" }}>🗄</button>
                         <button onClick={() => handleDelete(a)} title="Eliminar agente (definitivo)"
-                          style={{ background: "none", border: 0, cursor: "pointer", fontSize: 13, color: "#ef4444" }}>🗑</button>
+                          style={{ background: "none", border: 0, cursor: "pointer", fontSize: 13, color: "#fa4d56" }}>🗑</button>
                       </>
                     )}
                   </div>

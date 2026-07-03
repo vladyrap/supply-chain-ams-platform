@@ -51,9 +51,9 @@ const READINESS_LABELS: Record<ReadinessLevel, string> = {
 };
 
 const READINESS_COLORS: Record<ReadinessLevel, string> = {
-  LOW: "#ef4444",
+  LOW: "#fa4d56",
   MEDIUM: "#f59e0b",
-  HIGH: "#22d3ee",
+  HIGH: "#4589ff",
   READY: "#10b981",
 };
 

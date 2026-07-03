@@ -57,13 +57,13 @@ export default function AdminAccessPanel() {
 
       {/* KPIs */}
       <div style={{ display: "grid", gridTemplateColumns: "repeat(4, 1fr)", gap: 10, marginBottom: 14 }}>
-        <Tile label="Usuarios"        value={totalUsers}    hint={`${activeUsers} activos`} accent="#22d3ee" />
+        <Tile label="Usuarios"        value={totalUsers}    hint={`${activeUsers} activos`} accent="#4589ff" />
         <Tile label="Roles activos"   value={totalRoles}    hint={`${admin.roles.filter((r) => r.isSystem).length} de sistema`} accent="#a855f7" />
         <Tile label="Permisos config" value={totalPerms}    hint="acciones activas" accent="#10b981" />
         <Tile label="Usuario simulado"
               value={admin.currentUser?.name ?? "—"}
               hint={admin.currentUser ? `rol ${admin.currentUser.roleCode}` : "usando sesión real"}
-              accent={admin.currentUser ? "#fbbf24" : "#475569"} />
+              accent={admin.currentUser ? "#f1c21b" : "#475569"} />
       </div>
 
       {/* Tabs */}

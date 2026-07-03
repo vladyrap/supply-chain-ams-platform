@@ -13,8 +13,8 @@ interface Props {
 
 function confColor(c?: string): string {
   if (c === "HIGH") return "#10b981";
-  if (c === "LOW") return "#ef4444";
-  return "#fbbf24";
+  if (c === "LOW") return "#fa4d56";
+  return "#f1c21b";
 }
 
 export default function TicketEstimateSummary({ estimate, title = "ETA estimada" }: Props) {
@@ -32,7 +32,7 @@ export default function TicketEstimateSummary({ estimate, title = "ETA estimada"
       <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
         <div style={{ fontWeight: 600, fontSize: 12, color: c }}>⏱ {title}</div>
         {estimate.manuallyAdjusted && (
-          <span style={{ fontSize: 10, color: "#fbbf24", padding: "1px 6px", border: "1px solid #fbbf24", borderRadius: 3 }}>
+          <span style={{ fontSize: 10, color: "#f1c21b", padding: "1px 6px", border: "1px solid #f1c21b", borderRadius: 3 }}>
             ajuste manual
           </span>
         )}

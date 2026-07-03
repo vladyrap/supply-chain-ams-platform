@@ -130,7 +130,7 @@ export default function AgentSimulator({ ctx, presetItemId }: Props) {
           <div className="card">
             <div className="ticket-section-head">
               <span style={{ color: "var(--accent)" }}>💬</span> RESPUESTA SIMULADA · confianza{" "}
-              <b style={{ color: result.confidence === "alta" ? "#10b981" : result.confidence === "media" ? "#fbbf24" : "#ef4444" }}>
+              <b style={{ color: result.confidence === "alta" ? "#10b981" : result.confidence === "media" ? "#f1c21b" : "#fa4d56" }}>
                 {result.confidence}
               </b>
             </div>
@@ -154,8 +154,8 @@ export default function AgentSimulator({ ctx, presetItemId }: Props) {
                   <div key={m.item.id} className="tc-used-card">
                     <div className="row" style={{ gap: 8, alignItems: "center", marginBottom: 4 }}>
                       <span style={{ fontWeight: 700, fontSize: 13 }}>{m.item.title}</span>
-                      <span className="kanban-tag" style={{ borderColor: "rgba(34,211,238,0.4)", color: "#67e8f9", background: "rgba(34,211,238,0.08)" }}>{m.item.module}</span>
-                      <span style={{ marginLeft: "auto", fontSize: 11, fontFamily: "var(--font-mono, monospace)", color: m.score >= 0.5 ? "#10b981" : m.score >= 0.3 ? "#fbbf24" : "#ef4444" }}>
+                      <span className="kanban-tag" style={{ borderColor: "rgba(69,137,255,0.4)", color: "#67e8f9", background: "rgba(69,137,255,0.08)" }}>{m.item.module}</span>
+                      <span style={{ marginLeft: "auto", fontSize: 11, fontFamily: "var(--font-mono, monospace)", color: m.score >= 0.5 ? "#10b981" : m.score >= 0.3 ? "#f1c21b" : "#fa4d56" }}>
                         match {(m.score * 100).toFixed(0)}%
                       </span>
                     </div>
@@ -170,14 +170,14 @@ export default function AgentSimulator({ ctx, presetItemId }: Props) {
           )}
 
           {result.gapDetected && (
-            <div className="card" style={{ borderLeft: "3px solid #ef4444" }}>
+            <div className="card" style={{ borderLeft: "3px solid #fa4d56" }}>
               <div className="ticket-section-head">
-                <span style={{ color: "#ef4444" }}>⚠</span> BRECHA DETECTADA
+                <span style={{ color: "#fa4d56" }}>⚠</span> BRECHA DETECTADA
               </div>
               <div style={{ fontSize: 13.5, fontWeight: 600, marginBottom: 4 }}>{result.gapDetected.title}</div>
               <p style={{ fontSize: 12.5, color: "var(--text-soft)", margin: "0 0 8px", lineHeight: 1.5 }}>{result.gapDetected.reason}</p>
               <button className="btn primary" onClick={registerGap} disabled={creatingGap}
-                style={{ background: "#ef4444", borderColor: "#ef4444" }}>
+                style={{ background: "#fa4d56", borderColor: "#fa4d56" }}>
                 {creatingGap ? "✓ brecha registrada" : "📌 registrar como brecha en backlog"}
               </button>
             </div>

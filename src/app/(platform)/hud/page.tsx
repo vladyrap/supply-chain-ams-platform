@@ -109,11 +109,11 @@ export default function HudPage() {
       {/* Header */}
       <div className="hud-header">
         <div>
-          <h1 style={{ margin: 0, fontSize: 22, letterSpacing: 4, color: "#22d3ee", textShadow: "0 0 10px rgba(34,211,238,0.6)" }}>◤ ARC REACTOR OPS ◢</h1>
+          <h1 style={{ margin: 0, fontSize: 22, letterSpacing: 4, color: "#4589ff", textShadow: "0 0 10px rgba(69,137,255,0.6)" }}>◤ ARC REACTOR OPS ◢</h1>
           <div style={{ fontSize: 10, color: "#67e8f9", letterSpacing: 3, marginTop: 4 }}>S.H.I.E.L.D · AMS SUPPLY-CHAIN DEFENSIVE GRID</div>
         </div>
         <div style={{ textAlign: "right", color: "#67e8f9", fontFamily: "var(--font-mono, monospace)" }}>
-          <div style={{ fontSize: 22, letterSpacing: 3, textShadow: "0 0 8px rgba(34,211,238,0.5)" }}>{now.toLocaleTimeString()}</div>
+          <div style={{ fontSize: 22, letterSpacing: 3, textShadow: "0 0 8px rgba(69,137,255,0.5)" }}>{now.toLocaleTimeString()}</div>
           <div style={{ fontSize: 10, letterSpacing: 2, color: "#0891b2" }}>SYS·ONLINE · OPS·NOMINAL</div>
         </div>
       </div>
@@ -127,7 +127,7 @@ export default function HudPage() {
           <div className="ring r4" />
 
           <div className="reactor-core">
-            <div style={{ fontSize: 78, fontWeight: 700, color: "#22d3ee", lineHeight: 1, textShadow: "0 0 24px rgba(34,211,238,0.9)" }}>
+            <div style={{ fontSize: 78, fontWeight: 700, color: "#4589ff", lineHeight: 1, textShadow: "0 0 24px rgba(69,137,255,0.9)" }}>
               {Math.round(sla)}<span style={{ fontSize: 28, opacity: 0.6 }}>%</span>
             </div>
             <div style={{ fontSize: 11, color: "#67e8f9", letterSpacing: 4, marginTop: 4 }}>SLA · COMPLIANCE</div>
@@ -138,26 +138,26 @@ export default function HudPage() {
         </div>
 
         {/* Quadrant panels */}
-        <HoloPanel accent="#22d3ee" style={{ position: "absolute", top: 30, left: 30, width: 220 }}>
+        <HoloPanel accent="#4589ff" style={{ position: "absolute", top: 30, left: 30, width: 220 }}>
           <div className="panel-title">◤ AGENT·CORE</div>
           <div className="panel-body">
-            <StatLine label="INTERACTIONS"  value={interactions.toLocaleString("es-CL")} accent="#22d3ee" />
+            <StatLine label="INTERACTIONS"  value={interactions.toLocaleString("es-CL")} accent="#4589ff" />
             <StatLine label="AI·RESOLVED %" value={`${Math.round(aiRate)}%`} accent="#10b981" />
-            <StatLine label="TOKENS"        value={`${(totalTok / 1000).toFixed(1)}k`} accent="#fbbf24" />
-            <StatLine label="COSTO USD"     value={`$${cost.toFixed(2)}`} accent="#ef4444" />
+            <StatLine label="TOKENS"        value={`${(totalTok / 1000).toFixed(1)}k`} accent="#f1c21b" />
+            <StatLine label="COSTO USD"     value={`$${cost.toFixed(2)}`} accent="#fa4d56" />
           </div>
           <div style={{ marginTop: 8, display: "flex", justifyContent: "center" }}>
-            <ArcGauge pct={aiRate} color="#22d3ee" label="AI·RES" />
+            <ArcGauge pct={aiRate} color="#4589ff" label="AI·RES" />
           </div>
         </HoloPanel>
 
         <HoloPanel accent="#a855f7" style={{ position: "absolute", top: 30, right: 30, width: 220 }}>
           <div className="panel-title">◥ SUPPORT·DESK</div>
           <div className="panel-body">
-            <StatLine label="TICKETS·ACTIVE" value={tickets} accent="#fbbf24" />
+            <StatLine label="TICKETS·ACTIVE" value={tickets} accent="#f1c21b" />
             <StatLine label="CONV·OPEN"      value={adv?.totals.supportConversationsOpen ?? 0} accent="#a855f7" />
             <StatLine label="CONV·TOT"       value={adv?.totals.supportConversations ?? 0} accent="#a855f7" />
-            <StatLine label="SLA·BREACH"     value={breach} accent={breach ? "#ef4444" : "#6b7280"} />
+            <StatLine label="SLA·BREACH"     value={breach} accent={breach ? "#fa4d56" : "#6b7280"} />
           </div>
           <div style={{ marginTop: 8, display: "flex", justifyContent: "center" }}>
             <ArcGauge pct={breach === 0 ? 100 : Math.max(0, 100 - breach * 10)} color="#a855f7" label="HEALTH" />
@@ -177,27 +177,27 @@ export default function HudPage() {
           </div>
         </HoloPanel>
 
-        <HoloPanel accent="#fbbf24" style={{ position: "absolute", bottom: 30, right: 30, width: 220 }}>
+        <HoloPanel accent="#f1c21b" style={{ position: "absolute", bottom: 30, right: 30, width: 220 }}>
           <div className="panel-title">◢ KB·KNOWLEDGE</div>
           <div className="panel-body">
-            <StatLine label="ARTICLES"     value={adv?.totals.kbApproved ?? 0} accent="#fbbf24" />
+            <StatLine label="ARTICLES"     value={adv?.totals.kbApproved ?? 0} accent="#f1c21b" />
             <StatLine label="MEETINGS·DONE" value={adv?.totals.meetingsDone ?? 0} accent="#a855f7" />
             <StatLine label="AVG·RESP·MIN"  value={Math.round(exec?.kpis.avgResponseTimeMin ?? 0)} accent="#06b6d4" />
-            <StatLine label="COST/IxN"     value={`$${(exec?.kpis.costPerInteractionUsd ?? 0).toFixed(4)}`} accent="#ef4444" />
+            <StatLine label="COST/IxN"     value={`$${(exec?.kpis.costPerInteractionUsd ?? 0).toFixed(4)}`} accent="#fa4d56" />
           </div>
           <div style={{ marginTop: 8, display: "flex", justifyContent: "center" }}>
-            <ArcGauge pct={Math.min(100, (adv?.totals.kbApproved ?? 0))} color="#fbbf24" label="KB" />
+            <ArcGauge pct={Math.min(100, (adv?.totals.kbApproved ?? 0))} color="#f1c21b" label="KB" />
           </div>
         </HoloPanel>
       </div>
 
       {/* Bottom strip event feed */}
-      <HoloPanel accent="#22d3ee" style={{ margin: "0 30px 18px" }}>
+      <HoloPanel accent="#4589ff" style={{ margin: "0 30px 18px" }}>
         <div className="panel-title">◤ LIVE·THREAT·FEED ◢</div>
         <div style={{ display: "flex", gap: 14, overflowX: "auto", padding: "4px 0", fontFamily: "var(--font-mono, monospace)" }}>
           {feed.length === 0 && <span style={{ color: "#64748b", fontSize: 11 }}>(no events)</span>}
           {feed.map((f) => (
-            <div key={f.id} style={{ minWidth: 220, padding: "6px 10px", border: "1px solid rgba(34,211,238,0.25)", background: "rgba(34,211,238,0.04)", borderRadius: 4, fontSize: 11 }}>
+            <div key={f.id} style={{ minWidth: 220, padding: "6px 10px", border: "1px solid rgba(69,137,255,0.25)", background: "rgba(69,137,255,0.04)", borderRadius: 4, fontSize: 11 }}>
               <div style={{ color: "#0891b2", fontSize: 9, letterSpacing: 1.5 }}>{new Date(f.createdAt).toLocaleTimeString()} · {f.kind.toUpperCase()}</div>
               <div style={{ color: "#cbd5e1", marginTop: 2, whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }}>{f.title}</div>
             </div>
@@ -209,7 +209,7 @@ export default function HudPage() {
         .hud-root {
           min-height: calc(100vh - 80px);
           background:
-            radial-gradient(circle at 50% 50%, rgba(34,211,238,0.10) 0%, transparent 50%),
+            radial-gradient(circle at 50% 50%, rgba(69,137,255,0.10) 0%, transparent 50%),
             radial-gradient(circle at 50% 100%, rgba(168,85,247,0.06) 0%, transparent 50%),
             #04060f;
           color: #67e8f9;
@@ -220,10 +220,10 @@ export default function HudPage() {
         .hud-header {
           display: flex; justify-content: space-between; align-items: center;
           padding: 6px 10px;
-          border-top: 1px solid rgba(34,211,238,0.4);
-          border-bottom: 1px solid rgba(34,211,238,0.4);
+          border-top: 1px solid rgba(69,137,255,0.4);
+          border-bottom: 1px solid rgba(69,137,255,0.4);
           margin-bottom: 22px;
-          background: linear-gradient(90deg, rgba(34,211,238,0.06), transparent 30%, transparent 70%, rgba(168,85,247,0.06));
+          background: linear-gradient(90deg, rgba(69,137,255,0.06), transparent 30%, transparent 70%, rgba(168,85,247,0.06));
           position: relative; z-index: 2;
         }
         .reactor-stage {
@@ -238,22 +238,22 @@ export default function HudPage() {
         }
         .ring {
           position: absolute; inset: 0;
-          border: 1px solid rgba(34,211,238,0.35);
+          border: 1px solid rgba(69,137,255,0.35);
           border-radius: 50%;
           border-style: dashed;
         }
-        .ring.r1 { inset: 0;   animation: spin 24s linear infinite; border-style: dashed; border-width: 1px; border-color: rgba(34,211,238,0.45); }
+        .ring.r1 { inset: 0;   animation: spin 24s linear infinite; border-style: dashed; border-width: 1px; border-color: rgba(69,137,255,0.45); }
         .ring.r2 { inset: 30px; animation: spin 18s linear infinite reverse; border-style: dotted; border-color: rgba(168,85,247,0.35); }
-        .ring.r3 { inset: 60px; animation: spin 14s linear infinite; border-style: dashed; border-color: rgba(34,211,238,0.55); }
-        .ring.r4 { inset: 95px; animation: spin 9s  linear infinite reverse; border-style: solid; border-color: rgba(34,211,238,0.25); }
+        .ring.r3 { inset: 60px; animation: spin 14s linear infinite; border-style: dashed; border-color: rgba(69,137,255,0.55); }
+        .ring.r4 { inset: 95px; animation: spin 9s  linear infinite reverse; border-style: solid; border-color: rgba(69,137,255,0.25); }
         .reactor-core {
           position: absolute; left: 50%; top: 50%;
           transform: translate(-50%, -50%);
           width: 220px; height: 220px;
           border-radius: 50%;
-          background: radial-gradient(circle at 50% 35%, rgba(34,211,238,0.35), rgba(34,211,238,0.05) 60%, transparent 80%);
+          background: radial-gradient(circle at 50% 35%, rgba(69,137,255,0.35), rgba(69,137,255,0.05) 60%, transparent 80%);
           display: flex; flex-direction: column; align-items: center; justify-content: center;
-          box-shadow: 0 0 60px rgba(34,211,238,0.45), inset 0 0 40px rgba(34,211,238,0.25);
+          box-shadow: 0 0 60px rgba(69,137,255,0.45), inset 0 0 40px rgba(69,137,255,0.25);
           animation: corePulse 3s ease-in-out infinite;
         }
         @keyframes spin {
@@ -261,8 +261,8 @@ export default function HudPage() {
           100% { transform: rotate(360deg); }
         }
         @keyframes corePulse {
-          0%, 100% { box-shadow: 0 0 60px rgba(34,211,238,0.45), inset 0 0 40px rgba(34,211,238,0.25); }
-          50%      { box-shadow: 0 0 90px rgba(34,211,238,0.7),  inset 0 0 60px rgba(34,211,238,0.4); }
+          0%, 100% { box-shadow: 0 0 60px rgba(69,137,255,0.45), inset 0 0 40px rgba(69,137,255,0.25); }
+          50%      { box-shadow: 0 0 90px rgba(69,137,255,0.7),  inset 0 0 60px rgba(69,137,255,0.4); }
         }
         .holo-panel {
           background: linear-gradient(135deg, rgba(15,23,42,0.85), rgba(2,6,23,0.6));
@@ -288,22 +288,22 @@ export default function HudPage() {
         .panel-body { display: flex; flex-direction: column; gap: 1px; }
         .scanlines {
           position: absolute; inset: 0; pointer-events: none;
-          background-image: repeating-linear-gradient(0deg, transparent 0 2px, rgba(34,211,238,0.03) 2px 3px);
+          background-image: repeating-linear-gradient(0deg, transparent 0 2px, rgba(69,137,255,0.03) 2px 3px);
           mix-blend-mode: screen;
         }
         .hex-grid {
           position: absolute; inset: 0; pointer-events: none;
           background-image:
-            linear-gradient(rgba(34,211,238,0.04) 1px, transparent 1px),
-            linear-gradient(90deg, rgba(34,211,238,0.04) 1px, transparent 1px);
+            linear-gradient(rgba(69,137,255,0.04) 1px, transparent 1px),
+            linear-gradient(90deg, rgba(69,137,255,0.04) 1px, transparent 1px);
           background-size: 48px 48px;
           mask-image: radial-gradient(circle at 50% 50%, black, transparent 80%);
         }
         .particles { position: absolute; inset: 0; pointer-events: none; }
         .particle {
           position: absolute; display: block;
-          border-radius: 50%; background: #22d3ee;
-          box-shadow: 0 0 6px #22d3ee;
+          border-radius: 50%; background: #4589ff;
+          box-shadow: 0 0 6px #4589ff;
           opacity: 0.4;
           animation: drift 12s ease-in-out infinite;
         }

@@ -169,10 +169,10 @@ export default function TourController() {
         <div style={{ display: "flex", alignItems: "center", gap: 14, flex: 1, position: "relative", zIndex: 1 }}>
           <div className="tour-step-counter">
             <span style={{ fontSize: 10, color: "#67e8f9", letterSpacing: 2 }}>STEP</span>
-            <span style={{ fontSize: 22, color: "#22d3ee", fontWeight: 700, lineHeight: 1, textShadow: "0 0 8px rgba(34,211,238,0.6)" }}>{stepIdx + 1}/{TOUR.length}</span>
+            <span style={{ fontSize: 22, color: "#4589ff", fontWeight: 700, lineHeight: 1, textShadow: "0 0 8px rgba(69,137,255,0.6)" }}>{stepIdx + 1}/{TOUR.length}</span>
           </div>
           <div style={{ flex: 1 }}>
-            <div style={{ fontSize: 13, fontWeight: 700, color: "#22d3ee", letterSpacing: 2, textShadow: "0 0 6px rgba(34,211,238,0.5)" }}>
+            <div style={{ fontSize: 13, fontWeight: 700, color: "#4589ff", letterSpacing: 2, textShadow: "0 0 6px rgba(69,137,255,0.5)" }}>
               ◤ AUTOPILOT · {current?.title.toUpperCase()}
             </div>
             <div className="tour-bar"><div className="tour-bar-fill" style={{ width: `${progress * 100}%` }} /></div>
@@ -194,35 +194,35 @@ export default function TourController() {
         .tour-trigger {
           position: fixed; top: 14px; right: 18px; z-index: 8500;
           display: flex; align-items: center; gap: 8px;
-          background: linear-gradient(135deg, rgba(34,211,238,0.15), rgba(168,85,247,0.15));
-          border: 1px solid rgba(34,211,238,0.45);
-          color: #22d3ee;
+          background: linear-gradient(135deg, rgba(69,137,255,0.15), rgba(168,85,247,0.15));
+          border: 1px solid rgba(69,137,255,0.45);
+          color: #4589ff;
           padding: 6px 14px;
           border-radius: 18px;
           cursor: pointer;
           font-family: var(--font-mono, monospace);
           font-size: 11px; letter-spacing: 2px; font-weight: 700;
           backdrop-filter: blur(6px);
-          box-shadow: 0 4px 14px rgba(0,0,0,0.4), 0 0 16px rgba(34,211,238,0.25);
+          box-shadow: 0 4px 14px rgba(0,0,0,0.4), 0 0 16px rgba(69,137,255,0.25);
           transition: all .2s;
         }
         .tour-trigger:hover {
-          background: linear-gradient(135deg, rgba(34,211,238,0.30), rgba(168,85,247,0.30));
-          box-shadow: 0 4px 18px rgba(0,0,0,0.5), 0 0 26px rgba(34,211,238,0.5);
+          background: linear-gradient(135deg, rgba(69,137,255,0.30), rgba(168,85,247,0.30));
+          box-shadow: 0 4px 18px rgba(0,0,0,0.5), 0 0 26px rgba(69,137,255,0.5);
           transform: scale(1.05);
         }
         .tour-banner {
           position: fixed; top: 8px; left: 50%; transform: translateX(-50%);
           z-index: 9100;
           background: linear-gradient(180deg, rgba(4,6,15,0.95), rgba(15,23,42,0.85));
-          border: 1px solid rgba(34,211,238,0.5);
+          border: 1px solid rgba(69,137,255,0.5);
           border-radius: 8px;
           padding: 10px 16px;
           width: min(720px, 92vw);
           font-family: var(--font-mono, monospace);
           color: #cbd5e1;
           backdrop-filter: blur(8px);
-          box-shadow: 0 8px 32px rgba(0,0,0,0.6), 0 0 30px rgba(34,211,238,0.25);
+          box-shadow: 0 8px 32px rgba(0,0,0,0.6), 0 0 30px rgba(69,137,255,0.25);
           overflow: hidden;
           animation: tourSlideIn .35s ease-out;
         }
@@ -232,38 +232,38 @@ export default function TourController() {
         }
         .tour-banner-glow {
           position: absolute; inset: 0;
-          background: radial-gradient(circle at 30% 50%, rgba(34,211,238,0.10), transparent 60%);
+          background: radial-gradient(circle at 30% 50%, rgba(69,137,255,0.10), transparent 60%);
           pointer-events: none;
         }
         .tour-step-counter {
           display: flex; flex-direction: column; align-items: center;
-          padding-right: 14px; border-right: 1px solid rgba(34,211,238,0.18);
+          padding-right: 14px; border-right: 1px solid rgba(69,137,255,0.18);
         }
         .tour-bar {
           height: 4px; margin-top: 4px;
-          background: rgba(34,211,238,0.10);
+          background: rgba(69,137,255,0.10);
           border-radius: 2px; overflow: hidden;
         }
         .tour-bar-fill {
           height: 100%;
-          background: linear-gradient(90deg, #22d3ee, #a855f7);
-          box-shadow: 0 0 6px #22d3ee;
+          background: linear-gradient(90deg, #4589ff, #a855f7);
+          box-shadow: 0 0 6px #4589ff;
           transition: width 1s linear;
         }
         .tour-btn {
-          background: rgba(34,211,238,0.10);
-          border: 1px solid rgba(34,211,238,0.4);
-          color: #22d3ee;
+          background: rgba(69,137,255,0.10);
+          border: 1px solid rgba(69,137,255,0.4);
+          color: #4589ff;
           width: 30px; height: 30px;
           border-radius: 6px; cursor: pointer;
           font-size: 12px; font-family: inherit;
           transition: all .15s;
         }
-        .tour-btn:hover { background: rgba(34,211,238,0.25); }
-        .tour-btn.red { color: #ef4444; border-color: rgba(239,68,68,0.5); }
-        .tour-btn.red:hover { background: rgba(239,68,68,0.2); }
+        .tour-btn:hover { background: rgba(69,137,255,0.25); }
+        .tour-btn.red { color: #fa4d56; border-color: rgba(250,77,86,0.5); }
+        .tour-btn.red:hover { background: rgba(250,77,86,0.2); }
         .tour-clock {
-          font-size: 14px; font-weight: 700; color: #22d3ee;
+          font-size: 14px; font-weight: 700; color: #4589ff;
           min-width: 38px; text-align: right;
           letter-spacing: 1px;
           font-variant-numeric: tabular-nums;

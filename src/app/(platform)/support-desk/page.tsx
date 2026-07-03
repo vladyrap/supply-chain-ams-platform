@@ -25,17 +25,17 @@ interface MetricsState {
 }
 
 const PRIORITY_META: Record<string, { color: string; icon: string }> = {
-  critica: { color: "#ef4444", icon: "🔥" },
+  critica: { color: "#fa4d56", icon: "🔥" },
   alta:    { color: "#f59e0b", icon: "⚠" },
-  media:   { color: "#22d3ee", icon: "●" },
+  media:   { color: "#4589ff", icon: "●" },
   baja:    { color: "#10b981", icon: "○" },
 };
 
 const CHANNEL_META: Record<string, { color: string; icon: string; label: string }> = {
-  chat:     { color: "#22d3ee", icon: "💬", label: "Chat web" },
+  chat:     { color: "#4589ff", icon: "💬", label: "Chat web" },
   whatsapp: { color: "#10b981", icon: "📱", label: "WhatsApp" },
   voice:    { color: "#a855f7", icon: "📞", label: "Voz" },
-  email:    { color: "#fbbf24", icon: "✉",  label: "Email" },
+  email:    { color: "#f1c21b", icon: "✉",  label: "Email" },
 };
 
 const SUPPORT_NOTIF_KINDS = new Set<NotificationItem["kind"]>([
@@ -170,11 +170,11 @@ export default function SupportDeskOverviewPage() {
 
         {/* KPIs principales (6) */}
         <div className="sd-kpi-grid">
-          <BigKpi label="Conversaciones" value={m?.total ?? 0} accent="#22d3ee" hint="todas históricas" loading={loading} />
-          <BigKpi label="Abiertas" value={m?.open ?? 0} accent="#fbbf24" hint="en curso" loading={loading} />
+          <BigKpi label="Conversaciones" value={m?.total ?? 0} accent="#4589ff" hint="todas históricas" loading={loading} />
+          <BigKpi label="Abiertas" value={m?.open ?? 0} accent="#f1c21b" hint="en curso" loading={loading} />
           <BigKpi label="Escaladas N2" value={m?.escalated ?? 0} accent="#a855f7" hint="generaron ticket" loading={loading} />
           <BigKpi label="Tickets activos" value={m?.ticketsOpen ?? 0} accent="#3b82f6" hint={`de ${m?.ticketsTotal ?? 0} total`} loading={loading} />
-          <BigKpi label="SLA vencidos" value={m?.slaBreaches ?? 0} accent={m?.slaBreaches ? "#ef4444" : "#10b981"} hint={m?.slaBreaches ? "atención" : "todo en SLA"} loading={loading} />
+          <BigKpi label="SLA vencidos" value={m?.slaBreaches ?? 0} accent={m?.slaBreaches ? "#fa4d56" : "#10b981"} hint={m?.slaBreaches ? "atención" : "todo en SLA"} loading={loading} />
           <BigKpi label="KB aprobados" value={m?.kbApproved ?? 0} accent="#10b981" hint={`${m?.kbDraft ?? 0} en draft`} loading={loading} />
         </div>
 
@@ -227,7 +227,7 @@ export default function SupportDeskOverviewPage() {
       </h2>
       <div className="sd-accesos">
         <AccessCard href="/support-desk/simulator"     icon="💬" title="Simulador"        desc="Hazte pasar por cliente y prueba flujo end-to-end" badge="probar" badgeColor="#10b981" />
-        <AccessCard href="/support-desk/conversations" icon="📋" title="Conversaciones"   desc="Todas las conversaciones con triage IA"            badge={m && m.open > 0 ? `${m.open} abiertas` : null} badgeColor="#fbbf24" />
+        <AccessCard href="/support-desk/conversations" icon="📋" title="Conversaciones"   desc="Todas las conversaciones con triage IA"            badge={m && m.open > 0 ? `${m.open} abiertas` : null} badgeColor="#f1c21b" />
         <AccessCard href="/support-desk/tickets"       icon="🎫" title="Tickets N2"       desc="Tickets generados al escalar"                       badge={m && m.ticketsOpen > 0 ? `${m.ticketsOpen} activos` : null} badgeColor="#3b82f6" />
         <AccessCard href="/support-desk/kanban"        icon="🗂" title="Kanban"           desc="Drag & drop entre estados"                          badge="visual" badgeColor="#a855f7" />
         <AccessCard href="/support-desk/kb"            icon="📘" title="KB"               desc="Artículos curados problema → solución"              badge={m ? `${m.kbApproved}` : null} badgeColor="#10b981" />
@@ -242,7 +242,7 @@ export default function SupportDeskOverviewPage() {
 
 function RadialGauge({ value, label }: { value: number; label: string }) {
   const pct = Math.max(0, Math.min(100, value));
-  const stroke = pct >= 70 ? "#10b981" : pct >= 40 ? "#fbbf24" : "#ef4444";
+  const stroke = pct >= 70 ? "#10b981" : pct >= 40 ? "#f1c21b" : "#fa4d56";
   const r = 70;
   const c = 2 * Math.PI * r;
   const off = c - (pct / 100) * c;
@@ -370,7 +370,7 @@ function StatusFlow({ items }: { items: { key: string; count: number }[] }) {
     new: "NEW", in_progress: "IN PROGRESS", waiting_customer: "WAITING", resolved: "RESOLVED", closed: "CLOSED",
   };
   const STATUS_COLOR: Record<string, string> = {
-    new: "#22d3ee", in_progress: "#fbbf24", waiting_customer: "#a855f7", resolved: "#10b981", closed: "#64748b",
+    new: "#4589ff", in_progress: "#f1c21b", waiting_customer: "#a855f7", resolved: "#10b981", closed: "#64748b",
   };
   const map = new Map(items.map((i) => [i.key, i.count]));
   return (
@@ -399,10 +399,10 @@ function LiveFeed({ items }: { items: NotificationItem[] }) {
     return <div style={{ color: "var(--text-dim)", fontSize: 12, padding: 10, textAlign: "center" }}>(esperando actividad…)</div>;
   }
   const KIND_META: Record<string, { color: string; icon: string }> = {
-    ticket_escalated: { color: "#fbbf24", icon: "📤" },
+    ticket_escalated: { color: "#f1c21b", icon: "📤" },
     ticket_resolved:  { color: "#10b981", icon: "✓" },
     kb_approved:      { color: "#a855f7", icon: "📘" },
-    incident_created: { color: "#22d3ee", icon: "💡" },
+    incident_created: { color: "#4589ff", icon: "💡" },
   };
   return (
     <div className="sd-feed">

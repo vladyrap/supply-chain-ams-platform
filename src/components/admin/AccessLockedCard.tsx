@@ -11,7 +11,7 @@ export default function AccessLockedCard({ screen, reason }: Props) {
   return (
     <div style={{
       maxWidth: 520, margin: "60px auto", padding: 28, textAlign: "center",
-      border: "1px solid rgba(239,68,68,0.3)", borderRadius: 10,
+      border: "1px solid rgba(250,77,86,0.3)", borderRadius: 10,
       background: "linear-gradient(180deg, rgba(15,23,42,0.7), rgba(2,6,23,0.7))",
       backdropFilter: "blur(14px)",
     }}>

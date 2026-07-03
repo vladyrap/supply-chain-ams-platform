@@ -10,7 +10,7 @@ const FEATURES = [
     icon: "🤖",
     title: "Asistente IA con voz",
     body: "Atiende llamadas telefonicas vía Twilio Voice, chat por web y eventos en vivo. Mesa de soporte con escalacion automatica a Nivel 2.",
-    accent: "#22d3ee",
+    accent: "#4589ff",
   },
   {
     icon: "🌐",
@@ -22,7 +22,7 @@ const FEATURES = [
     icon: "🔮",
     title: "Forecast de operaciones",
     body: "Proyeccion 7 dias con regresion lineal sobre tu historico. Banda de confianza 95%, anomalias detectadas y top 3 next-likely incidents.",
-    accent: "#fbbf24",
+    accent: "#f1c21b",
   },
 ];
 
@@ -43,13 +43,13 @@ export default function AuthShowcase() {
         <svg width="64" height="64" viewBox="0 0 64 64" className="auth-brand-mark">
           <defs>
             <linearGradient id="brand-grad" x1="0" y1="0" x2="1" y2="1">
-              <stop offset="0%"  stopColor="#22d3ee" />
+              <stop offset="0%"  stopColor="#4589ff" />
               <stop offset="50%" stopColor="#a855f7" />
               <stop offset="100%" stopColor="#f59e0b" />
             </linearGradient>
             <radialGradient id="brand-glow">
-              <stop offset="0%" stopColor="rgba(34,211,238,0.6)" />
-              <stop offset="100%" stopColor="rgba(34,211,238,0)" />
+              <stop offset="0%" stopColor="rgba(69,137,255,0.6)" />
+              <stop offset="100%" stopColor="rgba(69,137,255,0)" />
             </radialGradient>
           </defs>
           {/* Glow trasero */}

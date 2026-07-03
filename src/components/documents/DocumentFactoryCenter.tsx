@@ -95,7 +95,7 @@ export default function DocumentFactoryCenter() {
             </p>
           </div>
           <div className="kanban-stats">
-            <div className="kanban-stat" style={{ ["--accent" as never]: "#22d3ee" }}>
+            <div className="kanban-stat" style={{ ["--accent" as never]: "#4589ff" }}>
               <div className="kanban-stat-val">{hook.documents.length}</div>
               <div className="kanban-stat-lbl">DOCS GENERADOS</div>
             </div>
@@ -162,7 +162,7 @@ export default function DocumentFactoryCenter() {
             <div className="col" style={{ gap: 10 }}>
               {template.fields.map((f) => (
                 <label key={f.id} className="tc-field">
-                  <span>{f.label}{f.required && <span style={{ color: "#ef4444" }}> *</span>}</span>
+                  <span>{f.label}{f.required && <span style={{ color: "#fa4d56" }}> *</span>}</span>
                   {f.type === "textarea" ? (
                     <textarea
                       value={formData[f.id] ?? f.defaultValue ?? ""}
@@ -245,7 +245,7 @@ export default function DocumentFactoryCenter() {
                         <button className="tc-iconbtn" onClick={() => setPreview(d)} title="Ver">👁</button>
                         <button className="tc-iconbtn" onClick={() => handleCopy(d.id)} title="Copiar">📋</button>
                         <button className="tc-iconbtn" onClick={() => hook.exportMarkdown(d.id)} title="Exportar">↓</button>
-                        <button className="tc-iconbtn" onClick={() => { if (confirm("¿Eliminar?")) hook.deleteDocument(d.id); }} title="Eliminar" style={{ color: "#ef4444" }}>🗑</button>
+                        <button className="tc-iconbtn" onClick={() => { if (confirm("¿Eliminar?")) hook.deleteDocument(d.id); }} title="Eliminar" style={{ color: "#fa4d56" }}>🗑</button>
                       </div>
                     </div>
                   </div>

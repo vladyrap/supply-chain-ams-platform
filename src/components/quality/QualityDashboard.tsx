@@ -8,7 +8,7 @@ interface Props {
   evaluations: AgentEvaluation[];
 }
 
-function ScoreCard({ label, score, max = 5, color = "#22d3ee", icon = "" }: { label: string; score: number; max?: number; color?: string; icon?: string }) {
+function ScoreCard({ label, score, max = 5, color = "#4589ff", icon = "" }: { label: string; score: number; max?: number; color?: string; icon?: string }) {
   const pct = Math.round((score / max) * 100);
   return (
     <div className="tc-metric" style={{ ["--tc-acc" as never]: color }}>
@@ -42,20 +42,20 @@ export default function QualityDashboard({ metrics, evaluations }: Props) {
   return (
     <div className="col" style={{ gap: 14 }}>
       <div className="tc-metric-grid">
-        <ScoreCard label="Precisión promedio"     score={metrics.avgAccuracy}     color="#22d3ee" icon="🎯" />
+        <ScoreCard label="Precisión promedio"     score={metrics.avgAccuracy}     color="#4589ff" icon="🎯" />
         <ScoreCard label="Utilidad promedio"      score={metrics.avgUsefulness}   color="#10b981" icon="💎" />
         <ScoreCard label="Claridad promedio"      score={metrics.avgClarity}      color="#a855f7" icon="✨" />
-        <ScoreCard label="Completitud promedio"   score={metrics.avgCompleteness} color="#fbbf24" icon="📋" />
+        <ScoreCard label="Completitud promedio"   score={metrics.avgCompleteness} color="#f1c21b" icon="📋" />
       </div>
 
       <div className="row" style={{ gap: 14, flexWrap: "wrap" }}>
         <div className="card" style={{ flex: 1, minWidth: 280 }}>
           <div className="ticket-section-head">
-            <span style={{ color: "#ef4444" }}>⚠</span> RIESGOS Y FLAGS
+            <span style={{ color: "#fa4d56" }}>⚠</span> RIESGOS Y FLAGS
           </div>
           <div className="col" style={{ gap: 8 }}>
-            <FlagRow label="🚨 Riesgo alto de alucinación" pct={metrics.pctHighRisk} color="#ef4444" />
-            <FlagRow label="👤 Necesitan revisión humana" pct={metrics.pctNeedsReview} color="#fbbf24" />
+            <FlagRow label="🚨 Riesgo alto de alucinación" pct={metrics.pctHighRisk} color="#fa4d56" />
+            <FlagRow label="👤 Necesitan revisión humana" pct={metrics.pctNeedsReview} color="#f1c21b" />
             <FlagRow label="🎓 Convertibles en conocimiento" pct={metrics.pctCanBecomeKnowledge} color="#10b981" />
             <FlagRow label="📤 Requieren escalamiento" pct={metrics.pctRequiresEscalation} color="#a855f7" />
           </div>
@@ -71,11 +71,11 @@ export default function QualityDashboard({ metrics, evaluations }: Props) {
             <div className="col" style={{ gap: 6 }}>
               {metrics.topModulesLowQuality.map((m) => (
                 <div key={m.module} className="row between" style={{ alignItems: "center", fontSize: 12.5 }}>
-                  <span className="kanban-tag" style={{ borderColor: "rgba(34,211,238,0.4)", color: "#67e8f9", background: "rgba(34,211,238,0.08)" }}>
+                  <span className="kanban-tag" style={{ borderColor: "rgba(69,137,255,0.4)", color: "#67e8f9", background: "rgba(69,137,255,0.08)" }}>
                     {m.module}
                   </span>
                   <span style={{ fontFamily: "var(--font-mono, monospace)" }}>
-                    score <b style={{ color: m.avgScore >= 3.5 ? "#10b981" : m.avgScore >= 2.5 ? "#fbbf24" : "#ef4444" }}>{m.avgScore.toFixed(1)}</b>
+                    score <b style={{ color: m.avgScore >= 3.5 ? "#10b981" : m.avgScore >= 2.5 ? "#f1c21b" : "#fa4d56" }}>{m.avgScore.toFixed(1)}</b>
                     <span style={{ color: "var(--text-dim)", marginLeft: 6 }}>· {m.count} evals</span>
                   </span>
                 </div>
@@ -92,7 +92,7 @@ export default function QualityDashboard({ metrics, evaluations }: Props) {
         <div className="col" style={{ gap: 6 }}>
           {recent.map((e) => {
             const ov = (e.accuracyScore + e.usefulnessScore + e.clarityScore + e.completenessScore) / 4;
-            const color = ov >= 4 ? "#10b981" : ov >= 3 ? "#fbbf24" : "#ef4444";
+            const color = ov >= 4 ? "#10b981" : ov >= 3 ? "#f1c21b" : "#fa4d56";
             return (
               <div key={e.id} className="row between" style={{ alignItems: "center", padding: "6px 10px", background: "rgba(15,23,42,0.4)", borderRadius: 6 }}>
                 <div style={{ flex: 1, minWidth: 0, fontSize: 12 }}>

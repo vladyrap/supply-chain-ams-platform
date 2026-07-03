@@ -33,7 +33,7 @@ export default function DemoGuidedTour({ scenario, demo, onClose }: Props) {
           <div className="tc-bar" style={{ marginBottom: 12, height: 8 }}>
             <div className="tc-bar-fill" style={{
               width: `${total > 0 ? Math.round(((current + 1) / total) * 100) : 0}%`,
-              background: "linear-gradient(90deg, #a855f7, #22d3ee)",
+              background: "linear-gradient(90deg, #a855f7, #4589ff)",
             }} />
           </div>
 

@@ -26,7 +26,7 @@ const TABS: { id: Tab; label: string; icon: string }[] = [
 ];
 
 const SOURCE_META: Record<FeedbackSource, { label: string; icon: string; color: string }> = {
-  support:     { label: "Mesa Soporte", icon: "📞", color: "#22d3ee" },
+  support:     { label: "Mesa Soporte", icon: "📞", color: "#4589ff" },
   agent_chat:  { label: "Chat agente",  icon: "💬", color: "#a855f7" },
   voice:       { label: "Voz",          icon: "🎙", color: "#10b981" },
   other:       { label: "Otro",         icon: "•",  color: "#64748b" },
@@ -56,7 +56,7 @@ function AgentLabPageInner() {
             </p>
           </div>
           <div className="kanban-stats">
-            <div className="kanban-stat" style={{ ["--accent" as never]: "#22d3ee" }}>
+            <div className="kanban-stat" style={{ ["--accent" as never]: "#4589ff" }}>
               <div className="kanban-stat-val">{stats?.total ?? 0}</div>
               <div className="kanban-stat-lbl">TOTAL FB</div>
             </div>
@@ -64,7 +64,7 @@ function AgentLabPageInner() {
               <div className="kanban-stat-val">{stats?.positive ?? 0}</div>
               <div className="kanban-stat-lbl">👍 POSITIVE</div>
             </div>
-            <div className="kanban-stat" style={{ ["--accent" as never]: "#ef4444" }}>
+            <div className="kanban-stat" style={{ ["--accent" as never]: "#fa4d56" }}>
               <div className="kanban-stat-val">{stats?.negative ?? 0}</div>
               <div className="kanban-stat-lbl">👎 NEGATIVE</div>
             </div>
@@ -126,11 +126,11 @@ function FeedbackTab() {
         </div>
         <div className="row" style={{ gap: 8, flexWrap: "wrap" }}>
           <button onClick={() => setKindFilter("all")} className={`ticket-filter ${kindFilter === "all" ? "active" : ""}`}
-            style={{ ["--filt-color" as never]: "#22d3ee" }}>▸ Todos</button>
+            style={{ ["--filt-color" as never]: "#4589ff" }}>▸ Todos</button>
           <button onClick={() => setKindFilter("positive")} className={`ticket-filter ${kindFilter === "positive" ? "active" : ""}`}
             style={{ ["--filt-color" as never]: "#10b981" }}>👍 Positivos</button>
           <button onClick={() => setKindFilter("negative")} className={`ticket-filter ${kindFilter === "negative" ? "active" : ""}`}
-            style={{ ["--filt-color" as never]: "#ef4444" }}>👎 Negativos</button>
+            style={{ ["--filt-color" as never]: "#fa4d56" }}>👎 Negativos</button>
           <select value={sourceFilter} onChange={(e) => setSourceFilter(e.target.value as never)} style={{ minWidth: 160 }}>
             <option value="all">Todos los canales</option>
             <option value="support">📞 Mesa Soporte</option>
@@ -163,9 +163,9 @@ function FeedbackTab() {
           const meta = SOURCE_META[f.source];
           const isPos = f.kind === "positive";
           return (
-            <div key={f.id} className="lab-fb-card" style={{ ["--fb-color" as never]: isPos ? "#10b981" : "#ef4444" }}>
+            <div key={f.id} className="lab-fb-card" style={{ ["--fb-color" as never]: isPos ? "#10b981" : "#fa4d56" }}>
               <div className="row" style={{ gap: 10, alignItems: "center", marginBottom: 8 }}>
-                <span className="lab-fb-icon" style={{ background: isPos ? "rgba(16,185,129,0.15)" : "rgba(239,68,68,0.15)", color: isPos ? "#10b981" : "#ef4444" }}>
+                <span className="lab-fb-icon" style={{ background: isPos ? "rgba(16,185,129,0.15)" : "rgba(250,77,86,0.15)", color: isPos ? "#10b981" : "#fa4d56" }}>
                   {isPos ? "👍" : "👎"}
                 </span>
                 <span className="kanban-tag" style={{ borderColor: `${meta.color}55`, color: meta.color, background: `${meta.color}11` }}>
@@ -382,8 +382,8 @@ function ReplayDetail({ trace }: { trace: ConversationTrace }) {
           {messages.map((m) => (
             <div key={m.id} style={{
               padding: 10,
-              background: m.role === "user" ? "rgba(34,211,238,0.08)" : m.role === "system" ? "rgba(251,191,36,0.08)" : "rgba(168,85,247,0.08)",
-              borderLeft: `2px solid ${m.role === "user" ? "#22d3ee" : m.role === "system" ? "#fbbf24" : "#a855f7"}`,
+              background: m.role === "user" ? "rgba(69,137,255,0.08)" : m.role === "system" ? "rgba(241,194,27,0.08)" : "rgba(168,85,247,0.08)",
+              borderLeft: `2px solid ${m.role === "user" ? "#4589ff" : m.role === "system" ? "#f1c21b" : "#a855f7"}`,
               borderRadius: 4,
             }}>
               <div style={{ fontSize: 10, letterSpacing: 1, color: "var(--text-dim)", marginBottom: 3 }}>
@@ -405,8 +405,8 @@ function ReplayDetail({ trace }: { trace: ConversationTrace }) {
             {feedback.map((f) => (
               <div key={f.id} className="row" style={{
                 gap: 8, padding: "6px 10px",
-                background: f.kind === "positive" ? "rgba(16,185,129,0.08)" : "rgba(239,68,68,0.08)",
-                borderLeft: `2px solid ${f.kind === "positive" ? "#10b981" : "#ef4444"}`,
+                background: f.kind === "positive" ? "rgba(16,185,129,0.08)" : "rgba(250,77,86,0.08)",
+                borderLeft: `2px solid ${f.kind === "positive" ? "#10b981" : "#fa4d56"}`,
                 borderRadius: 4,
               }}>
                 <span>{f.kind === "positive" ? "👍" : "👎"}</span>
@@ -443,7 +443,7 @@ function TrainingTab() {
     <div className="col" style={{ gap: 14 }}>
       <div className="card">
         <div className="ticket-section-head">
-          <span style={{ color: "#ef4444" }}>🎓</span> CASOS QUE EL AGENTE RESOLVIÓ MAL
+          <span style={{ color: "#fa4d56" }}>🎓</span> CASOS QUE EL AGENTE RESOLVIÓ MAL
         </div>
         <p className="settings-section-desc">
           Conversaciones marcadas con 👎. Cada uno es una oportunidad de mejora: creá un KB article con la respuesta correcta
@@ -466,7 +466,7 @@ function TrainingTab() {
 
       <div className="col" style={{ gap: 8 }}>
         {negatives.map((f) => (
-          <div key={f.id} className="lab-fb-card" style={{ ["--fb-color" as never]: "#ef4444" }}>
+          <div key={f.id} className="lab-fb-card" style={{ ["--fb-color" as never]: "#fa4d56" }}>
             <div className="row between" style={{ marginBottom: 8 }}>
               <div className="row" style={{ gap: 8, alignItems: "center" }}>
                 <span style={{ fontSize: 18 }}>👎</span>
@@ -474,7 +474,7 @@ function TrainingTab() {
                   {SOURCE_META[f.source].label} · {SOURCE_META[f.source].icon}
                 </span>
                 {f.reason && (
-                  <span className="kanban-tag" style={{ borderColor: "rgba(239,68,68,0.4)", color: "#fca5a5", background: "rgba(239,68,68,0.10)" }}>
+                  <span className="kanban-tag" style={{ borderColor: "rgba(250,77,86,0.4)", color: "#fca5a5", background: "rgba(250,77,86,0.10)" }}>
                     {f.reason.slice(0, 50)}
                   </span>
                 )}
@@ -486,13 +486,13 @@ function TrainingTab() {
 
             {f.query && (
               <div className="lab-fb-block">
-                <div className="lab-fb-block-head" style={{ color: "#ef4444" }}>▸ QUERY DEL USUARIO</div>
+                <div className="lab-fb-block-head" style={{ color: "#fa4d56" }}>▸ QUERY DEL USUARIO</div>
                 <div style={{ fontSize: 12.5, color: "var(--text-soft)", fontStyle: "italic" }}>"{f.query.slice(0, 200)}"</div>
               </div>
             )}
             {f.response && (
               <div className="lab-fb-block">
-                <div className="lab-fb-block-head" style={{ color: "#ef4444" }}>▸ RESPUESTA QUE FALLÓ</div>
+                <div className="lab-fb-block-head" style={{ color: "#fa4d56" }}>▸ RESPUESTA QUE FALLÓ</div>
                 <div style={{ fontSize: 12, color: "var(--text)", whiteSpace: "pre-wrap", maxHeight: 80, overflow: "auto" }}>
                   {f.response.slice(0, 400)}{f.response.length > 400 ? "…" : ""}
                 </div>
@@ -630,7 +630,7 @@ function WizardTab() {
                   <div className="row" style={{ gap: 6, alignItems: "center", marginBottom: 2 }}>
                     <span style={{ fontFamily: "var(--font-mono, monospace)", fontSize: 11, color: "var(--text-dim)" }}>{t.code}</span>
                     {t.has_kb && (
-                      <span className="kanban-tag" style={{ borderColor: "rgba(16,185,129,0.4)", color: "#34d399", background: "rgba(16,185,129,0.08)", fontSize: 9.5 }}>
+                      <span className="kanban-tag" style={{ borderColor: "rgba(16,185,129,0.4)", color: "#42be65", background: "rgba(16,185,129,0.08)", fontSize: 9.5 }}>
                         ✓ ya en KB
                       </span>
                     )}
@@ -644,7 +644,7 @@ function WizardTab() {
                   </div>
                   <div className="row" style={{ gap: 4, marginTop: 4 }}>
                     {t.sap_module && (
-                      <span className="kanban-tag" style={{ borderColor: "rgba(34,211,238,0.4)", color: "#67e8f9", background: "rgba(34,211,238,0.08)", fontSize: 9.5 }}>{t.sap_module}</span>
+                      <span className="kanban-tag" style={{ borderColor: "rgba(69,137,255,0.4)", color: "#67e8f9", background: "rgba(69,137,255,0.08)", fontSize: 9.5 }}>{t.sap_module}</span>
                     )}
                     <span className="kanban-tag" style={{ borderColor: "rgba(168,85,247,0.4)", color: "#c084fc", background: "rgba(168,85,247,0.08)", fontSize: 9.5 }}>{t.status}</span>
                   </div>
@@ -734,7 +734,7 @@ function WizardTab() {
               <div className="lab-fb-block-head">▸ TAGS · {editing.tags.length}/8</div>
               <div className="row" style={{ gap: 6, flexWrap: "wrap", marginBottom: 8 }}>
                 {editing.tags.map((t) => (
-                  <span key={t} className="kanban-tag" style={{ borderColor: "rgba(34,211,238,0.4)", color: "#67e8f9", background: "rgba(34,211,238,0.08)", cursor: "pointer" }}
+                  <span key={t} className="kanban-tag" style={{ borderColor: "rgba(69,137,255,0.4)", color: "#67e8f9", background: "rgba(69,137,255,0.08)", cursor: "pointer" }}
                     onClick={() => removeTag(t)} title="click para eliminar">
                     {t} ×
                   </span>
@@ -942,9 +942,9 @@ function PlaygroundSlot({
   disabled: boolean;
 }) {
   return (
-    <div className="card" style={{ borderLeft: `3px solid ${slot.id === "a" ? "#22d3ee" : "#a855f7"}` }}>
+    <div className="card" style={{ borderLeft: `3px solid ${slot.id === "a" ? "#4589ff" : "#a855f7"}` }}>
       <div className="row between" style={{ alignItems: "center", marginBottom: 10 }}>
-        <div style={{ fontSize: 12, fontWeight: 700, letterSpacing: 1, color: slot.id === "a" ? "#22d3ee" : "#c084fc" }}>
+        <div style={{ fontSize: 12, fontWeight: 700, letterSpacing: 1, color: slot.id === "a" ? "#4589ff" : "#c084fc" }}>
           {slot.label}
         </div>
         <div className="row" style={{ gap: 6, alignItems: "center" }}>

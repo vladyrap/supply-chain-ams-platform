@@ -49,17 +49,17 @@ const EMPTY: EstimateInput = {
 
 function confidenceColor(level: "LOW" | "MEDIUM" | "HIGH"): string {
   if (level === "HIGH") return "#10b981";
-  if (level === "LOW") return "#ef4444";
-  return "#fbbf24";
+  if (level === "LOW") return "#fa4d56";
+  return "#f1c21b";
 }
 function statusColor(s: EstimateStatus): string {
   switch (s) {
     case "DRAFT":     return "#64748b";
-    case "GENERATED": return "#22d3ee";
+    case "GENERATED": return "#4589ff";
     case "REVIEWED":  return "#a855f7";
     case "APPROVED":  return "#10b981";
-    case "REJECTED":  return "#ef4444";
-    case "EXPORTED":  return "#fbbf24";
+    case "REJECTED":  return "#fa4d56";
+    case "EXPORTED":  return "#f1c21b";
   }
 }
 
@@ -121,7 +121,7 @@ export default function TimeEstimatorCenter() {
             </p>
           </div>
           <div className="kanban-stats">
-            <div className="kanban-stat" style={{ ["--accent" as never]: "#22d3ee" }}>
+            <div className="kanban-stat" style={{ ["--accent" as never]: "#4589ff" }}>
               <div className="kanban-stat-val">{hook.estimates.length}</div>
               <div className="kanban-stat-lbl">ESTIMACIONES</div>
             </div>
@@ -369,7 +369,7 @@ export default function TimeEstimatorCenter() {
                   <div className="row" style={{ gap: 6 }}>
                     <button className="btn ghost" onClick={() => handleCopy(preview.id)} style={{ padding: "4px 10px", fontSize: 11 }}>📋 Respuesta cliente</button>
                     <button className="btn ghost" onClick={() => hook.exportMarkdown(preview.id)} style={{ padding: "4px 10px", fontSize: 11 }}>↓ Markdown</button>
-                    <button className="btn ghost" onClick={() => { if (confirm("¿Eliminar estimación?")) { hook.deleteEstimate(preview.id); setPreview(null); } }} style={{ padding: "4px 10px", fontSize: 11, color: "#ef4444" }}>🗑</button>
+                    <button className="btn ghost" onClick={() => { if (confirm("¿Eliminar estimación?")) { hook.deleteEstimate(preview.id); setPreview(null); } }} style={{ padding: "4px 10px", fontSize: 11, color: "#fa4d56" }}>🗑</button>
                   </div>
                 </div>
 
@@ -377,9 +377,9 @@ export default function TimeEstimatorCenter() {
 
                 {/* Banda principal */}
                 <div style={{ display: "grid", gridTemplateColumns: "repeat(4, 1fr)", gap: 8, marginTop: 12 }}>
-                  <BigStat label="HORAS" value={`${preview.estimatedMinHours}–${preview.estimatedMaxHours}h`} accent="#22d3ee" />
+                  <BigStat label="HORAS" value={`${preview.estimatedMinHours}–${preview.estimatedMaxHours}h`} accent="#4589ff" />
                   <BigStat label="DÍAS HÁBILES" value={`${preview.estimatedMinDays}–${preview.estimatedMaxDays}`} accent="#a855f7" />
-                  <BigStat label="SEMANAS" value={`~${preview.estimatedWeeks}`} accent="#fbbf24" />
+                  <BigStat label="SEMANAS" value={`~${preview.estimatedWeeks}`} accent="#f1c21b" />
                   <BigStat label="CONFIANZA" value={`${CONFIDENCE_LABELS[preview.confidence]} · ${preview.confidenceScore}/100`} accent={confidenceColor(preview.confidence)} />
                 </div>
 
@@ -399,7 +399,7 @@ export default function TimeEstimatorCenter() {
                 <div className="ticket-section-head" style={{ marginTop: 16 }}>🧱 FASES</div>
                 <div className="col" style={{ gap: 6 }}>
                   {preview.phaseBreakdown.map((p, i) => (
-                    <div key={p.id} className="lab-fb-block" style={{ borderLeft: "3px solid #22d3ee" }}>
+                    <div key={p.id} className="lab-fb-block" style={{ borderLeft: "3px solid #4589ff" }}>
                       <div className="row between" style={{ alignItems: "center" }}>
                         <div style={{ fontWeight: 600, fontSize: 12.5 }}>{i + 1}. {p.name}</div>
                         <div style={{ fontSize: 11, color: "var(--text-dim)" }}>{p.minHours}h–{p.maxHours}h · {PROFILE_LABELS[p.ownerProfile]}</div>
@@ -411,7 +411,7 @@ export default function TimeEstimatorCenter() {
                         </div>
                       )}
                       {p.risks.length > 0 && (
-                        <div style={{ fontSize: 11, color: "#fbbf24", marginTop: 4 }}>
+                        <div style={{ fontSize: 11, color: "#f1c21b", marginTop: 4 }}>
                           ⚠ {p.risks.join("; ")}
                         </div>
                       )}
@@ -436,9 +436,9 @@ export default function TimeEstimatorCenter() {
                 {/* Supuestos / riesgos / dependencias / missing */}
                 <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 14, marginTop: 16 }}>
                   <ListBox title="✅ Supuestos" items={preview.assumptions} color="#10b981" />
-                  <ListBox title="⚠ Riesgos" items={preview.risks} color="#fbbf24" />
-                  <ListBox title="🔗 Dependencias" items={preview.dependencies} color="#22d3ee" />
-                  <ListBox title="❓ Información requerida" items={preview.missingData} color="#ef4444" />
+                  <ListBox title="⚠ Riesgos" items={preview.risks} color="#f1c21b" />
+                  <ListBox title="🔗 Dependencias" items={preview.dependencies} color="#4589ff" />
+                  <ListBox title="❓ Información requerida" items={preview.missingData} color="#fa4d56" />
                 </div>
 
                 {/* Plan */}
@@ -563,7 +563,7 @@ function HistoricalContextualSection() {
                 </div>
                 <div className="row" style={{ gap: 8, marginTop: 6, flexWrap: "wrap" }}>
                   <span style={{ fontSize: 11, color: "var(--text-soft)" }}>
-                    <strong style={{ color: "#22d3ee" }}>{e.totalRange.minHours}h – {e.totalRange.maxHours}h</strong>{" "}
+                    <strong style={{ color: "#4589ff" }}>{e.totalRange.minHours}h – {e.totalRange.maxHours}h</strong>{" "}
                     esperado {e.totalRange.expectedHours}h
                   </span>
                   <span className="badge muted" style={{ fontSize: 10 }}>conf {e.confidence}</span>
@@ -598,7 +598,7 @@ function HistoricalContextualSection() {
                     if (window.confirm("¿Borrar esta estimación?")) ctxHook.remove(e.estimateId);
                   }}
                   title="Eliminar"
-                  style={{ fontSize: 11, padding: "3px 8px", color: "#ef4444" }}
+                  style={{ fontSize: 11, padding: "3px 8px", color: "#fa4d56" }}
                 >
                   🗑
                 </button>
@@ -671,7 +671,7 @@ function ContextualTab({ input, update }: ContextualTabProps) {
     <div style={{ display: "grid", gridTemplateColumns: "1fr 1.6fr", gap: 14 }}>
       {/* Form lateral — input mínimo para el motor contextual */}
       <div className="card">
-        <div className="ticket-section-head"><span style={{ color: "#22d3ee" }}>🧠</span> ANÁLISIS CONTEXTUAL</div>
+        <div className="ticket-section-head"><span style={{ color: "#4589ff" }}>🧠</span> ANÁLISIS CONTEXTUAL</div>
         <p className="settings-section-desc" style={{ fontSize: 12 }}>
           El motor lee título + descripción + módulo + ambiente. Detecta transacciones,
           objetos SAP, errores y casos similares automáticamente.

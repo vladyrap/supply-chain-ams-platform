@@ -12,7 +12,7 @@ function Kpi({ label, value, color = "#cbd5e1", hint }: { label: string; value: 
   );
 }
 
-function Bars({ data, color = "#22d3ee" }: { data: Record<string, number>; color?: string }) {
+function Bars({ data, color = "#4589ff" }: { data: Record<string, number>; color?: string }) {
   const entries = Object.entries(data).sort((a, b) => b[1] - a[1]);
   if (entries.length === 0) return <div style={{ fontSize: 11, color: "var(--text-dim)" }}>(sin datos)</div>;
   const max = Math.max(...entries.map(([, v]) => v));
@@ -47,8 +47,8 @@ export default function TestingSummary({ testing }: { testing: UseTestingIntelli
       <div className="row" style={{ gap: 10, flexWrap: "wrap" }}>
         <Kpi label="Defectos abiertos"    value={m.defectsOpen}        color={m.defectsOpen > 0 ? "#fdba74" : "#86efac"} />
         <Kpi label="Listas para Cloud ALM" value={m.cloudAlmReady}     color="#a5b4fc" />
-        <Kpi label="Cobertura Scope Items" value={Object.keys(m.coverageByScopeItem).length} color="#22d3ee" />
-        <Kpi label="Cobertura módulos"     value={Object.keys(m.coverageByModule).length}   color="#34d399" />
+        <Kpi label="Cobertura Scope Items" value={Object.keys(m.coverageByScopeItem).length} color="#4589ff" />
+        <Kpi label="Cobertura módulos"     value={Object.keys(m.coverageByModule).length}   color="#42be65" />
         <Kpi label="Última grabación"      value={m.lastRecording ? new Date(m.lastRecording).toLocaleDateString() : "—"} color="#fcd34d" />
       </div>
 
@@ -59,7 +59,7 @@ export default function TestingSummary({ testing }: { testing: UseTestingIntelli
         </div>
         <div className="card">
           <div style={{ fontSize: 11, color: "var(--text-dim)", letterSpacing: 1, textTransform: "uppercase", marginBottom: 8 }}>Pruebas por estado</div>
-          <Bars data={m.byStatus} color="#22d3ee" />
+          <Bars data={m.byStatus} color="#4589ff" />
         </div>
         <div className="card">
           <div style={{ fontSize: 11, color: "var(--text-dim)", letterSpacing: 1, textTransform: "uppercase", marginBottom: 8 }}>Pruebas por tipo</div>
@@ -67,7 +67,7 @@ export default function TestingSummary({ testing }: { testing: UseTestingIntelli
         </div>
         <div className="card">
           <div style={{ fontSize: 11, color: "var(--text-dim)", letterSpacing: 1, textTransform: "uppercase", marginBottom: 8 }}>Cobertura por Scope Item</div>
-          <Bars data={m.coverageByScopeItem} color="#34d399" />
+          <Bars data={m.coverageByScopeItem} color="#42be65" />
         </div>
       </div>
     </div>

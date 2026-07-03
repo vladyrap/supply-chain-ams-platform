@@ -418,11 +418,11 @@ function AgentBuilderInner() {
             <span style={{
               width: 22, height: 22, borderRadius: "50%", display: "grid", placeItems: "center",
               fontSize: 11, fontWeight: 700,
-              background: s.done ? "rgba(52,211,153,0.18)" : "rgba(255,255,255,0.06)",
-              border: `1px solid ${s.done ? "#34d399" : "var(--border-soft)"}`,
-              color: s.done ? "#34d399" : "var(--text-dim)",
+              background: s.done ? "rgba(66,190,101,0.18)" : "rgba(255,255,255,0.06)",
+              border: `1px solid ${s.done ? "#42be65" : "var(--border-soft)"}`,
+              color: s.done ? "#42be65" : "var(--text-dim)",
             }}>{s.done ? "✓" : s.n}</span>
-            <span style={{ marginLeft: 6, color: s.done ? "#34d399" : "var(--text-soft)" }}>{s.t}</span>
+            <span style={{ marginLeft: 6, color: s.done ? "#42be65" : "var(--text-soft)" }}>{s.t}</span>
           </div>
         ))}
       </div>
@@ -449,7 +449,7 @@ function AgentBuilderInner() {
                 <div className="row" style={{ gap: 8, alignItems: "center" }}>
                   <span style={{
                     fontSize: 18, width: 34, height: 34, display: "grid", placeItems: "center",
-                    borderRadius: 9, background: "rgba(34,211,238,0.1)", border: "1px solid rgba(34,211,238,0.2)",
+                    borderRadius: 9, background: "rgba(69,137,255,0.1)", border: "1px solid rgba(69,137,255,0.2)",
                   }}>{t.icon}</span>
                   <span style={{ fontWeight: 600, fontSize: 13, lineHeight: 1.3 }}>{t.title}</span>
                 </div>
@@ -501,8 +501,8 @@ function AgentBuilderInner() {
                     style={{
                       fontSize: 17, width: 36, height: 36, display: "grid", placeItems: "center",
                       borderRadius: 9, cursor: "pointer",
-                      border: `1px solid ${icon === i ? "#22d3ee" : "var(--border-soft)"}`,
-                      background: icon === i ? "rgba(34,211,238,0.15)" : "transparent",
+                      border: `1px solid ${icon === i ? "#4589ff" : "var(--border-soft)"}`,
+                      background: icon === i ? "rgba(69,137,255,0.15)" : "transparent",
                     }}>{i}</button>
                 ))}
               </div>
@@ -517,7 +517,7 @@ function AgentBuilderInner() {
               </div>
               <span style={{
                 fontSize: 11,
-                color: instrLen > MAX_INSTRUCTIONS ? "#ef4444" : instrLen < MIN_INSTRUCTIONS ? "var(--text-dim)" : "#34d399",
+                color: instrLen > MAX_INSTRUCTIONS ? "#fa4d56" : instrLen < MIN_INSTRUCTIONS ? "var(--text-dim)" : "#42be65",
               }}>
                 {instrLen}/{MAX_INSTRUCTIONS}
               </span>
@@ -548,20 +548,20 @@ function AgentBuilderInner() {
                   <button type="button" key={m.id} onClick={() => { setModel(m.id); markDirty(); }}
                     style={{
                       textAlign: "left", padding: 12, borderRadius: 10, cursor: "pointer",
-                      border: `1px solid ${active ? "#22d3ee" : "var(--border-soft)"}`,
-                      background: active ? "rgba(34,211,238,0.1)" : "transparent",
+                      border: `1px solid ${active ? "#4589ff" : "var(--border-soft)"}`,
+                      background: active ? "rgba(69,137,255,0.1)" : "transparent",
                       opacity: avail && !avail.available ? 0.75 : 1,
                     }}>
                     <div className="row between" style={{ marginBottom: 4 }}>
-                      <span style={{ fontWeight: 600, fontSize: 13, color: active ? "#22d3ee" : "inherit" }}>{m.label}</span>
-                      {active && <span style={{ color: "#22d3ee", fontSize: 13 }}>●</span>}
+                      <span style={{ fontWeight: 600, fontSize: 13, color: active ? "#4589ff" : "inherit" }}>{m.label}</span>
+                      {active && <span style={{ color: "#4589ff", fontSize: 13 }}>●</span>}
                     </div>
                     <div style={{ fontSize: 11, color: "var(--text-dim)", marginBottom: 4 }}>{m.tag}</div>
                     <div style={{ fontSize: 11.5, color: "var(--text-soft)", lineHeight: 1.45, marginBottom: 6 }}>{m.description}</div>
                     {avail && (
                       avail.available
-                        ? <span style={{ fontSize: 10.5, color: "#34d399" }}>✓ Disponible</span>
-                        : <span style={{ fontSize: 10.5, color: "#fbbf24" }} title={avail.reason}>⚠ Requiere configuración</span>
+                        ? <span style={{ fontSize: 10.5, color: "#42be65" }}>✓ Disponible</span>
+                        : <span style={{ fontSize: 10.5, color: "#f1c21b" }} title={avail.reason}>⚠ Requiere configuración</span>
                     )}
                   </button>
                 );
@@ -570,7 +570,7 @@ function AgentBuilderInner() {
             {model.startsWith("claude-") && modelsAvail[model] && !modelsAvail[model].available && (
               <div style={{
                 fontSize: 11.5, marginTop: 10, padding: "8px 12px", borderRadius: 8,
-                background: "rgba(251,191,36,0.08)", border: "1px solid rgba(251,191,36,0.25)", color: "#fbbf24",
+                background: "rgba(241,194,27,0.08)", border: "1px solid rgba(241,194,27,0.25)", color: "#f1c21b",
               }}>
                 ⚠ {modelsAvail[model].reason}. Podés guardar el agente igual — funcionará apenas
                 se agregue la key (los modelos Claude tienen costo por uso).
@@ -588,9 +588,9 @@ function AgentBuilderInner() {
                 <button type="button" key={m} onClick={() => toggleKbModule(m)}
                   style={{
                     fontSize: 12, padding: "5px 12px", borderRadius: 20, cursor: "pointer",
-                    border: `1px solid ${kbModules.includes(m) ? "#22d3ee" : "var(--border-soft)"}`,
-                    background: kbModules.includes(m) ? "rgba(34,211,238,0.15)" : "transparent",
-                    color: kbModules.includes(m) ? "#22d3ee" : "var(--text-soft)",
+                    border: `1px solid ${kbModules.includes(m) ? "#4589ff" : "var(--border-soft)"}`,
+                    background: kbModules.includes(m) ? "rgba(69,137,255,0.15)" : "transparent",
+                    color: kbModules.includes(m) ? "#4589ff" : "var(--text-soft)",
                   }}>{m}</button>
               ))}
             </div>
@@ -605,7 +605,7 @@ function AgentBuilderInner() {
             {notice && !error && (
               <div style={{
                 fontSize: 12.5, marginBottom: 10, padding: "8px 12px", borderRadius: 8,
-                background: "rgba(52,211,153,0.1)", border: "1px solid rgba(52,211,153,0.3)", color: "#34d399",
+                background: "rgba(66,190,101,0.1)", border: "1px solid rgba(66,190,101,0.3)", color: "#42be65",
               }}>{notice}</div>
             )}
             {/* Onda 6 · Checklist de publicación en vivo */}
@@ -619,7 +619,7 @@ function AgentBuilderInner() {
                 </div>
                 {checklist.map((c) => (
                   <div key={c.label} className="row" style={{ gap: 7, fontSize: 11.5, padding: "2px 0", alignItems: "center" }}>
-                    <span style={{ color: c.ok ? "#34d399" : "var(--text-dim)", width: 14 }}>{c.ok ? "✓" : "○"}</span>
+                    <span style={{ color: c.ok ? "#42be65" : "var(--text-dim)", width: 14 }}>{c.ok ? "✓" : "○"}</span>
                     <span style={{ color: c.ok ? "var(--text-soft)" : "var(--text-dim)" }}>{c.label}</span>
                   </div>
                 ))}
@@ -637,7 +637,7 @@ function AgentBuilderInner() {
                 </button>
               ) : (
                 <button className="btn ghost" onClick={handleUnpublish} disabled={busy}
-                  style={{ width: "100%", justifyContent: "center", color: "#fbbf24" }}>
+                  style={{ width: "100%", justifyContent: "center", color: "#f1c21b" }}>
                   ↩ Volver a borrador
                 </button>
               )}
@@ -664,7 +664,7 @@ function AgentBuilderInner() {
               <div className="row" style={{ gap: 10, alignItems: "center", marginBottom: 8 }}>
                 <span style={{
                   fontSize: 20, width: 38, height: 38, display: "grid", placeItems: "center",
-                  borderRadius: 10, background: "rgba(34,211,238,0.1)", border: "1px solid rgba(34,211,238,0.2)",
+                  borderRadius: 10, background: "rgba(69,137,255,0.1)", border: "1px solid rgba(69,137,255,0.2)",
                 }}>{icon}</span>
                 <div style={{ minWidth: 0 }}>
                   <div style={{ fontWeight: 600, fontSize: 13.5 }}>{name || "Nombre del agente"}</div>
@@ -689,15 +689,15 @@ function AgentBuilderInner() {
               </div>
               <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr 1fr", gap: 8, textAlign: "center" }}>
                 <div>
-                  <div style={{ fontSize: 19, fontWeight: 700, color: "#22d3ee" }}>{stats.conversations}</div>
+                  <div style={{ fontSize: 19, fontWeight: 700, color: "#4589ff" }}>{stats.conversations}</div>
                   <div style={{ fontSize: 10.5, color: "var(--text-dim)" }}>conversaciones</div>
                 </div>
                 <div>
-                  <div style={{ fontSize: 19, fontWeight: 700, color: "#a78bfa" }}>{stats.messages}</div>
+                  <div style={{ fontSize: 19, fontWeight: 700, color: "#be95ff" }}>{stats.messages}</div>
                   <div style={{ fontSize: 10.5, color: "var(--text-dim)" }}>mensajes</div>
                 </div>
                 <div>
-                  <div style={{ fontSize: 19, fontWeight: 700, color: "#34d399" }}>{stats.uniqueUsers}</div>
+                  <div style={{ fontSize: 19, fontWeight: 700, color: "#42be65" }}>{stats.uniqueUsers}</div>
                   <div style={{ fontSize: 10.5, color: "var(--text-dim)" }}>usuarios</div>
                 </div>
               </div>
@@ -718,8 +718,8 @@ function AgentBuilderInner() {
               <button type="button" onClick={toggleCompare}
                 style={{
                   background: "none", cursor: "pointer", fontSize: 11, padding: "3px 10px", borderRadius: 14,
-                  border: `1px solid ${compareOpen ? "#a78bfa" : "var(--border-soft)"}`,
-                  color: compareOpen ? "#a78bfa" : "var(--text-dim)",
+                  border: `1px solid ${compareOpen ? "#be95ff" : "var(--border-soft)"}`,
+                  color: compareOpen ? "#be95ff" : "var(--text-dim)",
                 }}>
                 ⚔ Comparar modelos
               </button>
@@ -739,8 +739,8 @@ function AgentBuilderInner() {
                   alignSelf: m.role === "user" ? "flex-end" : "flex-start",
                   maxWidth: "88%", padding: "8px 12px", borderRadius: 12, fontSize: 12.5, lineHeight: 1.5,
                   whiteSpace: "pre-wrap", wordBreak: "break-word",
-                  background: m.role === "user" ? "rgba(34,211,238,0.14)" : "rgba(255,255,255,0.05)",
-                  border: `1px solid ${m.role === "user" ? "rgba(34,211,238,0.3)" : "var(--border-soft)"}`,
+                  background: m.role === "user" ? "rgba(69,137,255,0.14)" : "rgba(255,255,255,0.05)",
+                  border: `1px solid ${m.role === "user" ? "rgba(69,137,255,0.3)" : "var(--border-soft)"}`,
                 }}>
                   {m.content}
                   {m.meta && <div style={{ fontSize: 10, color: "var(--text-dim)", marginTop: 5 }}>{m.meta}</div>}
@@ -787,7 +787,7 @@ function AgentBuilderInner() {
                       style={{ flex: 1, fontSize: 12.5 }}
                     />
                     <button type="submit" className="btn sm" disabled={compareBusy || !compareMsg.trim() || !compareModel2}
-                      style={{ borderColor: "#a78bfa", color: "#a78bfa" }}>
+                      style={{ borderColor: "#be95ff", color: "#be95ff" }}>
                       {compareBusy ? "…" : "⚔"}
                     </button>
                   </div>
@@ -801,15 +801,15 @@ function AgentBuilderInner() {
                   <div style={{ display: "flex", flexDirection: "column", gap: 10, marginTop: 12 }}>
                     {compareResults.map((res) => (
                       <div key={res.model} style={{
-                        border: `1px solid ${res.error ? "rgba(239,68,68,0.35)" : "var(--border-soft)"}`,
+                        border: `1px solid ${res.error ? "rgba(250,77,86,0.35)" : "var(--border-soft)"}`,
                         borderRadius: 10, padding: 10,
                       }}>
                         <div className="row between" style={{ marginBottom: 6 }}>
-                          <span style={{ fontSize: 12, fontWeight: 600, color: "#a78bfa" }}>🧠 {modelLabel(res.model)}</span>
+                          <span style={{ fontSize: 12, fontWeight: 600, color: "#be95ff" }}>🧠 {modelLabel(res.model)}</span>
                           <span style={{ fontSize: 11, color: "var(--text-dim)" }}>⏱ {(res.durationMs / 1000).toFixed(1)}s</span>
                         </div>
                         {res.error ? (
-                          <div style={{ fontSize: 12, color: "#ef4444" }}>⚠ {res.error}</div>
+                          <div style={{ fontSize: 12, color: "#fa4d56" }}>⚠ {res.error}</div>
                         ) : (
                           <div style={{
                             fontSize: 12, color: "var(--text-soft)", lineHeight: 1.5,

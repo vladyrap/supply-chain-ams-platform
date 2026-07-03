@@ -59,7 +59,7 @@ export default function GlobalAuditCenter() {
             </p>
           </div>
           <div className="kanban-stats">
-            <div className="kanban-stat" style={{ ["--accent" as never]: "#22d3ee" }}>
+            <div className="kanban-stat" style={{ ["--accent" as never]: "#4589ff" }}>
               <div className="kanban-stat-val">{audit.events.length}</div>
               <div className="kanban-stat-lbl">EVENTOS TOTALES</div>
             </div>

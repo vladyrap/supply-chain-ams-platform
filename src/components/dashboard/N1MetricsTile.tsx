@@ -25,8 +25,8 @@ interface Props {
 
 function colorForPct(pct: number, goodThreshold = 70): string {
   if (pct >= goodThreshold) return "#10b981";
-  if (pct >= 40) return "#fbbf24";
-  return "#ef4444";
+  if (pct >= 40) return "#f1c21b";
+  return "#fa4d56";
 }
 
 export default function N1MetricsTile({ tickets }: Props) {
@@ -63,7 +63,7 @@ export default function N1MetricsTile({ tickets }: Props) {
           value={`${metrics.ticketsEscalatedToN2Pct}%`}
           hint={`${metrics.ticketsEscalatedToN2}/${metrics.totalTickets}`}
           color={metrics.ticketsEscalatedToN2Pct < 30 ? "#10b981"
-               : metrics.ticketsEscalatedToN2Pct < 60 ? "#fbbf24" : "#ef4444"} />
+               : metrics.ticketsEscalatedToN2Pct < 60 ? "#f1c21b" : "#fa4d56"} />
       </div>
 
       {/* Módulos con readiness bajo */}
@@ -76,8 +76,8 @@ export default function N1MetricsTile({ tickets }: Props) {
             {metrics.topIncompleteModules.map((m) => (
               <div key={m.module} style={{
                 padding: "3px 8px", fontSize: 10.5, borderRadius: 3,
-                background: "rgba(239,68,68,0.12)", color: "#fca5a5",
-                border: "1px solid rgba(239,68,68,0.25)",
+                background: "rgba(250,77,86,0.12)", color: "#fca5a5",
+                border: "1px solid rgba(250,77,86,0.25)",
               }}>
                 <strong>{m.module}</strong> · avg {m.avgReadiness}/100 · {m.count} tickets
               </div>

@@ -10,7 +10,7 @@ interface Props {
   trendLabel?: string;
 }
 
-export default function TrainingMetricCard({ label, value, hint, color = "#22d3ee", icon, trend, trendLabel }: Props) {
+export default function TrainingMetricCard({ label, value, hint, color = "#4589ff", icon, trend, trendLabel }: Props) {
   return (
     <div className="tc-metric" style={{ ["--tc-acc" as never]: color }}>
       <div className="tc-metric-head">

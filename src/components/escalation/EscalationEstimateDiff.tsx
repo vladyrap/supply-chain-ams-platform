@@ -39,22 +39,22 @@ export default function EscalationEstimateDiff({ current, original }: Props) {
       {hasDiff && original && (
         <div style={{
           marginTop: 8, padding: 10, borderRadius: 6,
-          background: "rgba(251,191,36,0.08)", border: "1px solid rgba(251,191,36,0.35)",
+          background: "rgba(241,194,27,0.08)", border: "1px solid rgba(241,194,27,0.35)",
           fontSize: 11.5, color: "var(--text-soft)",
         }}>
-          <div style={{ fontWeight: 600, color: "#fbbf24", marginBottom: 4 }}>↹ Cambio respecto a la estimación original N1</div>
+          <div style={{ fontWeight: 600, color: "#f1c21b", marginBottom: 4 }}>↹ Cambio respecto a la estimación original N1</div>
           <table style={{ width: "100%", fontVariantNumeric: "tabular-nums" }}>
             <tbody>
               <tr>
                 <td style={{ color: "var(--text-dim)", padding: "2px 0" }}>Horas mín</td>
                 <td style={{ textAlign: "right" }}>{original.totalMinHours}h</td>
-                <td style={{ textAlign: "center", color: "#fbbf24" }}>{deltaArrow(original.totalMinHours, current.totalMinHours)}</td>
+                <td style={{ textAlign: "center", color: "#f1c21b" }}>{deltaArrow(original.totalMinHours, current.totalMinHours)}</td>
                 <td style={{ textAlign: "right", fontWeight: 600 }}>{current.totalMinHours}h</td>
               </tr>
               <tr>
                 <td style={{ color: "var(--text-dim)", padding: "2px 0" }}>Horas máx</td>
                 <td style={{ textAlign: "right" }}>{original.totalMaxHours}h</td>
-                <td style={{ textAlign: "center", color: "#fbbf24" }}>{deltaArrow(original.totalMaxHours, current.totalMaxHours)}</td>
+                <td style={{ textAlign: "center", color: "#f1c21b" }}>{deltaArrow(original.totalMaxHours, current.totalMaxHours)}</td>
                 <td style={{ textAlign: "right", fontWeight: 600 }}>{current.totalMaxHours}h</td>
               </tr>
               <tr>

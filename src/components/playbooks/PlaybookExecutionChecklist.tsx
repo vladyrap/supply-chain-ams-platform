@@ -48,7 +48,7 @@ export default function PlaybookExecutionChecklist({
           </span>
         </div>
         <div className="tc-bar">
-          <div className="tc-bar-fill" style={{ width: `${progress}%`, background: allDone ? "#10b981" : "#22d3ee" }} />
+          <div className="tc-bar-fill" style={{ width: `${progress}%`, background: allDone ? "#10b981" : "#4589ff" }} />
         </div>
       </div>
 
@@ -69,7 +69,7 @@ export default function PlaybookExecutionChecklist({
                 <div className="row" style={{ gap: 6, fontSize: 10.5, color: "var(--text-dim)", marginTop: 4, flexWrap: "wrap" }}>
                   <span>👤 {step.responsibleRole}</span>
                   <span>⏱ {step.estimatedMinutes}m</span>
-                  {step.evidenceRequired && <span style={{ color: "#fbbf24" }}>📎 evidencia</span>}
+                  {step.evidenceRequired && <span style={{ color: "#f1c21b" }}>📎 evidencia</span>}
                 </div>
                 <textarea value={note}
                   onChange={(e) => onSetNote(execution.id, step.id, e.target.value)}
@@ -83,7 +83,7 @@ export default function PlaybookExecutionChecklist({
       })}
 
       <div className="row" style={{ gap: 8, marginTop: 10, flexWrap: "wrap" }}>
-        <button className="btn ghost" onClick={() => onAbandon(execution.id)} style={{ borderColor: "#ef4444", color: "#fca5a5" }}>
+        <button className="btn ghost" onClick={() => onAbandon(execution.id)} style={{ borderColor: "#fa4d56", color: "#fca5a5" }}>
           ✕ Abandonar
         </button>
         <button className="btn primary"

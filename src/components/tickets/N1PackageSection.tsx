@@ -124,7 +124,7 @@ export default function N1PackageSection({
   if (isEnriching) {
     return (
       <div className="card" style={{
-        borderLeft: "4px solid #22d3ee", padding: 14,
+        borderLeft: "4px solid #4589ff", padding: 14,
         display: "flex", flexDirection: "column", gap: 8,
         width: "100%", minWidth: 0, boxSizing: "border-box",
       }}>
@@ -139,7 +139,7 @@ export default function N1PackageSection({
           {[1, 2, 3].map((i) => (
             <div key={i} style={{
               height: 14, borderRadius: 3,
-              background: "linear-gradient(90deg, rgba(34,211,238,0.10), rgba(34,211,238,0.04))",
+              background: "linear-gradient(90deg, rgba(69,137,255,0.10), rgba(69,137,255,0.04))",
               animation: "amsPulse 1.5s ease-in-out infinite",
             }} />
           ))}
@@ -152,7 +152,7 @@ export default function N1PackageSection({
   if (isFailed) {
     return (
       <div className="card" style={{
-        borderLeft: "4px solid #ef4444", padding: 14,
+        borderLeft: "4px solid #fa4d56", padding: 14,
         display: "flex", flexDirection: "column", gap: 8,
         width: "100%", minWidth: 0, boxSizing: "border-box",
       }}>
@@ -251,8 +251,8 @@ export default function N1PackageSection({
         }}>
           <div style={{
             flex: "1 1 180px", padding: "6px 10px",
-            background: "rgba(34,211,238,0.08)",
-            border: "1px solid rgba(34,211,238,0.25)",
+            background: "rgba(69,137,255,0.08)",
+            border: "1px solid rgba(69,137,255,0.25)",
             borderRadius: 4, minWidth: 0,
           }}>
             <div style={{ fontSize: 9.5, letterSpacing: 1.2, color: "var(--text-dim)" }}>CLASIFICACIÓN</div>
@@ -319,11 +319,11 @@ export default function N1PackageSection({
         {ui.escalationItems.length > 0 && (
           <div style={{
             padding: 8, marginBottom: 10,
-            background: "rgba(239,68,68,0.10)",
-            border: "1px solid rgba(239,68,68,0.30)",
+            background: "rgba(250,77,86,0.10)",
+            border: "1px solid rgba(250,77,86,0.30)",
             borderRadius: 4, fontSize: 11.5,
           }}>
-            <div style={{ color: "#ef4444", fontWeight: 600, marginBottom: 2 }}>
+            <div style={{ color: "#fa4d56", fontWeight: 600, marginBottom: 2 }}>
               ⚠ {ui.escalationItems.length} criterio{ui.escalationItems.length === 1 ? "" : "s"} de escalamiento N2
             </div>
             <ul style={{ margin: 0, paddingLeft: 18, fontSize: 11 }}>
@@ -351,7 +351,7 @@ export default function N1PackageSection({
             }}>
               {ui.checklistItems.map((c) => {
                 const checked = !!checklistState[c.id];
-                const itemColor = c.requiresN2 ? "#ef4444" : "#10b981";
+                const itemColor = c.requiresN2 ? "#fa4d56" : "#10b981";
                 return (
                   // v0.14.6 — Posicionamiento absoluto del checkbox + badge.
                   // El contenedor es display:block (no flex/grid) para escapar
@@ -365,7 +365,7 @@ export default function N1PackageSection({
                       display: "block",
                       position: "relative",
                       padding: "8px 48px 8px 30px",   // L: 30 (checkbox) · R: 48 (badge N1/N2)
-                      background: c.requiresN2 ? "rgba(239,68,68,0.05)" : "rgba(16,185,129,0.04)",
+                      background: c.requiresN2 ? "rgba(250,77,86,0.05)" : "rgba(16,185,129,0.04)",
                       borderLeft: `3px solid ${itemColor}aa`,
                       borderRadius: 3,
                       cursor: c.requiresN2 ? "not-allowed" : "pointer",
@@ -399,7 +399,7 @@ export default function N1PackageSection({
                       top: 8,
                       fontSize: 9, fontWeight: 700, letterSpacing: 1,
                       padding: "2px 6px", borderRadius: 3,
-                      background: c.requiresN2 ? "rgba(239,68,68,0.20)" : "rgba(16,185,129,0.20)",
+                      background: c.requiresN2 ? "rgba(250,77,86,0.20)" : "rgba(16,185,129,0.20)",
                       color: itemColor,
                       border: `1px solid ${itemColor}55`,
                     }}>
@@ -469,11 +469,11 @@ export default function N1PackageSection({
         {showEscalateForm && (
           <div style={{
             padding: 10, marginTop: 4,
-            background: "rgba(239,68,68,0.10)",
-            border: "1px solid rgba(239,68,68,0.30)",
+            background: "rgba(250,77,86,0.10)",
+            border: "1px solid rgba(250,77,86,0.30)",
             borderRadius: 4,
           }}>
-            <div style={{ fontSize: 11, color: "#ef4444", fontWeight: 600, marginBottom: 4 }}>
+            <div style={{ fontSize: 11, color: "#fa4d56", fontWeight: 600, marginBottom: 4 }}>
               🚀 Escalar a N2 con paquete completo
             </div>
             <label style={{ display: "block", fontSize: 11, color: "var(--text-soft)", marginBottom: 2 }}>
@@ -499,7 +499,7 @@ export default function N1PackageSection({
               </button>
               <button className="btn primary sm" onClick={handleEscalate}
                 disabled={!escalationReason.trim()}
-                style={{ fontSize: 11, background: "#ef4444", borderColor: "#ef4444" }}>
+                style={{ fontSize: 11, background: "#fa4d56", borderColor: "#fa4d56" }}>
                 Confirmar escalamiento
               </button>
             </div>
@@ -524,7 +524,7 @@ export default function N1PackageSection({
               ✓ Marcar resuelto N1
             </button>
             <button className="btn ghost sm" onClick={() => setShowEscalateForm(true)}
-              style={{ fontSize: 11, color: "#ef4444", borderColor: "#ef444455" }}>
+              style={{ fontSize: 11, color: "#fa4d56", borderColor: "#fa4d5655" }}>
               🚀 Escalar a N2 con paquete completo
             </button>
           </>

@@ -34,12 +34,12 @@ const NODES: SysNode[] = [
   { id: "agent",     label: "Agent AMS",     icon: "🤖", x: 600, y: 200, color: "#a855f7", group: "ai" },
   { id: "mesa",      label: "Mesa Soporte",  icon: "📞", x: 600, y: 310, color: "#a855f7", group: "ai" },
   { id: "rag",       label: "RAG pgvector",  icon: "🧠", x: 600, y: 410, color: "#06b6d4", group: "ai" },
-  { id: "gemini",    label: "Gemini API",    icon: "✨", x: 820, y: 250, color: "#fbbf24", group: "ext" },
+  { id: "gemini",    label: "Gemini API",    icon: "✨", x: 820, y: 250, color: "#f1c21b", group: "ext" },
   { id: "whisper",   label: "Whisper",       icon: "🎙", x: 820, y: 510, color: "#06b6d4", group: "ai" },
 
   // DATA
   { id: "postgres",  label: "PostgreSQL",    icon: "🐘", x: 220, y: 510, color: "#10b981", group: "data" },
-  { id: "redis",     label: "Redis",         icon: "📮", x: 220, y: 110, color: "#ef4444", group: "data" },
+  { id: "redis",     label: "Redis",         icon: "📮", x: 220, y: 110, color: "#fa4d56", group: "data" },
 
   // EXT
   { id: "slack",     label: "Slack",         icon: "💬", x: 820, y: 100, color: "#a855f7", group: "ext" },
@@ -82,7 +82,7 @@ const EVENT_COLOR: Record<NotificationItem["kind"], string> = {
   incident_created:  "#3b82f6",
   ticket_escalated:  "#f59e0b",
   ticket_resolved:   "#10b981",
-  kb_approved:       "#fbbf24",
+  kb_approved:       "#f1c21b",
   meeting_done:      "#a855f7",
 };
 

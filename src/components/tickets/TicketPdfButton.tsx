@@ -68,11 +68,11 @@ export default function TicketPdfButton(props: Props) {
     gap: 6,
     padding: props.compact ? "4px 10px" : "8px 14px",
     borderRadius: 8,
-    border: "1px solid rgba(34, 211, 238, 0.3)",
+    border: "1px solid rgba(69,137,255, 0.3)",
     background: busy
-      ? "linear-gradient(135deg, rgba(34, 211, 238, 0.15), rgba(167, 139, 250, 0.15))"
-      : "linear-gradient(135deg, rgba(34, 211, 238, 0.08), rgba(167, 139, 250, 0.08))",
-    color: "#22d3ee",
+      ? "linear-gradient(135deg, rgba(69,137,255, 0.15), rgba(190,149,255, 0.15))"
+      : "linear-gradient(135deg, rgba(69,137,255, 0.08), rgba(190,149,255, 0.08))",
+    color: "#4589ff",
     fontSize: props.compact ? 12 : 13,
     fontWeight: 600,
     cursor: disabled ? "not-allowed" : "pointer",

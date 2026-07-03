@@ -24,9 +24,9 @@ interface Props {
 
 const STATUS_COLORS: Record<CustomerResponseStatus, string> = {
   DRAFT: "#64748b",
-  REVIEWED: "#22d3ee",
+  REVIEWED: "#4589ff",
   APPROVED: "#10b981",
-  BLOCKED: "#ef4444",
+  BLOCKED: "#fa4d56",
   SENT_MANUAL: "#10b981",
   ARCHIVED: "#94a3b8",
 };
@@ -140,7 +140,7 @@ export default function ResponseHistoryList({ responses, onMarkSent, onRemove, o
                       if (window.confirm("¿Borrar esta respuesta?")) onRemove(r);
                     }}
                     title="Eliminar"
-                    style={{ fontSize: 10, padding: "3px 6px", color: "#ef4444" }}
+                    style={{ fontSize: 10, padding: "3px 6px", color: "#fa4d56" }}
                   >
                     🗑
                   </button>

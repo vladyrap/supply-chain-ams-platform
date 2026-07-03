@@ -95,7 +95,7 @@ export default function PlaybookQuickAction({
           style={{
             padding: variant === "compact" ? "3px 9px" : "4px 12px",
             fontSize: variant === "compact" ? 11 : 11.5,
-            color: done === total ? "#10b981" : "#fbbf24",
+            color: done === total ? "#10b981" : "#f1c21b",
           }}
           title={`Playbook activo: ${activePlaybook.title}`}
         >

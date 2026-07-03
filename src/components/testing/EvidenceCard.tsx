@@ -47,7 +47,7 @@ export default function EvidenceCard({ evidence: e, scenarioTitle, onRemove, onR
         <video src={e.localPreviewUrl} controls style={{ width: "100%", maxHeight: 200, borderRadius: 4, background: "#000" }} />
       )}
       {isVideo && sessionGone && (
-        <div style={{ fontSize: 11, color: "#fcd34d", padding: 8, background: "rgba(251,191,36,0.07)", borderRadius: 4 }}>
+        <div style={{ fontSize: 11, color: "#fcd34d", padding: 8, background: "rgba(241,194,27,0.07)", borderRadius: 4 }}>
           ⚠ Preview no disponible (video no persistido tras refresh). Volvé a cargar el archivo o consultá el log de la evidencia.
         </div>
       )}
@@ -78,7 +78,7 @@ export default function EvidenceCard({ evidence: e, scenarioTitle, onRemove, onR
           )}
           {onRemove && (
             <button className="btn ghost" onClick={onRemove}
-              style={{ padding: "2px 8px", fontSize: 11, marginLeft: "auto", color: "#fca5a5", borderColor: "rgba(239,68,68,0.4)" }}>
+              style={{ padding: "2px 8px", fontSize: 11, marginLeft: "auto", color: "#fca5a5", borderColor: "rgba(250,77,86,0.4)" }}>
               eliminar
             </button>
           )}

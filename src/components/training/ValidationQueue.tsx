@@ -68,10 +68,10 @@ export default function ValidationQueue({ ctx, currentUserName = "Validador AMS"
         </p>
         <div className="row" style={{ gap: 6, flexWrap: "wrap" }}>
           {[
-            { id: "all",         label: "▸ Todos",                color: "#22d3ee", count: queue.length },
-            { id: "functional",  label: "Pendiente funcional",    color: "#fbbf24", count: ctx.knowledge.filter((k) => !k.functionalValidatedBy && k.status !== "PUBLISHED" && k.status !== "ARCHIVED" && k.status !== "REJECTED").length },
+            { id: "all",         label: "▸ Todos",                color: "#4589ff", count: queue.length },
+            { id: "functional",  label: "Pendiente funcional",    color: "#f1c21b", count: ctx.knowledge.filter((k) => !k.functionalValidatedBy && k.status !== "PUBLISHED" && k.status !== "ARCHIVED" && k.status !== "REJECTED").length },
             { id: "technical",   label: "Pendiente técnica",      color: "#a855f7", count: ctx.knowledge.filter((k) => k.functionalValidatedBy && !k.technicalValidatedBy && k.status !== "PUBLISHED" && k.status !== "ARCHIVED" && k.status !== "REJECTED").length },
-            { id: "critical",    label: "🔥 Críticos",            color: "#ef4444", count: ctx.knowledge.filter((k) => k.priority === "critical" && k.status !== "PUBLISHED" && k.status !== "ARCHIVED" && k.status !== "REJECTED").length },
+            { id: "critical",    label: "🔥 Críticos",            color: "#fa4d56", count: ctx.knowledge.filter((k) => k.priority === "critical" && k.status !== "PUBLISHED" && k.status !== "ARCHIVED" && k.status !== "REJECTED").length },
           ].map((f) => (
             <button key={f.id} onClick={() => setFilter(f.id as never)}
               className={`ticket-filter ${filter === f.id ? "active" : ""}`}
@@ -95,7 +95,7 @@ export default function ValidationQueue({ ctx, currentUserName = "Validador AMS"
           const stageColor =
             k.validationStage === "FULLY_VALIDATED" ? "#10b981" :
             k.validationStage === "PENDING_TECHNICAL" ? "#a855f7" :
-            k.validationStage === "PENDING_FUNCTIONAL" ? "#fbbf24" : "#64748b";
+            k.validationStage === "PENDING_FUNCTIONAL" ? "#f1c21b" : "#64748b";
           return (
             <div key={k.id} className="lab-fb-card" style={{ ["--fb-color" as never]: riskColor }}>
               <div className="row" style={{ gap: 8, alignItems: "center", marginBottom: 6, flexWrap: "wrap" }}>
@@ -107,7 +107,7 @@ export default function ValidationQueue({ ctx, currentUserName = "Validador AMS"
                   {KNOWLEDGE_STATUS_LABELS[k.status]}
                 </span>
                 <span style={{ marginLeft: "auto", fontSize: 10.5, color: "var(--text-dim)" }}>
-                  score <b style={{ color: k.score >= 80 ? "#10b981" : k.score >= 60 ? "#fbbf24" : "#ef4444" }}>{k.score}</b>
+                  score <b style={{ color: k.score >= 80 ? "#10b981" : k.score >= 60 ? "#f1c21b" : "#fa4d56" }}>{k.score}</b>
                 </span>
               </div>
               <p style={{ fontSize: 12.5, color: "var(--text-soft)", margin: "0 0 8px", lineHeight: 1.5 }}>{k.summary}</p>
@@ -120,7 +120,7 @@ export default function ValidationQueue({ ctx, currentUserName = "Validador AMS"
                   <strong>Riesgo</strong> · <span style={{ color: riskColor }}>{PRIORITY_LABELS[k.priority]}</span>
                 </div>
                 <div>
-                  <strong>Funcional</strong> · {k.functionalValidatedBy ?? <span style={{ color: "#fbbf24" }}>pendiente</span>}
+                  <strong>Funcional</strong> · {k.functionalValidatedBy ?? <span style={{ color: "#f1c21b" }}>pendiente</span>}
                 </div>
                 <div>
                   <strong>Técnica</strong> · {k.technicalValidatedBy ?? <span style={{ color: "#a855f7" }}>pendiente</span>}
@@ -135,7 +135,7 @@ export default function ValidationQueue({ ctx, currentUserName = "Validador AMS"
 
               <div className="row" style={{ gap: 6, marginTop: 10, flexWrap: "wrap" }}>
                 {!k.functionalValidatedBy && (
-                  <button className="btn ghost" style={{ borderColor: "#fbbf24", color: "#fbbf24" }} onClick={() => approveFunctional(k)}>
+                  <button className="btn ghost" style={{ borderColor: "#f1c21b", color: "#f1c21b" }} onClick={() => approveFunctional(k)}>
                     ✓ aprobar funcional
                   </button>
                 )}
@@ -145,7 +145,7 @@ export default function ValidationQueue({ ctx, currentUserName = "Validador AMS"
                   </button>
                 )}
                 <button className="btn ghost" onClick={() => askCorrection(k)}>↩ pedir corrección</button>
-                <button className="btn ghost" style={{ borderColor: "#ef4444", color: "#fca5a5" }} onClick={() => setRejectTarget(k)}>✕ rechazar</button>
+                <button className="btn ghost" style={{ borderColor: "#fa4d56", color: "#fca5a5" }} onClick={() => setRejectTarget(k)}>✕ rechazar</button>
                 {k.priority !== "critical" && (
                   <button className="btn ghost" onClick={() => markCritical(k)}>🔥 marcar crítico</button>
                 )}
@@ -177,7 +177,7 @@ export default function ValidationQueue({ ctx, currentUserName = "Validador AMS"
             </div>
             <div className="tc-modal-foot">
               <button className="btn ghost" onClick={() => setRejectTarget(null)}>cancelar</button>
-              <button className="btn primary" style={{ background: "#ef4444", borderColor: "#ef4444", marginLeft: "auto" }}
+              <button className="btn primary" style={{ background: "#fa4d56", borderColor: "#fa4d56", marginLeft: "auto" }}
                 onClick={() => reject(rejectTarget)}>
                 ✕ rechazar
               </button>

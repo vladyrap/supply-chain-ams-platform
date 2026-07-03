@@ -35,7 +35,7 @@ export default function CustomerResponsePreview({
 
   const confColor =
     response.confidence === "HIGH" ? "#10b981" :
-    response.confidence === "LOW" ? "#ef4444" : "#f59e0b";
+    response.confidence === "LOW" ? "#fa4d56" : "#f59e0b";
 
   return (
     <div className="card" style={{ padding: 14 }}>

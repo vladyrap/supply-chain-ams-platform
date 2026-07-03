@@ -16,8 +16,8 @@ interface Lane {
 
 const LANES: Lane[] = [
   { id: "resolved",  label: "RESOLVED",  color: "#10b981", rgb: [16, 185, 129],  kinds: ["ticket_resolved", "kb_approved"] },
-  { id: "escalated", label: "ESCALATED", color: "#ef4444", rgb: [239, 68, 68],   kinds: ["ticket_escalated", "incident_created"] },
-  { id: "info",      label: "INFO·KB",   color: "#fbbf24", rgb: [251, 191, 36],  kinds: ["meeting_done"] },
+  { id: "escalated", label: "ESCALATED", color: "#fa4d56", rgb: [250,77,86],   kinds: ["ticket_escalated", "incident_created"] },
+  { id: "info",      label: "INFO·KB",   color: "#f1c21b", rgb: [241,194,27],  kinds: ["meeting_done"] },
 ];
 
 interface Particle {

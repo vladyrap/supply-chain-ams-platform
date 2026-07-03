@@ -153,7 +153,7 @@ export interface AgentEvaluation {
 }
 
 export const RISK_COLORS: Record<HallucinationRiskLevel, string> = {
-  LOW: "#10b981", MEDIUM: "#fbbf24", HIGH: "#ef4444",
+  LOW: "#10b981", MEDIUM: "#f1c21b", HIGH: "#fa4d56",
 };
 export const FIT_LABELS: Record<TechnicalLevelFit, string> = {
   TOO_SIMPLE: "Demasiado simple", ADEQUATE: "Adecuado", TOO_TECHNICAL: "Demasiado técnico",

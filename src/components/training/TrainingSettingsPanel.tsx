@@ -131,21 +131,21 @@ export default function TrainingSettingsPanel({ ctx }: Props) {
         </div>
       </div>
 
-      <div className="card" style={{ borderLeft: "3px solid #ef4444" }}>
+      <div className="card" style={{ borderLeft: "3px solid #fa4d56" }}>
         <div className="ticket-section-head">
-          <span style={{ color: "#ef4444" }}>⚠</span> ZONA DE RIESGO
+          <span style={{ color: "#fa4d56" }}>⚠</span> ZONA DE RIESGO
         </div>
         <p className="settings-section-desc">
           Reset de datos demo: borra los <b>ítems</b>, Q&A, versiones, brechas y settings del entrenamiento.
           No afecta usuarios, roles ni el chat del agente.
         </p>
         {!confirmReset ? (
-          <button className="btn ghost" onClick={() => setConfirmReset(true)} style={{ borderColor: "#ef4444", color: "#fca5a5" }}>
+          <button className="btn ghost" onClick={() => setConfirmReset(true)} style={{ borderColor: "#fa4d56", color: "#fca5a5" }}>
             ♻ Restaurar datos demo
           </button>
         ) : (
           <div className="row" style={{ gap: 8 }}>
-            <button className="btn primary" style={{ background: "#ef4444", borderColor: "#ef4444" }}
+            <button className="btn primary" style={{ background: "#fa4d56", borderColor: "#fa4d56" }}
               onClick={() => {
                 ctx.resetDemoTrainingData();
                 setConfirmReset(false);

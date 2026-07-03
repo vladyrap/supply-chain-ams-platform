@@ -65,7 +65,7 @@ export default function IncidentToKnowledgeWizard({ incident, onClose, onSaved }
               {step === "done" ? "¡Listo!" : "Convertir incidente en conocimiento"}
             </h2>
             <div className="row" style={{ gap: 6, marginTop: 6, fontSize: 11, flexWrap: "wrap" }}>
-              <span className="kanban-tag" style={{ borderColor: "rgba(34,211,238,0.4)", color: "#67e8f9", background: "rgba(34,211,238,0.08)" }}>
+              <span className="kanban-tag" style={{ borderColor: "rgba(69,137,255,0.4)", color: "#67e8f9", background: "rgba(69,137,255,0.08)" }}>
                 {incident.sap_module ?? "AMS"}
               </span>
               {incident.environment && (

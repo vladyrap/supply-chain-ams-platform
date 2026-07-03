@@ -187,8 +187,8 @@ export default function ForecastPage() {
       {/* Top summary tiles */}
       <div style={{ display: "grid", gridTemplateColumns: "repeat(4, 1fr)", gap: 10, marginBottom: 12 }}>
         <Tile label="INCIDENTS·NEXT 7D" value={fcTotal} color="#a855f7" hint={`tendencia ${trend > 0 ? "+" : ""}${trend.toFixed(1)}/día`} />
-        <Tile label="vs 7d previos" value={`${trendPct > 0 ? "+" : ""}${trendPct}%`} color={trendPct > 0 ? "#ef4444" : "#10b981"} hint={trendPct > 0 ? "subida prevista" : "baja prevista"} />
-        <Tile label="ANOMALÍAS" value={anomalies.length} color="#fbbf24" hint={anomalies.length ? "outliers histórico" : "sin anomalías"} />
+        <Tile label="vs 7d previos" value={`${trendPct > 0 ? "+" : ""}${trendPct}%`} color={trendPct > 0 ? "#fa4d56" : "#10b981"} hint={trendPct > 0 ? "subida prevista" : "baja prevista"} />
+        <Tile label="ANOMALÍAS" value={anomalies.length} color="#f1c21b" hint={anomalies.length ? "outliers histórico" : "sin anomalías"} />
         <Tile label="TOKENS·NEXT 7D" value={Math.round(future.length * (tokensReg.slope * tokenSeries.length + tokensReg.intercept) / 1000) + "k"} color="#06b6d4" hint={`prom histórico ${Math.round((tokenSeries.reduce((a,b)=>a+b,0)) / Math.max(1, tokenSeries.length) / 1000)}k/día`} />
       </div>
 
@@ -219,10 +219,10 @@ export default function ForecastPage() {
           {/* Línea divisoria histórico/proyección */}
           {incidentsSeries.length > 0 && (
             <line x1={ptX(fcStart)} y1={PAD} x2={ptX(fcStart)} y2={H - PAD}
-              stroke="rgba(34,211,238,0.4)" strokeDasharray="3 4" strokeWidth="1.5" />
+              stroke="rgba(69,137,255,0.4)" strokeDasharray="3 4" strokeWidth="1.5" />
           )}
           {incidentsSeries.length > 0 && (
-            <text x={ptX(fcStart)} y={PAD - 4} fontSize="9" fill="#22d3ee" textAnchor="middle" letterSpacing="1.5">▼ HOY</text>
+            <text x={ptX(fcStart)} y={PAD - 4} fontSize="9" fill="#4589ff" textAnchor="middle" letterSpacing="1.5">▼ HOY</text>
           )}
           {/* Banda incertidumbre */}
           {bandPath && <path d={bandPath} fill="url(#fc-fill)" />}
@@ -251,8 +251,8 @@ export default function ForecastPage() {
           {/* Anomalías marcadas */}
           {anomalies.map((a, i) => (
             <g key={`a${i}`}>
-              <circle cx={ptX(a.idx)} cy={ptY(a.value)} r="8" fill="none" stroke="#ef4444" strokeWidth="1.5" style={{ animation: "anomalyPulse 1.5s ease-out infinite" }} />
-              <text x={ptX(a.idx)} y={ptY(a.value) - 14} fontSize="9" fill="#ef4444" textAnchor="middle" fontWeight="700">!</text>
+              <circle cx={ptX(a.idx)} cy={ptY(a.value)} r="8" fill="none" stroke="#fa4d56" strokeWidth="1.5" style={{ animation: "anomalyPulse 1.5s ease-out infinite" }} />
+              <text x={ptX(a.idx)} y={ptY(a.value) - 14} fontSize="9" fill="#fa4d56" textAnchor="middle" fontWeight="700">!</text>
             </g>
           ))}
           {/* Eje X labels */}
@@ -266,7 +266,7 @@ export default function ForecastPage() {
 
       {/* Bottom row: next-likely + anomalies + tokens forecast */}
       <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr 1fr", gap: 10 }}>
-        <div className="card" style={{ padding: 14, background: "rgba(15,23,42,0.7)", border: "1px solid rgba(239,68,68,0.3)" }}>
+        <div className="card" style={{ padding: 14, background: "rgba(15,23,42,0.7)", border: "1px solid rgba(250,77,86,0.3)" }}>
           <div style={{ fontSize: 11, color: "#fca5a5", letterSpacing: 2, marginBottom: 8 }}>⚠ TOP·3 NEXT-LIKELY</div>
           {nextLikely.length === 0 && <div style={{ color: "#64748b", fontSize: 12 }}>(aún sin datos históricos)</div>}
           {nextLikely.map((nl) => (
@@ -276,14 +276,14 @@ export default function ForecastPage() {
                 <div style={{ fontSize: 10, color: "#64748b" }}>sistema típico · {nl.system}</div>
               </div>
               <div style={{ textAlign: "right" }}>
-                <div style={{ fontSize: 18, fontWeight: 700, color: nl.probability >= 40 ? "#ef4444" : "#fbbf24" }}>{nl.probability}%</div>
+                <div style={{ fontSize: 18, fontWeight: 700, color: nl.probability >= 40 ? "#fa4d56" : "#f1c21b" }}>{nl.probability}%</div>
                 <div style={{ fontSize: 9, color: "#64748b" }}>prob 7d</div>
               </div>
             </div>
           ))}
         </div>
 
-        <div className="card" style={{ padding: 14, background: "rgba(15,23,42,0.7)", border: "1px solid rgba(251,191,36,0.3)" }}>
+        <div className="card" style={{ padding: 14, background: "rgba(15,23,42,0.7)", border: "1px solid rgba(241,194,27,0.3)" }}>
           <div style={{ fontSize: 11, color: "#fcd34d", letterSpacing: 2, marginBottom: 8 }}>🌡 ANOMALÍAS · HISTÓRICAS</div>
           {anomalies.length === 0 && <div style={{ color: "#64748b", fontSize: 12 }}>(sin outliers significativos)</div>}
           {anomalies.map((a, i) => (
@@ -293,7 +293,7 @@ export default function ForecastPage() {
                 <div style={{ fontSize: 10, color: "#64748b" }}>z-score {a.z.toFixed(2)}</div>
               </div>
               <div style={{ textAlign: "right" }}>
-                <div style={{ fontSize: 18, fontWeight: 700, color: a.z > 0 ? "#ef4444" : "#06b6d4" }}>{a.value}</div>
+                <div style={{ fontSize: 18, fontWeight: 700, color: a.z > 0 ? "#fa4d56" : "#06b6d4" }}>{a.value}</div>
                 <div style={{ fontSize: 9, color: "#64748b" }}>incidents</div>
               </div>
             </div>
@@ -319,7 +319,7 @@ export default function ForecastPage() {
                   <td style={{ textAlign: "right", color: "#a855f7", fontWeight: 700 }}>{f.incidents}</td>
                   <td style={{ textAlign: "right", color: "#64748b" }}>{f.incidentsLow}</td>
                   <td style={{ textAlign: "right", color: "#64748b" }}>{f.incidentsHigh}</td>
-                  <td style={{ textAlign: "right", color: "#fbbf24" }}>{f.tickets}</td>
+                  <td style={{ textAlign: "right", color: "#f1c21b" }}>{f.tickets}</td>
                 </tr>
               ))}
             </tbody>

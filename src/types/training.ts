@@ -146,18 +146,18 @@ export const KNOWLEDGE_STATUS_LABELS: Record<KnowledgeStatus, string> = {
 
 export const STATUS_COLORS: Record<KnowledgeStatus, string> = {
   DRAFT:          "#64748b",
-  PENDING_REVIEW: "#fbbf24",
-  VALIDATED:      "#22d3ee",
+  PENDING_REVIEW: "#f1c21b",
+  VALIDATED:      "#4589ff",
   PUBLISHED:      "#10b981",
   ARCHIVED:       "#6b7280",
-  REJECTED:       "#ef4444",
+  REJECTED:       "#fa4d56",
 };
 
 export const PRIORITY_COLORS: Record<Priority, string> = {
   low:      "#10b981",
-  medium:   "#22d3ee",
+  medium:   "#4589ff",
   high:     "#f59e0b",
-  critical: "#ef4444",
+  critical: "#fa4d56",
 };
 
 export const PRIORITY_LABELS: Record<Priority, string> = {
@@ -177,7 +177,7 @@ export const VERSION_STATUS_LABELS: Record<TrainingVersionStatus, string> = {
 
 export const VERSION_STATUS_COLORS: Record<TrainingVersionStatus, string> = {
   DRAFT:       "#64748b",
-  READY:       "#22d3ee",
+  READY:       "#4589ff",
   PUBLISHED:   "#10b981",
   ROLLED_BACK: "#f59e0b",
   ARCHIVED:    "#6b7280",

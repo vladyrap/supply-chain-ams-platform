@@ -96,7 +96,7 @@ export default function QAGenerator({ ctx, focusItemId }: Props) {
                   <span className={`tc-pill ${q.approved ? "ok" : "pend"}`}>{q.approved ? "✓ aprobada" : "pendiente"}</span>
                   <div className="row" style={{ gap: 4, marginLeft: "auto" }}>
                     {!q.approved && <button className="tc-iconbtn" onClick={() => ctx.approveQA(q.id)} title="Aprobar">✓</button>}
-                    <button className="tc-iconbtn" onClick={() => ctx.deleteQA(q.id)} title="Eliminar" style={{ color: "#ef4444" }}>🗑</button>
+                    <button className="tc-iconbtn" onClick={() => ctx.deleteQA(q.id)} title="Eliminar" style={{ color: "#fa4d56" }}>🗑</button>
                   </div>
                 </div>
                 <label className="tc-field">

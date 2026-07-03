@@ -12,7 +12,7 @@ function Kpi({ label, value, color = "#cbd5e1", hint }: { label: string; value: 
   );
 }
 
-function Bars({ data, color = "#22d3ee" }: { data: Record<string, number>; color?: string }) {
+function Bars({ data, color = "#4589ff" }: { data: Record<string, number>; color?: string }) {
   const entries = Object.entries(data).sort((a, b) => b[1] - a[1]);
   if (entries.length === 0) return <div style={{ fontSize: 11, color: "var(--text-dim)" }}>(sin datos)</div>;
   const max = Math.max(...entries.map(([, v]) => v));
@@ -60,7 +60,7 @@ export default function EscalationMetrics({ escalation }: { escalation: UseEscal
         </div>
         <div className="card">
           <div style={{ fontSize: 11, color: "var(--text-dim)", letterSpacing: 1, textTransform: "uppercase", marginBottom: 8 }}>Por canal</div>
-          <Bars data={m.byChannel} color="#22d3ee" />
+          <Bars data={m.byChannel} color="#4589ff" />
         </div>
         <div className="card">
           <div style={{ fontSize: 11, color: "var(--text-dim)", letterSpacing: 1, textTransform: "uppercase", marginBottom: 8 }}>Por cliente</div>
@@ -68,7 +68,7 @@ export default function EscalationMetrics({ escalation }: { escalation: UseEscal
         </div>
         <div className="card">
           <div style={{ fontSize: 11, color: "var(--text-dim)", letterSpacing: 1, textTransform: "uppercase", marginBottom: 8 }}>Por módulo</div>
-          <Bars data={m.byModule} color="#34d399" />
+          <Bars data={m.byModule} color="#42be65" />
         </div>
       </div>
     </div>

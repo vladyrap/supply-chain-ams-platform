@@ -35,19 +35,19 @@ export default function MarketingLandingPage() {
         <div style={{ maxWidth: 1100, margin: "0 auto" }}>
           <nav style={{ display: "flex", justifyContent: "space-between", marginBottom: 80 }}>
             <div style={{ fontSize: 22, fontWeight: 700 }}>
-              <span style={{ color: "#22d3ee" }}>AMS</span> Platform
+              <span style={{ color: "#4589ff" }}>AMS</span> Platform
             </div>
             <div style={{ display: "flex", gap: 20, alignItems: "center" }}>
               <Link href="/status" style={{ color: "#94a3b8", textDecoration: "none", fontSize: 13 }}>● Status</Link>
               <Link href="#planes" style={{ color: "#94a3b8", textDecoration: "none", fontSize: 14 }}>Planes</Link>
               <Link href="/login" style={{
-                background: "#22d3ee", color: "#0b1220", padding: "8px 18px",
+                background: "#4589ff", color: "#0b1220", padding: "8px 18px",
                 borderRadius: 6, textDecoration: "none", fontWeight: 600, fontSize: 14,
               }}>Iniciar sesión</Link>
             </div>
           </nav>
           <h1 style={{ fontSize: 52, lineHeight: 1.1, fontWeight: 800, maxWidth: 800, marginBottom: 20 }}>
-            Tu mesa de soporte SAP con <span style={{ color: "#22d3ee" }}>3-5× más productividad</span>
+            Tu mesa de soporte SAP con <span style={{ color: "#4589ff" }}>3-5× más productividad</span>
           </h1>
           <p style={{ fontSize: 18, color: "#cbd5e1", maxWidth: 700, marginBottom: 30, lineHeight: 1.5 }}>
             AMS Platform usa IA para clasificar, enriquecer y resolver tickets SAP automáticamente.
@@ -55,7 +55,7 @@ export default function MarketingLandingPage() {
           </p>
           <div style={{ display: "flex", gap: 12, flexWrap: "wrap", marginBottom: 60 }}>
             <a href={`mailto:${SALES_EMAIL}?subject=Demo%20AMS%20Platform`}
-              style={{ background: "#22d3ee", color: "#0b1220", padding: "14px 28px",
+              style={{ background: "#4589ff", color: "#0b1220", padding: "14px 28px",
                        borderRadius: 8, textDecoration: "none", fontWeight: 700, fontSize: 16 }}>
               🎯 Agendar demo (15 min)
             </a>
@@ -141,7 +141,7 @@ export default function MarketingLandingPage() {
             15 minutos de demo + 14 días de trial. Si no te convence, no nos debés nada.
           </p>
           <a href={`mailto:${SALES_EMAIL}?subject=Demo%20AMS%20Platform`} style={{
-            background: "#22d3ee", color: "#0b1220", padding: "16px 36px",
+            background: "#4589ff", color: "#0b1220", padding: "16px 36px",
             borderRadius: 8, textDecoration: "none", fontWeight: 700, fontSize: 18, display: "inline-block",
           }}>
             🎯 Agendar mi demo
@@ -169,7 +169,7 @@ export default function MarketingLandingPage() {
 function Metric({ label, value }: { label: string; value: string }) {
   return (
     <div>
-      <div style={{ fontSize: 32, fontWeight: 700, color: "#22d3ee" }}>{value}</div>
+      <div style={{ fontSize: 32, fontWeight: 700, color: "#4589ff" }}>{value}</div>
       <div style={{ fontSize: 12, color: "#94a3b8", letterSpacing: 1 }}>{label.toUpperCase()}</div>
     </div>
   );
@@ -191,13 +191,13 @@ function PlanCard({ name, price, features, highlight, badge }: {
   return (
     <div style={{
       padding: 28, borderRadius: 12,
-      border: highlight ? "2px solid #22d3ee" : "1px solid #e2e8f0",
+      border: highlight ? "2px solid #4589ff" : "1px solid #e2e8f0",
       background: highlight ? "linear-gradient(180deg, white 0%, #ecfeff 100%)" : "white",
       position: "relative",
     }}>
       {badge && (
         <div style={{
-          position: "absolute", top: -12, right: 20, background: "#22d3ee", color: "#0b1220",
+          position: "absolute", top: -12, right: 20, background: "#4589ff", color: "#0b1220",
           padding: "4px 12px", borderRadius: 999, fontSize: 11, fontWeight: 700,
         }}>{badge}</div>
       )}
@@ -211,7 +211,7 @@ function PlanCard({ name, price, features, highlight, badge }: {
       </ul>
       <a href={`mailto:${SALES_EMAIL}?subject=Plan%20${name}%20AMS`} style={{
         display: "block", textAlign: "center", padding: "10px 20px",
-        background: highlight ? "#22d3ee" : "#0b1220", color: highlight ? "#0b1220" : "white",
+        background: highlight ? "#4589ff" : "#0b1220", color: highlight ? "#0b1220" : "white",
         borderRadius: 6, textDecoration: "none", fontWeight: 600,
       }}>Empezar</a>
     </div>

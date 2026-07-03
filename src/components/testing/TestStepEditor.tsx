@@ -70,7 +70,7 @@ export default function TestStepEditor({ scenario, onChange, readOnly }: Props) 
               <div className="row" style={{ gap: 4, marginLeft: "auto" }}>
                 <button className="btn ghost" onClick={() => moveUp(i)} disabled={i === 0} style={{ padding: "2px 8px", fontSize: 11 }}>↑</button>
                 <button className="btn ghost" onClick={() => moveDown(i)} disabled={i === steps.length - 1} style={{ padding: "2px 8px", fontSize: 11 }}>↓</button>
-                <button className="btn ghost" onClick={() => removeStep(s.id)} style={{ padding: "2px 8px", fontSize: 11, color: "#fca5a5", borderColor: "rgba(239,68,68,0.4)" }}>✕</button>
+                <button className="btn ghost" onClick={() => removeStep(s.id)} style={{ padding: "2px 8px", fontSize: 11, color: "#fca5a5", borderColor: "rgba(250,77,86,0.4)" }}>✕</button>
               </div>
             )}
           </div>

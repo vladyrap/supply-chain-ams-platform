@@ -9,8 +9,8 @@ import { apiRunGapDetection, fetchTrainingSnapshot, type GapDetectionReport } fr
 interface Props { ctx: UseAgentTraining }
 
 const STATUS_COLORS: Record<GapStatus, string> = {
-  OPEN:        "#ef4444",
-  IN_PROGRESS: "#fbbf24",
+  OPEN:        "#fa4d56",
+  IN_PROGRESS: "#f1c21b",
   RESOLVED:    "#10b981",
   DISMISSED:   "#64748b",
 };
@@ -83,9 +83,9 @@ export default function KnowledgeGaps({ ctx }: Props) {
         </p>
         <div className="row" style={{ gap: 6, flexWrap: "wrap" }}>
           {[
-            { id: "all",          label: "▸ Todas",           color: "#22d3ee", count: ctx.gaps.length },
-            { id: "OPEN",         label: "Abiertas",          color: "#ef4444", count: stats.open },
-            { id: "IN_PROGRESS",  label: "En curso",          color: "#fbbf24", count: stats.inProgress },
+            { id: "all",          label: "▸ Todas",           color: "#4589ff", count: ctx.gaps.length },
+            { id: "OPEN",         label: "Abiertas",          color: "#fa4d56", count: stats.open },
+            { id: "IN_PROGRESS",  label: "En curso",          color: "#f1c21b", count: stats.inProgress },
             { id: "RESOLVED",     label: "Resueltas",         color: "#10b981", count: stats.resolved },
             { id: "DISMISSED",    label: "Descartadas",       color: "#64748b", count: stats.dismissed },
           ].map((f) => (
@@ -128,7 +128,7 @@ export default function KnowledgeGaps({ ctx }: Props) {
           </p>
           <div className="row" style={{ gap: 6, flexWrap: "wrap" }}>
             {lowCoverage.map((c) => (
-              <span key={c.module} className="kanban-tag" style={{ borderColor: "rgba(251,191,36,0.4)", color: "#fbbf24", background: "rgba(251,191,36,0.08)" }}>
+              <span key={c.module} className="kanban-tag" style={{ borderColor: "rgba(241,194,27,0.4)", color: "#f1c21b", background: "rgba(241,194,27,0.08)" }}>
                 {c.module} · {c.coverage}% cobertura ({c.published}/{c.count})
               </span>
             ))}
@@ -155,7 +155,7 @@ export default function KnowledgeGaps({ ctx }: Props) {
                   <span className="tc-pill" style={{ background: `${sCol}20`, border: `1px solid ${sCol}66`, color: sCol }}>
                     {GAP_STATUS_LABELS[g.status]}
                   </span>
-                  <span className="kanban-tag" style={{ borderColor: "rgba(34,211,238,0.4)", color: "#67e8f9", background: "rgba(34,211,238,0.08)" }}>
+                  <span className="kanban-tag" style={{ borderColor: "rgba(69,137,255,0.4)", color: "#67e8f9", background: "rgba(69,137,255,0.08)" }}>
                     {g.module} · {g.process}
                   </span>
                   <span style={{ marginLeft: "auto", fontSize: 10.5, color: "var(--text-dim)" }}>

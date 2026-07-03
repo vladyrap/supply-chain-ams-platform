@@ -411,7 +411,7 @@ export default function GuidedAmsDemo({ onClose }: Props) {
 
         <div style={{ marginTop: 10, height: 6, borderRadius: 3, background: "rgba(255,255,255,0.06)", overflow: "hidden" }}>
           <div style={{ width: `${(done / steps.length) * 100}%`, height: "100%",
-                        background: "linear-gradient(90deg, #22d3ee, #10b981)", transition: "width 300ms ease" }} />
+                        background: "linear-gradient(90deg, #4589ff, #10b981)", transition: "width 300ms ease" }} />
         </div>
 
         {/* Lista de pasos */}
@@ -420,13 +420,13 @@ export default function GuidedAmsDemo({ onClose }: Props) {
             <div key={s.id} className="lab-fb-block" style={{
               borderLeft: `3px solid ${
                 s.status === "DONE" ? "#10b981"
-                : s.status === "RUNNING" ? "#22d3ee"
-                : s.status === "FAILED" ? "#ef4444"
-                : i === currentIdx ? "#fbbf24"
+                : s.status === "RUNNING" ? "#4589ff"
+                : s.status === "FAILED" ? "#fa4d56"
+                : i === currentIdx ? "#f1c21b"
                 : "var(--border-soft)"
               }`,
               padding: "6px 10px",
-              background: i === currentIdx && s.status === "PENDING" ? "rgba(251,191,36,0.05)" : "transparent",
+              background: i === currentIdx && s.status === "PENDING" ? "rgba(241,194,27,0.05)" : "transparent",
             }}>
               <div className="row between" style={{ alignItems: "center", gap: 8 }}>
                 <div style={{ minWidth: 0, flex: 1 }}>
@@ -438,7 +438,7 @@ export default function GuidedAmsDemo({ onClose }: Props) {
                     <div style={{ fontSize: 11, color: "#10b981", marginTop: 3 }}>→ {s.resultSummary}</div>
                   )}
                   {s.error && (
-                    <div style={{ fontSize: 11, color: "#ef4444", marginTop: 3 }}>✗ {s.error}</div>
+                    <div style={{ fontSize: 11, color: "#fa4d56", marginTop: 3 }}>✗ {s.error}</div>
                   )}
                 </div>
                 <span style={{ fontSize: 11, color: "var(--text-dim)", whiteSpace: "nowrap" }}>

@@ -100,7 +100,7 @@ export default function TestingQuickAction({
         className={variant === "compact" ? "btn ghost" : "btn primary"}
         style={variant === "compact"
           ? { padding: "3px 9px", fontSize: 11 }
-          : { background: "linear-gradient(135deg, #22d3ee, #06b6d4)", borderColor: "#22d3ee", color: "#0b1220" }}
+          : { background: "linear-gradient(135deg, #4589ff, #06b6d4)", borderColor: "#4589ff", color: "#0b1220" }}
       >
         🧪 {variant === "compact" ? "test" : "Crear caso de prueba"}
       </button>
@@ -117,8 +117,8 @@ export default function TestingQuickAction({
       {toast && (
         <div style={{
           position: "fixed", bottom: 20, right: 20, zIndex: 9001,
-          padding: "10px 16px", background: "rgba(34,211,238,0.18)",
-          border: "1px solid rgba(34,211,238,0.5)", color: "#67e8f9",
+          padding: "10px 16px", background: "rgba(69,137,255,0.18)",
+          border: "1px solid rgba(69,137,255,0.5)", color: "#67e8f9",
           borderRadius: 8, fontSize: 12.5, fontWeight: 600,
         }}>
           {toast}

@@ -101,12 +101,12 @@ export default function EscalationSettings({ escalation, canConfigure }: { escal
       </div>
 
       {canConfigure && (
-        <div className="card" style={{ background: "rgba(239,68,68,0.05)", borderColor: "rgba(239,68,68,0.25)" }}>
+        <div className="card" style={{ background: "rgba(250,77,86,0.05)", borderColor: "rgba(250,77,86,0.25)" }}>
           <div style={{ fontSize: 12, color: "var(--text-soft)" }}>
             Restaurar los datos demo (reglas, responsables, registros, conectores y settings).
           </div>
           <button className="btn ghost"
-            style={{ marginTop: 8, borderColor: "rgba(239,68,68,0.5)", color: "#fca5a5" }}
+            style={{ marginTop: 8, borderColor: "rgba(250,77,86,0.5)", color: "#fca5a5" }}
             onClick={() => { if (confirm("¿Restaurar datos demo de escalamiento? Esto sobrescribe lo actual.")) escalation.resetDemoEscalationData(); }}>
             ↻ Restaurar demo
           </button>

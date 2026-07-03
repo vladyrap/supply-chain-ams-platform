@@ -46,7 +46,7 @@ function looksDerivedToHuman(ai: string | null): boolean {
   return /derivo|deriv[ao]r|especialista|escalad[ao]|nivel 2|nivel dos|humano/i.test(ai);
 }
 
-function Tile({ label, value, hint, accent = "#22d3ee" }: { label: string; value: string | number; hint?: string; accent?: string }) {
+function Tile({ label, value, hint, accent = "#4589ff" }: { label: string; value: string | number; hint?: string; accent?: string }) {
   return (
     <div className="card" style={{ borderLeft: `3px solid ${accent}`, padding: 14 }}>
       <div style={{ fontSize: 10.5, color: "var(--text-dim)", letterSpacing: 1.4, textTransform: "uppercase" }}>{label}</div>
@@ -123,10 +123,10 @@ export default function VoiceCallsPage() {
       <div style={{ display: "grid", gridTemplateColumns: "repeat(6, 1fr)", gap: 10, marginBottom: 14 }}>
         <Tile label="Total"         value={kpis.total}            accent="#3b82f6" />
         <Tile label="Hoy"           value={kpis.today}            accent="#10b981" hint={kpis.today ? "llamadas del día" : "sin llamadas hoy"} />
-        <Tile label="En curso"      value={kpis.inProgress}       accent={kpis.inProgress ? "#fbbf24" : "#6b7280"} />
+        <Tile label="En curso"      value={kpis.inProgress}       accent={kpis.inProgress ? "#f1c21b" : "#6b7280"} />
         <Tile label="Duración avg"  value={fmtDuration(kpis.avg)} accent="#a855f7" hint="solo finalizadas" />
         <Tile label="% Derivadas"   value={`${kpis.derivedPct}%`} accent="#06b6d4" hint="IA derivó a humano" />
-        <Tile label="Fallidas"      value={kpis.failed}           accent={kpis.failed ? "#ef4444" : "#6b7280"} hint="busy/failed" />
+        <Tile label="Fallidas"      value={kpis.failed}           accent={kpis.failed ? "#fa4d56" : "#6b7280"} hint="busy/failed" />
       </div>
 
       {/* Filtros */}

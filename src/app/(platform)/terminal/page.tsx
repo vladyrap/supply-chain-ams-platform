@@ -8,7 +8,7 @@ const POLL_MS = 4000;
 
 const KIND_TAG: Record<string, { tag: string; color: string }> = {
   incident_created: { tag: "INC", color: "#60a5fa" },
-  ticket_escalated: { tag: "ESC", color: "#fbbf24" },
+  ticket_escalated: { tag: "ESC", color: "#f1c21b" },
   ticket_resolved:  { tag: "RES", color: "#10b981" },
   kb_approved:      { tag: "KB",  color: "#a855f7" },
   meeting_done:     { tag: "MTG", color: "#06b6d4" },
@@ -19,7 +19,7 @@ function fmt(n: number | undefined, d = 0): string {
   return n.toLocaleString("es-CL", { minimumFractionDigits: d, maximumFractionDigits: d });
 }
 
-function Cell({ tag, title, children, color = "#fbbf24" }: { tag: string; title: string; children: React.ReactNode; color?: string }) {
+function Cell({ tag, title, children, color = "#f1c21b" }: { tag: string; title: string; children: React.ReactNode; color?: string }) {
   return (
     <div className="bb-cell">
       <div className="bb-cell-head">
@@ -32,7 +32,7 @@ function Cell({ tag, title, children, color = "#fbbf24" }: { tag: string; title:
   );
 }
 
-function Big({ value, unit, color = "#fbbf24" }: { value: string; unit?: string; color?: string }) {
+function Big({ value, unit, color = "#f1c21b" }: { value: string; unit?: string; color?: string }) {
   return (
     <div style={{ display: "flex", alignItems: "baseline", gap: 6 }}>
       <span style={{ fontSize: 38, fontWeight: 700, color, lineHeight: 1, fontVariantNumeric: "tabular-nums", textShadow: `0 0 6px ${color}55` }}>{value}</span>
@@ -41,7 +41,7 @@ function Big({ value, unit, color = "#fbbf24" }: { value: string; unit?: string;
   );
 }
 
-function MiniBar({ items, color = "#fbbf24" }: { items: { label: string; value: number }[]; color?: string }) {
+function MiniBar({ items, color = "#f1c21b" }: { items: { label: string; value: number }[]; color?: string }) {
   const max = Math.max(1, ...items.map((i) => i.value));
   return (
     <div style={{ display: "flex", flexDirection: "column", gap: 3, fontSize: 11 }}>
@@ -127,7 +127,7 @@ export default function TerminalPage() {
       <div className="bb-header">
         <span className="bb-brand">AMS TERMINAL</span>
         <span className="bb-sep" />
-        <span style={{ color: "#fbbf24" }}>SUPPLY-CHAIN</span>
+        <span style={{ color: "#f1c21b" }}>SUPPLY-CHAIN</span>
         <span className="bb-sep" />
         <span style={{ color: "#94a3b8" }}>v0.7 · LIVE</span>
         <span style={{ flex: 1 }} />
@@ -137,15 +137,15 @@ export default function TerminalPage() {
       </div>
 
       <div className="bb-grid">
-        <Cell tag="TKT" title="TICKETS·ACTIVE" color="#fbbf24">
-          <Big value={fmt(adv?.totals.supportTicketsActive)} unit="open" color="#fbbf24" />
+        <Cell tag="TKT" title="TICKETS·ACTIVE" color="#f1c21b">
+          <Big value={fmt(adv?.totals.supportTicketsActive)} unit="open" color="#f1c21b" />
           <div style={{ fontSize: 10.5, color: "#94a3b8", marginTop: 4 }}>
-            sla.ok <span style={{ color: "#10b981" }}>{fmt(adv?.sla.inSla)}</span> · brk <span style={{ color: "#ef4444" }}>{fmt(adv?.sla.breaching)}</span>
+            sla.ok <span style={{ color: "#10b981" }}>{fmt(adv?.sla.inSla)}</span> · brk <span style={{ color: "#fa4d56" }}>{fmt(adv?.sla.breaching)}</span>
           </div>
         </Cell>
 
         <Cell tag="SLA" title="COMPLIANCE %" color="#10b981">
-          <Big value={fmt(adv?.sla.okPct)} unit="%" color={adv && adv.sla.okPct >= 90 ? "#10b981" : adv && adv.sla.okPct >= 75 ? "#fbbf24" : "#ef4444"} />
+          <Big value={fmt(adv?.sla.okPct)} unit="%" color={adv && adv.sla.okPct >= 90 ? "#10b981" : adv && adv.sla.okPct >= 75 ? "#f1c21b" : "#fa4d56"} />
           <div style={{ fontSize: 10.5, color: "#94a3b8", marginTop: 4 }}>last {exec?.period.days ?? 30}d window</div>
         </Cell>
 
@@ -154,8 +154,8 @@ export default function TerminalPage() {
           <Sparkline data={tokensSpark} color="#a855f7" />
         </Cell>
 
-        <Cell tag="USD" title="GEMINI·SPEND·30D" color="#ef4444">
-          <Big value={fmt(usage?.totals.costUsd, 2)} unit="USD" color="#ef4444" />
+        <Cell tag="USD" title="GEMINI·SPEND·30D" color="#fa4d56">
+          <Big value={fmt(usage?.totals.costUsd, 2)} unit="USD" color="#fa4d56" />
           <div style={{ fontSize: 10.5, color: "#94a3b8", marginTop: 4 }}>
             calls <span style={{ color: "#cbd5e1" }}>{fmt(usage?.totals.calls)}</span> · avg/call ${fmt(usage && usage.totals.calls ? usage.totals.costUsd / usage.totals.calls : 0, 4)}
           </div>
@@ -177,10 +177,10 @@ export default function TerminalPage() {
           <MiniBar items={(exec?.byClient ?? []).slice(0, 6).map((c) => ({ label: c.name, value: c.total }))} color="#10b981" />
         </Cell>
 
-        <Cell tag="TRN" title="INTERACTIONS·14D" color="#fbbf24">
-          <Sparkline data={interactionsSpark} color="#fbbf24" />
+        <Cell tag="TRN" title="INTERACTIONS·14D" color="#f1c21b">
+          <Sparkline data={interactionsSpark} color="#f1c21b" />
           <div style={{ fontSize: 10.5, color: "#94a3b8", marginTop: 4 }}>
-            total <span style={{ color: "#fbbf24" }}>{fmt(exec?.kpis.totalInteractions)}</span> ·  ai-resolved <span style={{ color: "#10b981" }}>{fmt(exec?.kpis.aiResolutionRate)}%</span>
+            total <span style={{ color: "#f1c21b" }}>{fmt(exec?.kpis.totalInteractions)}</span> ·  ai-resolved <span style={{ color: "#10b981" }}>{fmt(exec?.kpis.aiResolutionRate)}%</span>
           </div>
         </Cell>
 
@@ -190,7 +190,7 @@ export default function TerminalPage() {
             <div>incidents·7d <span style={{ color: "#60a5fa", float: "right" }}>{fmt(adv?.totals.incidentsLast7d)}</span></div>
             <div>conv·open <span style={{ color: "#a855f7", float: "right" }}>{fmt(adv?.totals.supportConversationsOpen)}</span></div>
             <div>conv·tot <span style={{ color: "#a855f7", float: "right" }}>{fmt(adv?.totals.supportConversations)}</span></div>
-            <div>kb·appr <span style={{ color: "#fbbf24", float: "right" }}>{fmt(adv?.totals.kbApproved)}</span></div>
+            <div>kb·appr <span style={{ color: "#f1c21b", float: "right" }}>{fmt(adv?.totals.kbApproved)}</span></div>
             <div>mtg·done <span style={{ color: "#06b6d4", float: "right" }}>{fmt(adv?.totals.meetingsDone)}</span></div>
           </div>
         </Cell>
@@ -218,7 +218,7 @@ export default function TerminalPage() {
         {/* FEED a la derecha */}
         <div className="bb-cell" style={{ gridColumn: "span 2" }}>
           <div className="bb-cell-head">
-            <span style={{ color: "#fbbf24", fontWeight: 700 }}>FEED</span>
+            <span style={{ color: "#f1c21b", fontWeight: 700 }}>FEED</span>
             <span style={{ color: "#94a3b8" }}>· EVENTS·STREAM</span>
             <span style={{ marginLeft: "auto", color: "#94a3b8" }}>{feed.length} recent</span>
           </div>
@@ -251,7 +251,7 @@ export default function TerminalPage() {
       <style jsx global>{`
         .bb-root {
           background: #000;
-          color: #fbbf24;
+          color: #f1c21b;
           font-family: var(--font-mono, "Consolas", "Monaco", monospace);
           padding: 6px;
           min-height: calc(100vh - 80px);
@@ -259,7 +259,7 @@ export default function TerminalPage() {
         }
         .bb-header {
           display: flex; align-items: center; gap: 10px;
-          background: #fbbf24; color: #000; padding: 5px 12px;
+          background: #f1c21b; color: #000; padding: 5px 12px;
           font-weight: 700; letter-spacing: 2px; font-size: 12px;
           border-radius: 3px;
         }
@@ -287,7 +287,7 @@ export default function TerminalPage() {
         .bb-feed-row:hover { background: #1a1a1a; }
         .bb-footer {
           display: flex; align-items: center; gap: 10px;
-          background: #fbbf24; color: #000; padding: 4px 12px;
+          background: #f1c21b; color: #000; padding: 4px 12px;
           font-weight: 700; font-size: 11px; letter-spacing: 1.5px;
           margin-top: 4px;
           border-radius: 3px;

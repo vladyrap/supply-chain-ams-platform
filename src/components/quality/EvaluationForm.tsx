@@ -23,7 +23,7 @@ function Stars({ value, onChange }: { value: number; onChange: (v: number) => vo
         <button key={n} onClick={() => onChange(n)} type="button"
           style={{
             background: "none", border: "none", cursor: "pointer", padding: 2,
-            color: n <= value ? "#fbbf24" : "var(--text-dim)",
+            color: n <= value ? "#f1c21b" : "var(--text-dim)",
             fontSize: 20, transition: "transform 0.1s ease",
             transform: n === value ? "scale(1.15)" : "scale(1)",
           }}>
@@ -70,7 +70,7 @@ export default function EvaluationForm({ incident, onClose, onSaved }: Props) {
   }
 
   const overall = (accuracy + usefulness + clarity + completeness) / 4;
-  const overallColor = overall >= 4 ? "#10b981" : overall >= 3 ? "#fbbf24" : "#ef4444";
+  const overallColor = overall >= 4 ? "#10b981" : overall >= 3 ? "#f1c21b" : "#fa4d56";
 
   return (
     <TcModalShell onClose={onClose}>
@@ -144,7 +144,7 @@ export default function EvaluationForm({ incident, onClose, onSaved }: Props) {
                 {FIT_OPTIONS.map((f) => (
                   <button key={f} onClick={() => setFit(f)}
                     className={`ticket-filter ${fit === f ? "active" : ""}`}
-                    style={{ ["--filt-color" as never]: f === "ADEQUATE" ? "#10b981" : "#fbbf24" }}>
+                    style={{ ["--filt-color" as never]: f === "ADEQUATE" ? "#10b981" : "#f1c21b" }}>
                     {FIT_LABELS[f]}
                   </button>
                 ))}
@@ -197,7 +197,7 @@ export default function EvaluationForm({ incident, onClose, onSaved }: Props) {
           {canBecomeKnowledge && (
             <KnowledgeQuickActions incident={incident} variant="compact" />
           )}
-          <button className="btn primary" onClick={save} style={{ marginLeft: "auto", background: "linear-gradient(135deg, #fbbf24, #d97706)", borderColor: "#fbbf24" }}>
+          <button className="btn primary" onClick={save} style={{ marginLeft: "auto", background: "linear-gradient(135deg, #f1c21b, #d97706)", borderColor: "#f1c21b" }}>
             🏅 Guardar evaluación
           </button>
         </div>

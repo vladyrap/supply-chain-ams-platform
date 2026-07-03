@@ -8,7 +8,7 @@ export default function ItsmConnectors({ escalation, canConfigure }: { escalatio
 
   return (
     <div className="col" style={{ gap: 14 }}>
-      <div className="card" style={{ background: "rgba(251,191,36,0.07)", borderColor: "rgba(251,191,36,0.30)", color: "#fde68a", fontSize: 12 }}>
+      <div className="card" style={{ background: "rgba(241,194,27,0.07)", borderColor: "rgba(241,194,27,0.30)", color: "#fde68a", fontSize: 12 }}>
         🔒 <b>Seguridad:</b> los <b>API tokens nunca se almacenan en el frontend</b>. Esta pantalla sólo guarda configuración no-secreta. Las credenciales reales se inyectan al backend con variables de entorno (ver docs/escalation-n2.md).
       </div>
 
@@ -17,9 +17,9 @@ export default function ItsmConnectors({ escalation, canConfigure }: { escalatio
         <div className="row" style={{ justifyContent: "space-between", alignItems: "center", marginBottom: 10 }}>
           <h3 style={{ margin: 0, fontSize: 15 }}>🟦 Jira</h3>
           <span style={{ fontSize: 11, padding: "2px 8px", borderRadius: 4, fontWeight: 700,
-            background: jira.mode === "REAL" ? "rgba(239,68,68,0.15)" : "rgba(34,211,238,0.12)",
+            background: jira.mode === "REAL" ? "rgba(250,77,86,0.15)" : "rgba(69,137,255,0.12)",
             color: jira.mode === "REAL" ? "#fca5a5" : "#7dd3fc",
-            border: `1px solid ${jira.mode === "REAL" ? "rgba(239,68,68,0.4)" : "rgba(34,211,238,0.4)"}`,
+            border: `1px solid ${jira.mode === "REAL" ? "rgba(250,77,86,0.4)" : "rgba(69,137,255,0.4)"}`,
           }}>{jira.mode}</span>
         </div>
         <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 10 }}>
@@ -91,9 +91,9 @@ export default function ItsmConnectors({ escalation, canConfigure }: { escalatio
         <div className="row" style={{ justifyContent: "space-between", alignItems: "center", marginBottom: 10 }}>
           <h3 style={{ margin: 0, fontSize: 15 }}>🟧 ServiceNow</h3>
           <span style={{ fontSize: 11, padding: "2px 8px", borderRadius: 4, fontWeight: 700,
-            background: serviceNow.mode === "REAL" ? "rgba(239,68,68,0.15)" : "rgba(34,211,238,0.12)",
+            background: serviceNow.mode === "REAL" ? "rgba(250,77,86,0.15)" : "rgba(69,137,255,0.12)",
             color: serviceNow.mode === "REAL" ? "#fca5a5" : "#7dd3fc",
-            border: `1px solid ${serviceNow.mode === "REAL" ? "rgba(239,68,68,0.4)" : "rgba(34,211,238,0.4)"}`,
+            border: `1px solid ${serviceNow.mode === "REAL" ? "rgba(250,77,86,0.4)" : "rgba(69,137,255,0.4)"}`,
           }}>{serviceNow.mode}</span>
         </div>
         <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 10 }}>

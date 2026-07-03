@@ -150,13 +150,13 @@ export default function TestScenarioDetailModal({ scenario, testing, onClose, ca
               <button className="btn ghost" onClick={() => testing.prepareCloudAlmExport(scenario.id)}>🔮 Preparar Cloud ALM</button>
               <div style={{ marginLeft: "auto" }} />
               {scenario.status !== "PASSED" && (
-                <button className="btn" style={{ color: "#86efac", borderColor: "rgba(34,197,94,0.4)" }}
+                <button className="btn" style={{ color: "#86efac", borderColor: "rgba(66,190,101,0.4)" }}
                   onClick={() => testing.markScenarioPassed(scenario.id, "Aprobado por evaluación humana")}>
                   ✓ Marcar PASSED
                 </button>
               )}
               {scenario.status !== "FAILED" && (
-                <button className="btn" style={{ color: "#fca5a5", borderColor: "rgba(239,68,68,0.4)" }}
+                <button className="btn" style={{ color: "#fca5a5", borderColor: "rgba(250,77,86,0.4)" }}
                   onClick={() => {
                     const note = window.prompt("Describí el resultado actual / falla", scenario.actualResult || "");
                     if (note !== null) testing.markScenarioFailed(scenario.id, note);

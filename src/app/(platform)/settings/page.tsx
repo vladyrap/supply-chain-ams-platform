@@ -91,7 +91,7 @@ function ProfileTab({ user, roleLabel }: { user: ReturnType<typeof useAuth>["use
   const clearance: Record<string, { tier: number; label: string; color: string; bars: number }> = {
     admin:     { tier: 5, label: "ULTRA", color: "#f59e0b", bars: 5 },
     aprobador: { tier: 4, label: "ALTA",  color: "#a855f7", bars: 4 },
-    consultor: { tier: 3, label: "MEDIA", color: "#22d3ee", bars: 3 },
+    consultor: { tier: 3, label: "MEDIA", color: "#4589ff", bars: 3 },
     viewer:    { tier: 2, label: "BAJA",  color: "#64748b", bars: 2 },
   };
   const cl = clearance[user.role] ?? clearance.viewer;
@@ -245,8 +245,8 @@ function ProfileTab({ user, roleLabel }: { user: ReturnType<typeof useAuth>["use
             <TechRow label="INTERACTIONS · TOTAL" value={interactions.toLocaleString()} accent="var(--accent)" />
             <TechRow label="AI · RESOLVED %"      value={`${aiResolved}%`}              accent="#10b981" />
             <TechRow label="ACTIONS · LOGGED"     value={totalActions.toLocaleString()} accent="#a855f7" />
-            <TechRow label="MEMBER · SINCE"       value={memberSince.toISOString().slice(0, 10)} accent="#fbbf24" mono />
-            <TechRow label="LAST · LOGIN"         value="just now"                       accent="#22d3ee" />
+            <TechRow label="MEMBER · SINCE"       value={memberSince.toISOString().slice(0, 10)} accent="#f1c21b" mono />
+            <TechRow label="LAST · LOGIN"         value="just now"                       accent="#4589ff" />
           </div>
 
           {/* Sparkline */}
@@ -268,7 +268,7 @@ function ProfileTab({ user, roleLabel }: { user: ReturnType<typeof useAuth>["use
             <div className="sys-meter-label">
               <span>CPU LOAD</span><span style={{ fontFamily: "var(--font-mono, monospace)" }}>{sysCPU}%</span>
             </div>
-            <div className="sys-meter-bar"><div className="sys-meter-fill" style={{ width: `${sysCPU}%`, background: "linear-gradient(90deg, #22d3ee, #06b6d4)" }} /></div>
+            <div className="sys-meter-bar"><div className="sys-meter-fill" style={{ width: `${sysCPU}%`, background: "linear-gradient(90deg, #4589ff, #06b6d4)" }} /></div>
           </div>
           <div className="sys-meter">
             <div className="sys-meter-label">
@@ -280,7 +280,7 @@ function ProfileTab({ user, roleLabel }: { user: ReturnType<typeof useAuth>["use
             <div className="sys-meter-label">
               <span>NETWORK</span><span style={{ fontFamily: "var(--font-mono, monospace)" }}>{sysNET}%</span>
             </div>
-            <div className="sys-meter-bar"><div className="sys-meter-fill" style={{ width: `${sysNET}%`, background: "linear-gradient(90deg, #10b981, #34d399)" }} /></div>
+            <div className="sys-meter-bar"><div className="sys-meter-fill" style={{ width: `${sysNET}%`, background: "linear-gradient(90deg, #10b981, #42be65)" }} /></div>
           </div>
 
           <div className="sys-grid">
@@ -425,7 +425,7 @@ function AppearanceTab() {
               plat.setSoundsEnabled(true);
               plat.setSplashEnabled(true);
             }}>
-              <div className="preset-btn-icon" style={{ background: "linear-gradient(135deg, #22d3ee, #a855f7)" }}>✨</div>
+              <div className="preset-btn-icon" style={{ background: "linear-gradient(135deg, #4589ff, #a855f7)" }}>✨</div>
               <div>
                 <div className="preset-btn-title">Premium</div>
                 <div className="preset-btn-desc">Todo activado al máximo</div>
@@ -439,7 +439,7 @@ function AppearanceTab() {
               plat.setSoundsEnabled(false);
               plat.setSplashEnabled(false);
             }}>
-              <div className="preset-btn-icon" style={{ background: "linear-gradient(135deg, #f59e0b, #ef4444)" }}>📺</div>
+              <div className="preset-btn-icon" style={{ background: "linear-gradient(135deg, #f59e0b, #fa4d56)" }}>📺</div>
               <div>
                 <div className="preset-btn-title">Wallboard TV</div>
                 <div className="preset-btn-desc">Sin interactividad, ámbar</div>
@@ -886,8 +886,8 @@ function WorkspaceTab() {
           </div>
           <div style={{ flex: 1 }}>
             <div style={{ fontSize: 22, fontWeight: 700, letterSpacing: 1,
-              color: health.status === "online" ? "#10b981" : health.status === "offline" ? "#ef4444" : "#fbbf24",
-              textShadow: `0 0 12px ${health.status === "online" ? "#10b98166" : health.status === "offline" ? "#ef444466" : "#fbbf2466"}`,
+              color: health.status === "online" ? "#10b981" : health.status === "offline" ? "#fa4d56" : "#f1c21b",
+              textShadow: `0 0 12px ${health.status === "online" ? "#10b98166" : health.status === "offline" ? "#fa4d5666" : "#f1c21b66"}`,
             }}>
               {health.status === "online" ? "ONLINE" : health.status === "offline" ? "OFFLINE" : "CHECKING…"}
             </div>
@@ -936,7 +936,7 @@ function WorkspaceTab() {
           <TechRow label="API URL"             value={API_BASE} mono dim />
           <TechRow label="AUTH METHOD"         value="cookies httpOnly SameSite=Lax" />
           <TechRow label="CLIENT CONTEXT"      value={plat.client || "(empty)"} accent="var(--accent)" />
-          <TechRow label="ENVIRONMENT"         value={plat.environment} accent={plat.environment === "PRD" ? "#ef4444" : "#10b981"} />
+          <TechRow label="ENVIRONMENT"         value={plat.environment} accent={plat.environment === "PRD" ? "#fa4d56" : "#10b981"} />
           <TechRow label="PLATFORM VERSION"    value="v0.7 · RBAC activo" />
           <TechRow label="BACKEND SERVICE"     value={health.version || "ams-backend"} mono />
         </div>
@@ -1263,7 +1263,7 @@ function CustomerResponseSettingsSection() {
             ↺ Restaurar default
           </button>
           {saved && !syncError && <span style={{ fontSize: 12, color: "#10b981" }}>✓ guardado</span>}
-          {syncError && <span style={{ fontSize: 12, color: "#ef4444" }}>⚠ {syncError}</span>}
+          {syncError && <span style={{ fontSize: 12, color: "#fa4d56" }}>⚠ {syncError}</span>}
         </div>
 
         {/* Preview */}

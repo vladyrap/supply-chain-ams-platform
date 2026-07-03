@@ -128,7 +128,7 @@ export default function DocumentFactoryQuickAction({
             <div className="col" style={{ gap: 10 }}>
               {template.fields.map((f) => (
                 <label key={f.id} className="tc-field">
-                  <span>{f.label}{f.required && <span style={{ color: "#ef4444" }}> *</span>}</span>
+                  <span>{f.label}{f.required && <span style={{ color: "#fa4d56" }}> *</span>}</span>
                   {f.type === "textarea" ? (
                     <textarea
                       value={formData[f.id] ?? f.defaultValue ?? ""}

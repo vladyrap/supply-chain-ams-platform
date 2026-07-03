@@ -9,7 +9,7 @@ import PlaybookFormModal from "./PlaybookFormModal";
 
 const STATUSES: (PlaybookStatus | "all")[] = ["all", "ACTIVE", "DRAFT", "NEEDS_REVIEW", "ARCHIVED"];
 const STATUS_COLORS: Record<PlaybookStatus, string> = {
-  ACTIVE: "#10b981", DRAFT: "#64748b", NEEDS_REVIEW: "#fbbf24", ARCHIVED: "#94a3b8",
+  ACTIVE: "#10b981", DRAFT: "#64748b", NEEDS_REVIEW: "#f1c21b", ARCHIVED: "#94a3b8",
 };
 
 export default function PlaybooksCenter() {
@@ -61,7 +61,7 @@ export default function PlaybooksCenter() {
             </p>
           </div>
           <div className="kanban-stats">
-            <div className="kanban-stat" style={{ ["--accent" as never]: "#22d3ee" }}>
+            <div className="kanban-stat" style={{ ["--accent" as never]: "#4589ff" }}>
               <div className="kanban-stat-val">{stats.total}</div>
               <div className="kanban-stat-lbl">PLAYBOOKS</div>
             </div>
@@ -69,7 +69,7 @@ export default function PlaybooksCenter() {
               <div className="kanban-stat-val">{stats.active}</div>
               <div className="kanban-stat-lbl">ACTIVOS</div>
             </div>
-            <div className="kanban-stat" style={{ ["--accent" as never]: "#fbbf24" }}>
+            <div className="kanban-stat" style={{ ["--accent" as never]: "#f1c21b" }}>
               <div className="kanban-stat-val">{stats.inProgress}</div>
               <div className="kanban-stat-lbl">EN CURSO</div>
             </div>
@@ -85,7 +85,7 @@ export default function PlaybooksCenter() {
           {STATUSES.map((s) => (
             <button key={s} onClick={() => setStatus(s)}
               className={`ticket-filter ${status === s ? "active" : ""}`}
-              style={{ ["--filt-color" as never]: s === "all" ? "#22d3ee" : STATUS_COLORS[s as PlaybookStatus] }}>
+              style={{ ["--filt-color" as never]: s === "all" ? "#4589ff" : STATUS_COLORS[s as PlaybookStatus] }}>
               {s === "all" ? "▸ Todos" : s.replace("_", " ")}
             </button>
           ))}

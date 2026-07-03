@@ -70,8 +70,8 @@ export default function EscalationQuickAction({ incident, actingUserId, canAppro
         style={{
           padding: variant === "compact" ? "2px 8px" : "4px 12px",
           fontSize: variant === "compact" ? 10.5 : 11.5,
-          background: "linear-gradient(135deg, rgba(239,68,68,0.18), rgba(168,85,247,0.12))",
-          borderColor: "rgba(239,68,68,0.45)",
+          background: "linear-gradient(135deg, rgba(250,77,86,0.18), rgba(168,85,247,0.12))",
+          borderColor: "rgba(250,77,86,0.45)",
           color: "#fca5a5",
         }}
         title={candidate.matchedRule ? `Regla detectada: ${candidate.matchedRule.name}` : "Escalación manual"}

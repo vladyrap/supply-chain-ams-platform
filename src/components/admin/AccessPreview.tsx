@@ -94,7 +94,7 @@ export default function AccessPreview({ admin }: Props) {
           <div className="row" style={{ gap: 12, alignItems: "center", marginBottom: 12 }}>
             <div style={{
               width: 48, height: 48, borderRadius: "50%",
-              background: "linear-gradient(135deg, #22d3ee, #a855f7)",
+              background: "linear-gradient(135deg, #4589ff, #a855f7)",
               display: "grid", placeItems: "center",
               color: "white", fontWeight: 700, fontSize: 18,
             }}>{user.name.charAt(0).toUpperCase()}</div>
@@ -142,7 +142,7 @@ export default function AccessPreview({ admin }: Props) {
                 </div>
               </div>
               <div>
-                <div style={{ fontSize: 11, color: "#ef4444", marginBottom: 4 }}>BLOQUEADAS</div>
+                <div style={{ fontSize: 11, color: "#fa4d56", marginBottom: 4 }}>BLOQUEADAS</div>
                 <div style={{ display: "flex", flexDirection: "column", gap: 3 }}>
                   {blockedScreens.length === 0 && <span style={{ color: "var(--text-dim)", fontSize: 12 }}>(ninguna)</span>}
                   {blockedScreens.map((s) => (
@@ -159,7 +159,7 @@ export default function AccessPreview({ admin }: Props) {
             </div>
             <div style={{ maxHeight: 320, overflowY: "auto", display: "flex", flexDirection: "column", gap: 8 }}>
               {visibleScreens.map((s) => (
-                <div key={s} style={{ padding: 8, background: "rgba(255,255,255,0.02)", borderLeft: "2px solid rgba(34,211,238,0.4)", borderRadius: 4 }}>
+                <div key={s} style={{ padding: 8, background: "rgba(255,255,255,0.02)", borderLeft: "2px solid rgba(69,137,255,0.4)", borderRadius: 4 }}>
                   <div style={{ fontSize: 12.5, fontWeight: 600, marginBottom: 4 }}>{SCREEN_LABELS[s as PlatformScreen]}</div>
                   <div className="row" style={{ gap: 4, flexWrap: "wrap" }}>
                     {ALL_ACTIONS.map((a) => (

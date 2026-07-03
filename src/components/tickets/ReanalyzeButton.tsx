@@ -38,9 +38,9 @@ export default function ReanalyzeButton({
               : hasNewData ? "↻ Reanalizar con datos nuevos"
               : "↻ Reanalizar con Agente AMS";
 
-  const color = isFailed ? "#ef4444"
+  const color = isFailed ? "#fa4d56"
               : hasNewData ? "#a855f7"
-              : "#22d3ee";
+              : "#4589ff";
 
   return (
     <button

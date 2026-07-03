@@ -20,7 +20,7 @@ export default function DemoModeBanner() {
     <>
       <div style={{
         position: "sticky", top: 0, zIndex: 800,
-        background: "linear-gradient(90deg, rgba(168,85,247,0.25), rgba(34,211,238,0.20))",
+        background: "linear-gradient(90deg, rgba(168,85,247,0.25), rgba(69,137,255,0.20))",
         borderBottom: "1px solid rgba(168,85,247,0.5)",
         padding: "6px 16px",
         backdropFilter: "blur(10px)",
@@ -62,7 +62,7 @@ export default function DemoModeBanner() {
               cambiar escenario
             </button>
             <button className="btn ghost" onClick={demo.disable}
-              style={{ padding: "3px 10px", fontSize: 11, borderColor: "rgba(239,68,68,0.4)", color: "#fca5a5" }}>
+              style={{ padding: "3px 10px", fontSize: 11, borderColor: "rgba(250,77,86,0.4)", color: "#fca5a5" }}>
               ✕ desactivar
             </button>
           </div>

@@ -27,7 +27,7 @@ const FEATURES: FeatureCard[] = [
     title: "Agente AMS conversacional",
     desc: "Diagnóstico y RCA de SAP Supply Chain en lenguaje natural. Memoria multi-turno, citas a la base de conocimiento, detección de alucinaciones.",
     href: "/agent",
-    color: "#22d3ee",
+    color: "#4589ff",
     screen: "agente_ams",
   },
   {
@@ -51,7 +51,7 @@ const FEATURES: FeatureCard[] = [
     title: "Playbooks AMS ejecutables",
     desc: "Biblioteca de procedimientos operativos (P1, hypercare, RCA, integraciones) ejecutables como checklist con evidencia paso a paso.",
     href: "/playbooks",
-    color: "#34d399",
+    color: "#42be65",
     screen: "playbooks_ams",
   },
   {
@@ -129,7 +129,7 @@ export default function WelcomePage() {
         padding: "48px 40px 40px",
         borderRadius: 18,
         overflow: "hidden",
-        background: "linear-gradient(135deg, rgba(99,102,241,0.20) 0%, rgba(34,211,238,0.14) 50%, rgba(168,85,247,0.16) 100%)",
+        background: "linear-gradient(135deg, rgba(99,102,241,0.20) 0%, rgba(69,137,255,0.14) 50%, rgba(168,85,247,0.16) 100%)",
         border: "1px solid rgba(99,102,241,0.35)",
         boxShadow: "0 20px 60px rgba(15,23,42,0.50)",
         marginBottom: 26,
@@ -138,7 +138,7 @@ export default function WelcomePage() {
         <div aria-hidden style={{
           position: "absolute", top: -120, right: -100, width: 380, height: 380,
           borderRadius: "50%",
-          background: "radial-gradient(circle, rgba(34,211,238,0.35) 0%, rgba(34,211,238,0) 70%)",
+          background: "radial-gradient(circle, rgba(69,137,255,0.35) 0%, rgba(69,137,255,0) 70%)",
           filter: "blur(30px)", pointerEvents: "none",
         }} />
         <div aria-hidden style={{
@@ -251,7 +251,7 @@ export default function WelcomePage() {
       <div style={{
         marginTop: 32, padding: "26px 24px",
         borderRadius: 14,
-        background: "linear-gradient(90deg, rgba(34,211,238,0.10), rgba(168,85,247,0.08))",
+        background: "linear-gradient(90deg, rgba(69,137,255,0.10), rgba(168,85,247,0.08))",
         border: "1px solid rgba(255,255,255,0.08)",
         display: "flex", justifyContent: "space-between", alignItems: "center", gap: 16, flexWrap: "wrap",
       }}>

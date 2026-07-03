@@ -36,13 +36,13 @@ const LAYERS: { layer: Layer; x: number; nodes: { label: string; color: string }
     { label: "SAP·READ",  color: "#10b981" },
   ]},
   { layer: "resolver", x: 800, nodes: [
-    { label: "REASON",    color: "#fbbf24" },
-    { label: "DRAFT",     color: "#fbbf24" },
-    { label: "CHECK",     color: "#fbbf24" },
+    { label: "REASON",    color: "#f1c21b" },
+    { label: "DRAFT",     color: "#f1c21b" },
+    { label: "CHECK",     color: "#f1c21b" },
   ]},
   { layer: "output",   x: 1020, nodes: [
     { label: "RESOLVED",  color: "#10b981" },
-    { label: "ESCALATED", color: "#ef4444" },
+    { label: "ESCALATED", color: "#fa4d56" },
     { label: "KB·NEW",    color: "#a855f7" },
   ]},
 ];
@@ -223,10 +223,10 @@ export default function BrainPage() {
   const kpis = [
     { label: "AGENT·RPM", value: rpm, color: "#a855f7" },
     { label: "RESOLVED·RATE", value: `${exec?.kpis.aiResolutionRate ?? 0}%`, color: "#10b981" },
-    { label: "TOKENS·7D", value: usage ? `${(usage.totals.totalTokens / 1000).toFixed(1)}k` : "0", color: "#fbbf24" },
+    { label: "TOKENS·7D", value: usage ? `${(usage.totals.totalTokens / 1000).toFixed(1)}k` : "0", color: "#f1c21b" },
     { label: "INTERACTIONS·7D", value: exec?.kpis.totalInteractions ?? 0, color: "#06b6d4" },
     { label: "INCIDENTS·OPEN", value: adv?.totals.supportConversationsOpen ?? 0, color: "#3b82f6" },
-    { label: "ESCALATIONS", value: adv?.sla.breaching ?? 0, color: "#ef4444" },
+    { label: "ESCALATIONS", value: adv?.sla.breaching ?? 0, color: "#fa4d56" },
   ];
 
   return (

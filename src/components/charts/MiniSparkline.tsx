@@ -16,7 +16,7 @@ interface Props {
 
 export default function MiniSparkline({
   values, width = 70, height = 22,
-  color = "#22d3ee", filled = true, showLastDot = true,
+  color = "#4589ff", filled = true, showLastDot = true,
 }: Props) {
   if (!values || values.length < 2) {
     return <svg width={width} height={height} aria-hidden />;

@@ -50,11 +50,11 @@ export default function ReadinessModuleCard({ result }: Props) {
         <ReadinessScore score={result.score} state={result.state} />
       </div>
       <div className="col" style={{ gap: 4 }}>
-        {bar("Knowledge", result.breakdown.knowledge, 35, "#22d3ee")}
+        {bar("Knowledge", result.breakdown.knowledge, 35, "#4589ff")}
         {bar("Q&A",       result.breakdown.qa,        20, "#10b981")}
         {bar("Tests",     result.breakdown.tests,     15, "#a855f7")}
-        {bar("Scope",     result.breakdown.scope,     15, "#fbbf24")}
-        {bar("Sin gaps",  result.breakdown.lowGaps,   15, "#5b8def")}
+        {bar("Scope",     result.breakdown.scope,     15, "#f1c21b")}
+        {bar("Sin gaps",  result.breakdown.lowGaps,   15, "#4589ff")}
       </div>
       {result.hints.length > 0 && (
         <div style={{ marginTop: 8, fontSize: 10.5, color: "var(--text-dim)" }}>

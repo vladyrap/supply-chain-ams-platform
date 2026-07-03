@@ -49,7 +49,7 @@ export default function HeroCard({ userName, role, totalIncidents, resolvedToday
       overflow: "hidden",
       padding: "26px 28px",
       marginBottom: 22,
-      background: "linear-gradient(135deg, rgba(99,102,241,0.18) 0%, rgba(34,211,238,0.12) 50%, rgba(168,85,247,0.10) 100%)",
+      background: "linear-gradient(135deg, rgba(99,102,241,0.18) 0%, rgba(69,137,255,0.12) 50%, rgba(168,85,247,0.10) 100%)",
       border: "1px solid rgba(99,102,241,0.30)",
       boxShadow: "0 12px 40px rgba(15,23,42,0.40), 0 0 0 1px rgba(255,255,255,0.04) inset",
     }}>
@@ -57,7 +57,7 @@ export default function HeroCard({ userName, role, totalIncidents, resolvedToday
       <div aria-hidden style={{
         position: "absolute", top: -80, right: -80, width: 280, height: 280,
         borderRadius: "50%",
-        background: "radial-gradient(circle, rgba(34,211,238,0.30) 0%, rgba(34,211,238,0) 70%)",
+        background: "radial-gradient(circle, rgba(69,137,255,0.30) 0%, rgba(69,137,255,0) 70%)",
         filter: "blur(20px)", pointerEvents: "none",
       }} />
       <div aria-hidden style={{
@@ -99,7 +99,7 @@ export default function HeroCard({ userName, role, totalIncidents, resolvedToday
         display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(180px, 1fr))",
         gap: 14, marginTop: 22, position: "relative", zIndex: 1,
       }}>
-        <HeroStat label="Incidentes registrados"     value={totalIncidents}      color="#22d3ee" />
+        <HeroStat label="Incidentes registrados"     value={totalIncidents}      color="#4589ff" />
         <HeroStat label="Resueltos hoy"              value={resolvedToday}        color="#86efac" suffix="↑" />
         <HeroStat label="Escalaciones N2 activas"    value={activeEscalations}    color={activeEscalations > 3 ? "#fdba74" : "#a5b4fc"} />
         <HeroStat label="% respuestas IA exitosas"   value={`${Math.round(agentResponseRate)}%`} color={agentResponseRate >= 80 ? "#86efac" : "#fcd34d"} />

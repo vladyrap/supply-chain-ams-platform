@@ -65,7 +65,7 @@ export default function EscalationInbox({ escalation, actingUserId }: Props) {
       </div>
 
       {error && (
-        <div className="card" style={{ background: "rgba(239,68,68,0.10)", color: "#fca5a5", fontSize: 12 }}>
+        <div className="card" style={{ background: "rgba(250,77,86,0.10)", color: "#fca5a5", fontSize: 12 }}>
           ⚠ No se pudo cargar la lista real de incidentes ({error}). Mostrando lo que llegó.
         </div>
       )}

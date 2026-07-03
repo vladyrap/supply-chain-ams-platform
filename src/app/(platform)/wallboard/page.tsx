@@ -6,8 +6,8 @@ import { useEventSounds } from "@/hooks/useEventSounds";
 const QUADS = [
   { id: "war-room", icon: "🌐", label: "WAR ROOM",    href: "/war-room",    color: "#3b82f6" },
   { id: "brain",    icon: "🧠", label: "AGENT BRAIN", href: "/brain",       color: "#a855f7" },
-  { id: "terminal", icon: "📟", label: "TERMINAL",    href: "/terminal",    color: "#fbbf24" },
-  { id: "hud",      icon: "⚛",  label: "ARC REACTOR", href: "/hud",         color: "#22d3ee" },
+  { id: "terminal", icon: "📟", label: "TERMINAL",    href: "/terminal",    color: "#f1c21b" },
+  { id: "hud",      icon: "⚛",  label: "ARC REACTOR", href: "/hud",         color: "#4589ff" },
 ];
 
 export default function WallboardPage() {
@@ -37,24 +37,24 @@ export default function WallboardPage() {
       {/* Header overlay */}
       <div className="wb-header">
         <div>
-          <h1 style={{ margin: 0, fontSize: 18, letterSpacing: 3, color: "#22d3ee", textShadow: "0 0 10px rgba(34,211,238,0.6)" }}>◤ AMS WALLBOARD · QUAD-VIEW ◢</h1>
+          <h1 style={{ margin: 0, fontSize: 18, letterSpacing: 3, color: "#4589ff", textShadow: "0 0 10px rgba(69,137,255,0.6)" }}>◤ AMS WALLBOARD · QUAD-VIEW ◢</h1>
           <div style={{ fontSize: 9.5, letterSpacing: 2, color: "#94a3b8" }}>SUPPLY-CHAIN · SAP · 4K WALLBOARD MODE</div>
         </div>
         <div className="row" style={{ gap: 10 }}>
           {QUADS.map((q) => (
             <button key={q.id} className="wb-focus-btn" onClick={() => setFocused(focused === q.id ? null : q.id)}
-              style={{ borderColor: focused === q.id ? q.color : "rgba(34,211,238,0.3)", color: focused === q.id ? q.color : "#94a3b8" }}>
+              style={{ borderColor: focused === q.id ? q.color : "rgba(69,137,255,0.3)", color: focused === q.id ? q.color : "#94a3b8" }}>
               {q.icon} {q.label}
             </button>
           ))}
           <button className="wb-focus-btn" onClick={() => { setFocused(null); setAutoFocus(!autoFocus); }}
-            style={{ borderColor: autoFocus ? "#10b981" : "rgba(34,211,238,0.3)", color: autoFocus ? "#10b981" : "#94a3b8" }}>
+            style={{ borderColor: autoFocus ? "#10b981" : "rgba(69,137,255,0.3)", color: autoFocus ? "#10b981" : "#94a3b8" }}>
             {autoFocus ? "● AUTO ON" : "○ AUTO"}
           </button>
-          <button className="wb-focus-btn" onClick={toggleMute} style={{ borderColor: "rgba(34,211,238,0.3)", color: "#94a3b8" }}>
+          <button className="wb-focus-btn" onClick={toggleMute} style={{ borderColor: "rgba(69,137,255,0.3)", color: "#94a3b8" }}>
             {muted ? "🔇" : "🔊"}
           </button>
-          <div style={{ color: "#22d3ee", fontFamily: "var(--font-mono, monospace)", fontSize: 16, letterSpacing: 2, padding: "0 8px" }}>
+          <div style={{ color: "#4589ff", fontFamily: "var(--font-mono, monospace)", fontSize: 16, letterSpacing: 2, padding: "0 8px" }}>
             {now.toLocaleTimeString()}
           </div>
         </div>
@@ -92,8 +92,8 @@ export default function WallboardPage() {
         .wb-header {
           display: flex; justify-content: space-between; align-items: center;
           padding: 6px 12px; margin-bottom: 6px;
-          background: linear-gradient(90deg, rgba(34,211,238,0.05), transparent);
-          border: 1px solid rgba(34,211,238,0.25);
+          background: linear-gradient(90deg, rgba(69,137,255,0.05), transparent);
+          border: 1px solid rgba(69,137,255,0.25);
           border-radius: 4px;
         }
         .wb-focus-btn {
@@ -107,7 +107,7 @@ export default function WallboardPage() {
           font-family: var(--font-mono, monospace);
           transition: all .15s;
         }
-        .wb-focus-btn:hover { background: rgba(34,211,238,0.10); }
+        .wb-focus-btn:hover { background: rgba(69,137,255,0.10); }
         .wb-grid {
           flex: 1;
           display: grid;
@@ -161,7 +161,7 @@ export default function WallboardPage() {
           display: flex; align-items: center;
           padding: 4px 12px; margin-top: 6px;
           background: rgba(15,23,42,0.4);
-          border: 1px solid rgba(34,211,238,0.15);
+          border: 1px solid rgba(69,137,255,0.15);
           border-radius: 3px;
           font-size: 10px;
           font-family: var(--font-mono, monospace);

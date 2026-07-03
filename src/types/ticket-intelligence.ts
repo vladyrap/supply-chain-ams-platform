@@ -71,8 +71,8 @@ export const ENRICHMENT_ICONS: Record<IntelligenceStatus, string> = {
 
 export const ENRICHMENT_COLORS: Record<IntelligenceStatus, string> = {
   pending_enrichment:  "#64748b",
-  enriching:           "#22d3ee",
+  enriching:           "#4589ff",
   enriched:            "#10b981",
-  enrichment_failed:   "#ef4444",
+  enrichment_failed:   "#fa4d56",
   enrichment_skipped:  "#94a3b8",
 };

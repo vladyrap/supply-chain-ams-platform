@@ -90,7 +90,7 @@ export default function TicketsPage() {
             <button
               className="btn ghost"
               onClick={() => setDemoOpen(true)}
-              style={{ borderColor: "#fbbf24", color: "#fbbf24" }}
+              style={{ borderColor: "#f1c21b", color: "#f1c21b" }}
               title="Ejecuta el flujo completo AMS sobre un ticket demo (crea ticket, clasifica con agente real, RCA, test, etc.)"
             >
               🎬 Ejecutar demo completa
@@ -99,7 +99,7 @@ export default function TicketsPage() {
               className="btn primary"
               onClick={() => setGuidedOpen(true)}
               title="Wizard guiado de 6 pasos · prepara paquete N1 automáticamente (recomendado)"
-              style={{ background: "linear-gradient(135deg, #10b981, #22d3ee)", borderColor: "#10b981" }}
+              style={{ background: "linear-gradient(135deg, #10b981, #4589ff)", borderColor: "#10b981" }}
             >
               🧭 Crear ticket guiado
             </button>

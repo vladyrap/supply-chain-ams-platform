@@ -13,12 +13,12 @@ import { AMS_HISTORICAL_CASES, type HistoricalAmsCase } from "@/data/ams-estimat
 import { ISSUE_TYPE_LABELS, ISSUE_TYPE_ICONS, type SapIssueType } from "@/utils/sap-context-detector";
 
 const COMPLEXITY_COLORS: Record<string, string> = {
-  VERY_LOW: "#10b981", LOW: "#22d3ee", MEDIUM: "#fbbf24",
-  HIGH: "#f59e0b", VERY_HIGH: "#ef4444",
+  VERY_LOW: "#10b981", LOW: "#4589ff", MEDIUM: "#f1c21b",
+  HIGH: "#f59e0b", VERY_HIGH: "#fa4d56",
 };
 
 const PRIORITY_COLORS: Record<string, string> = {
-  P1: "#ef4444", P2: "#f59e0b", P3: "#fbbf24", P4: "#94a3b8",
+  P1: "#fa4d56", P2: "#f59e0b", P3: "#f1c21b", P4: "#94a3b8",
 };
 
 export default function HistoricalCasesBrowser() {
@@ -95,9 +95,9 @@ export default function HistoricalCasesBrowser() {
             </p>
           </div>
           <div className="row" style={{ gap: 10 }}>
-            <Stat label="Filtrados" value={stats.count.toString()} color="#22d3ee" />
+            <Stat label="Filtrados" value={stats.count.toString()} color="#4589ff" />
             <Stat label="Mediana h" value={stats.medianH > 0 ? `${stats.medianH}h` : "—"} color="#a855f7" />
-            <Stat label="Rango" value={stats.count > 0 ? `${stats.minH}-${stats.maxH}h` : "—"} color="#fbbf24" />
+            <Stat label="Rango" value={stats.count > 0 ? `${stats.minH}-${stats.maxH}h` : "—"} color="#f1c21b" />
           </div>
         </div>
       </div>

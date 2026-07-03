@@ -104,8 +104,8 @@ export function AppsStudioView() {
       {/* Hero */}
       <div style={{
         borderRadius: 14, padding: "36px 32px", marginBottom: 20,
-        background: "linear-gradient(135deg, rgba(29,42,110,0.9), rgba(34,63,158,0.75))",
-        border: "1px solid rgba(91,141,239,0.35)",
+        background: "linear-gradient(135deg, rgba(0,29,108,0.9), rgba(0,67,206,0.75))",
+        border: "1px solid rgba(69,137,255,0.35)",
       }}>
         <h1 style={{ margin: 0, fontSize: 30 }}>🧪 Agent Studio</h1>
         <p style={{ margin: "8px 0 0", color: "rgba(255,255,255,0.75)", fontSize: 14, maxWidth: 720 }}>
@@ -139,7 +139,7 @@ export function AppsStudioView() {
             </p>
           </div>
           <button className="btn primary" onClick={() => setAppModal(true)}
-            style={{ borderRadius: 0, padding: "14px 20px", justifyContent: "space-between", display: "flex", width: "100%", background: "linear-gradient(135deg, #7c3aed, #a78bfa)" }}>
+            style={{ borderRadius: 0, padding: "14px 20px", justifyContent: "space-between", display: "flex", width: "100%", background: "linear-gradient(135deg, #7c3aed, #be95ff)" }}>
             <span>Comenzar</span><span>→</span>
           </button>
         </div>
@@ -160,7 +160,7 @@ export function AppsStudioView() {
               <div className="row" style={{ gap: 10, alignItems: "center" }}>
                 <span style={{
                   fontSize: 22, width: 40, height: 40, display: "grid", placeItems: "center",
-                  borderRadius: 10, background: "rgba(167,139,250,0.12)", border: "1px solid rgba(167,139,250,0.25)",
+                  borderRadius: 10, background: "rgba(190,149,255,0.12)", border: "1px solid rgba(190,149,255,0.25)",
                 }}>{app.icon}</span>
                 <div style={{ minWidth: 0 }}>
                   <div style={{ fontWeight: 600, fontSize: 14.5 }}>{app.name}</div>
@@ -176,7 +176,7 @@ export function AppsStudioView() {
               <div className="row between" style={{ borderTop: "1px solid var(--border-soft)", paddingTop: 10 }}>
                 <div className="row" style={{ gap: 8 }}>
                   <button onClick={() => handleDeleteApp(app)} title="Eliminar"
-                    style={{ background: "none", border: 0, cursor: "pointer", fontSize: 13, color: "#ef4444" }}>🗑</button>
+                    style={{ background: "none", border: 0, cursor: "pointer", fontSize: 13, color: "#fa4d56" }}>🗑</button>
                   <button onClick={() => handleDuplicateApp(app)} title="Duplicar como plantilla"
                     style={{ background: "none", border: 0, cursor: "pointer", fontSize: 13, color: "var(--text-dim)" }}>⧉</button>
                 </div>
@@ -232,12 +232,12 @@ export function AppsStudioView() {
                   {steps.map((s, i) => (
                     <div key={i} className="card flat" style={{ padding: 12, border: "1px solid var(--border-soft)" }}>
                       <div className="row between" style={{ marginBottom: 8 }}>
-                        <span style={{ fontSize: 12, fontWeight: 600, color: "#a78bfa" }}>
+                        <span style={{ fontSize: 12, fontWeight: 600, color: "#be95ff" }}>
                           {i === 0 ? "▶ Paso 1 (recibe el input del usuario)" : `⤷ Paso ${i + 1} (recibe el output del paso ${i})`}
                         </span>
                         {steps.length > 1 && (
                           <button type="button" onClick={() => removeStep(i)}
-                            style={{ background: "none", border: 0, cursor: "pointer", color: "#ef4444", fontSize: 12 }}>quitar</button>
+                            style={{ background: "none", border: 0, cursor: "pointer", color: "#fa4d56", fontSize: 12 }}>quitar</button>
                         )}
                       </div>
                       <div style={{ display: "grid", gridTemplateColumns: "240px 1fr", gap: 10 }}>

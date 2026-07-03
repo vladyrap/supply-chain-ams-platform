@@ -9,7 +9,7 @@ const TYPE_COLOR: Record<GraphNodeType, string> = {
   incident:     "#10b981",
   ticket:       "#3b82f6",
   conversation: "#a855f7",
-  kb:           "#fbbf24",
+  kb:           "#f1c21b",
   meeting:      "#06b6d4",
 };
 

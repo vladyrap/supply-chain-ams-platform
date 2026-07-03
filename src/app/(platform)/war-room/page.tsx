@@ -383,9 +383,9 @@ export default function WarRoomPage() {
     { label: "INC·MES",    value: exec?.kpis.incidentsMonth ?? 0,                color: "#3b82f6" },
     { label: "RES·MES",    value: exec?.kpis.ticketsResolvedMonth ?? 0,          color: "#10b981" },
     { label: "% IA",       value: `${Math.round(exec?.kpis.aiResolutionRate ?? 0)}`, color: "#06b6d4" },
-    { label: "SLA %",      value: Math.round(exec?.kpis.slaCompliancePct ?? 0),  color: "#fbbf24" },
+    { label: "SLA %",      value: Math.round(exec?.kpis.slaCompliancePct ?? 0),  color: "#f1c21b" },
     { label: "TOKENS·K",   value: usage ? Math.round(usage.totals.totalTokens / 1000) : 0, color: "#a855f7" },
-    { label: "COSTO USD",  value: usage ? Number(usage.totals.costUsd.toFixed(2)) : 0, color: "#ef4444" },
+    { label: "COSTO USD",  value: usage ? Number(usage.totals.costUsd.toFixed(2)) : 0, color: "#fa4d56" },
   ];
 
   return (
@@ -467,7 +467,7 @@ export default function WarRoomPage() {
               <span style={{ color: "#64748b" }}>{c.country}</span>{" "}
               <span style={{ color: "#86efac", fontWeight: 600 }}>{c.name}</span>{" "}
               <span style={{ color: "#60a5fa" }}>inc {c.incidents}</span>{" "}
-              <span style={{ color: "#fbbf24" }}>tkt {c.tickets}</span>
+              <span style={{ color: "#f1c21b" }}>tkt {c.tickets}</span>
             </span>
           ))}
         </div>

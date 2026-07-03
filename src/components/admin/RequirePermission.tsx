@@ -90,8 +90,8 @@ export default function RequirePermission({
       return (
         <div style={{
           padding: "12px 14px", borderRadius: 6,
-          background: "rgba(239,68,68,0.08)",
-          border: "1px solid rgba(239,68,68,0.25)",
+          background: "rgba(250,77,86,0.08)",
+          border: "1px solid rgba(250,77,86,0.25)",
           color: "#fca5a5", fontSize: 12,
         }}>
           🔒 Sin permiso para <code>{screen}</code>{action !== "view" && <> ({action})</>}.

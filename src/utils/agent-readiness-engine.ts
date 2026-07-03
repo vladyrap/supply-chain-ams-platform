@@ -124,8 +124,8 @@ export const READINESS_LABELS: Record<ReadinessState, string> = {
 };
 
 export const READINESS_COLORS: Record<ReadinessState, string> = {
-  LOW: "#ef4444",
-  MEDIUM: "#fbbf24",
-  HIGH: "#22d3ee",
+  LOW: "#fa4d56",
+  MEDIUM: "#f1c21b",
+  HIGH: "#4589ff",
   READY: "#10b981",
 };

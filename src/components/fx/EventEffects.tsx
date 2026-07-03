@@ -15,7 +15,7 @@ const SOUND_FOR_KIND: Record<NotificationItem["kind"], { freq: number; dur: numb
 };
 
 const CONFETTI_KINDS: NotificationItem["kind"][] = ["ticket_resolved", "kb_approved"];
-const COLORS = ["#fbbf24", "#ef4444", "#3b82f6", "#10b981", "#a855f7", "#06b6d4", "#ec4899"];
+const COLORS = ["#f1c21b", "#fa4d56", "#3b82f6", "#10b981", "#a855f7", "#06b6d4", "#ec4899"];
 
 function playTone(ctx: AudioContext, freq: number, durSec: number, type: OscillatorType) {
   const osc = ctx.createOscillator();

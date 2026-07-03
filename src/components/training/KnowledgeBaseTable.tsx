@@ -81,7 +81,7 @@ export default function KnowledgeBaseTable({ ctx, onSimulateItem, onOpenQA }: Pr
           {STATUS_ORDER.map((s) => (
             <button key={s} onClick={() => setStatusFilter(s)}
               className={`ticket-filter ${statusFilter === s ? "active" : ""}`}
-              style={{ ["--filt-color" as never]: s === "all" ? "#22d3ee" : STATUS_COLORS[s] }}>
+              style={{ ["--filt-color" as never]: s === "all" ? "#4589ff" : STATUS_COLORS[s] }}>
               {s === "all" ? "▸ Todos" : KNOWLEDGE_STATUS_LABELS[s]}
               <span className="ticket-filter-count">
                 {s === "all" ? ctx.knowledge.length : ctx.knowledge.filter((k) => k.status === s).length}
@@ -153,7 +153,7 @@ export default function KnowledgeBaseTable({ ctx, onSimulateItem, onOpenQA }: Pr
                       </span>
                     </td>
                     <td>
-                      <div className="tc-score-circle" style={{ ["--sc-color" as never]: k.score >= 80 ? "#10b981" : k.score >= 60 ? "#fbbf24" : "#ef4444" }}>
+                      <div className="tc-score-circle" style={{ ["--sc-color" as never]: k.score >= 80 ? "#10b981" : k.score >= 60 ? "#f1c21b" : "#fa4d56" }}>
                         {k.score}
                       </div>
                     </td>
@@ -176,7 +176,7 @@ export default function KnowledgeBaseTable({ ctx, onSimulateItem, onOpenQA }: Pr
                         <button className="tc-iconbtn" onClick={() => exportItem(k)} title="Exportar JSON">↓</button>
                         <button className="tc-iconbtn" onClick={() => ctx.archiveKnowledgeItem(k.id)} title="Archivar">📦</button>
                         <button className="tc-iconbtn" onClick={() => setConfirmDelete(k)} title="Eliminar"
-                          style={{ color: "#ef4444" }}>🗑</button>
+                          style={{ color: "#fa4d56" }}>🗑</button>
                       </div>
                     </td>
                   </tr>
@@ -205,7 +205,7 @@ export default function KnowledgeBaseTable({ ctx, onSimulateItem, onOpenQA }: Pr
           title="Eliminar conocimiento"
           message={`Vas a eliminar "${confirmDelete.title}". Esta acción no se puede deshacer.`}
           confirmLabel="Sí, eliminar"
-          color="#ef4444"
+          color="#fa4d56"
           onCancel={() => setConfirmDelete(null)}
           onConfirm={() => {
             ctx.deleteKnowledgeItem(confirmDelete.id);

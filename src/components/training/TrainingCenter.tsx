@@ -67,7 +67,7 @@ export default function TrainingCenter({ currentUserName }: Props) {
             </p>
           </div>
           <div className="kanban-stats">
-            <div className="kanban-stat" style={{ ["--accent" as never]: "#22d3ee" }}>
+            <div className="kanban-stat" style={{ ["--accent" as never]: "#4589ff" }}>
               <div className="kanban-stat-val">{m.total}</div>
               <div className="kanban-stat-lbl">CONOCIMIENTOS</div>
             </div>
@@ -75,7 +75,7 @@ export default function TrainingCenter({ currentUserName }: Props) {
               <div className="kanban-stat-val">{m.published}</div>
               <div className="kanban-stat-lbl">PUBLICADOS</div>
             </div>
-            <div className="kanban-stat" style={{ ["--accent" as never]: "#fbbf24" }}>
+            <div className="kanban-stat" style={{ ["--accent" as never]: "#f1c21b" }}>
               <div className="kanban-stat-val">{m.pending}</div>
               <div className="kanban-stat-lbl">EN REVISIÓN</div>
             </div>

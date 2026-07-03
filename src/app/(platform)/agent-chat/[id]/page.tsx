@@ -171,8 +171,8 @@ export default function AgentChatPage() {
             onClick={() => openConversation(c.id)}
             style={{
               padding: "8px 10px", borderRadius: 8, cursor: "pointer", fontSize: 12.5,
-              background: activeConvId === c.id ? "rgba(34,211,238,0.12)" : "transparent",
-              border: `1px solid ${activeConvId === c.id ? "rgba(34,211,238,0.35)" : "var(--border-soft)"}`,
+              background: activeConvId === c.id ? "rgba(69,137,255,0.12)" : "transparent",
+              border: `1px solid ${activeConvId === c.id ? "rgba(69,137,255,0.35)" : "var(--border-soft)"}`,
               display: "flex", justifyContent: "space-between", alignItems: "flex-start", gap: 6,
             }}
           >
@@ -204,7 +204,7 @@ export default function AgentChatPage() {
               <Link href="/agent-hub?tab=library" className="btn ghost" style={{ padding: "4px 10px", fontSize: 13 }}>←</Link>
               <span style={{
                 fontSize: 24, width: 44, height: 44, display: "grid", placeItems: "center",
-                borderRadius: 10, background: "rgba(34,211,238,0.1)", border: "1px solid rgba(34,211,238,0.2)",
+                borderRadius: 10, background: "rgba(69,137,255,0.1)", border: "1px solid rgba(69,137,255,0.2)",
               }}>
                 {agent.icon}
               </span>
@@ -257,9 +257,9 @@ export default function AgentChatPage() {
               <div style={{
                 padding: "10px 14px", borderRadius: 12, fontSize: 13.5, lineHeight: 1.55,
                 background: m.role === "user"
-                  ? "linear-gradient(135deg, rgba(34,211,238,0.18), rgba(167,139,250,0.18))"
+                  ? "linear-gradient(135deg, rgba(69,137,255,0.18), rgba(190,149,255,0.18))"
                   : "rgba(15,23,42,0.6)",
-                border: `1px solid ${m.role === "user" ? "rgba(34,211,238,0.3)" : "var(--border-soft)"}`,
+                border: `1px solid ${m.role === "user" ? "rgba(69,137,255,0.3)" : "var(--border-soft)"}`,
               }}>
                 {m.role === "agent" ? <MarkdownView text={m.text} /> : m.text}
               </div>

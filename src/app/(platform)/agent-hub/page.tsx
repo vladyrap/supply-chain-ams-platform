@@ -50,9 +50,9 @@ function AgentHubInner() {
               style={{
                 background: "none", border: 0, cursor: "pointer",
                 padding: "10px 16px 12px", position: "relative",
-                color: active ? "#22d3ee" : "var(--text-soft)",
+                color: active ? "#4589ff" : "var(--text-soft)",
                 fontWeight: active ? 600 : 400, fontSize: 13.5,
-                borderBottom: `2px solid ${active ? "#22d3ee" : "transparent"}`,
+                borderBottom: `2px solid ${active ? "#4589ff" : "transparent"}`,
                 marginBottom: -1,
               }}
               title={t.hint}>

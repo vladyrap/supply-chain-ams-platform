@@ -36,9 +36,9 @@ interface Props {
 
 function colorBy(c: "info" | "ok" | "warn" | "err"): string {
   if (c === "ok") return "#10b981";
-  if (c === "warn") return "#fbbf24";
-  if (c === "err") return "#ef4444";
-  return "#22d3ee";
+  if (c === "warn") return "#f1c21b";
+  if (c === "err") return "#fa4d56";
+  return "#4589ff";
 }
 
 function Section({ title, items, tone }: { title: string; items: string[]; tone: "info" | "ok" | "warn" | "err" }) {

@@ -7,9 +7,9 @@ import { supportApi, type SupportTicket, type TicketStatus, type Priority } from
 
 const PRIORITY_META: Record<Priority, { color: string; icon: string; glow: string }> = {
   baja:    { color: "#10b981", icon: "○", glow: "0 0 6px #10b98166" },
-  media:   { color: "#22d3ee", icon: "●", glow: "0 0 6px #22d3ee66" },
+  media:   { color: "#4589ff", icon: "●", glow: "0 0 6px #4589ff66" },
   alta:    { color: "#f59e0b", icon: "▲", glow: "0 0 8px #f59e0b88" },
-  critica: { color: "#ef4444", icon: "🔥", glow: "0 0 12px #ef4444aa" },
+  critica: { color: "#fa4d56", icon: "🔥", glow: "0 0 12px #fa4d56aa" },
 };
 
 const COLUMNS: { id: TicketStatus; label: string; icon: string; color: string; sub: string }[] = [
@@ -41,11 +41,11 @@ function slaState(t: SupportTicket): SLA {
 
   if (remainingMs < 0) {
     const overMin = Math.abs(Math.round(remainingMs / 60000));
-    return { text: `⏰ -${overMin}m`, pct: 0, state: "danger", color: "#ef4444" };
+    return { text: `⏰ -${overMin}m`, pct: 0, state: "danger", color: "#fa4d56" };
   }
   const m = Math.round(remainingMs / 60000);
   const text = m < 60 ? `⏰ ${m}m` : `⏰ ${Math.floor(m / 60)}h ${m % 60}m`;
-  if (pct < 25) return { text, pct, state: "danger", color: "#ef4444" };
+  if (pct < 25) return { text, pct, state: "danger", color: "#fa4d56" };
   if (pct < 50) return { text, pct, state: "warn",   color: "#f59e0b" };
   return { text, pct, state: "ok", color: "#10b981" };
 }
@@ -58,7 +58,7 @@ function avatarInitial(s: string | null | undefined): string {
 function avatarColor(s: string | null | undefined): string {
   if (!s) return "#64748b";
   const hash = s.split("").reduce((a, c) => a + c.charCodeAt(0), 0);
-  const colors = ["#22d3ee", "#a855f7", "#10b981", "#fbbf24", "#3b82f6", "#f43f5e", "#06b6d4"];
+  const colors = ["#4589ff", "#a855f7", "#10b981", "#f1c21b", "#3b82f6", "#f43f5e", "#06b6d4"];
   return colors[hash % colors.length];
 }
 
@@ -160,19 +160,19 @@ export default function MesaKanbanPage() {
             </p>
           </div>
           <div className="kanban-stats">
-            <div className="kanban-stat" style={{ ["--accent" as never]: "#22d3ee" }}>
+            <div className="kanban-stat" style={{ ["--accent" as never]: "#4589ff" }}>
               <div className="kanban-stat-val">{stats.total}</div>
               <div className="kanban-stat-lbl">TOTAL</div>
             </div>
-            <div className="kanban-stat" style={{ ["--accent" as never]: "#fbbf24" }}>
+            <div className="kanban-stat" style={{ ["--accent" as never]: "#f1c21b" }}>
               <div className="kanban-stat-val">{stats.active}</div>
               <div className="kanban-stat-lbl">ACTIVOS</div>
             </div>
-            <div className="kanban-stat" style={{ ["--accent" as never]: stats.critical ? "#ef4444" : "#64748b" }}>
+            <div className="kanban-stat" style={{ ["--accent" as never]: stats.critical ? "#fa4d56" : "#64748b" }}>
               <div className="kanban-stat-val">{stats.critical}</div>
               <div className="kanban-stat-lbl">CRÍTICOS</div>
             </div>
-            <div className="kanban-stat" style={{ ["--accent" as never]: stats.breaches ? "#ef4444" : "#10b981" }}>
+            <div className="kanban-stat" style={{ ["--accent" as never]: stats.breaches ? "#fa4d56" : "#10b981" }}>
               <div className="kanban-stat-val">{stats.breaches}</div>
               <div className="kanban-stat-lbl">SLA OUT</div>
             </div>
@@ -270,7 +270,7 @@ export default function MesaKanbanPage() {
                       {/* Footer tags */}
                       <div className="row" style={{ gap: 4, flexWrap: "wrap", marginTop: 6 }}>
                         {t.system_affected && t.system_affected !== "NO_INFORMADO" && (
-                          <span className="kanban-tag" style={{ borderColor: "rgba(34,211,238,0.4)", color: "#67e8f9", background: "rgba(34,211,238,0.08)" }}>
+                          <span className="kanban-tag" style={{ borderColor: "rgba(69,137,255,0.4)", color: "#67e8f9", background: "rgba(69,137,255,0.08)" }}>
                             {t.system_affected}
                           </span>
                         )}

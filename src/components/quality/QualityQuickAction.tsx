@@ -51,7 +51,7 @@ export default function QualityQuickAction({ incident, variant = "full", onSaved
         style={{
           padding: variant === "compact" ? "3px 9px" : "4px 12px",
           fontSize: variant === "compact" ? 11 : 11.5,
-          color: "#fbbf24",
+          color: "#f1c21b",
         }}
         title={`Click para re-abrir evaluación: ${overall}/5`}
       >
@@ -83,7 +83,7 @@ export default function QualityQuickAction({ incident, variant = "full", onSaved
         className={variant === "compact" ? "btn ghost" : "btn primary"}
         style={variant === "compact"
           ? { padding: "3px 9px", fontSize: 11 }
-          : { background: "linear-gradient(135deg, #fbbf24, #f59e0b)", borderColor: "#fbbf24", color: "#0b1220" }}
+          : { background: "linear-gradient(135deg, #f1c21b, #f59e0b)", borderColor: "#f1c21b", color: "#0b1220" }}
       >
         🏅 {variant === "compact" ? "evaluar" : "Evaluar respuesta"}
       </button>
@@ -99,8 +99,8 @@ export default function QualityQuickAction({ incident, variant = "full", onSaved
       {toast && (
         <div style={{
           position: "fixed", bottom: 20, right: 20, zIndex: 9001,
-          padding: "10px 16px", background: "rgba(251,191,36,0.18)",
-          border: "1px solid rgba(251,191,36,0.5)", color: "#fbbf24",
+          padding: "10px 16px", background: "rgba(241,194,27,0.18)",
+          border: "1px solid rgba(241,194,27,0.5)", color: "#f1c21b",
           borderRadius: 8, fontSize: 12.5, fontWeight: 600,
         }}>{toast}</div>
       )}

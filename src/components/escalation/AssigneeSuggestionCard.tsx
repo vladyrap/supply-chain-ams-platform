@@ -36,14 +36,14 @@ export default function AssigneeSuggestionCard({
       className="card"
       style={{
         width: "100%", textAlign: "left", cursor: onSelect ? "pointer" : "default",
-        border: selected ? "1px solid #22d3ee" : undefined,
-        boxShadow: selected ? "0 0 0 2px rgba(34,211,238,0.20)" : undefined,
+        border: selected ? "1px solid #4589ff" : undefined,
+        boxShadow: selected ? "0 0 0 2px rgba(69,137,255,0.20)" : undefined,
       }}
     >
       <div className="row" style={{ gap: 12, alignItems: "center" }}>
         <div style={{
           width: 42, height: 42, borderRadius: "50%",
-          background: "linear-gradient(135deg, #a855f7, #22d3ee)",
+          background: "linear-gradient(135deg, #a855f7, #4589ff)",
           display: "grid", placeItems: "center",
           color: "white", fontWeight: 700, fontSize: 16,
         }}>{responsible.name.charAt(0).toUpperCase()}</div>

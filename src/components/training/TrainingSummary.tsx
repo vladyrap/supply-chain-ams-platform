@@ -63,11 +63,11 @@ export default function TrainingSummary({ ctx }: Props) {
     <div className="col" style={{ gap: 14 }}>
       {/* Métricas */}
       <div className="tc-metric-grid">
-        <TrainingMetricCard label="ítems de conocimiento" value={m.total} icon="📚" color="#22d3ee"
+        <TrainingMetricCard label="ítems de conocimiento" value={m.total} icon="📚" color="#4589ff"
           trendLabel={`${m.drafts} drafts · ${m.pending} en revisión`} trend="up" />
         <TrainingMetricCard label="validados" value={m.validated} icon="✓" color="#10b981"
           trendLabel={`${m.published} publicados`} trend="up" />
-        <TrainingMetricCard label="pendientes" value={m.pending} icon="⏳" color="#fbbf24"
+        <TrainingMetricCard label="pendientes" value={m.pending} icon="⏳" color="#f1c21b"
           trendLabel="esperando aprobación" trend={m.pending > 0 ? "alert" === "alert" ? "flat" : "flat" : "flat"} />
         <TrainingMetricCard label="publicados" value={m.published} icon="🚀" color="#a855f7"
           trendLabel="activos en producción demo" />
@@ -80,7 +80,7 @@ export default function TrainingSummary({ ctx }: Props) {
         <TrainingMetricCard label="último simulador" value={lastSimulated} icon="🧪" color="#a855f7"
           trendLabel="usá la pestaña Simulador" />
         <TrainingMetricCard label="horas estimadas ahorradas" value={`${m.estimatedTimeSavedHours}h`} icon="⏱"
-          color="#22d3ee" trendLabel="≈ 12 min por ítem publicado" />
+          color="#4589ff" trendLabel="≈ 12 min por ítem publicado" />
       </div>
 
       {/* Pipeline */}
@@ -105,7 +105,7 @@ export default function TrainingSummary({ ctx }: Props) {
                   <span className="tc-coverage-meta">{c.published}/{c.count} publicados</span>
                 </div>
                 <div className="tc-bar">
-                  <div className="tc-bar-fill" style={{ width: `${c.coverage}%`, background: c.coverage >= 60 ? "#10b981" : c.coverage >= 30 ? "#fbbf24" : "#ef4444" }} />
+                  <div className="tc-bar-fill" style={{ width: `${c.coverage}%`, background: c.coverage >= 60 ? "#10b981" : c.coverage >= 30 ? "#f1c21b" : "#fa4d56" }} />
                 </div>
               </div>
             ))}

@@ -478,9 +478,9 @@ export default function GuidedTicketIntakeModal({
 
             {readiness.recommendations.length > 0 && (
               <div style={{ marginTop: 12, padding: 10,
-                background: "rgba(251,191,36,0.10)", border: "1px solid rgba(251,191,36,0.30)",
+                background: "rgba(241,194,27,0.10)", border: "1px solid rgba(241,194,27,0.30)",
                 borderRadius: 6, fontSize: 11.5 }}>
-                <div style={{ color: "#fbbf24", fontWeight: 600, marginBottom: 4 }}>💡 Recomendaciones</div>
+                <div style={{ color: "#f1c21b", fontWeight: 600, marginBottom: 4 }}>💡 Recomendaciones</div>
                 <ul style={{ margin: 0, paddingLeft: 18 }}>
                   {readiness.recommendations.slice(0, 5).map((r, i) => <li key={i}>{r}</li>)}
                 </ul>
@@ -489,7 +489,7 @@ export default function GuidedTicketIntakeModal({
 
             {readiness.score < 70 && (
               <div style={{ marginTop: 12, padding: 10,
-                background: "rgba(239,68,68,0.10)", border: "1px solid rgba(239,68,68,0.30)",
+                background: "rgba(250,77,86,0.10)", border: "1px solid rgba(250,77,86,0.30)",
                 borderRadius: 6, fontSize: 12, color: "#fca5a5" }}>
                 ⚠ Este ticket aún no tiene información suficiente para resolución N1.
                 Podés volver atrás a completar datos, guardarlo como borrador, o crearlo
@@ -519,7 +519,7 @@ export default function GuidedTicketIntakeModal({
               <div><strong>Playbook sugerido:</strong> {n1Package.suggestedPlaybook?.title ?? "—"}</div>
               <div><strong>Checklist N1:</strong> {n1Package.n1Checklist.length} pasos ({n1Package.n1Checklist.filter((c) => c.resolvableN1).length} resolubles N1)</div>
               {n1Package.escalationCriteria.length > 0 && (
-                <div style={{ marginTop: 4, color: "#fbbf24" }}>
+                <div style={{ marginTop: 4, color: "#f1c21b" }}>
                   <strong>⚠ Criterios escalamiento:</strong> {n1Package.escalationCriteria.join(" · ")}
                 </div>
               )}
@@ -564,7 +564,7 @@ export default function GuidedTicketIntakeModal({
                 {readiness.score < 70 && (
                   <button className="btn ghost" onClick={() => submit({ waitingInformation: true })}
                     disabled={busy || enriching}
-                    style={{ borderColor: "#fbbf24", color: "#fbbf24" }}>
+                    style={{ borderColor: "#f1c21b", color: "#f1c21b" }}>
                     {enriching ? "analizando…" : busy ? "creando…" : `⏳ Crear como "Espera información"`}
                   </button>
                 )}
@@ -572,7 +572,7 @@ export default function GuidedTicketIntakeModal({
                   disabled={busy || enriching || readiness.score < 40}
                   style={{
                     background: readiness.score >= 70
-                      ? "linear-gradient(135deg, #10b981, #22d3ee)"
+                      ? "linear-gradient(135deg, #10b981, #4589ff)"
                       : "linear-gradient(135deg, #6366f1, #a855f7)",
                     borderColor: readiness.score >= 70 ? "#10b981" : "#6366f1",
                   }}>

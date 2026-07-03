@@ -98,7 +98,7 @@ export default function TrainingVersions({ ctx, currentUserName = "Líder Servic
                   <button className="btn primary" onClick={() => setConfirmPublish(v)}>🚀 publicar versión</button>
                 ) : null}
                 {v.status === "PUBLISHED" && (
-                  <button className="btn ghost" onClick={() => setConfirmRollback(v)} style={{ borderColor: "#f59e0b", color: "#fbbf24" }}>
+                  <button className="btn ghost" onClick={() => setConfirmRollback(v)} style={{ borderColor: "#f59e0b", color: "#f1c21b" }}>
                     ↩ rollback simulado
                   </button>
                 )}
@@ -181,7 +181,7 @@ export default function TrainingVersions({ ctx, currentUserName = "Líder Servic
 function Delta({ a, b }: { a: number; b: number }) {
   const d = b - a;
   if (d === 0) return null;
-  const color = d > 0 ? "#10b981" : "#ef4444";
+  const color = d > 0 ? "#10b981" : "#fa4d56";
   return <span style={{ color, fontSize: 11 }}>({d > 0 ? "+" : ""}{d})</span>;
 }
 

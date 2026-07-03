@@ -154,7 +154,7 @@ export default function VisualEvidenceUploader({ evidence, onChange, ticketTitle
       ) : (
         <div className="col" style={{ gap: 10, marginTop: 10 }}>
           {evidence.map((ev) => (
-            <div key={ev.id} className="card" style={{ padding: 10, borderLeft: "3px solid #22d3ee" }}>
+            <div key={ev.id} className="card" style={{ padding: 10, borderLeft: "3px solid #4589ff" }}>
               <div style={{ display: "grid", gridTemplateColumns: "140px 1fr", gap: 10 }}>
                 {/* Preview */}
                 <div>
@@ -197,7 +197,7 @@ export default function VisualEvidenceUploader({ evidence, onChange, ticketTitle
                     </button>
                     <button type="button" className="btn ghost"
                       onClick={() => removeOne(ev.id)}
-                      style={{ padding: "4px 10px", fontSize: 11.5, color: "#ef4444", marginLeft: "auto" }}>
+                      style={{ padding: "4px 10px", fontSize: 11.5, color: "#fa4d56", marginLeft: "auto" }}>
                       🗑 Quitar
                     </button>
                   </div>

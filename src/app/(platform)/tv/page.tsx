@@ -220,13 +220,13 @@ function renderSlideContent(
         <BigStat label="Incidentes totales" value={adv?.totals.incidents ?? "—"} accent="#10b981" />
         <BigStat label="Conversaciones"     value={adv?.totals.supportConversations ?? "—"} accent="#a855f7" />
         <BigStat label="Tickets activos"    value={adv?.totals.supportTicketsActive ?? "—"} accent="#3b82f6" />
-        <BigStat label="KB approved"        value={adv?.totals.kbApproved ?? "—"} accent="#fbbf24" />
+        <BigStat label="KB approved"        value={adv?.totals.kbApproved ?? "—"} accent="#f1c21b" />
       </div>
     );
   }
   if (slideId === "sla") {
     const pct = adv?.sla.okPct ?? 100;
-    const color = pct >= 90 ? "#10b981" : pct >= 75 ? "#f59e0b" : "#ef4444";
+    const color = pct >= 90 ? "#10b981" : pct >= 75 ? "#f59e0b" : "#fa4d56";
     return (
       <div style={{ display: "flex", alignItems: "center", justifyContent: "center", gap: 80 }}>
         <div style={{ position: "relative", width: 380, height: 380 }}>
@@ -246,7 +246,7 @@ function renderSlideContent(
         </div>
         <div style={{ display: "flex", flexDirection: "column", gap: 20 }}>
           <BigStat label="En SLA"   value={adv?.sla.inSla ?? 0}     accent="#10b981" />
-          <BigStat label="Vencidos" value={adv?.sla.breaching ?? 0} accent="#ef4444" />
+          <BigStat label="Vencidos" value={adv?.sla.breaching ?? 0} accent="#fa4d56" />
         </div>
       </div>
     );
@@ -283,7 +283,7 @@ function renderSlideContent(
       <div style={{ display: "grid", gridTemplateColumns: "repeat(3, 1fr)", gap: 30, width: "100%" }}>
         <BigStat label="% IA resuelto"   value={exec ? `${exec.kpis.aiResolutionRate}%` : "—"} accent="#06b6d4" />
         <BigStat label="Llamadas Gemini" value={usage?.totals.calls ?? 0} accent="#a855f7" hint={usage ? `${Math.round(usage.totals.totalTokens / 1000)}k tokens` : ""} />
-        <BigStat label="Costo real"      value={usage ? fmtMoney(usage.totals.costUsd) : "—"} accent="#fbbf24" />
+        <BigStat label="Costo real"      value={usage ? fmtMoney(usage.totals.costUsd) : "—"} accent="#f1c21b" />
       </div>
     );
   }
@@ -294,7 +294,7 @@ function renderSlideContent(
         {feed.slice(0, 6).map((it, i) => (
           <div key={it.id} style={{
             padding: "14px 20px", background: "rgba(255,255,255,0.08)", borderRadius: 8,
-            borderLeft: "4px solid #fbbf24", fontSize: 18,
+            borderLeft: "4px solid #f1c21b", fontSize: 18,
             animation: `feedIn .5s ease-out both`, animationDelay: `${i * 100}ms`,
           }}>
             <div style={{ fontWeight: 600 }}>{it.title}</div>

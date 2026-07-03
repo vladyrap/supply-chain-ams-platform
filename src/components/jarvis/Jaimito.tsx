@@ -154,7 +154,7 @@ export default function Jaimito({ client = "DEMO", environment = "DEV" }: Jaimit
       <div className={`jarvis-panel ${open ? "open" : ""}`} role="dialog" aria-label="Jaimito">
         <div className="jarvis-head">
           <div>
-            <div style={{ fontSize: 13, fontWeight: 700, letterSpacing: 2, color: "#22d3ee", textShadow: "0 0 8px rgba(34,211,238,0.6)" }}>◤ JAIMITO</div>
+            <div style={{ fontSize: 13, fontWeight: 700, letterSpacing: 2, color: "#4589ff", textShadow: "0 0 8px rgba(69,137,255,0.6)" }}>◤ JAIMITO</div>
             <div style={{ fontSize: 9.5, color: "#67e8f9", letterSpacing: 1.5 }}>AMS · CONVERSATIONAL OPS</div>
           </div>
           <div className="row" style={{ gap: 6 }}>
@@ -172,7 +172,7 @@ export default function Jaimito({ client = "DEMO", environment = "DEV" }: Jaimit
               <div style={{ whiteSpace: "pre-wrap", fontSize: 12, lineHeight: 1.5 }}>{t.text}</div>
               {t.nav && (
                 <div style={{ fontSize: 10, marginTop: 4, color: "#10b981" }}>
-                  → navegando a <code style={{ color: "#22d3ee" }}>{t.nav}</code>
+                  → navegando a <code style={{ color: "#4589ff" }}>{t.nav}</code>
                 </div>
               )}
             </div>
@@ -221,17 +221,17 @@ export default function Jaimito({ client = "DEMO", environment = "DEV" }: Jaimit
           width: 60px; height: 60px;
           border-radius: 50%; border: 0;
           cursor: pointer;
-          background: radial-gradient(circle at 50% 35%, #22d3ee, #1e293b 75%);
+          background: radial-gradient(circle at 50% 35%, #4589ff, #1e293b 75%);
           color: white; font-size: 24px;
           display: flex; align-items: center; justify-content: center;
-          box-shadow: 0 6px 24px rgba(0,0,0,0.45), 0 0 30px rgba(34,211,238,0.45);
+          box-shadow: 0 6px 24px rgba(0,0,0,0.45), 0 0 30px rgba(69,137,255,0.45);
           transition: transform .2s, box-shadow .2s;
         }
-        .jarvis-fab:hover { transform: scale(1.05); box-shadow: 0 6px 30px rgba(0,0,0,0.5), 0 0 40px rgba(34,211,238,0.7); }
+        .jarvis-fab:hover { transform: scale(1.05); box-shadow: 0 6px 30px rgba(0,0,0,0.5), 0 0 40px rgba(69,137,255,0.7); }
         .jarvis-fab.open { background: radial-gradient(circle at 50% 35%, #a855f7, #1e293b 75%); box-shadow: 0 6px 30px rgba(0,0,0,0.5), 0 0 40px rgba(168,85,247,0.6); }
         .jarvis-fab-ring {
           position: absolute; inset: -4px; border-radius: 50%;
-          border: 2px solid rgba(34,211,238,0.5);
+          border: 2px solid rgba(69,137,255,0.5);
           animation: jarvisRing 2.5s ease-out infinite;
         }
         .jarvis-fab.open .jarvis-fab-ring { border-color: rgba(168,85,247,0.5); }
@@ -246,13 +246,13 @@ export default function Jaimito({ client = "DEMO", environment = "DEV" }: Jaimit
           right: 18px; bottom: 90px;
           width: 380px; max-width: 92vw; height: 520px; max-height: 80vh;
           background: linear-gradient(180deg, rgba(4,6,15,0.97), rgba(15,23,42,0.95));
-          border: 1px solid rgba(34,211,238,0.45);
+          border: 1px solid rgba(69,137,255,0.45);
           border-radius: 10px;
           padding: 12px;
           color: #cbd5e1;
           font-family: var(--font-mono, "Consolas", monospace);
           backdrop-filter: blur(6px);
-          box-shadow: 0 20px 60px rgba(0,0,0,0.6), 0 0 40px rgba(34,211,238,0.15);
+          box-shadow: 0 20px 60px rgba(0,0,0,0.6), 0 0 40px rgba(69,137,255,0.15);
           opacity: 0; visibility: hidden;
           transform: translateY(20px) scale(0.96);
           transition: all 0.22s ease-out;
@@ -266,7 +266,7 @@ export default function Jaimito({ client = "DEMO", environment = "DEV" }: Jaimit
         .jarvis-head {
           display: flex; justify-content: space-between; align-items: center;
           padding: 6px 8px 10px;
-          border-bottom: 1px solid rgba(34,211,238,0.18);
+          border-bottom: 1px solid rgba(69,137,255,0.18);
           margin-bottom: 8px;
         }
         .jarvis-dot {
@@ -275,7 +275,7 @@ export default function Jaimito({ client = "DEMO", environment = "DEV" }: Jaimit
           transition: background .2s;
         }
         .jarvis-dot.speaking { background: #a855f7; box-shadow: 0 0 8px #a855f7; animation: pulse 1s ease-in-out infinite; }
-        .jarvis-dot.listening { background: #ef4444; box-shadow: 0 0 8px #ef4444; animation: pulse 1s ease-in-out infinite; }
+        .jarvis-dot.listening { background: #fa4d56; box-shadow: 0 0 8px #fa4d56; animation: pulse 1s ease-in-out infinite; }
         @keyframes pulse { 0%, 100% { opacity: 1; } 50% { opacity: 0.4; } }
 
         .jarvis-body {
@@ -288,7 +288,7 @@ export default function Jaimito({ client = "DEMO", environment = "DEV" }: Jaimit
           border-radius: 6px;
           background: rgba(255,255,255,0.02);
         }
-        .jarvis-turn.user { border-left: 2px solid #22d3ee; }
+        .jarvis-turn.user { border-left: 2px solid #4589ff; }
         .jarvis-turn.agent { border-left: 2px solid #a855f7; background: rgba(168,85,247,0.05); }
 
         .jarvis-thinking { display: inline-flex; gap: 4px; }
@@ -307,20 +307,20 @@ export default function Jaimito({ client = "DEMO", environment = "DEV" }: Jaimit
           display: flex; gap: 6px; margin-top: 8px;
         }
         .jarvis-mic, .jarvis-send {
-          background: rgba(34,211,238,0.10);
-          border: 1px solid rgba(34,211,238,0.4);
-          color: #22d3ee;
+          background: rgba(69,137,255,0.10);
+          border: 1px solid rgba(69,137,255,0.4);
+          color: #4589ff;
           width: 36px; height: 36px;
           border-radius: 6px;
           cursor: pointer; font-size: 14px;
           transition: all .15s;
         }
-        .jarvis-mic.active { background: #ef4444; color: white; border-color: #ef4444; box-shadow: 0 0 12px rgba(239,68,68,0.6); }
+        .jarvis-mic.active { background: #fa4d56; color: white; border-color: #fa4d56; box-shadow: 0 0 12px rgba(250,77,86,0.6); }
         .jarvis-mic:disabled, .jarvis-send:disabled { opacity: 0.4; cursor: not-allowed; }
         .jarvis-text {
           flex: 1;
           background: rgba(0,0,0,0.4);
-          border: 1px solid rgba(34,211,238,0.25);
+          border: 1px solid rgba(69,137,255,0.25);
           color: #cbd5e1;
           padding: 0 10px;
           font-family: inherit;
@@ -328,14 +328,14 @@ export default function Jaimito({ client = "DEMO", environment = "DEV" }: Jaimit
           border-radius: 6px;
           outline: none;
         }
-        .jarvis-text:focus { border-color: #22d3ee; box-shadow: 0 0 0 2px rgba(34,211,238,0.15); }
+        .jarvis-text:focus { border-color: #4589ff; box-shadow: 0 0 0 2px rgba(69,137,255,0.15); }
 
         .jarvis-chips {
           display: flex; gap: 4px; flex-wrap: wrap; margin-top: 8px;
         }
         .jarvis-chip {
-          background: rgba(34,211,238,0.06);
-          border: 1px solid rgba(34,211,238,0.18);
+          background: rgba(69,137,255,0.06);
+          border: 1px solid rgba(69,137,255,0.18);
           color: #67e8f9;
           padding: 2px 8px;
           font-size: 10px;
@@ -345,7 +345,7 @@ export default function Jaimito({ client = "DEMO", environment = "DEV" }: Jaimit
           letter-spacing: 0.5px;
           transition: background .15s;
         }
-        .jarvis-chip:hover { background: rgba(34,211,238,0.18); }
+        .jarvis-chip:hover { background: rgba(69,137,255,0.18); }
         .jarvis-chip:disabled { opacity: 0.4; cursor: not-allowed; }
       `}</style>
     </>

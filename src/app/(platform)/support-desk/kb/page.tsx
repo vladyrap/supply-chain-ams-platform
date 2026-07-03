@@ -14,7 +14,7 @@ const SAP_MODULES: SapModule[] = [
 ];
 
 const STATUS_META: Record<KbStatus, { color: string; label: string; icon: string }> = {
-  draft:    { color: "#fbbf24", label: "Draft",     icon: "📝" },
+  draft:    { color: "#f1c21b", label: "Draft",     icon: "📝" },
   approved: { color: "#10b981", label: "Aprobado",  icon: "✓" },
   archived: { color: "#6b7280", label: "Archivado", icon: "📦" },
 };
@@ -22,9 +22,9 @@ const STATUS_META: Record<KbStatus, { color: string; label: string; icon: string
 const STATUS_ORDER: (KbStatus | "all")[] = ["all", "approved", "draft", "archived"];
 
 const SAP_MODULE_COLORS: Record<string, string> = {
-  MM: "#22d3ee", SD: "#a855f7", PP: "#f59e0b", WM: "#10b981", EWM: "#06b6d4",
-  QM: "#f43f5e", PM: "#3b82f6", ARIBA: "#fbbf24", IBP: "#8b5cf6", BTP: "#06b6d4",
-  INTEGRACION: "#ef4444", NO_INFORMADO: "#64748b",
+  MM: "#4589ff", SD: "#a855f7", PP: "#f59e0b", WM: "#10b981", EWM: "#06b6d4",
+  QM: "#f43f5e", PM: "#3b82f6", ARIBA: "#f1c21b", IBP: "#8b5cf6", BTP: "#06b6d4",
+  INTEGRACION: "#fa4d56", NO_INFORMADO: "#64748b",
 };
 
 // Templates rápidos por módulo SAP
@@ -204,7 +204,7 @@ export default function KbPage() {
             </p>
           </div>
           <div className="kanban-stats">
-            <div className="kanban-stat" style={{ ["--accent" as never]: "#22d3ee" }}>
+            <div className="kanban-stat" style={{ ["--accent" as never]: "#4589ff" }}>
               <div className="kanban-stat-val">{stats.total}</div>
               <div className="kanban-stat-lbl">TOTAL</div>
             </div>
@@ -212,7 +212,7 @@ export default function KbPage() {
               <div className="kanban-stat-val">{stats.approved}</div>
               <div className="kanban-stat-lbl">APROBADOS</div>
             </div>
-            <div className="kanban-stat" style={{ ["--accent" as never]: "#fbbf24" }}>
+            <div className="kanban-stat" style={{ ["--accent" as never]: "#f1c21b" }}>
               <div className="kanban-stat-val">{stats.draft}</div>
               <div className="kanban-stat-lbl">DRAFTS</div>
             </div>
@@ -234,7 +234,7 @@ export default function KbPage() {
             return (
               <button key={s} onClick={() => setStatusFilter(s)}
                 className={`ticket-filter ${statusFilter === s ? "active" : ""}`}
-                style={{ ["--filt-color" as never]: meta?.color ?? "#22d3ee" }}>
+                style={{ ["--filt-color" as never]: meta?.color ?? "#4589ff" }}>
                 {meta ? `${meta.icon} ${meta.label}` : "▸ Todos"} <span className="ticket-filter-count">{count}</span>
               </button>
             );
@@ -376,7 +376,7 @@ export default function KbPage() {
                         <span className="kanban-tag" style={{ borderColor: "rgba(168,85,247,0.4)", color: "#c084fc", background: "rgba(168,85,247,0.08)" }}>{a.category}</span>
                       )}
                       {a.source === "from_ticket" && (
-                        <span className="kanban-tag" style={{ borderColor: "rgba(251,191,36,0.4)", color: "#fcd34d", background: "rgba(251,191,36,0.08)" }}>📤 de ticket</span>
+                        <span className="kanban-tag" style={{ borderColor: "rgba(241,194,27,0.4)", color: "#fcd34d", background: "rgba(241,194,27,0.08)" }}>📤 de ticket</span>
                       )}
                       <span style={{ marginLeft: "auto", fontSize: 10.5, color: "var(--text-dim)", fontFamily: "var(--font-mono, monospace)" }}>
                         👍 {a.helpful_count} · 🤖 {a.use_count}
@@ -441,7 +441,7 @@ function KbDetail({ article, isApprover, onApprove, onArchive, onDelete, onHelpf
               <span className="kanban-tag" style={{ borderColor: "rgba(168,85,247,0.4)", color: "#c084fc", background: "rgba(168,85,247,0.08)" }}>{article.category}</span>
             )}
             {article.source === "from_ticket" && (
-              <span className="kanban-tag" style={{ borderColor: "rgba(251,191,36,0.4)", color: "#fcd34d", background: "rgba(251,191,36,0.08)" }}>📤 de ticket</span>
+              <span className="kanban-tag" style={{ borderColor: "rgba(241,194,27,0.4)", color: "#fcd34d", background: "rgba(241,194,27,0.08)" }}>📤 de ticket</span>
             )}
           </div>
         </div>
@@ -459,7 +459,7 @@ function KbDetail({ article, isApprover, onApprove, onArchive, onDelete, onHelpf
           <div className="kb-stat-lbl">👍 ÚTIL</div>
         </div>
         <div className="kb-stat">
-          <div className="kb-stat-val" style={{ color: "#22d3ee", fontSize: 13 }}>{article.source === "from_ticket" ? "TICKET" : "MANUAL"}</div>
+          <div className="kb-stat-val" style={{ color: "#4589ff", fontSize: 13 }}>{article.source === "from_ticket" ? "TICKET" : "MANUAL"}</div>
           <div className="kb-stat-lbl">ORIGEN</div>
         </div>
         <div className="kb-stat">
@@ -473,7 +473,7 @@ function KbDetail({ article, isApprover, onApprove, onArchive, onDelete, onHelpf
       {/* Problem */}
       <div className="kb-block kb-block-problem">
         <div className="ticket-section-head">
-          <span style={{ color: "#ef4444" }}>❌</span> PROBLEMA
+          <span style={{ color: "#fa4d56" }}>❌</span> PROBLEMA
         </div>
         <div style={{ fontSize: 13.5, color: "var(--text)", lineHeight: 1.6, whiteSpace: "pre-wrap" }}>
           {article.problem}
@@ -510,7 +510,7 @@ function KbDetail({ article, isApprover, onApprove, onArchive, onDelete, onHelpf
           <button className="btn ghost" onClick={onArchive}>📦 Archivar</button>
         )}
         {isApprover && (
-          <button className="btn ghost" onClick={onDelete} style={{ color: "#ef4444", marginLeft: "auto" }}>🗑 Eliminar</button>
+          <button className="btn ghost" onClick={onDelete} style={{ color: "#fa4d56", marginLeft: "auto" }}>🗑 Eliminar</button>
         )}
       </div>
 

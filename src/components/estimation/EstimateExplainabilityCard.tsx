@@ -46,7 +46,7 @@ export default function EstimateExplainabilityCard({
   }
 
   return (
-    <div className="card" style={{ borderLeft: "3px solid #fbbf24" }}>
+    <div className="card" style={{ borderLeft: "3px solid #f1c21b" }}>
       <div className="row between" style={{ alignItems: "center", flexWrap: "wrap", gap: 8 }}>
         <div className="ticket-section-head" style={{ marginBottom: 0 }}>
           🔬 EXPLICABILIDAD DE LA ETA
@@ -72,7 +72,7 @@ export default function EstimateExplainabilityCard({
 
       {/* Resumen */}
       <div className="row" style={{ gap: 14, marginTop: 10, flexWrap: "wrap", fontSize: 12 }}>
-        <div><span style={{ color: "var(--text-dim)" }}>Rango:</span> <strong style={{ color: "#fbbf24", fontSize: 14 }}>{explanation.totalRangeLabel}</strong></div>
+        <div><span style={{ color: "var(--text-dim)" }}>Rango:</span> <strong style={{ color: "#f1c21b", fontSize: 14 }}>{explanation.totalRangeLabel}</strong></div>
         <div><span style={{ color: "var(--text-dim)" }}>Confianza:</span> <strong>{explanation.confidence}</strong></div>
         <div><span style={{ color: "var(--text-dim)" }}>Complejidad:</span> <strong>{explanation.complexity}</strong></div>
         <div><span style={{ color: "var(--text-dim)" }}>Fuente:</span> <strong>{explanation.calculationSource}</strong></div>
@@ -82,7 +82,7 @@ export default function EstimateExplainabilityCard({
       <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 12, marginTop: 12 }}>
         <FactorColumn
           title="Factores que aumentan la ETA"
-          color="#ef4444"
+          color="#fa4d56"
           arrow="↑"
           factors={explanation.increaseFactors}
         />
@@ -116,8 +116,8 @@ export default function EstimateExplainabilityCard({
 
       {/* Datos faltantes destacados */}
       {explanation.missingData.length > 0 && (
-        <div className="lab-fb-block" style={{ borderLeft: "3px solid #fbbf24", marginTop: 10 }}>
-          <div style={{ fontWeight: 600, fontSize: 11.5, color: "#fbbf24" }}>❓ DATOS FALTANTES ({explanation.missingData.length})</div>
+        <div className="lab-fb-block" style={{ borderLeft: "3px solid #f1c21b", marginTop: 10 }}>
+          <div style={{ fontWeight: 600, fontSize: 11.5, color: "#f1c21b" }}>❓ DATOS FALTANTES ({explanation.missingData.length})</div>
           <ul style={{ margin: "4px 0 0", paddingLeft: 18, fontSize: 11, color: "var(--text-soft)" }}>
             {explanation.missingData.map((m, i) => <li key={i}>{m}</li>)}
           </ul>

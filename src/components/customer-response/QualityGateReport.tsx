@@ -21,15 +21,15 @@ const LEVEL_LABELS: Record<QualityGateReport["level"], string> = {
 
 const LEVEL_COLORS: Record<QualityGateReport["level"], string> = {
   good: "#10b981",
-  acceptable: "#22d3ee",
+  acceptable: "#4589ff",
   needs_review: "#f59e0b",
-  blocked: "#ef4444",
+  blocked: "#fa4d56",
 };
 
 const SEVERITY_COLORS: Record<QualityIssue["severity"], string> = {
-  block: "#ef4444",
+  block: "#fa4d56",
   warn: "#f59e0b",
-  info: "#22d3ee",
+  info: "#4589ff",
 };
 
 const SEVERITY_ICONS: Record<QualityIssue["severity"], string> = {

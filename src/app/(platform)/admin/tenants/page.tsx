@@ -22,9 +22,9 @@ const STATUSES: TenantStatus[] = ["active", "trial", "suspended", "deleted"];
 
 const STATUS_COLOR: Record<TenantStatus, string> = {
   active:    "#10b981",
-  trial:     "#22d3ee",
+  trial:     "#4589ff",
   suspended: "#f59e0b",
-  deleted:   "#ef4444",
+  deleted:   "#fa4d56",
 };
 
 export default function AdminTenantsPage() {
@@ -111,7 +111,7 @@ function TenantsPanel() {
   if (forbidden) {
     return (
       <div style={{ padding: 30 }}>
-        <div className="card" style={{ padding: 18, borderLeft: "4px solid #ef4444" }}>
+        <div className="card" style={{ padding: 18, borderLeft: "4px solid #fa4d56" }}>
           <div style={{ fontSize: 16, fontWeight: 700, marginBottom: 6, color: "#fca5a5" }}>
             🔒 Solo super_admin puede ver esto
           </div>
@@ -146,8 +146,8 @@ function TenantsPanel() {
 
       {loading && <div style={{ color: "var(--text-dim)" }}>cargando tenants…</div>}
       {error && (
-        <div style={{ padding: 12, borderRadius: 6, background: "rgba(239,68,68,0.08)",
-          border: "1px solid rgba(239,68,68,0.30)", color: "#fca5a5", fontSize: 12, marginBottom: 12 }}>
+        <div style={{ padding: 12, borderRadius: 6, background: "rgba(250,77,86,0.08)",
+          border: "1px solid rgba(250,77,86,0.30)", color: "#fca5a5", fontSize: 12, marginBottom: 12 }}>
           Error: {error}
         </div>
       )}
@@ -240,7 +240,7 @@ function TenantsPanel() {
       {toast && (
         <div style={{
           position: "fixed", bottom: 20, right: 20, padding: "10px 14px",
-          background: "rgba(34,211,238,0.14)", border: "1px solid rgba(34,211,238,0.40)",
+          background: "rgba(69,137,255,0.14)", border: "1px solid rgba(69,137,255,0.40)",
           color: "#67e8f9", fontSize: 12, borderRadius: 6, zIndex: 1000,
         }}>{toast}</div>
       )}
@@ -455,7 +455,7 @@ function Field({ label, required, children }: { label: string; required?: boolea
   return (
     <label style={{ display: "block", marginBottom: 10 }}>
       <div style={{ fontSize: 11, color: "var(--text-soft)", marginBottom: 4 }}>
-        {label}{required && <span style={{ color: "#ef4444" }}> *</span>}
+        {label}{required && <span style={{ color: "#fa4d56" }}> *</span>}
       </div>
       {children}
     </label>

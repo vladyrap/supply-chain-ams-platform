@@ -210,7 +210,7 @@ export default function CommandPalette({ open, onClose, favorites, onToggleFavor
                       display: "flex", alignItems: "center", gap: 12,
                       padding: "9px 14px", margin: "0 4px", borderRadius: 8,
                       cursor: "pointer",
-                      background: isActive ? "linear-gradient(90deg, rgba(99,102,241,0.18), rgba(34,211,238,0.10))" : "transparent",
+                      background: isActive ? "linear-gradient(90deg, rgba(99,102,241,0.18), rgba(69,137,255,0.10))" : "transparent",
                       borderLeft: isActive ? "2px solid #818cf8" : "2px solid transparent",
                     }}>
                     <span style={{ fontSize: 18, width: 22, textAlign: "center" }}>{it.icon}</span>

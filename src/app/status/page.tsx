@@ -46,7 +46,7 @@ function formatUptime(sec: number): string {
 const STATUS_COLORS = {
   up: { bg: "#10b981", label: "Operacional" },
   degraded: { bg: "#f59e0b", label: "Degradado" },
-  down: { bg: "#ef4444", label: "Caído" },
+  down: { bg: "#fa4d56", label: "Caído" },
 };
 
 export default function StatusPage() {
@@ -137,7 +137,7 @@ export default function StatusPage() {
 
         {error && (
           <div style={{
-            background: "rgba(239,68,68,0.1)", border: "1px solid #ef4444",
+            background: "rgba(250,77,86,0.1)", border: "1px solid #fa4d56",
             borderRadius: 8, padding: 14, marginBottom: 24, fontSize: 13,
           }}>
             ⚠ No se pudo conectar al backend: {error}
@@ -158,7 +158,7 @@ export default function StatusPage() {
         {/* Footer — FIX A15: ya NO exponemos BACKEND_URL al público */}
         <div style={{ marginTop: 40, fontSize: 11, color: "#64748b", textAlign: "center" }}>
           <p>
-            Para reportar un problema: <a href={`mailto:${SUPPORT_EMAIL}`} style={{ color: "#22d3ee" }}>{SUPPORT_EMAIL}</a>
+            Para reportar un problema: <a href={`mailto:${SUPPORT_EMAIL}`} style={{ color: "#4589ff" }}>{SUPPORT_EMAIL}</a>
           </p>
         </div>
       </div>
@@ -176,7 +176,7 @@ export default function StatusPage() {
 function ServiceRow({ name, status, detail }: { name: string; status: string; detail: string }) {
   const isUp = status === "up" || status === "enforcing";
   const isDown = status === "down";
-  const color = isUp ? "#10b981" : isDown ? "#ef4444" : "#f59e0b";
+  const color = isUp ? "#10b981" : isDown ? "#fa4d56" : "#f59e0b";
   return (
     <div style={{
       display: "flex", alignItems: "center", gap: 14, padding: 14,

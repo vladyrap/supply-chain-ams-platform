@@ -122,7 +122,7 @@ function QuickEvidenceCreate({
   const [url, setUrl] = useState("");
 
   return (
-    <div className="card" style={{ background: "rgba(34,211,238,0.05)" }}>
+    <div className="card" style={{ background: "rgba(69,137,255,0.05)" }}>
       <div style={{ fontSize: 12, color: "var(--text-soft)", marginBottom: 8 }}>
         Crear evidencia tipo <b>{type}</b>
       </div>

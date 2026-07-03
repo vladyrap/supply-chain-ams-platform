@@ -87,8 +87,8 @@ function ResetPasswordInner(): React.ReactElement {
           <div className="auth-card" style={{ maxWidth: 480, margin: "auto" }}>
             <h1 style={{ fontSize: 24, marginBottom: 8 }}>Link inválido</h1>
             <div role="alert" style={{
-              background: "rgba(239, 68, 68, 0.1)",
-              border: "1px solid rgba(239, 68, 68, 0.3)",
+              background: "rgba(250,77,86, 0.1)",
+              border: "1px solid rgba(250,77,86, 0.3)",
               color: "#fca5a5",
               padding: 16,
               borderRadius: 8,
@@ -170,8 +170,8 @@ function ResetPasswordInner(): React.ReactElement {
 
             {err && (
               <div role="alert" style={{
-                background: "rgba(239, 68, 68, 0.1)",
-                border: "1px solid rgba(239, 68, 68, 0.3)",
+                background: "rgba(250,77,86, 0.1)",
+                border: "1px solid rgba(250,77,86, 0.3)",
                 color: "#fca5a5",
                 padding: 12,
                 borderRadius: 8,
@@ -186,7 +186,7 @@ function ResetPasswordInner(): React.ReactElement {
               disabled={busy || !newPassword || !confirm}
               style={{
                 padding: "14px",
-                background: busy ? "rgba(34, 211, 238, 0.5)" : "linear-gradient(to right, #22d3ee, #a78bfa)",
+                background: busy ? "rgba(69,137,255, 0.5)" : "linear-gradient(to right, #4589ff, #be95ff)",
                 color: "white",
                 border: "none",
                 borderRadius: 8,

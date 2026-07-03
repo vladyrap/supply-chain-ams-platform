@@ -34,9 +34,9 @@ const ICONS: Record<AmsRecommendedAction, string> = {
 };
 
 function weightColor(w: number): string {
-  if (w >= 80) return "#ef4444";
-  if (w >= 60) return "#fbbf24";
-  if (w >= 40) return "#22d3ee";
+  if (w >= 80) return "#fa4d56";
+  if (w >= 60) return "#f1c21b";
+  if (w >= 40) return "#4589ff";
   return "#64748b";
 }
 

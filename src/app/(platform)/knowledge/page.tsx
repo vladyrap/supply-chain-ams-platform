@@ -35,7 +35,7 @@ const SAP_MODULES: SapModule[] = [
 ];
 
 const TYPE_META: Record<string, { color: string; icon: string }> = {
-  pdf:  { color: "#ef4444", icon: "📕" },
+  pdf:  { color: "#fa4d56", icon: "📕" },
   docx: { color: "#3b82f6", icon: "📘" },
   xlsx: { color: "#10b981", icon: "📗" },
   md:   { color: "#a855f7", icon: "📝" },
@@ -109,7 +109,7 @@ function KnowledgePageInner() {
             </p>
           </div>
           <div className="kanban-stats">
-            <div className="kanban-stat" style={{ ["--accent" as never]: "#22d3ee" }}>
+            <div className="kanban-stat" style={{ ["--accent" as never]: "#4589ff" }}>
               <div className="kanban-stat-val">{stats?.documents ?? 0}</div>
               <div className="kanban-stat-lbl">DOCS</div>
             </div>
@@ -117,7 +117,7 @@ function KnowledgePageInner() {
               <div className="kanban-stat-val">{stats?.documentsIndexed ?? 0}</div>
               <div className="kanban-stat-lbl">INDEXADOS</div>
             </div>
-            <div className="kanban-stat" style={{ ["--accent" as never]: "#fbbf24" }}>
+            <div className="kanban-stat" style={{ ["--accent" as never]: "#f1c21b" }}>
               <div className="kanban-stat-val">{stats?.documentsPending ?? 0}</div>
               <div className="kanban-stat-lbl">EN COLA</div>
             </div>
@@ -354,9 +354,9 @@ function DocsTab({ docs, loading, stats, onRefresh }: {
           {filteredDocs.map((d) => {
             const meta = TYPE_META[d.source_type || "unknown"] ?? TYPE_META.unknown;
             const statusColor = d.status === "indexed" ? "#10b981"
-                              : d.status === "processing" ? "#fbbf24"
-                              : d.status === "pending" ? "#22d3ee"
-                              : "#ef4444";
+                              : d.status === "processing" ? "#f1c21b"
+                              : d.status === "pending" ? "#4589ff"
+                              : "#fa4d56";
             return (
               <div key={d.id} className="kn-card" style={{ ["--type-color" as never]: meta.color }}>
                 <div className="kn-card-head">
@@ -389,7 +389,7 @@ function DocsTab({ docs, loading, stats, onRefresh }: {
 
                 <div className="row" style={{ gap: 4, flexWrap: "wrap", marginTop: 8 }}>
                   {d.module && d.module !== "NO_INFORMADO" && (
-                    <span className="kanban-tag" style={{ borderColor: "rgba(34,211,238,0.4)", color: "#67e8f9", background: "rgba(34,211,238,0.08)" }}>{d.module}</span>
+                    <span className="kanban-tag" style={{ borderColor: "rgba(69,137,255,0.4)", color: "#67e8f9", background: "rgba(69,137,255,0.08)" }}>{d.module}</span>
                   )}
                   {d.client && (
                     <span className="kanban-tag" style={{ borderColor: "rgba(168,85,247,0.4)", color: "#c084fc", background: "rgba(168,85,247,0.08)" }}>cliente {d.client}</span>
@@ -404,7 +404,7 @@ function DocsTab({ docs, loading, stats, onRefresh }: {
                     disabled={d.status !== "indexed"}>
                     🔍 ver chunks ({d.chunk_count})
                   </button>
-                  <button className="btn ghost" onClick={() => handleDelete(d)} title="Eliminar" style={{ padding: "5px 10px", fontSize: 13, color: "#ef4444" }}>
+                  <button className="btn ghost" onClick={() => handleDelete(d)} title="Eliminar" style={{ padding: "5px 10px", fontSize: 13, color: "#fa4d56" }}>
                     🗑
                   </button>
                 </div>
@@ -545,7 +545,7 @@ function PlaygroundTab() {
                       <span className="kanban-tag" style={{ borderColor: "rgba(255,255,255,0.15)", color: "var(--text-dim)" }}>{c.sourceType}</span>
                       <span className="kanban-tag" style={{ borderColor: "rgba(255,255,255,0.15)", color: "var(--text-dim)" }}>chunk {c.chunkIndex}</span>
                       {c.module && (
-                        <span className="kanban-tag" style={{ borderColor: "rgba(34,211,238,0.4)", color: "#67e8f9", background: "rgba(34,211,238,0.08)" }}>{c.module}</span>
+                        <span className="kanban-tag" style={{ borderColor: "rgba(69,137,255,0.4)", color: "#67e8f9", background: "rgba(69,137,255,0.08)" }}>{c.module}</span>
                       )}
                     </div>
                     <ScoreBar score={c.score} />
@@ -566,7 +566,7 @@ function PlaygroundTab() {
 
 function ScoreBar({ score }: { score: number }) {
   const pct = Math.max(0, Math.min(100, score * 100));
-  const color = score >= 0.75 ? "#10b981" : score >= 0.65 ? "#22d3ee" : "#fbbf24";
+  const color = score >= 0.75 ? "#10b981" : score >= 0.65 ? "#4589ff" : "#f1c21b";
   return (
     <div className="rag-score">
       <div style={{ fontSize: 13, fontWeight: 700, color, textShadow: `0 0 6px ${color}`, fontFamily: "var(--font-mono, monospace)" }}>
@@ -680,7 +680,7 @@ function QuickAddTab({ onRefresh }: { onRefresh: () => Promise<void> }) {
             />
             <div className="row between" style={{ marginTop: 4, fontSize: 10.5, color: "var(--text-dim)" }}>
               <span>min 20 chars · max {maxChars.toLocaleString()} chars · pasa por chunking + embedding</span>
-              <span style={{ fontFamily: "var(--font-mono, monospace)", color: chars > maxChars * 0.9 ? "#fbbf24" : "var(--text-dim)" }}>
+              <span style={{ fontFamily: "var(--font-mono, monospace)", color: chars > maxChars * 0.9 ? "#f1c21b" : "var(--text-dim)" }}>
                 {chars.toLocaleString()} / {maxChars.toLocaleString()}
               </span>
             </div>

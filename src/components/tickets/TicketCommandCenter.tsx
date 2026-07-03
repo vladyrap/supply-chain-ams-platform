@@ -916,7 +916,7 @@ export default function TicketCommandCenter({ ticket, onTicketUpdated }: Props) 
               fontSize: 11, textAlign: "right",
             }}>
               <div style={{ color: "var(--text-dim)", letterSpacing: 2 }}>DECISIÓN AMS</div>
-              <div style={{ color: "#22d3ee", fontWeight: 700, marginTop: 2 }}>
+              <div style={{ color: "#4589ff", fontWeight: 700, marginTop: 2 }}>
                 {AMS_ACTION_LABELS[decision.recommendedAction]}
               </div>
               <div style={{ color: "var(--text-dim)", marginTop: 2 }}>
@@ -1059,7 +1059,7 @@ export default function TicketCommandCenter({ ticket, onTicketUpdated }: Props) 
       />
 
       {/* Sección 1: Resumen / descripción */}
-      <Section id="section-summary" title="RESUMEN" icon="📝" accent="#22d3ee">
+      <Section id="section-summary" title="RESUMEN" icon="📝" accent="#4589ff">
         <div className="msg user"><div className="body" style={{ whiteSpace: "pre-wrap" }}>{ticket.description}</div></div>
       </Section>
 
@@ -1242,7 +1242,7 @@ export default function TicketCommandCenter({ ticket, onTicketUpdated }: Props) 
                 <button
                   className="btn primary"
                   onClick={aie.reanalyze}
-                  style={{ background: "linear-gradient(135deg, #10b981, #22d3ee)" }}
+                  style={{ background: "linear-gradient(135deg, #10b981, #4589ff)" }}
                 >
                   🤖 Analizar con Agente AMS
                 </button>
@@ -1266,7 +1266,7 @@ export default function TicketCommandCenter({ ticket, onTicketUpdated }: Props) 
 
       {/* Sección 4.5: Análisis visual usado */}
       {ticket.visualEvidenceNotes && ticket.visualEvidenceNotes.length > 0 && (
-        <Section id="section-visual" title="ANÁLISIS VISUAL USADO" icon="🔬" accent="#22d3ee" count={ticket.visualEvidenceNotes.length}>
+        <Section id="section-visual" title="ANÁLISIS VISUAL USADO" icon="🔬" accent="#4589ff" count={ticket.visualEvidenceNotes.length}>
           <div className="alert info" style={{ fontSize: 11, marginBottom: 8 }}>
             🔒 Las imágenes <strong>no fueron guardadas</strong>. Solo se conservó el resumen textual del análisis para auditar cómo se estimó este ticket.
           </div>
@@ -1290,8 +1290,8 @@ export default function TicketCommandCenter({ ticket, onTicketUpdated }: Props) 
                 </div>
                 <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 6, marginTop: 8, fontSize: 11.5 }}>
                   {n.detectedTransaction && <div><span style={{ color: "var(--text-dim)" }}>Transacción:</span> <strong>{n.detectedTransaction}</strong></div>}
-                  {n.detectedErrorCode && <div><span style={{ color: "var(--text-dim)" }}>Error:</span> <strong style={{ color: "#ef4444" }}>{n.detectedErrorCode}</strong></div>}
-                  {n.detectedSapModule && <div><span style={{ color: "var(--text-dim)" }}>Módulo:</span> <strong style={{ color: "#22d3ee" }}>{n.detectedSapModule}</strong></div>}
+                  {n.detectedErrorCode && <div><span style={{ color: "var(--text-dim)" }}>Error:</span> <strong style={{ color: "#fa4d56" }}>{n.detectedErrorCode}</strong></div>}
+                  {n.detectedSapModule && <div><span style={{ color: "var(--text-dim)" }}>Módulo:</span> <strong style={{ color: "#4589ff" }}>{n.detectedSapModule}</strong></div>}
                   {n.detectedProcess && <div><span style={{ color: "var(--text-dim)" }}>Proceso:</span> <strong>{n.detectedProcess}</strong></div>}
                   {n.detectedSubProcess && <div><span style={{ color: "var(--text-dim)" }}>Subproceso:</span> <strong>{n.detectedSubProcess}</strong></div>}
                 </div>
@@ -1299,8 +1299,8 @@ export default function TicketCommandCenter({ ticket, onTicketUpdated }: Props) 
                   <div className="row" style={{ gap: 6, flexWrap: "wrap", marginTop: 6 }}>
                     {Object.entries(n.detectedObjects).map(([k, v]) => v && (
                       <span key={k} className="pill" style={{
-                        fontSize: 10, background: "rgba(34,211,238,0.12)", color: "#22d3ee",
-                        border: "1px solid #22d3ee55", padding: "1px 6px", borderRadius: 3,
+                        fontSize: 10, background: "rgba(69,137,255,0.12)", color: "#4589ff",
+                        border: "1px solid #4589ff55", padding: "1px 6px", borderRadius: 3,
                       }}>{k}: {v}</span>
                     ))}
                   </div>
@@ -1320,7 +1320,7 @@ export default function TicketCommandCenter({ ticket, onTicketUpdated }: Props) 
       )}
 
       {/* Sección 5: Conocimiento relacionado */}
-      <Section title="CONOCIMIENTO RELACIONADO" icon="📚" accent="#22d3ee" count={ticketKnowledge.length} defaultOpen={ticketKnowledge.length > 0}>
+      <Section title="CONOCIMIENTO RELACIONADO" icon="📚" accent="#4589ff" count={ticketKnowledge.length} defaultOpen={ticketKnowledge.length > 0}>
         {ticketKnowledge.length === 0 ? (
           <div style={{ fontSize: 12, color: "var(--text-dim)" }}>Sin matches en KB para módulo {ticket.sapModule || "—"}.</div>
         ) : (
@@ -1335,13 +1335,13 @@ export default function TicketCommandCenter({ ticket, onTicketUpdated }: Props) 
       </Section>
 
       {/* Sección 6: Scope items */}
-      <Section title="SCOPE ITEMS SAP RELACIONADOS" icon="🎯" accent="#22d3ee" count={scopeItems.length} defaultOpen={scopeItems.length > 0}>
+      <Section title="SCOPE ITEMS SAP RELACIONADOS" icon="🎯" accent="#4589ff" count={scopeItems.length} defaultOpen={scopeItems.length > 0}>
         {scopeItems.length === 0 ? (
           <div style={{ fontSize: 12, color: "var(--text-dim)" }}>Sin scope items aplicables a este ticket.</div>
         ) : (
           <div className="col" style={{ gap: 4 }}>
             {scopeItems.map((it) => (
-              <div key={it.code} className="lab-fb-block" style={{ borderLeft: "3px solid #22d3ee" }}>
+              <div key={it.code} className="lab-fb-block" style={{ borderLeft: "3px solid #4589ff" }}>
                 <div style={{ fontWeight: 600, fontSize: 12.5 }}>
                   <Badge variant="info">{it.code}</Badge> {it.title}
                   <span style={{ marginLeft: 8, color: "var(--text-dim)", fontWeight: 400 }}>· {it.module} · {it.process}</span>
@@ -1377,7 +1377,7 @@ export default function TicketCommandCenter({ ticket, onTicketUpdated }: Props) 
       </Section>
 
       {/* Sección 8 — Escalamiento N2 · ORQUESTADOR + INTELLIGENCE */}
-      <Section title="ESCALAMIENTO N2" icon="🚨" accent="#ef4444" count={ticketEscalations.length}>
+      <Section title="ESCALAMIENTO N2" icon="🚨" accent="#fa4d56" count={ticketEscalations.length}>
         <div className="col" style={{ gap: 10 }}>
           <div className="row" style={{ gap: 8, alignItems: "center", flexWrap: "wrap" }}>
             <EscalationQuickAction
@@ -1439,7 +1439,7 @@ export default function TicketCommandCenter({ ticket, onTicketUpdated }: Props) 
       </Section>
 
       {/* Sección 9 — Jira / ServiceNow (read-only por ahora) */}
-      <Section title="JIRA / SERVICENOW" icon="↗" accent="#5b8def" defaultOpen={false}>
+      <Section title="JIRA / SERVICENOW" icon="↗" accent="#4589ff" defaultOpen={false}>
         <div style={{ fontSize: 12, color: "var(--text-soft)" }}>
           {ticket.source === "jira"
             ? <>Este ticket viene de Jira (key {ticket.key}). {ticket.url && <a href={ticket.url} target="_blank" rel="noopener noreferrer">↗ Abrir en Jira</a>}</>
@@ -1476,7 +1476,7 @@ export default function TicketCommandCenter({ ticket, onTicketUpdated }: Props) 
       </Section>
 
       {/* Sección 11 — Testing · ORQUESTADOR */}
-      <Section title="TESTING INTELLIGENCE" icon="🧪" accent="#22d3ee" count={ticketTests.length}>
+      <Section title="TESTING INTELLIGENCE" icon="🧪" accent="#4589ff" count={ticketTests.length}>
         <div className="row" style={{ gap: 8, alignItems: "center", flexWrap: "wrap" }}>
           <TestingQuickAction
             ticketKey={ticket.key}
@@ -1503,7 +1503,7 @@ export default function TicketCommandCenter({ ticket, onTicketUpdated }: Props) 
           La <ul> sin tope previa renderizaba 1000 filas cuando el demo seed
           se ejecutaba varias veces. Reemplazada por QualityEvaluationsCard:
           resumen + últimas 3 (o 20 al expandir) + scroll interno + cap 20. */}
-      <Section title="QUALITY EVALUATOR" icon="🏅" accent="#fbbf24" count={ticketEvaluations.length}>
+      <Section title="QUALITY EVALUATOR" icon="🏅" accent="#f1c21b" count={ticketEvaluations.length}>
         <div className="row" style={{ gap: 8, alignItems: "center", flexWrap: "wrap" }}>
           <QualityQuickAction incident={incidentLike} variant="full" />
           {ticketEvaluations.length > 0 && (

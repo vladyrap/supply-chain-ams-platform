@@ -51,7 +51,7 @@ export default function EscalationRules({ escalation, canEdit }: { escalation: U
                     {r.enabled ? "deshabilitar" : "habilitar"}
                   </button>
                   <button className="btn ghost"
-                    style={{ fontSize: 11, padding: "3px 10px", borderColor: "rgba(239,68,68,0.5)", color: "#fca5a5" }}
+                    style={{ fontSize: 11, padding: "3px 10px", borderColor: "rgba(250,77,86,0.5)", color: "#fca5a5" }}
                     onClick={() => { if (confirm(`¿Eliminar regla "${r.name}"?`)) escalation.removeRule(r.id); }}>
                     eliminar
                   </button>

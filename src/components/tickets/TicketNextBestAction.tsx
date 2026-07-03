@@ -35,9 +35,9 @@ const ICONS: Record<AmsRecommendedAction, string> = {
 };
 
 const PRIORITY_COLOR = {
-  HIGH: "#ef4444",
-  MEDIUM: "#fbbf24",
-  LOW: "#22d3ee",
+  HIGH: "#fa4d56",
+  MEDIUM: "#f1c21b",
+  LOW: "#4589ff",
 } as const;
 
 // Mapeo informativo de acción → prioridad visual. La prioridad real ya está en weight.
@@ -117,8 +117,8 @@ export default function TicketNextBestAction({ decision, onAction, readinessScor
         && top.action !== "REQUEST_MORE_INFO" && (
         <div style={{
           marginTop: 8, padding: "6px 10px", borderRadius: 4,
-          background: "rgba(251,191,36,0.12)", border: "1px solid #fbbf2444",
-          fontSize: 11, color: "#fbbf24",
+          background: "rgba(241,194,27,0.12)", border: "1px solid #f1c21b44",
+          fontSize: 11, color: "#f1c21b",
         }}>
           ⚠ Ticket readiness es bajo ({readinessScore}%). Considerá completar la información antes de avanzar.
         </div>

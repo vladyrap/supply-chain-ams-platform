@@ -31,9 +31,9 @@ const STEP_ICONS: Record<string, string> = {
 };
 const STEP_COLORS: Record<string, string> = {
   pending: "var(--text-dim)",
-  running: "#22d3ee",
-  done: "#22c55e",
-  failed: "#ef4444",
+  running: "#4589ff",
+  done: "#42be65",
+  failed: "#fa4d56",
 };
 
 export default function AgenticAppRunPage() {
@@ -109,7 +109,7 @@ export default function AgenticAppRunPage() {
           <Link href="/agent-hub?tab=apps" className="btn ghost" style={{ padding: "4px 10px", fontSize: 13 }}>←</Link>
           <span style={{
             fontSize: 26, width: 48, height: 48, display: "grid", placeItems: "center",
-            borderRadius: 12, background: "rgba(167,139,250,0.12)", border: "1px solid rgba(167,139,250,0.25)",
+            borderRadius: 12, background: "rgba(190,149,255,0.12)", border: "1px solid rgba(190,149,255,0.25)",
           }}>{app.icon}</span>
           <div>
             <div style={{ fontWeight: 600, fontSize: 17 }}>{app.name}</div>
@@ -224,9 +224,9 @@ export default function AgenticAppRunPage() {
           {run.status === "done" && run.finalOutput && (
             <div style={{
               marginTop: 8, padding: 16, borderRadius: 10,
-              background: "rgba(34,197,94,0.06)", border: "1px solid rgba(34,197,94,0.25)",
+              background: "rgba(66,190,101,0.06)", border: "1px solid rgba(66,190,101,0.25)",
             }}>
-              <div style={{ fontSize: 11, letterSpacing: 1.4, color: "#22c55e", textTransform: "uppercase", marginBottom: 8 }}>
+              <div style={{ fontSize: 11, letterSpacing: 1.4, color: "#42be65", textTransform: "uppercase", marginBottom: 8 }}>
                 Resultado final
               </div>
               <MarkdownView text={run.finalOutput} />
@@ -248,7 +248,7 @@ export default function AgenticAppRunPage() {
                   display: "flex", justifyContent: "space-between", alignItems: "center",
                   padding: "8px 12px", borderRadius: 8, cursor: "pointer", fontSize: 12.5,
                   border: "1px solid var(--border-soft)",
-                  background: run?.id === h.id ? "rgba(167,139,250,0.08)" : "transparent",
+                  background: run?.id === h.id ? "rgba(190,149,255,0.08)" : "transparent",
                 }}
               >
                 <span style={{ overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap", maxWidth: "60%" }}>

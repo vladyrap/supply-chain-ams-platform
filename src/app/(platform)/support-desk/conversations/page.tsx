@@ -7,26 +7,26 @@ import FeedbackButtons from "@/components/agent-lab/FeedbackButtons";
 import { supportApi, type SupportConversation, type SupportMessage, type SupportStatus, type SupportChannel } from "@/services/support.api";
 
 const STATUS_META: Record<SupportStatus, { color: string; label: string; icon: string }> = {
-  open:            { color: "#22d3ee", label: "Abierta",          icon: "○" },
+  open:            { color: "#4589ff", label: "Abierta",          icon: "○" },
   ai_handling:     { color: "#3b82f6", label: "IA atendiendo",    icon: "🤖" },
-  waiting_user:    { color: "#fbbf24", label: "Esperando usuario", icon: "⏳" },
+  waiting_user:    { color: "#f1c21b", label: "Esperando usuario", icon: "⏳" },
   escalated:       { color: "#f59e0b", label: "Escalada N2",      icon: "📤" },
   resolved:        { color: "#10b981", label: "Resuelta IA",      icon: "✓" },
   closed:          { color: "#6b7280", label: "Cerrada",          icon: "📦" },
 };
 
 const CHANNEL_META: Record<SupportChannel, { color: string; icon: string; label: string }> = {
-  chat:     { color: "#22d3ee", icon: "💬", label: "Chat web" },
+  chat:     { color: "#4589ff", icon: "💬", label: "Chat web" },
   whatsapp: { color: "#10b981", icon: "📱", label: "WhatsApp" },
   voice:    { color: "#a855f7", icon: "📞", label: "Voz" },
-  email:    { color: "#fbbf24", icon: "✉",  label: "Email" },
+  email:    { color: "#f1c21b", icon: "✉",  label: "Email" },
 };
 
 const URGENCY_META: Record<string, { color: string; icon: string }> = {
   baja:    { color: "#10b981", icon: "○" },
-  media:   { color: "#22d3ee", icon: "●" },
+  media:   { color: "#4589ff", icon: "●" },
   alta:    { color: "#f59e0b", icon: "▲" },
-  critica: { color: "#ef4444", icon: "🔥" },
+  critica: { color: "#fa4d56", icon: "🔥" },
 };
 
 const STATUS_ORDER: (SupportStatus | "all")[] = ["all", "open", "ai_handling", "waiting_user", "escalated", "resolved", "closed"];
@@ -38,7 +38,7 @@ function avatarInitial(s: string | null | undefined): string {
 function avatarColor(s: string | null | undefined): string {
   if (!s) return "#64748b";
   const hash = s.split("").reduce((a, c) => a + c.charCodeAt(0), 0);
-  const colors = ["#22d3ee", "#a855f7", "#10b981", "#fbbf24", "#3b82f6", "#f43f5e", "#06b6d4"];
+  const colors = ["#4589ff", "#a855f7", "#10b981", "#f1c21b", "#3b82f6", "#f43f5e", "#06b6d4"];
   return colors[hash % colors.length];
 }
 function fmtRel(iso: string): string {
@@ -140,11 +140,11 @@ export default function ConversationsPage() {
             </p>
           </div>
           <div className="kanban-stats">
-            <div className="kanban-stat" style={{ ["--accent" as never]: "#22d3ee" }}>
+            <div className="kanban-stat" style={{ ["--accent" as never]: "#4589ff" }}>
               <div className="kanban-stat-val">{stats.total}</div>
               <div className="kanban-stat-lbl">TOTAL</div>
             </div>
-            <div className="kanban-stat" style={{ ["--accent" as never]: "#fbbf24" }}>
+            <div className="kanban-stat" style={{ ["--accent" as never]: "#f1c21b" }}>
               <div className="kanban-stat-val">{stats.open}</div>
               <div className="kanban-stat-lbl">ABIERTAS</div>
             </div>
@@ -167,7 +167,7 @@ export default function ConversationsPage() {
             return (
               <button key={s} onClick={() => setStatusFilter(s)}
                 className={`ticket-filter ${statusFilter === s ? "active" : ""}`}
-                style={{ ["--filt-color" as never]: meta?.color ?? "#22d3ee" }}>
+                style={{ ["--filt-color" as never]: meta?.color ?? "#4589ff" }}>
                 {meta ? `${meta.icon} ${meta.label}` : "▸ Todas"} <span className="ticket-filter-count">{count}</span>
               </button>
             );
@@ -251,7 +251,7 @@ export default function ConversationsPage() {
                     </div>
                     <div className="row" style={{ gap: 6, marginTop: 5, flexWrap: "wrap", alignItems: "center" }}>
                       {c.sap_module && c.sap_module !== "NO_INFORMADO" && (
-                        <span className="kanban-tag" style={{ borderColor: "rgba(34,211,238,0.4)", color: "#67e8f9", background: "rgba(34,211,238,0.08)" }}>{c.sap_module}</span>
+                        <span className="kanban-tag" style={{ borderColor: "rgba(69,137,255,0.4)", color: "#67e8f9", background: "rgba(69,137,255,0.08)" }}>{c.sap_module}</span>
                       )}
                       {urgency && (
                         <span className="kanban-tag" style={{ borderColor: `${urgency.color}55`, color: urgency.color, background: `${urgency.color}11` }}>
@@ -400,7 +400,7 @@ function ConversationDetail({ detail, messagesEndRef }: { detail: { conv: Suppor
                 <div key={m.id}>
                   {showDate && <DateDivider date={m.created_at} />}
                   <div className="conv-msg-system">
-                    <span style={{ marginRight: 6, color: "#fbbf24" }}>⚙</span>
+                    <span style={{ marginRight: 6, color: "#f1c21b" }}>⚙</span>
                     {m.text}
                   </div>
                 </div>

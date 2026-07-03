@@ -142,8 +142,8 @@ export default function AdminRoiPanel() {
   const roiColor =
     roi.roiAvgX == null ? "#64748b" :
     roi.roiAvgX >= 100 ? "#10b981" :
-    roi.roiAvgX >= 10 ? "#22d3ee" :
-    roi.roiAvgX >= 1 ? "#f59e0b" : "#ef4444";
+    roi.roiAvgX >= 10 ? "#4589ff" :
+    roi.roiAvgX >= 1 ? "#f59e0b" : "#fa4d56";
   const fmtRoi = (v: number | null) =>
     v == null ? "—" : v.toLocaleString("es-CL", { maximumFractionDigits: 0 }) + "×";
   const fmtRoiBare = (v: number | null) =>
@@ -183,7 +183,7 @@ export default function AdminRoiPanel() {
             </div>
             <div style={{ fontSize: 14, fontWeight: 600, marginTop: 8 }}>
               {roi.hasCost ? (
-                <>Por cada <span style={{ color: "#ef4444" }}>$1 USD</span> en Gemini, generás <span style={{ color: "#10b981" }}>${fmtRoiBare(roi.roiAvgX)} USD</span> en valor.</>
+                <>Por cada <span style={{ color: "#fa4d56" }}>$1 USD</span> en Gemini, generás <span style={{ color: "#10b981" }}>${fmtRoiBare(roi.roiAvgX)} USD</span> en valor.</>
               ) : (
                 <span style={{ color: "var(--text-dim)" }}>Sin costos Gemini este mes — ROI no calculable.</span>
               )}
@@ -210,10 +210,10 @@ export default function AdminRoiPanel() {
           <div style={{ flex: 1, textAlign: "center" }}>
             <div style={{ fontSize: 11, color: "var(--text-dim)", marginBottom: 4 }}>Costo Gemini</div>
             <div style={{
-              height: "20%", minHeight: 8, background: "linear-gradient(180deg, #ef4444, #b91c1c)",
+              height: "20%", minHeight: 8, background: "linear-gradient(180deg, #fa4d56, #b91c1c)",
               borderRadius: "4px 4px 0 0", marginInline: "20%",
             }} />
-            <div style={{ fontSize: 16, fontWeight: 700, color: "#ef4444", marginTop: 4 }}>
+            <div style={{ fontSize: 16, fontWeight: 700, color: "#fa4d56", marginTop: 4 }}>
               {fmtUSD(roi.monthCostUsd)}
             </div>
             <div style={{ fontSize: 11, color: "var(--text-dim)" }}>{fmtCLP(roi.monthCostClp)}</div>
@@ -310,9 +310,9 @@ export default function AdminRoiPanel() {
 
       {/* 3 KPIs auxiliares */}
       <div style={{ display: "flex", gap: 10, flexWrap: "wrap" }}>
-        <div className="card" style={{ padding: 14, flex: "1 1 240px", borderLeft: "4px solid #22d3ee" }}>
+        <div className="card" style={{ padding: 14, flex: "1 1 240px", borderLeft: "4px solid #4589ff" }}>
           <div style={{ fontSize: 10, letterSpacing: 1.4, color: "var(--text-dim)" }}>⏱️ HORAS HUMANAS AHORRADAS</div>
-          <div style={{ fontSize: 24, fontWeight: 700, color: "#22d3ee" }}>
+          <div style={{ fontSize: 24, fontWeight: 700, color: "#4589ff" }}>
             {valueCalc.hoursSaved.min}–{valueCalc.hoursSaved.max}h
           </div>
           <div style={{ fontSize: 11, color: "var(--text-dim)" }}>Por mes (estimación)</div>

@@ -16,7 +16,7 @@ export default function ContextScanCard({ context }: Props) {
   const sapObjects = Object.entries(context.sapObjects).filter(([, v]) => !!v);
 
   return (
-    <div className="card" style={{ padding: 14, borderLeft: "3px solid #22d3ee" }}>
+    <div className="card" style={{ padding: 14, borderLeft: "3px solid #4589ff" }}>
       <div style={{ fontSize: 10, letterSpacing: 2, color: "var(--text-dim)", marginBottom: 6 }}>
         🔬 CONTEXTO DETECTADO
       </div>
@@ -109,7 +109,7 @@ export default function ContextScanCard({ context }: Props) {
         <span>Calidad de información</span>
         <span style={{
           fontWeight: 700,
-          color: context.textQualityScore >= 70 ? "#10b981" : context.textQualityScore >= 40 ? "#f59e0b" : "#ef4444",
+          color: context.textQualityScore >= 70 ? "#10b981" : context.textQualityScore >= 40 ? "#f59e0b" : "#fa4d56",
         }}>
           {context.textQualityScore}/100 · {context.textTokenCount} tokens
         </span>

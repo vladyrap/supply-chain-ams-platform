@@ -60,7 +60,7 @@ export default function BusinessValueFullCenter() {
               <div className="kanban-stat-val">USD {bv.totals.minCost.toLocaleString("es-CL")}</div>
               <div className="kanban-stat-lbl">PISO EVITADO</div>
             </div>
-            <div className="kanban-stat" style={{ ["--accent" as never]: "#22d3ee" }}>
+            <div className="kanban-stat" style={{ ["--accent" as never]: "#4589ff" }}>
               <div className="kanban-stat-val">USD {bv.totals.maxCost.toLocaleString("es-CL")}</div>
               <div className="kanban-stat-lbl">TECHO EVITADO</div>
             </div>

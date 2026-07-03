@@ -227,9 +227,9 @@ export const VERDICT_ICONS: Record<EscalationVerdict, string> = {
 };
 
 export const VERDICT_COLORS: Record<EscalationVerdict, string> = {
-  ESCALATE_NOW: "#ef4444",
+  ESCALATE_NOW: "#fa4d56",
   ESCALATE_SOON: "#f59e0b",
-  WAIT_AND_SEE: "#22d3ee",
+  WAIT_AND_SEE: "#4589ff",
   RESOLVE_AT_N1: "#10b981",
   INSUFFICIENT_DATA: "#64748b",
 };

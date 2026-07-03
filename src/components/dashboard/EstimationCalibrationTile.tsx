@@ -43,7 +43,7 @@ export default function EstimationCalibrationTile({ tickets }: Props) {
       : averageAbsVariancePct <= 40
         ? "warn"
         : "error";
-  const accent = tone === "ok" ? "#10b981" : tone === "warn" ? "#f59e0b" : tone === "error" ? "#ef4444" : "#6b7280";
+  const accent = tone === "ok" ? "#10b981" : tone === "warn" ? "#f59e0b" : tone === "error" ? "#fa4d56" : "#6b7280";
 
   return (
     <div

@@ -22,7 +22,7 @@ function scrollToSection(targetId?: string) {
   if (el) {
     el.scrollIntoView({ behavior: "smooth", block: "start" });
     el.style.transition = "outline 1s ease";
-    el.style.outline = "2px solid #fbbf24";
+    el.style.outline = "2px solid #f1c21b";
     setTimeout(() => { el.style.outline = "none"; }, 1500);
   }
 }
@@ -83,7 +83,7 @@ export default function TicketReadinessScore({ ticket, onRecalculate }: Props) {
                   {c.fixHint && <div style={{ fontSize: 10.5, color: "var(--text-dim)", fontWeight: 400, marginTop: 2 }}>{c.fixHint}</div>}
                 </span>
                 <span style={{ color: "var(--text-dim)", fontSize: 10, alignSelf: "center" }}>+{c.points}pt</span>
-                <span style={{ color: "#fbbf24", fontSize: 14, alignSelf: "center" }}>↗</span>
+                <span style={{ color: "#f1c21b", fontSize: 14, alignSelf: "center" }}>↗</span>
               </button>
             ))}
           </div>

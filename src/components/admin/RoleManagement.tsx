@@ -67,7 +67,7 @@ export default function RoleManagement({ admin }: Props) {
                 <button className="btn ghost" style={{ padding: "3px 10px", fontSize: 11.5 }}
                   onClick={() => handleDuplicate(r)}>⎘ Duplicar</button>
                 {!r.isSystem && (
-                  <button className="btn ghost" style={{ padding: "3px 10px", fontSize: 11.5, color: "#ef4444" }}
+                  <button className="btn ghost" style={{ padding: "3px 10px", fontSize: 11.5, color: "#fa4d56" }}
                     onClick={() => handleDelete(r)}>🗑 Eliminar</button>
                 )}
               </div>
