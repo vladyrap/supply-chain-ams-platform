@@ -52,38 +52,33 @@ export default function HeroCard({ userName, role, totalIncidents, resolvedToday
   return (
     <div style={{
       position: "relative",
-      borderRadius: 16,
+      borderRadius: 8,
       overflow: "hidden",
       padding: "26px 28px",
       marginBottom: 22,
-      background: "linear-gradient(135deg, rgba(99,102,241,0.18) 0%, rgba(69,137,255,0.12) 50%, rgba(168,85,247,0.10) 100%)",
-      border: "1px solid rgba(99,102,241,0.30)",
-      boxShadow: "0 12px 40px rgba(15,23,42,0.40), 0 0 0 1px rgba(255,255,255,0.04) inset",
+      // Franja azul IBM sólida (estilo hero IBM Consulting Advantage)
+      background: "linear-gradient(135deg, #0f62fe 0%, #0043ce 100%)",
+      border: "1px solid #0043ce",
+      boxShadow: "var(--shadow)",
     }}>
-      {/* Decoraciones aurora */}
+      {/* Decoración sutil */}
       <div aria-hidden style={{
-        position: "absolute", top: -80, right: -80, width: 280, height: 280,
+        position: "absolute", top: -80, right: -60, width: 280, height: 280,
         borderRadius: "50%",
-        background: "radial-gradient(circle, rgba(69,137,255,0.30) 0%, rgba(69,137,255,0) 70%)",
-        filter: "blur(20px)", pointerEvents: "none",
-      }} />
-      <div aria-hidden style={{
-        position: "absolute", bottom: -100, left: -50, width: 260, height: 260,
-        borderRadius: "50%",
-        background: "radial-gradient(circle, rgba(168,85,247,0.28) 0%, rgba(168,85,247,0) 70%)",
-        filter: "blur(28px)", pointerEvents: "none",
+        background: "radial-gradient(circle, rgba(255,255,255,0.14) 0%, rgba(255,255,255,0) 70%)",
+        pointerEvents: "none",
       }} />
 
       <div className="row" style={{ alignItems: "flex-start", gap: 16, position: "relative", zIndex: 1 }}>
         <div style={{ flex: 1, minWidth: 0 }}>
-          <div style={{ fontSize: 10.5, letterSpacing: 2.5, color: "#67e8f9", fontFamily: "var(--font-mono, monospace)", marginBottom: 4 }}>
+          <div style={{ fontSize: 10.5, letterSpacing: 2.5, color: "rgba(255,255,255,0.75)", fontFamily: "var(--font-mono, monospace)", marginBottom: 4 }}>
             AMS · {role.toUpperCase()}
             {now && ` · ${now.toLocaleString("es-CL", { weekday: "long", day: "numeric", month: "short", hour: "2-digit", minute: "2-digit" })}`}
           </div>
-          <h1 style={{ margin: 0, fontSize: 28, fontWeight: 700, background: "linear-gradient(90deg, #e0e7ff, #a5f3fc)", WebkitBackgroundClip: "text", WebkitTextFillColor: "transparent", backgroundClip: "text" }}>
+          <h1 style={{ margin: 0, fontSize: 28, fontWeight: 700, color: "#ffffff" }}>
             {greeting(userName, now)}
           </h1>
-          <p style={{ margin: "6px 0 0", fontSize: 13.5, color: "#cbd5e1", maxWidth: 540 }}>
+          <p style={{ margin: "6px 0 0", fontSize: 13.5, color: "rgba(255,255,255,0.85)", maxWidth: 540 }}>
             Operación {brandName}. Tu equipo, tu agente y tus clientes desde un solo lugar.
           </p>
         </div>
@@ -91,14 +86,14 @@ export default function HeroCard({ userName, role, totalIncidents, resolvedToday
         {/* Clima del sistema */}
         <div style={{
           padding: "10px 16px",
-          background: "rgba(15,23,42,0.45)",
-          border: `1px solid ${clima.color}40`,
-          borderRadius: 10,
+          background: "rgba(255,255,255,0.14)",
+          border: "1px solid rgba(255,255,255,0.25)",
+          borderRadius: 6,
           minWidth: 200,
           textAlign: "center",
         }}>
           <div style={{ fontSize: 36, lineHeight: 1, marginBottom: 4 }}>{clima.icon}</div>
-          <div style={{ fontSize: 11, color: clima.color, fontWeight: 700, letterSpacing: 1, textTransform: "uppercase" }}>{clima.label}</div>
+          <div style={{ fontSize: 11, color: "#ffffff", fontWeight: 700, letterSpacing: 1, textTransform: "uppercase" }}>{clima.label}</div>
         </div>
       </div>
 
@@ -107,28 +102,30 @@ export default function HeroCard({ userName, role, totalIncidents, resolvedToday
         display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(180px, 1fr))",
         gap: 14, marginTop: 22, position: "relative", zIndex: 1,
       }}>
-        <HeroStat label="Incidentes registrados"     value={totalIncidents}      color="#4589ff" />
-        <HeroStat label="Resueltos hoy"              value={resolvedToday}        color="#86efac" suffix="↑" />
-        <HeroStat label="Escalaciones N2 activas"    value={activeEscalations}    color={activeEscalations > 3 ? "#fdba74" : "#a5b4fc"} />
-        <HeroStat label="% respuestas IA exitosas"   value={`${Math.round(agentResponseRate)}%`} color={agentResponseRate >= 80 ? "#86efac" : "#fcd34d"} />
+        <HeroStat label="Incidentes registrados"     value={totalIncidents}      suffix="" />
+        <HeroStat label="Resueltos hoy"              value={resolvedToday}        suffix="↑" />
+        <HeroStat label="Escalaciones N2 activas"    value={activeEscalations} />
+        <HeroStat label="% respuestas IA exitosas"   value={`${Math.round(agentResponseRate)}%`} />
       </div>
     </div>
   );
 }
 
-function HeroStat({ label, value, color, suffix }: { label: string; value: number | string; color: string; suffix?: string }) {
+function HeroStat({ label, value, suffix }: { label: string; value: number | string; suffix?: string }) {
+  // Tarjetas internas sobre la franja azul IBM: vidrio translúcido blanco,
+  // valores en blanco (los colores no contrastan sobre azul).
   return (
     <div style={{
       padding: "12px 14px",
-      background: "rgba(15,23,42,0.50)",
-      border: "1px solid rgba(255,255,255,0.06)",
-      borderRadius: 10,
+      background: "rgba(255,255,255,0.14)",
+      border: "1px solid rgba(255,255,255,0.22)",
+      borderRadius: 6,
       transition: "transform 0.18s, border-color 0.18s",
     }}
-    onMouseEnter={(e) => { e.currentTarget.style.transform = "translateY(-2px)"; e.currentTarget.style.borderColor = `${color}66`; }}
-    onMouseLeave={(e) => { e.currentTarget.style.transform = "translateY(0)"; e.currentTarget.style.borderColor = "rgba(255,255,255,0.06)"; }}>
-      <div style={{ fontSize: 10.5, color: "#94a3b8", letterSpacing: 1, textTransform: "uppercase" }}>{label}</div>
-      <div style={{ marginTop: 4, fontSize: 28, fontWeight: 800, color, fontVariantNumeric: "tabular-nums" }}>
+    onMouseEnter={(e) => { e.currentTarget.style.transform = "translateY(-2px)"; e.currentTarget.style.borderColor = "rgba(255,255,255,0.5)"; }}
+    onMouseLeave={(e) => { e.currentTarget.style.transform = "translateY(0)"; e.currentTarget.style.borderColor = "rgba(255,255,255,0.22)"; }}>
+      <div style={{ fontSize: 10.5, color: "rgba(255,255,255,0.75)", letterSpacing: 1, textTransform: "uppercase" }}>{label}</div>
+      <div style={{ marginTop: 4, fontSize: 28, fontWeight: 800, color: "#ffffff", fontVariantNumeric: "tabular-nums" }}>
         {value}{suffix && <span style={{ fontSize: 16, marginLeft: 4 }}>{suffix}</span>}
       </div>
     </div>
