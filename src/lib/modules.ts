@@ -117,6 +117,15 @@ export const MODULES: ModuleDef[] = [
     rolesAllowed: ["viewer", "consultor", "aprobador", "admin"],
     permissionKey: "agente_ams", group: "agentes",
   },
+  // Acceso directo a la tab Builder del Agent Hub — mismo módulo, entrada
+  // explícita en el sidebar para el flujo crear → probar → publicar.
+  {
+    id: "agent-publisher", label: "Crear & Publicar Agentes", icon: "🚀", href: "/agent-hub?tab=builder",
+    description: "Diseñá un agente con el LLM que elijas (Gemini 2.5 Flash/Pro · Claude Haiku/Sonnet/Opus), probalo en el playground y publicalo para todo el equipo",
+    status: "available", phase: 8,
+    rolesAllowed: ["consultor", "aprobador", "admin"],
+    permissionKey: "agente_ams", group: "agentes",
+  },
   {
     id: "marketplace", label: "Marketplace", icon: "🏪", href: "/marketplace",
     description: "Apps agénticas empaquetadas por categoría, listas para desplegar",
