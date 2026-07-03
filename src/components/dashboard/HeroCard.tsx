@@ -16,8 +16,12 @@ interface Props {
   agentResponseRate: number;  // 0-100
 }
 
-function greeting(name: string): string {
-  const h = new Date().getHours();
+// Saludo según la hora. Si no hay hora aún (pre-mount en SSR), saludo neutro
+// para que el HTML del servidor y el primer render del cliente coincidan
+// (evita hydration mismatch por diferencia de timezone/minuto).
+function greeting(name: string, date: Date | null): string {
+  if (!date) return `Hola, ${name}`;
+  const h = date.getHours();
   if (h < 6) return `Buenas noches, ${name}`;
   if (h < 12) return `Buenos días, ${name}`;
   if (h < 19) return `Buenas tardes, ${name}`;
@@ -32,10 +36,13 @@ function climaIcon(escalations: number, responseRate: number): { icon: string; l
 }
 
 export default function HeroCard({ userName, role, totalIncidents, resolvedToday, activeEscalations, agentResponseRate }: Props) {
-  const [now, setNow] = useState(() => new Date());
+  // now arranca en null: SSR y el primer render del cliente muestran lo mismo
+  // (sin hora), luego useEffect setea la hora real → sin hydration mismatch.
+  const [now, setNow] = useState<Date | null>(null);
   const { tenant } = useTenant();
   const brandName = tenant?.brand?.name || tenant?.name || "AMS Platform";
   useEffect(() => {
+    setNow(new Date());
     const i = setInterval(() => setNow(new Date()), 30_000);
     return () => clearInterval(i);
   }, []);
@@ -70,10 +77,11 @@ export default function HeroCard({ userName, role, totalIncidents, resolvedToday
       <div className="row" style={{ alignItems: "flex-start", gap: 16, position: "relative", zIndex: 1 }}>
         <div style={{ flex: 1, minWidth: 0 }}>
           <div style={{ fontSize: 10.5, letterSpacing: 2.5, color: "#67e8f9", fontFamily: "var(--font-mono, monospace)", marginBottom: 4 }}>
-            AMS · {role.toUpperCase()} · {now.toLocaleString("es-CL", { weekday: "long", day: "numeric", month: "short", hour: "2-digit", minute: "2-digit" })}
+            AMS · {role.toUpperCase()}
+            {now && ` · ${now.toLocaleString("es-CL", { weekday: "long", day: "numeric", month: "short", hour: "2-digit", minute: "2-digit" })}`}
           </div>
           <h1 style={{ margin: 0, fontSize: 28, fontWeight: 700, background: "linear-gradient(90deg, #e0e7ff, #a5f3fc)", WebkitBackgroundClip: "text", WebkitTextFillColor: "transparent", backgroundClip: "text" }}>
-            {greeting(userName)}
+            {greeting(userName, now)}
           </h1>
           <p style={{ margin: "6px 0 0", fontSize: 13.5, color: "#cbd5e1", maxWidth: 540 }}>
             Operación {brandName}. Tu equipo, tu agente y tus clientes desde un solo lugar.

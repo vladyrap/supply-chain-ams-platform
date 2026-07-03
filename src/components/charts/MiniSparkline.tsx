@@ -3,6 +3,8 @@
 // Sparkline minimalista en SVG. Sin dependencias.
 // Útil para KPIs: muestra la tendencia reciente en una línea de ~60x18px.
 
+import { useId } from "react";
+
 interface Props {
   values: number[];
   width?: number;
@@ -18,6 +20,9 @@ export default function MiniSparkline({
   values, width = 70, height = 22,
   color = "#4589ff", filled = true, showLastDot = true,
 }: Props) {
+  // useId → ID estable e idéntico en servidor y cliente (Math.random provocaba
+  // hydration mismatch: el gradiente tenía distinto id en cada render).
+  const reactId = useId();
   if (!values || values.length < 2) {
     return <svg width={width} height={height} aria-hidden />;
   }
@@ -42,7 +47,7 @@ export default function MiniSparkline({
 
   const [lx, ly] = points[points.length - 1];
 
-  const gradId = `mini-spark-grad-${Math.random().toString(36).slice(2, 8)}`;
+  const gradId = `mini-spark-grad-${reactId.replace(/:/g, "")}`;
 
   return (
     <svg width={width} height={height} style={{ display: "block" }}>
