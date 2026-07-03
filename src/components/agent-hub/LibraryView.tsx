@@ -35,6 +35,7 @@ export function LibraryView() {
   const [onlyMine, setOnlyMine] = useState(false);
   const [onlyVerified, setOnlyVerified] = useState(false);
   const [onlyDrafts, setOnlyDrafts] = useState(false);
+  const [showArchived, setShowArchived] = useState(false);
   const [sort, setSort] = useState<SortMode>("rating");
   const [favs, setFavs] = useState<Set<string>>(new Set());
   // F7: edición de agentes propios
@@ -48,12 +49,13 @@ export function LibraryView() {
   const load = useCallback(async () => {
     setLoading(true);
     setError(null);
-    // forUser: además de los publicados, trae mis borradores privados
-    const r = await listAgents(myId ? { forUser: myId } : {});
+    // Onda 6: la identidad la resuelve el backend por sesión (borradores propios
+    // incluidos automáticamente). status=archived lista solo mis archivados.
+    const r = await listAgents(showArchived ? { status: "archived" } : {});
     if (r.success) setAgents(r.agents);
     else setError(r.error);
     setLoading(false);
-  }, [myId]);
+  }, [showArchived]);
 
   useEffect(() => { load(); }, [load]);
   useEffect(() => { setFavs(getFavorites()); }, []);
@@ -149,6 +151,20 @@ export function LibraryView() {
     } else window.alert(r.error);
   }
 
+  // Onda 6 · archivar / reactivar — alternativa suave al borrado
+  async function handleArchive(a: CustomAgent) {
+    if (!window.confirm(`¿Archivar "${a.name}"? Deja de estar disponible pero se puede reactivar cuando quieras desde el filtro 🗄 Archivados.`)) return;
+    const r = await updateAgent(a.id, { status: "archived" });
+    if (r.success) load();
+    else window.alert(r.error);
+  }
+
+  async function handleReactivate(a: CustomAgent) {
+    const r = await updateAgent(a.id, { status: "active" });
+    if (r.success) { setShowArchived(false); }
+    else window.alert(r.error);
+  }
+
   return (
     <div>
       {/* Header */}
@@ -189,6 +205,10 @@ export function LibraryView() {
           <label style={{ display: "flex", alignItems: "center", gap: 8, fontSize: 13, padding: "5px 0", cursor: "pointer" }}>
             <input type="checkbox" checked={onlyDrafts} onChange={(e) => setOnlyDrafts(e.target.checked)} />
             📝 Mis borradores ({counts.drafts})
+          </label>
+          <label style={{ display: "flex", alignItems: "center", gap: 8, fontSize: 13, padding: "5px 0", cursor: "pointer" }}>
+            <input type="checkbox" checked={showArchived} onChange={(e) => setShowArchived(e.target.checked)} />
+            🗄 Archivados (míos)
           </label>
 
           <div style={{ borderTop: "1px solid var(--border-soft)", margin: "10px 0" }} />
@@ -286,7 +306,11 @@ export function LibraryView() {
                     <span title="Conversaciones">💬 {a.chatCount}</span>
                     <button onClick={() => handleDuplicate(a)} title="Duplicar como mi borrador y personalizar"
                       style={{ background: "none", border: 0, cursor: "pointer", fontSize: 13, color: "var(--text-dim)" }}>⧉</button>
-                    {!a.isVerified && a.createdBy === myId && (
+                    {!a.isVerified && a.createdBy === myId && showArchived && (
+                      <button onClick={() => handleReactivate(a)} title="Reactivar agente"
+                        style={{ background: "none", border: 0, cursor: "pointer", fontSize: 12, color: "#34d399", fontWeight: 600 }}>♻ Reactivar</button>
+                    )}
+                    {!a.isVerified && a.createdBy === myId && !showArchived && (
                       <>
                         <button onClick={() => router.push(`/agent-hub?tab=builder&id=${a.id}`)} title="Abrir en Agent Builder"
                           style={{ background: "none", border: 0, cursor: "pointer", fontSize: 13, color: "var(--text-dim)" }}>🛠️</button>
@@ -299,7 +323,9 @@ export function LibraryView() {
                           <button onClick={() => handleUnpublish(a)} title="Volver a borrador privado"
                             style={{ background: "none", border: 0, cursor: "pointer", fontSize: 12, color: "#fbbf24" }}>↩</button>
                         )}
-                        <button onClick={() => handleDelete(a)} title="Eliminar agente"
+                        <button onClick={() => handleArchive(a)} title="Archivar (reversible)"
+                          style={{ background: "none", border: 0, cursor: "pointer", fontSize: 13, color: "var(--text-dim)" }}>🗄</button>
+                        <button onClick={() => handleDelete(a)} title="Eliminar agente (definitivo)"
                           style={{ background: "none", border: 0, cursor: "pointer", fontSize: 13, color: "#ef4444" }}>🗑</button>
                       </>
                     )}

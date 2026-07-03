@@ -18,8 +18,9 @@ import { useAuth } from "@/context/AuthContext";
 import {
   getAgent, createAgent, updateAgent, publishAgent, unpublishAgent,
   chatWithAgent, getModelsCatalog, listAgentVersions, restoreAgentVersion,
-  compareAgentModels, AGENT_CATEGORIES, AGENT_MODELS, modelLabel,
-  type CustomAgent, type ModelAvailability, type AgentVersion, type ModelComparisonEntry,
+  compareAgentModels, getAgentStats, AGENT_CATEGORIES, AGENT_MODELS, modelLabel,
+  type CustomAgent, type ModelAvailability, type AgentVersion,
+  type ModelComparisonEntry, type AgentStats,
 } from "@/services/custom-agents.api";
 import { AGENT_TEMPLATES, type AgentTemplate } from "@/lib/agent-templates";
 
@@ -96,6 +97,16 @@ function AgentBuilderInner() {
       if (r.success) setVersions(r.versions);
     })();
   }, [agent?.id, agent?.updatedAt]);
+
+  // Onda 6 — estadísticas de uso del agente (refresca tras cada mensaje del playground)
+  const [stats, setStats] = useState<AgentStats | null>(null);
+  useEffect(() => {
+    if (!agent?.id) { setStats(null); return; }
+    (async () => {
+      const r = await getAgentStats(agent.id);
+      if (r.success) setStats(r.stats);
+    })();
+  }, [agent?.id, pgMessages.length]);
 
   useEffect(() => {
     pgEndRef.current?.scrollIntoView({ behavior: "smooth" });
@@ -209,6 +220,48 @@ function AgentBuilderInner() {
     setNotice(`Plantilla "${t.title}" aplicada — ajustala a tu necesidad y guardá el borrador.`);
   }
 
+  // ── Onda 6: export / import JSON (portabilidad dev → prod) ──
+  function exportJson() {
+    const data = { name, icon, category, description, instructions, kbModules, model };
+    const blob = new Blob([JSON.stringify(data, null, 2)], { type: "application/json" });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement("a");
+    a.href = url;
+    a.download = `agente-${(name || "sin-nombre").toLowerCase().replace(/[^a-z0-9]+/g, "-")}.json`;
+    a.click();
+    URL.revokeObjectURL(url);
+    setNotice("Agente exportado como JSON — podés importarlo en otro ambiente.");
+  }
+
+  function importJson(e: React.ChangeEvent<HTMLInputElement>) {
+    const file = e.target.files?.[0];
+    e.target.value = "";
+    if (!file) return;
+    const reader = new FileReader();
+    reader.onload = () => {
+      try {
+        const d = JSON.parse(String(reader.result)) as Partial<{
+          name: string; icon: string; category: string; description: string;
+          instructions: string; kbModules: string[]; model: string;
+        }>;
+        if (!d.name && !d.instructions) throw new Error("no es un agente");
+        if (d.name) setName(d.name);
+        if (d.icon) setIcon(d.icon);
+        if (d.category) setCategory(d.category);
+        if (d.description !== undefined) setDescription(d.description ?? "");
+        if (d.instructions) setInstructions(d.instructions);
+        if (Array.isArray(d.kbModules)) setKbModules(d.kbModules.filter((m): m is string => typeof m === "string"));
+        if (d.model) setModel(d.model);
+        setDirty(true);
+        setError(null);
+        setNotice(`Agente importado desde "${file.name}" — revisalo y guardá el borrador.`);
+      } catch {
+        setError("El archivo no es un JSON de agente válido.");
+      }
+    };
+    reader.readAsText(file);
+  }
+
   // ── Onda 5: restaurar versión ──
   async function handleRestore(v: AgentVersion) {
     if (!agent) return;
@@ -292,6 +345,17 @@ function AgentBuilderInner() {
   const isPublished = agent ? (agent.visibility === "team" || agent.visibility === "public") : false;
   const instrLen = instructions.length;
 
+  // Onda 6 — checklist de publicación en vivo
+  const modelOk = !modelsAvail[model] || modelsAvail[model].available;
+  const checklist = [
+    { label: "Nombre definido", ok: !!name.trim() },
+    { label: "Descripción para el equipo", ok: !!description.trim() },
+    { label: `Instrucciones ≥ ${MIN_INSTRUCTIONS} caracteres`, ok: instructions.trim().length >= MIN_INSTRUCTIONS },
+    { label: "Modelo disponible (API key)", ok: modelOk },
+    { label: "Probado en el playground", ok: pgMessages.length > 0 || (stats?.conversations ?? 0) > 0 },
+  ];
+  const checklistReady = checklist.filter((c) => c.ok).length;
+
   if (notFound) {
     return (
       <div className="card" style={{ padding: 40, textAlign: "center" }}>
@@ -326,6 +390,16 @@ function AgentBuilderInner() {
                 ? <Badge variant="ok">👥 Publicado al equipo</Badge>
                 : <Badge variant="info">📝 Borrador privado</Badge>
             )}
+            {(name.trim() || instructions.trim()) && (
+              <button type="button" className="btn ghost" onClick={exportJson}
+                title="Descargar la configuración como JSON (portabilidad entre ambientes)"
+                style={{ fontSize: 12 }}>📤 Exportar</button>
+            )}
+            <label className="btn ghost" title="Cargar un agente exportado como JSON"
+              style={{ fontSize: 12, cursor: "pointer" }}>
+              📥 Importar
+              <input type="file" accept=".json,application/json" onChange={importJson} style={{ display: "none" }} />
+            </label>
             <Link href="/agent-hub?tab=library" className="btn ghost" style={{ fontSize: 12.5 }}>← Biblioteca</Link>
           </div>
         </div>
@@ -533,6 +607,23 @@ function AgentBuilderInner() {
                 background: "rgba(52,211,153,0.1)", border: "1px solid rgba(52,211,153,0.3)", color: "#34d399",
               }}>{notice}</div>
             )}
+            {/* Onda 6 · Checklist de publicación en vivo */}
+            {!isPublished && (
+              <div style={{
+                border: "1px solid var(--border-soft)", borderRadius: 10,
+                padding: "10px 12px", marginBottom: 10,
+              }}>
+                <div style={{ fontSize: 10.5, letterSpacing: 1.2, color: "var(--text-dim)", textTransform: "uppercase", marginBottom: 8 }}>
+                  Checklist de publicación · {checklistReady}/{checklist.length}
+                </div>
+                {checklist.map((c) => (
+                  <div key={c.label} className="row" style={{ gap: 7, fontSize: 11.5, padding: "2px 0", alignItems: "center" }}>
+                    <span style={{ color: c.ok ? "#34d399" : "var(--text-dim)", width: 14 }}>{c.ok ? "✓" : "○"}</span>
+                    <span style={{ color: c.ok ? "var(--text-soft)" : "var(--text-dim)" }}>{c.label}</span>
+                  </div>
+                ))}
+              </div>
+            )}
             <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
               <button className="btn" onClick={() => save()} disabled={busy || (!dirty && !!agent)}
                 style={{ width: "100%", justifyContent: "center" }}>
@@ -588,6 +679,34 @@ function AgentBuilderInner() {
               </div>
             </div>
           </div>
+
+          {/* Onda 6 · Actividad del agente */}
+          {agent && stats && (
+            <div className="card" style={{ padding: 16 }}>
+              <div style={{ fontSize: 11, letterSpacing: 1.4, color: "var(--text-dim)", textTransform: "uppercase", marginBottom: 10 }}>
+                📊 Actividad
+              </div>
+              <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr 1fr", gap: 8, textAlign: "center" }}>
+                <div>
+                  <div style={{ fontSize: 19, fontWeight: 700, color: "#22d3ee" }}>{stats.conversations}</div>
+                  <div style={{ fontSize: 10.5, color: "var(--text-dim)" }}>conversaciones</div>
+                </div>
+                <div>
+                  <div style={{ fontSize: 19, fontWeight: 700, color: "#a78bfa" }}>{stats.messages}</div>
+                  <div style={{ fontSize: 10.5, color: "var(--text-dim)" }}>mensajes</div>
+                </div>
+                <div>
+                  <div style={{ fontSize: 19, fontWeight: 700, color: "#34d399" }}>{stats.uniqueUsers}</div>
+                  <div style={{ fontSize: 10.5, color: "var(--text-dim)" }}>usuarios</div>
+                </div>
+              </div>
+              {stats.lastUsedAt && (
+                <div style={{ fontSize: 11, color: "var(--text-dim)", textAlign: "center", marginTop: 8 }}>
+                  Último uso: {new Date(stats.lastUsedAt).toLocaleString("es-CL")}
+                </div>
+              )}
+            </div>
+          )}
 
           {/* Playground */}
           <div className="card" style={{ padding: 16, display: "flex", flexDirection: "column" }}>

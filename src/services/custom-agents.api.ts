@@ -117,6 +117,15 @@ export interface ModelComparisonEntry {
   error: string | null;
 }
 
+// ── Onda 6 ──
+
+export interface AgentStats {
+  conversations: number;
+  messages: number;
+  uniqueUsers: number;
+  lastUsedAt: string | null;
+}
+
 export interface AgentChatResponse {
   success: true;
   agent: { id: string; name: string; category: string; icon: string };
@@ -215,17 +224,23 @@ export async function listAgents(filters: {
   createdBy?: string;
   verified?: boolean;
   search?: string;
-  /** Usuario logueado: agrega sus borradores privados al listado de publicados. */
+  /** Onda 6: la identidad la resuelve el backend por sesión — forUser ya no se envía. */
   forUser?: string;
+  /** Onda 6: "archived" lista solo tus agentes archivados. */
+  status?: "active" | "archived";
 } = {}) {
   const params = new URLSearchParams();
   if (filters.category) params.set("category", filters.category);
   if (filters.createdBy) params.set("createdBy", filters.createdBy);
   if (filters.verified) params.set("verified", "true");
   if (filters.search) params.set("search", filters.search);
-  if (filters.forUser) params.set("forUser", filters.forUser);
+  if (filters.status) params.set("status", filters.status);
   const qs = params.toString();
   return call<{ count: number; agents: CustomAgent[] }>(`/api/agents${qs ? `?${qs}` : ""}`);
+}
+
+export async function getAgentStats(id: string) {
+  return call<{ stats: AgentStats }>(`/api/agents/${encodeURIComponent(id)}/stats`);
 }
 
 export async function getAgent(id: string, forUser?: string) {
