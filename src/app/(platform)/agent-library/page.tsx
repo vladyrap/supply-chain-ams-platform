@@ -16,7 +16,7 @@ import Badge from "@/components/ui/Badge";
 import { useAuth } from "@/context/AuthContext";
 import {
   listAgents, getFavorites, toggleFavorite, updateAgent, deleteAgent,
-  publishAgent, unpublishAgent, modelLabel,
+  publishAgent, unpublishAgent, duplicateAgent, modelLabel,
   AGENT_CATEGORIES, type CustomAgent,
 } from "@/services/custom-agents.api";
 
@@ -139,6 +139,14 @@ export default function AgentLibraryPage() {
     const r = await unpublishAgent(a.id, myId);
     if (r.success) load();
     else window.alert(r.error);
+  }
+
+  // Onda 5 · duplicar cualquier agente visible como borrador propio
+  async function handleDuplicate(a: CustomAgent) {
+    const r = await duplicateAgent(a.id, myId);
+    if (r.success) {
+      router.push(`/agent-builder?id=${r.agent.id}`);
+    } else window.alert(r.error);
   }
 
   return (
@@ -276,6 +284,8 @@ export default function AgentLibraryPage() {
                   <div className="row" style={{ gap: 10, fontSize: 11.5, color: "var(--text-dim)", alignItems: "center" }}>
                     <span title="Rating promedio">⭐ {a.ratingCount > 0 ? a.rating.toFixed(1) : "—"}</span>
                     <span title="Conversaciones">💬 {a.chatCount}</span>
+                    <button onClick={() => handleDuplicate(a)} title="Duplicar como mi borrador y personalizar"
+                      style={{ background: "none", border: 0, cursor: "pointer", fontSize: 13, color: "var(--text-dim)" }}>⧉</button>
                     {!a.isVerified && a.createdBy === myId && (
                       <>
                         <button onClick={() => router.push(`/agent-builder?id=${a.id}`)} title="Abrir en Agent Builder"

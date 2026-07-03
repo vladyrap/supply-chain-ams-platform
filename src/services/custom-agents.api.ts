@@ -82,6 +82,35 @@ export function modelLabel(modelId: string): string {
   return AGENT_MODELS.find((m) => m.id === modelId)?.label ?? modelId;
 }
 
+// ── Onda 5: disponibilidad, versiones, duplicar, comparador ──
+
+export interface ModelAvailability {
+  id: string;
+  available: boolean;
+  reason?: string;
+}
+
+export interface AgentVersion {
+  id: string;
+  agentId: string;
+  name: string;
+  category: string;
+  description: string;
+  instructions: string;
+  kbModules: string[];
+  icon: string;
+  model: string;
+  savedBy: string | null;
+  savedAt: string;
+}
+
+export interface ModelComparisonEntry {
+  model: string;
+  response: string;
+  durationMs: number;
+  error: string | null;
+}
+
 export interface AgentChatResponse {
   success: true;
   agent: { id: string; name: string; category: string; icon: string };
@@ -196,6 +225,38 @@ export async function listAgents(filters: {
 export async function getAgent(id: string, forUser?: string) {
   const qs = forUser ? `?forUser=${encodeURIComponent(forUser)}` : "";
   return call<{ agent: CustomAgent }>(`/api/agents/${encodeURIComponent(id)}${qs}`);
+}
+
+// ── Onda 5 ──
+
+export async function getModelsCatalog() {
+  return call<{ models: ModelAvailability[] }>("/api/agents/models");
+}
+
+export async function duplicateAgent(id: string, user: string) {
+  return call<{ agent: CustomAgent }>(`/api/agents/${encodeURIComponent(id)}/duplicate`, {
+    method: "POST",
+    body: { user },
+  });
+}
+
+export async function listAgentVersions(id: string) {
+  return call<{ versions: AgentVersion[] }>(`/api/agents/${encodeURIComponent(id)}/versions`);
+}
+
+export async function restoreAgentVersion(id: string, versionId: string, user: string) {
+  return call<{ agent: CustomAgent }>(
+    `/api/agents/${encodeURIComponent(id)}/versions/${encodeURIComponent(versionId)}/restore`,
+    { method: "POST", body: { user } },
+  );
+}
+
+export async function compareAgentModels(id: string, input: { message: string; models: string[]; user: string }) {
+  return call<{ results: ModelComparisonEntry[] }>(`/api/agents/${encodeURIComponent(id)}/compare`, {
+    method: "POST",
+    body: input,
+    timeoutMs: 150_000, // dos llamadas LLM en paralelo
+  });
 }
 
 // ── Publicación (onda 4) ──

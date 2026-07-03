@@ -17,8 +17,11 @@ import Badge from "@/components/ui/Badge";
 import { useAuth } from "@/context/AuthContext";
 import {
   getAgent, createAgent, updateAgent, publishAgent, unpublishAgent,
-  chatWithAgent, AGENT_CATEGORIES, AGENT_MODELS, modelLabel, type CustomAgent,
+  chatWithAgent, getModelsCatalog, listAgentVersions, restoreAgentVersion,
+  compareAgentModels, AGENT_CATEGORIES, AGENT_MODELS, modelLabel,
+  type CustomAgent, type ModelAvailability, type AgentVersion, type ModelComparisonEntry,
 } from "@/services/custom-agents.api";
+import { AGENT_TEMPLATES, type AgentTemplate } from "@/lib/agent-templates";
 
 const ICON_CHOICES = ["🤖", "📦", "🛒", "🏭", "💰", "📊", "🔗", "🏗️", "🧠", "⚡", "🛠️", "📋", "🧮", "🗂️", "🔍", "✉️"];
 const MAX_INSTRUCTIONS = 6000;
@@ -61,6 +64,38 @@ function AgentBuilderInner() {
   const [pgBusy, setPgBusy] = useState(false);
   const [pgConvId, setPgConvId] = useState<string | undefined>(undefined);
   const pgEndRef = useRef<HTMLDivElement>(null);
+
+  // ── Onda 5: disponibilidad de modelos, versiones, comparador ──
+  const [modelsAvail, setModelsAvail] = useState<Record<string, ModelAvailability>>({});
+  const [versions, setVersions] = useState<AgentVersion[]>([]);
+  const [showVersions, setShowVersions] = useState(false);
+  const [restoreBusy, setRestoreBusy] = useState<string | null>(null);
+  const [compareOpen, setCompareOpen] = useState(false);
+  const [compareModel2, setCompareModel2] = useState<string>("");
+  const [compareMsg, setCompareMsg] = useState("");
+  const [compareBusy, setCompareBusy] = useState(false);
+  const [compareResults, setCompareResults] = useState<ModelComparisonEntry[] | null>(null);
+
+  // Catálogo de disponibilidad real (según API keys del backend)
+  useEffect(() => {
+    (async () => {
+      const r = await getModelsCatalog();
+      if (r.success) {
+        const map: Record<string, ModelAvailability> = {};
+        for (const m of r.models) map[m.id] = m;
+        setModelsAvail(map);
+      }
+    })();
+  }, []);
+
+  // Historial de versiones del agente cargado
+  useEffect(() => {
+    if (!agent?.id) { setVersions([]); return; }
+    (async () => {
+      const r = await listAgentVersions(agent.id);
+      if (r.success) setVersions(r.versions);
+    })();
+  }, [agent?.id, agent?.updatedAt]);
 
   useEffect(() => {
     pgEndRef.current?.scrollIntoView({ behavior: "smooth" });
@@ -164,6 +199,68 @@ function AgentBuilderInner() {
     } else setError(r.error);
   }
 
+  // ── Onda 5: plantillas ──
+  function applyTemplate(t: AgentTemplate) {
+    setName(t.title); setIcon(t.icon); setCategory(t.category);
+    setDescription(t.description); setInstructions(t.instructions);
+    setKbModules(t.kbModules); setModel(t.model);
+    setDirty(true);
+    setError(null);
+    setNotice(`Plantilla "${t.title}" aplicada — ajustala a tu necesidad y guardá el borrador.`);
+  }
+
+  // ── Onda 5: restaurar versión ──
+  async function handleRestore(v: AgentVersion) {
+    if (!agent) return;
+    const when = new Date(v.savedAt).toLocaleString("es-CL");
+    if (!window.confirm(`¿Restaurar la versión del ${when}? El estado actual también queda en el historial, así que es reversible.`)) return;
+    setRestoreBusy(v.id);
+    const r = await restoreAgentVersion(agent.id, v.id, userId);
+    setRestoreBusy(null);
+    if (r.success) {
+      const a = r.agent;
+      setAgent(a);
+      setName(a.name); setIcon(a.icon); setCategory(a.category);
+      setDescription(a.description); setInstructions(a.instructions);
+      setKbModules(a.kbModules); setModel(a.model || "gemini-2.5-flash");
+      setDirty(false);
+      setNotice(`Versión del ${when} restaurada.`);
+    } else setError(r.error);
+  }
+
+  // ── Onda 5: comparador de modelos ──
+  function toggleCompare() {
+    setCompareOpen((cur) => {
+      const next = !cur;
+      if (next && (!compareModel2 || compareModel2 === model)) {
+        const other = AGENT_MODELS.find((m) => m.id !== model);
+        setCompareModel2(other?.id ?? "");
+      }
+      return next;
+    });
+  }
+
+  async function runCompare(e: React.FormEvent) {
+    e.preventDefault();
+    const msg = compareMsg.trim();
+    if (!msg || compareBusy) return;
+    let target = agent;
+    if (!target || dirty) {
+      target = await save();
+      if (!target) return;
+    }
+    setCompareBusy(true);
+    setCompareResults(null);
+    const r = await compareAgentModels(target.id, {
+      message: msg,
+      models: [model, compareModel2],
+      user: userId,
+    });
+    setCompareBusy(false);
+    if (r.success) setCompareResults(r.results);
+    else setError(r.error);
+  }
+
   // ── Playground ──
   async function sendPlayground(e: React.FormEvent) {
     e.preventDefault();
@@ -255,6 +352,43 @@ function AgentBuilderInner() {
         ))}
       </div>
 
+      {/* Onda 5 · Galería de plantillas (solo con el form vacío) */}
+      {!agent && !editId && !name.trim() && !instructions.trim() && (
+        <div className="card" style={{ padding: 18, marginBottom: 16 }}>
+          <div className="row between" style={{ marginBottom: 4 }}>
+            <div style={{ fontSize: 11, letterSpacing: 1.4, color: "var(--text-dim)", textTransform: "uppercase" }}>
+              ✨ Plantillas para empezar en 1 clic
+            </div>
+          </div>
+          <p style={{ margin: "0 0 14px", fontSize: 12, color: "var(--text-soft)" }}>
+            Elegí un punto de partida curado — instrucciones, modelo y KB ya configurados. Después lo ajustás a tu medida.
+          </p>
+          <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(240px, 1fr))", gap: 10 }}>
+            {AGENT_TEMPLATES.map((t) => (
+              <button type="button" key={t.key} onClick={() => applyTemplate(t)}
+                style={{
+                  textAlign: "left", padding: 14, borderRadius: 12, cursor: "pointer",
+                  border: "1px solid var(--border-soft)", background: "rgba(255,255,255,0.02)",
+                  display: "flex", flexDirection: "column", gap: 6,
+                }}>
+                <div className="row" style={{ gap: 8, alignItems: "center" }}>
+                  <span style={{
+                    fontSize: 18, width: 34, height: 34, display: "grid", placeItems: "center",
+                    borderRadius: 9, background: "rgba(34,211,238,0.1)", border: "1px solid rgba(34,211,238,0.2)",
+                  }}>{t.icon}</span>
+                  <span style={{ fontWeight: 600, fontSize: 13, lineHeight: 1.3 }}>{t.title}</span>
+                </div>
+                <span style={{ fontSize: 11.5, color: "var(--text-soft)" }}>{t.tagline}</span>
+                <div className="row" style={{ gap: 6, marginTop: "auto" }}>
+                  <Badge variant="muted">{t.category}</Badge>
+                  <Badge variant="muted">🧠 {modelLabel(t.model)}</Badge>
+                </div>
+              </button>
+            ))}
+          </div>
+        </div>
+      )}
+
       {/* Layout: form izquierda + panel derecha */}
       <div style={{ display: "grid", gridTemplateColumns: "minmax(0, 1fr) 400px", gap: 16, alignItems: "start" }}>
         {/* ══════ Columna form ══════ */}
@@ -334,30 +468,37 @@ function AgentBuilderInner() {
             <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(200px, 1fr))", gap: 10 }}>
               {AGENT_MODELS.map((m) => {
                 const active = model === m.id;
+                const avail = modelsAvail[m.id];
                 return (
                   <button type="button" key={m.id} onClick={() => { setModel(m.id); markDirty(); }}
                     style={{
                       textAlign: "left", padding: 12, borderRadius: 10, cursor: "pointer",
                       border: `1px solid ${active ? "#22d3ee" : "var(--border-soft)"}`,
                       background: active ? "rgba(34,211,238,0.1)" : "transparent",
+                      opacity: avail && !avail.available ? 0.75 : 1,
                     }}>
                     <div className="row between" style={{ marginBottom: 4 }}>
                       <span style={{ fontWeight: 600, fontSize: 13, color: active ? "#22d3ee" : "inherit" }}>{m.label}</span>
                       {active && <span style={{ color: "#22d3ee", fontSize: 13 }}>●</span>}
                     </div>
                     <div style={{ fontSize: 11, color: "var(--text-dim)", marginBottom: 4 }}>{m.tag}</div>
-                    <div style={{ fontSize: 11.5, color: "var(--text-soft)", lineHeight: 1.45 }}>{m.description}</div>
+                    <div style={{ fontSize: 11.5, color: "var(--text-soft)", lineHeight: 1.45, marginBottom: 6 }}>{m.description}</div>
+                    {avail && (
+                      avail.available
+                        ? <span style={{ fontSize: 10.5, color: "#34d399" }}>✓ Disponible</span>
+                        : <span style={{ fontSize: 10.5, color: "#fbbf24" }} title={avail.reason}>⚠ Requiere configuración</span>
+                    )}
                   </button>
                 );
               })}
             </div>
-            {model.startsWith("claude-") && (
+            {model.startsWith("claude-") && modelsAvail[model] && !modelsAvail[model].available && (
               <div style={{
                 fontSize: 11.5, marginTop: 10, padding: "8px 12px", borderRadius: 8,
                 background: "rgba(251,191,36,0.08)", border: "1px solid rgba(251,191,36,0.25)", color: "#fbbf24",
               }}>
-                ⚠ Los modelos Claude requieren <code>ANTHROPIC_API_KEY</code> configurada en el backend
-                y tienen costo por uso. Si no está configurada, el chat devolverá un error claro.
+                ⚠ {modelsAvail[model].reason}. Podés guardar el agente igual — funcionará apenas
+                se agregue la key (los modelos Claude tienen costo por uso).
               </div>
             )}
           </div>
@@ -450,8 +591,18 @@ function AgentBuilderInner() {
 
           {/* Playground */}
           <div className="card" style={{ padding: 16, display: "flex", flexDirection: "column" }}>
-            <div style={{ fontSize: 11, letterSpacing: 1.4, color: "var(--text-dim)", textTransform: "uppercase", marginBottom: 10 }}>
-              🧪 Playground de prueba
+            <div className="row between" style={{ marginBottom: 10 }}>
+              <div style={{ fontSize: 11, letterSpacing: 1.4, color: "var(--text-dim)", textTransform: "uppercase" }}>
+                🧪 Playground de prueba
+              </div>
+              <button type="button" onClick={toggleCompare}
+                style={{
+                  background: "none", cursor: "pointer", fontSize: 11, padding: "3px 10px", borderRadius: 14,
+                  border: `1px solid ${compareOpen ? "#a78bfa" : "var(--border-soft)"}`,
+                  color: compareOpen ? "#a78bfa" : "var(--text-dim)",
+                }}>
+                ⚔ Comparar modelos
+              </button>
             </div>
             <div style={{
               minHeight: 160, maxHeight: 300, overflowY: "auto", display: "flex", flexDirection: "column",
@@ -488,7 +639,112 @@ function AgentBuilderInner() {
               />
               <button type="submit" className="btn sm primary" disabled={pgBusy || !pgInput.trim()}>➤</button>
             </form>
+
+            {/* Onda 5 · Comparador de modelos */}
+            {compareOpen && (
+              <div style={{ borderTop: "1px solid var(--border-soft)", marginTop: 14, paddingTop: 12 }}>
+                <div style={{ fontSize: 11.5, color: "var(--text-soft)", marginBottom: 8 }}>
+                  Mismo mensaje, dos modelos lado a lado — ideal para decidir si tu agente amerita Claude.
+                </div>
+                <form onSubmit={runCompare} style={{ display: "flex", flexDirection: "column", gap: 8 }}>
+                  <div className="row" style={{ gap: 6, alignItems: "center", fontSize: 12 }}>
+                    <Badge variant="muted">{modelLabel(model)}</Badge>
+                    <span style={{ color: "var(--text-dim)" }}>vs</span>
+                    <select value={compareModel2} onChange={(e) => setCompareModel2(e.target.value)} style={{ flex: 1, fontSize: 12 }}>
+                      {AGENT_MODELS.filter((m) => m.id !== model).map((m) => (
+                        <option key={m.id} value={m.id}>
+                          {m.label}{modelsAvail[m.id] && !modelsAvail[m.id].available ? " (⚠ sin key)" : ""}
+                        </option>
+                      ))}
+                    </select>
+                  </div>
+                  <div className="row" style={{ gap: 6 }}>
+                    <input
+                      value={compareMsg}
+                      onChange={(e) => setCompareMsg(e.target.value)}
+                      placeholder="Mensaje para ambos modelos…"
+                      disabled={compareBusy}
+                      style={{ flex: 1, fontSize: 12.5 }}
+                    />
+                    <button type="submit" className="btn sm" disabled={compareBusy || !compareMsg.trim() || !compareModel2}
+                      style={{ borderColor: "#a78bfa", color: "#a78bfa" }}>
+                      {compareBusy ? "…" : "⚔"}
+                    </button>
+                  </div>
+                </form>
+                {compareBusy && (
+                  <div style={{ fontSize: 12, color: "var(--text-dim)", marginTop: 10 }}>
+                    Ejecutando ambos modelos en paralelo…
+                  </div>
+                )}
+                {compareResults && (
+                  <div style={{ display: "flex", flexDirection: "column", gap: 10, marginTop: 12 }}>
+                    {compareResults.map((res) => (
+                      <div key={res.model} style={{
+                        border: `1px solid ${res.error ? "rgba(239,68,68,0.35)" : "var(--border-soft)"}`,
+                        borderRadius: 10, padding: 10,
+                      }}>
+                        <div className="row between" style={{ marginBottom: 6 }}>
+                          <span style={{ fontSize: 12, fontWeight: 600, color: "#a78bfa" }}>🧠 {modelLabel(res.model)}</span>
+                          <span style={{ fontSize: 11, color: "var(--text-dim)" }}>⏱ {(res.durationMs / 1000).toFixed(1)}s</span>
+                        </div>
+                        {res.error ? (
+                          <div style={{ fontSize: 12, color: "#ef4444" }}>⚠ {res.error}</div>
+                        ) : (
+                          <div style={{
+                            fontSize: 12, color: "var(--text-soft)", lineHeight: 1.5,
+                            whiteSpace: "pre-wrap", wordBreak: "break-word", maxHeight: 220, overflowY: "auto",
+                          }}>{res.response}</div>
+                        )}
+                      </div>
+                    ))}
+                  </div>
+                )}
+              </div>
+            )}
           </div>
+
+          {/* Onda 5 · Historial de versiones */}
+          {agent && (
+            <div className="card" style={{ padding: 16 }}>
+              <button type="button" onClick={() => setShowVersions((s) => !s)}
+                className="row between"
+                style={{ width: "100%", background: "none", border: 0, cursor: "pointer", padding: 0 }}>
+                <span style={{ fontSize: 11, letterSpacing: 1.4, color: "var(--text-dim)", textTransform: "uppercase" }}>
+                  🕘 Historial de versiones ({versions.length})
+                </span>
+                <span style={{ color: "var(--text-dim)", fontSize: 12 }}>{showVersions ? "▾" : "▸"}</span>
+              </button>
+              {showVersions && (
+                <div style={{ display: "flex", flexDirection: "column", gap: 8, marginTop: 12 }}>
+                  {versions.length === 0 && (
+                    <div style={{ fontSize: 12, color: "var(--text-dim)" }}>
+                      Aún no hay versiones — se crean automáticamente cada vez que guardás cambios.
+                    </div>
+                  )}
+                  {versions.map((v) => (
+                    <div key={v.id} className="row between" style={{
+                      border: "1px solid var(--border-soft)", borderRadius: 9, padding: "8px 10px",
+                      alignItems: "center", gap: 8,
+                    }}>
+                      <div style={{ minWidth: 0 }}>
+                        <div style={{ fontSize: 12, fontWeight: 600, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>
+                          {v.name}
+                        </div>
+                        <div style={{ fontSize: 10.5, color: "var(--text-dim)" }}>
+                          {new Date(v.savedAt).toLocaleString("es-CL")} · 🧠 {modelLabel(v.model)} · {v.instructions.length} chars
+                        </div>
+                      </div>
+                      <button type="button" className="btn sm ghost" disabled={restoreBusy !== null}
+                        onClick={() => handleRestore(v)} style={{ fontSize: 11, flexShrink: 0 }}>
+                        {restoreBusy === v.id ? "…" : "↩ Restaurar"}
+                      </button>
+                    </div>
+                  ))}
+                </div>
+              )}
+            </div>
+          )}
         </div>
       </div>
     </div>
