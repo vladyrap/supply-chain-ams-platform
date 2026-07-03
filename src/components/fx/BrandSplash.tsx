@@ -28,20 +28,40 @@ export default function BrandSplash() {
     // Sólo primera vez por sesión del browser
     if (sessionStorage.getItem(STORAGE_KEY) === "1") return;
 
-    setVisible(true);
     sessionStorage.setItem(STORAGE_KEY, "1");
+    setVisible(true);
 
-    const start = performance.now();
-    let raf = 0;
-    function tick(now: number) {
-      const elapsed = now - start;
-      const p = Math.min(1, elapsed / DURATION);
+    const start = Date.now();
+    let done = false;
+
+    // Cierre idempotente: complete la barra y oculte. Se llama al 100% o por el
+    // backstop de reloj de pared, lo que ocurra primero.
+    const finish = () => {
+      if (done) return;
+      done = true;
+      setProgress(1);
+      setVisible(false);
+    };
+
+    // Progreso suave vía rAF mientras el hilo está libre.
+    const tick = () => {
+      if (done) return;
+      const p = Math.min(1, (Date.now() - start) / DURATION);
       setProgress(p);
-      if (p < 1) raf = requestAnimationFrame(tick);
-      else setTimeout(() => setVisible(false), 220);
-    }
-    raf = requestAnimationFrame(tick);
-    return () => cancelAnimationFrame(raf);
+      if (p < 1) requestAnimationFrame(tick);
+      else finish();
+    };
+    requestAnimationFrame(tick);
+
+    // GARANTÍA anti-cuelgue: rAF se pausa si la pestaña pierde foco o el hilo
+    // principal se bloquea (hidratación pesada, primer compile en dev). Este
+    // setTimeout de reloj de pared cierra el splash SIEMPRE, aunque rAF nunca
+    // avance. IMPORTANTE: no se cancela en el cleanup — así el doble-invoke de
+    // React StrictMode en dev no puede dejar el splash huérfano y pegado.
+    window.setTimeout(finish, DURATION + 400);
+
+    // Sin cleanup que cancele el backstop: BrandSplash vive en el root layout y
+    // no se desmonta durante la sesión; los callbacks pendientes son no-op en React 18.
   }, []);
 
   if (!visible) return null;
