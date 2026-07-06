@@ -4,12 +4,14 @@ import { useState } from "react";
 import RequirePermission from "@/components/admin/RequirePermission";
 import CleanCoreCenter from "@/components/clean-core/CleanCoreCenter";
 import AbapRefactorView from "@/components/clean-core/AbapRefactorView";
+import SapRealView from "@/components/clean-core/SapRealView";
 
-type Tab = "assessment" | "refactor";
+type Tab = "assessment" | "refactor" | "sap";
 
 const TABS: { id: Tab; label: string; icon: string }[] = [
   { id: "assessment", label: "Assessment del núcleo", icon: "📊" },
   { id: "refactor", label: "Refactor Z → Clean Core (HANA)", icon: "🧬" },
+  { id: "sap", label: "SAP real", icon: "🔌" },
 ];
 
 export default function CleanCorePage() {
@@ -56,7 +58,9 @@ export default function CleanCorePage() {
           })}
         </div>
 
-        {tab === "assessment" ? <CleanCoreCenter /> : <AbapRefactorView />}
+        {tab === "assessment" && <CleanCoreCenter />}
+        {tab === "refactor" && <AbapRefactorView />}
+        {tab === "sap" && <SapRealView />}
       </div>
     </RequirePermission>
   );
