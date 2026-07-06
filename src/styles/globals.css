@@ -3620,17 +3620,18 @@ html[data-theme="cyberpunk"] .brand .title {
 .module-hero {
   position: relative;
   padding: 18px 22px;
-  border-radius: 14px;
+  border-radius: 10px;
   margin-bottom: 18px;
-  background: linear-gradient(135deg, rgba(99,102,241,0.14), rgba(69,137,255,0.10) 60%, rgba(168,85,247,0.08));
-  border: 1px solid rgba(99,102,241,0.30);
+  /* Banner azul IBM sólido (estilo IBM Consulting Advantage) con texto blanco */
+  background: linear-gradient(135deg, #0f62fe 0%, #0043ce 100%);
+  border: 1px solid #0043ce;
+  box-shadow: var(--shadow);
   overflow: hidden;
 }
 .module-hero::before {
   content: "";
   position: absolute; inset: 0;
-  background: radial-gradient(circle at 90% 10%, rgba(69,137,255,0.22), transparent 50%),
-              radial-gradient(circle at 10% 90%, rgba(168,85,247,0.20), transparent 50%);
+  background: radial-gradient(circle at 90% 10%, rgba(255,255,255,0.16), transparent 55%);
   pointer-events: none;
 }
 .module-hero > * { position: relative; z-index: 1; }
@@ -3638,22 +3639,20 @@ html[data-theme="cyberpunk"] .brand .title {
   margin: 4px 0 0;
   font-size: 22px;
   font-weight: 700;
-  background: linear-gradient(90deg, #e0e7ff, #a5f3fc);
-  -webkit-background-clip: text;
-  background-clip: text;
-  -webkit-text-fill-color: transparent;
-  color: transparent;
+  color: #ffffff;
+  background: none;
+  -webkit-text-fill-color: #ffffff;
 }
 .module-hero .eyebrow {
   font-size: 10.5px;
   letter-spacing: 2.2px;
-  color: #67e8f9;
+  color: rgba(255,255,255,0.78);
   font-family: var(--font-mono, monospace);
   text-transform: uppercase;
 }
 .module-hero .subtitle {
   margin: 6px 0 0;
-  color: var(--text-soft);
+  color: rgba(255,255,255,0.90);
   font-size: 13px;
 }
 
@@ -3661,9 +3660,9 @@ html[data-theme="cyberpunk"] .brand .title {
 .empty-state {
   padding: 36px 22px;
   text-align: center;
-  border: 1px dashed rgba(255,255,255,0.10);
+  border: 1px dashed var(--border);
   border-radius: 12px;
-  background: rgba(15,23,42,0.30);
+  background: var(--bg-elev);
   color: var(--text-dim);
   animation: fadeIn 0.3s ease;
 }
