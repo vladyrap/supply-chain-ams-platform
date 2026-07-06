@@ -18,7 +18,8 @@ import { analyzeAbap, SAMPLE_ABAP, type AbapAnalysis, type AbapFinding } from "@
 import { SEVERITY_LABELS, SEVERITY_COLORS, bandForIndex } from "@/lib/clean-core/engine";
 import {
   abapReportMarkdown, abapFindingsCsv, abapAnalysisToTicketInput,
-  downloadText, extractAbapCode, buildHanaExport, lineDiff, type DiffRow,
+  downloadText, extractAbapCode, buildHanaExport, lineDiffGranular,
+  type GranularRow, type InlineSeg,
 } from "@/lib/clean-core/report";
 import { refactorAbapWithAI } from "@/services/clean-core.api";
 import { createTicket } from "@/services/tickets.api";
@@ -85,23 +86,49 @@ function MarkdownLite({ text }: { text: string }) {
   );
 }
 
-// Diff lado-a-lado: dos columnas alineadas fila a fila (rows ya alineadas por LCS).
-function DiffView({ rows }: { rows: DiffRow[] }) {
+// Segmentos inline: caracteres iguales en color normal, add/del resaltados.
+function segSpans(segs: InlineSeg[], side: "l" | "r") {
+  return segs.map((s, i) => {
+    if (!s.text) return null;
+    if (s.type === "same") return <span key={i}>{s.text}</span>;
+    const bg = side === "l"
+      ? "color-mix(in srgb, var(--error) 42%, transparent)"
+      : "color-mix(in srgb, var(--ok) 44%, transparent)";
+    return <span key={i} style={{ background: bg, borderRadius: 2, fontWeight: 700 }}>{s.text}</span>;
+  });
+}
+
+// Diff GRANULAR lado-a-lado: alineado por línea + resaltado a nivel de carácter
+// dentro de cada línea modificada (el detalle más fino: qué chars cambiaron).
+function DiffView({ rows }: { rows: GranularRow[] }) {
   const colStyle: React.CSSProperties = { fontFamily: "var(--font-mono, monospace)", fontSize: 11, lineHeight: 1.55 };
-  const hdr: React.CSSProperties = { position: "sticky", top: 0, padding: "4px 8px", fontWeight: 700, borderBottom: "1px solid var(--border-soft)", background: "var(--bg-elev)" };
+  const hdr: React.CSSProperties = { position: "sticky", top: 0, padding: "4px 8px", fontWeight: 700, borderBottom: "1px solid var(--border-soft)", background: "var(--bg-elev)", zIndex: 1 };
+  const changed = rows.reduce((a, r) => a + r.changedChars, 0);
+  const mods = rows.filter((r) => r.type === "mod").length;
   return (
-    <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", border: "1px solid var(--border-soft)", borderRadius: 6, overflow: "auto", maxHeight: 440 }}>
-      <div style={{ ...colStyle, borderRight: "1px solid var(--border-soft)" }}>
-        <div style={{ ...hdr, color: "var(--error)" }}>Original</div>
-        {rows.map((r, i) => (
-          <div key={i} style={{ padding: "0 8px", minHeight: 17, whiteSpace: "pre", color: "var(--text)", background: r.type === "del" ? "color-mix(in srgb, var(--error) 13%, transparent)" : "transparent" }}>{r.left ?? ""}</div>
-        ))}
+    <div>
+      <div style={{ fontSize: 10.5, color: "var(--text-dim)", marginBottom: 4 }}>
+        🔬 Diff a nivel de <b>carácter</b> · {changed.toLocaleString("es-CL")} caracteres cambiados · {mods} línea{mods === 1 ? "" : "s"} modificada{mods === 1 ? "" : "s"}
       </div>
-      <div style={colStyle}>
-        <div style={{ ...hdr, color: "var(--ok)" }}>Clean Core / HANA</div>
-        {rows.map((r, i) => (
-          <div key={i} style={{ padding: "0 8px", minHeight: 17, whiteSpace: "pre", color: "var(--text)", background: r.type === "add" ? "color-mix(in srgb, var(--ok) 15%, transparent)" : "transparent" }}>{r.right ?? ""}</div>
-        ))}
+      <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", border: "1px solid var(--border-soft)", borderRadius: 6, overflow: "auto", maxHeight: 440 }}>
+        <div style={{ ...colStyle, borderRight: "1px solid var(--border-soft)" }}>
+          <div style={{ ...hdr, color: "var(--error)" }}>Original</div>
+          {rows.map((r, i) => (
+            <div key={i} style={{
+              padding: "0 8px", minHeight: 17, whiteSpace: "pre", color: "var(--text)",
+              background: r.type === "del" ? "color-mix(in srgb, var(--error) 12%, transparent)" : "transparent",
+            }}>{r.leftSegs ? segSpans(r.leftSegs, "l") : (r.left ?? "")}</div>
+          ))}
+        </div>
+        <div style={colStyle}>
+          <div style={{ ...hdr, color: "var(--ok)" }}>Clean Core / HANA</div>
+          {rows.map((r, i) => (
+            <div key={i} style={{
+              padding: "0 8px", minHeight: 17, whiteSpace: "pre", color: "var(--text)",
+              background: r.type === "add" ? "color-mix(in srgb, var(--ok) 13%, transparent)" : "transparent",
+            }}>{r.rightSegs ? segSpans(r.rightSegs, "r") : (r.right ?? "")}</div>
+          ))}
+        </div>
       </div>
     </div>
   );
@@ -358,7 +385,7 @@ export default function AbapRefactorView() {
               </button>
             </div>
           )}
-          {showDiff && iaMeta && iaResult && <DiffView rows={lineDiff(iaMeta.source, extractAbapCode(iaResult))} />}
+          {showDiff && iaMeta && iaResult && <DiffView rows={lineDiffGranular(iaMeta.source, extractAbapCode(iaResult))} />}
 
           {iaLoading && <div style={{ fontSize: 12.5, color: "var(--text-dim)" }}><span className="spinner" /> Generando refactor con {modelLabel(model)}… puede tardar unos segundos.</div>}
           {iaError && <div style={{ fontSize: 12.5, color: "var(--error)" }}>⚠ {iaError}</div>}

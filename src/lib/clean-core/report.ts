@@ -116,6 +116,85 @@ export function lineDiff(aText: string, bText: string): DiffRow[] {
   return rows;
 }
 
+// ── Diff GRANULAR: a nivel de carácter dentro de cada línea modificada ────────
+// El detalle más fino posible: qué caracteres exactos (incluidos espacios)
+// cambiaron. Dos etapas: (1) alineación de líneas por LCS; (2) para cada par de
+// líneas modificadas, LCS a nivel de carácter → segmentos same/add/del.
+
+export type InlineSeg = { text: string; type: "same" | "add" | "del" };
+export type GranularRow = {
+  type: "same" | "add" | "del" | "mod";
+  left: string | null;
+  right: string | null;
+  leftSegs: InlineSeg[] | null;   // sólo en type === "mod"
+  rightSegs: InlineSeg[] | null;
+  changedChars: number;           // cuántos chars difieren (add+del) en la fila
+};
+
+function pushSeg(list: InlineSeg[], type: InlineSeg["type"], ch: string) {
+  const last = list[list.length - 1];
+  if (last && last.type === type) last.text += ch;
+  else list.push({ text: ch, type });
+}
+
+// LCS a nivel de carácter → segmentos para la izquierda (same+del) y la
+// derecha (same+add).
+export function charDiff(a: string, b: string): { left: InlineSeg[]; right: InlineSeg[]; changed: number } {
+  const n = a.length, m = b.length;
+  if (n === 0 && m === 0) return { left: [], right: [], changed: 0 };
+  // Guardia: líneas enormes → tratar toda la línea como del/add (sin O(n*m)).
+  if (n * m > 400_000) {
+    return { left: a ? [{ text: a, type: "del" }] : [], right: b ? [{ text: b, type: "add" }] : [], changed: n + m };
+  }
+  const dp: number[][] = Array.from({ length: n + 1 }, () => new Array(m + 1).fill(0));
+  for (let i = n - 1; i >= 0; i--)
+    for (let j = m - 1; j >= 0; j--)
+      dp[i][j] = a[i] === b[j] ? dp[i + 1][j + 1] + 1 : Math.max(dp[i + 1][j], dp[i][j + 1]);
+  const left: InlineSeg[] = [];
+  const right: InlineSeg[] = [];
+  let i = 0, j = 0, changed = 0;
+  while (i < n && j < m) {
+    if (a[i] === b[j]) { pushSeg(left, "same", a[i]); pushSeg(right, "same", b[j]); i++; j++; }
+    else if (dp[i + 1][j] >= dp[i][j + 1]) { pushSeg(left, "del", a[i]); i++; changed++; }
+    else { pushSeg(right, "add", b[j]); j++; changed++; }
+  }
+  while (i < n) { pushSeg(left, "del", a[i++]); changed++; }
+  while (j < m) { pushSeg(right, "add", b[j++]); changed++; }
+  return { left, right, changed };
+}
+
+export function lineDiffGranular(aText: string, bText: string): GranularRow[] {
+  const base = lineDiff(aText, bText);
+  const out: GranularRow[] = [];
+  let k = 0;
+  while (k < base.length) {
+    if (base[k].type === "same") {
+      out.push({ type: "same", left: base[k].left, right: base[k].right, leftSegs: null, rightSegs: null, changedChars: 0 });
+      k++;
+      continue;
+    }
+    // Región de cambio: filas contiguas no-"same". Se separan en lados y se
+    // emparejan por índice; los sobrantes quedan como del/add puros.
+    const lefts: string[] = [];
+    const rights: string[] = [];
+    let p = k;
+    while (p < base.length && base[p].type !== "same") {
+      if (base[p].left !== null) lefts.push(base[p].left as string);
+      if (base[p].right !== null) rights.push(base[p].right as string);
+      p++;
+    }
+    const pairs = Math.min(lefts.length, rights.length);
+    for (let x = 0; x < pairs; x++) {
+      const cd = charDiff(lefts[x], rights[x]);
+      out.push({ type: "mod", left: lefts[x], right: rights[x], leftSegs: cd.left, rightSegs: cd.right, changedChars: cd.changed });
+    }
+    for (let x = pairs; x < lefts.length; x++) out.push({ type: "del", left: lefts[x], right: null, leftSegs: null, rightSegs: null, changedChars: lefts[x].length });
+    for (let x = pairs; x < rights.length; x++) out.push({ type: "add", left: null, right: rights[x], leftSegs: null, rightSegs: null, changedChars: rights[x].length });
+    k = p;
+  }
+  return out;
+}
+
 // ── Descarga de archivo en el browser ────────────────────────────────────────
 
 export function downloadText(filename: string, content: string, mime = "text/plain;charset=utf-8;") {
