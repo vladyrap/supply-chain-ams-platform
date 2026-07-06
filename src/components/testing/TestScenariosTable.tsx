@@ -4,6 +4,7 @@ import { useMemo, useState } from "react";
 import type { UseTestingIntelligence } from "@/hooks/useTestingIntelligence";
 import type { TestingScenario, TestingSapModule, TestingStatus } from "@/types/testing";
 import { TESTING_TYPE_LABELS } from "@/types/testing";
+import { formatDate } from "@/lib/format-date";
 import TestingStatusBadge from "./TestingStatusBadge";
 import TestScenarioFormModal from "./TestScenarioFormModal";
 import TestScenarioDetailModal from "./TestScenarioDetailModal";
@@ -82,7 +83,7 @@ export default function TestScenariosTable({ testing, actingUserId, canEdit }: P
                 <td style={{ padding: "8px 10px" }}>{s.environment}</td>
                 <td style={{ padding: "8px 10px" }}><TestingStatusBadge status={s.status} size="sm" /></td>
                 <td style={{ padding: "8px 10px", fontSize: 11 }}>{s.owner}</td>
-                <td style={{ padding: "8px 10px", fontSize: 11, color: "var(--text-dim)" }}>{new Date(s.updatedAt).toLocaleDateString()}</td>
+                <td style={{ padding: "8px 10px", fontSize: 11, color: "var(--text-dim)" }}>{formatDate(s.updatedAt)}</td>
                 <td style={{ padding: "8px 10px", whiteSpace: "nowrap" }}>
                   <button className="btn ghost" onClick={() => setViewing(s)} style={{ padding: "2px 8px", fontSize: 11 }}>ver</button>{" "}
                   {canEdit && (

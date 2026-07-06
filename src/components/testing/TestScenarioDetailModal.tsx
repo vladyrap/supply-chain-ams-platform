@@ -6,6 +6,7 @@ import type { TestingScenario } from "@/types/testing";
 import {
   TESTING_TYPE_LABELS, TESTING_STATUS_LABELS,
 } from "@/types/testing";
+import { formatDateTime } from "@/lib/format-date";
 import TestingStatusBadge from "./TestingStatusBadge";
 import EvidenceCard from "./EvidenceCard";
 
@@ -117,7 +118,7 @@ export default function TestScenarioDetailModal({ scenario, testing, onClose, ca
                     <tr><td style={{ color: "var(--text-dim)" }}>Scope Items</td><td style={{ textAlign: "right" }}>{scenario.scopeItemIds.join(", ") || "—"}</td></tr>
                     <tr><td style={{ color: "var(--text-dim)" }}>Ambiente</td><td style={{ textAlign: "right" }}>{scenario.environment}</td></tr>
                     <tr><td style={{ color: "var(--text-dim)" }}>Cloud ALM</td><td style={{ textAlign: "right" }}>{scenario.cloudAlmReady ? "✓ preparado" : "— pendiente"}</td></tr>
-                    <tr><td style={{ color: "var(--text-dim)" }}>Creado</td><td style={{ textAlign: "right", fontSize: 11 }}>{new Date(scenario.createdAt).toLocaleString()}</td></tr>
+                    <tr><td style={{ color: "var(--text-dim)" }}>Creado</td><td style={{ textAlign: "right", fontSize: 11 }}>{formatDateTime(scenario.createdAt)}</td></tr>
                   </tbody>
                 </table>
               </div>

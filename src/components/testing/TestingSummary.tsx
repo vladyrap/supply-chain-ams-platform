@@ -1,6 +1,7 @@
 "use client";
 
 import type { UseTestingIntelligence } from "@/hooks/useTestingIntelligence";
+import { formatDate } from "@/lib/format-date";
 
 function Kpi({ label, value, color = "#cbd5e1", hint }: { label: string; value: string | number; color?: string; hint?: string }) {
   return (
@@ -49,7 +50,7 @@ export default function TestingSummary({ testing }: { testing: UseTestingIntelli
         <Kpi label="Listas para Cloud ALM" value={m.cloudAlmReady}     color="#a5b4fc" />
         <Kpi label="Cobertura Scope Items" value={Object.keys(m.coverageByScopeItem).length} color="#4589ff" />
         <Kpi label="Cobertura módulos"     value={Object.keys(m.coverageByModule).length}   color="#42be65" />
-        <Kpi label="Última grabación"      value={m.lastRecording ? new Date(m.lastRecording).toLocaleDateString() : "—"} color="#fcd34d" />
+        <Kpi label="Última grabación"      value={formatDate(m.lastRecording)} color="#fcd34d" />
       </div>
 
       <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 14 }}>

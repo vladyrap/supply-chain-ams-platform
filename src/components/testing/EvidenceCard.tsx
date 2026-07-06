@@ -3,6 +3,7 @@
 import type { EvidenceItem } from "@/types/testing";
 import { EVIDENCE_TYPE_LABELS } from "@/types/testing";
 import { humanFileSize } from "@/utils/testing-engine";
+import { formatDate } from "@/lib/format-date";
 
 const TYPE_ICONS: Record<EvidenceItem["type"], string> = {
   SCREEN_RECORDING: "🎥",
