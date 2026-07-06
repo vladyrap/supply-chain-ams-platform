@@ -9,6 +9,8 @@ import {
   SEVERITY_LABELS, SEVERITY_COLORS, STATUS_LABELS, STATUS_COLORS,
 } from "@/lib/clean-core/engine";
 import { CLEAN_CORE_DIMENSIONS } from "@/lib/clean-core/dataset";
+import { findingToTicketInput } from "@/lib/clean-core/report";
+import { createTicket } from "@/services/tickets.api";
 
 interface Props {
   finding: CleanCoreFinding;
@@ -17,6 +19,8 @@ interface Props {
 
 const STATUS_OPTIONS: FindingStatus[] = ["open", "in_progress", "resolved", "accepted_risk"];
 
+type TicketState = { kind: "idle" } | { kind: "loading" } | { kind: "ok"; key: string } | { kind: "error"; msg: string };
+
 function dimLabel(id: string): string {
   const d = CLEAN_CORE_DIMENSIONS.find((x) => x.id === id);
   return d ? `${d.icon} ${d.label}` : id;
@@ -24,9 +28,17 @@ function dimLabel(id: string): string {
 
 export default function FindingRow({ finding, onStatus }: Props) {
   const [open, setOpen] = useState(false);
+  const [ticket, setTicket] = useState<TicketState>({ kind: "idle" });
   const sc = SEVERITY_COLORS[finding.severity];
   const stc = STATUS_COLORS[finding.status];
   const muted = finding.status === "resolved";
+
+  async function createRemediationTicket() {
+    setTicket({ kind: "loading" });
+    const r = await createTicket(findingToTicketInput(finding));
+    if ("success" in r && r.success) setTicket({ kind: "ok", key: r.ticket.key });
+    else setTicket({ kind: "error", msg: "error" in r ? r.error : "no se pudo crear" });
+  }
 
   return (
     <div className="card" style={{ padding: 0, overflow: "hidden", opacity: muted ? 0.62 : 1 }}>
@@ -105,6 +117,19 @@ export default function FindingRow({ finding, onStatus }: Props) {
                 </button>
               );
             })}
+          </div>
+
+          <div style={{ display: "flex", gap: 8, alignItems: "center", flexWrap: "wrap", marginTop: 2 }}>
+            <button
+              onClick={createRemediationTicket}
+              className="btn"
+              disabled={ticket.kind === "loading"}
+              style={{ fontSize: 11, padding: "4px 10px", borderRadius: 4, background: "var(--accent-2, #0043ce)", color: "#fff", border: "none" }}
+            >
+              {ticket.kind === "loading" ? <><span className="spinner" /> Creando…</> : "🎫 Crear ticket de remediación"}
+            </button>
+            {ticket.kind === "ok" && <span style={{ fontSize: 11.5, color: "var(--ok)", fontWeight: 600 }}>✓ Ticket {ticket.key} creado</span>}
+            {ticket.kind === "error" && <span style={{ fontSize: 11.5, color: "var(--error)" }}>⚠ {ticket.msg}</span>}
           </div>
         </div>
       )}

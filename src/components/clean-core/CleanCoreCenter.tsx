@@ -14,6 +14,7 @@
 import { useMemo, useState } from "react";
 import { useCleanCore } from "@/hooks/useCleanCore";
 import { findingsToCsv, SEVERITY_LABELS, STATUS_LABELS } from "@/lib/clean-core/engine";
+import { cleanCoreReportMarkdown, downloadText } from "@/lib/clean-core/report";
 import { CLEAN_CORE_DIMENSIONS } from "@/lib/clean-core/dataset";
 import type { CleanCoreDimensionId, FindingSeverity, FindingStatus } from "@/lib/clean-core/types";
 import CleanCoreGauge from "./CleanCoreGauge";
@@ -154,6 +155,7 @@ export default function CleanCoreCenter() {
             <option key={s} value={s}>{STATUS_LABELS[s]}</option>
           ))}
         </select>
+        <button onClick={() => downloadText("clean-core-assessment.md", cleanCoreReportMarkdown(result, findings), "text/markdown;charset=utf-8;")} className="btn ghost" style={{ fontSize: 12 }}>⬇ Markdown</button>
         <button onClick={exportCsv} className="btn ghost" style={{ fontSize: 12 }}>⬇ CSV</button>
         <button onClick={reset} className="btn ghost" style={{ fontSize: 12 }} title="Volver al assessment semilla">↺ Reset</button>
       </div>
