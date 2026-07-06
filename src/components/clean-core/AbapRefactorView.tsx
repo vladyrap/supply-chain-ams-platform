@@ -13,10 +13,10 @@
 // readiness) + Custom Code Migration.
 // =============================================================================
 
-import { useState } from "react";
+import { useRef, useState } from "react";
 import { analyzeAbap, SAMPLE_ABAP, type AbapAnalysis, type AbapFinding } from "@/lib/clean-core/abap-analyzer";
 import { SEVERITY_LABELS, SEVERITY_COLORS } from "@/lib/clean-core/engine";
-import { abapReportMarkdown, abapFindingsCsv, abapAnalysisToTicketInput, downloadText } from "@/lib/clean-core/report";
+import { abapReportMarkdown, abapFindingsCsv, abapAnalysisToTicketInput, downloadText, extractAbapCode } from "@/lib/clean-core/report";
 import { refactorAbapWithAI } from "@/services/clean-core.api";
 import { createTicket } from "@/services/tickets.api";
 import { AGENT_MODELS, modelLabel } from "@/services/custom-agents.api";
@@ -140,9 +140,29 @@ export default function AbapRefactorView() {
 
   const [ticket, setTicket] = useState<TicketState>({ kind: "idle" });
 
+  const fileRef = useRef<HTMLInputElement>(null);
+  const [importInfo, setImportInfo] = useState<string | null>(null);
+
   function run(src: string) {
     setResult(analyzeAbap(src));
     setTicket({ kind: "idle" });
+  }
+
+  function onImportFile(e: React.ChangeEvent<HTMLInputElement>) {
+    const file = e.target.files?.[0];
+    e.target.value = ""; // permite re-importar el mismo archivo
+    if (!file) return;
+    if (file.size > 2_000_000) { setImportInfo("⚠ Archivo muy grande (máx 2 MB)."); return; }
+    const reader = new FileReader();
+    reader.onload = () => {
+      const text = String(reader.result ?? "");
+      setCode(text);
+      const over = text.length > 40000 ? " · el refactor IA sólo acepta 40.000 (el análisis funciona igual)" : "";
+      setImportInfo(`📁 ${file.name} · ${text.length.toLocaleString("es-CL")} caracteres${over}`);
+      run(text);
+    };
+    reader.onerror = () => setImportInfo("⚠ No se pudo leer el archivo.");
+    reader.readAsText(file);
   }
 
   async function runIA() {
@@ -171,9 +191,10 @@ export default function AbapRefactorView() {
     <div style={{ display: "flex", flexDirection: "column", gap: 14 }}>
       <div className="card" style={{ display: "flex", flexDirection: "column", gap: 10 }}>
         <div style={{ fontSize: 12.5, color: "var(--text-soft)", lineHeight: 1.5 }}>
-          Pegá un objeto <b>Z/Y</b> (reporte, include, método, FM…). El <b>análisis</b> es instantáneo y sin costo;
-          el <b>refactor con IA (ROCCO)</b> reescribe el código con el LLM que elijas. Asistente de triage — la
-          fuente formal es <b>ATC</b> (variante cloud readiness) + <b>Custom Code Migration</b>.
+          Pegá o <b>importá</b> un objeto <b>Z/Y</b> completo (.abap/.txt). El <b>análisis</b> es instantáneo y sin
+          costo; el <b>refactor con IA (ROCCO)</b> reescribe el código con el LLM que elijas y podés <b>exportar la
+          versión HANA</b> como archivo .abap. Asistente de triage — la fuente formal es <b>ATC</b> (variante cloud
+          readiness) + <b>Custom Code Migration</b>.
         </div>
         <textarea
           value={code}
@@ -203,9 +224,13 @@ export default function AbapRefactorView() {
             </button>
           </div>
 
-          <button onClick={() => { setCode(SAMPLE_ABAP); run(SAMPLE_ABAP); }} className="btn ghost" style={{ fontSize: 12.5 }}>📄 Cargar ejemplo</button>
-          <button onClick={() => { setCode(""); setResult(null); setIaResult(null); setIaError(null); setTicket({ kind: "idle" }); }} className="btn ghost" style={{ fontSize: 12.5 }}>✕ Limpiar</button>
+          <button onClick={() => fileRef.current?.click()} className="btn ghost" style={{ fontSize: 12.5 }}>📁 Importar ABAP</button>
+          <input ref={fileRef} type="file" accept=".abap,.txt,.prog,.inc,.clas,.asprog,.text,text/plain" onChange={onImportFile} style={{ display: "none" }} />
+
+          <button onClick={() => { setCode(SAMPLE_ABAP); run(SAMPLE_ABAP); setImportInfo(null); }} className="btn ghost" style={{ fontSize: 12.5 }}>📄 Cargar ejemplo</button>
+          <button onClick={() => { setCode(""); setResult(null); setIaResult(null); setIaError(null); setTicket({ kind: "idle" }); setImportInfo(null); }} className="btn ghost" style={{ fontSize: 12.5 }}>✕ Limpiar</button>
         </div>
+        {importInfo && <div style={{ fontSize: 11, color: "var(--text-dim)" }}>{importInfo}</div>}
       </div>
 
       {/* Panel refactor IA */}
@@ -216,7 +241,17 @@ export default function AbapRefactorView() {
               🤖 Refactor ROCCO {iaModelUsed && <span style={{ color: "var(--text-dim)", fontWeight: 500 }}>· {modelLabel(iaModelUsed)}</span>}
             </div>
             {iaResult && (
-              <button onClick={copyIA} className="btn ghost" style={{ fontSize: 11.5 }}>{copied ? "✓ Copiado" : "⧉ Copiar"}</button>
+              <div style={{ display: "flex", gap: 6, flexWrap: "wrap" }}>
+                <button
+                  onClick={() => downloadText("refactor-hana.abap", extractAbapCode(iaResult), "text/plain;charset=utf-8;")}
+                  className="btn"
+                  style={{ fontSize: 11.5, background: "var(--teal, #007d79)", color: "#fff", border: "none" }}
+                  title="Descargar el código refactorizado (Clean Core / HANA) como .abap"
+                >
+                  ⬇ Exportar ABAP (HANA)
+                </button>
+                <button onClick={copyIA} className="btn ghost" style={{ fontSize: 11.5 }}>{copied ? "✓ Copiado" : "⧉ Copiar"}</button>
+              </div>
             )}
           </div>
           {iaLoading && <div style={{ fontSize: 12.5, color: "var(--text-dim)" }}><span className="spinner" /> Generando refactor con {modelLabel(model)}… puede tardar unos segundos.</div>}

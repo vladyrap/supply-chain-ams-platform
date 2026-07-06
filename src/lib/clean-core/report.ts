@@ -20,6 +20,19 @@ const SEV_COMPLEXITY: Record<FindingSeverity, CreateTicketInput["complexity"]> =
 };
 const DEV_DIMENSIONS = new Set(["custom_code", "extensibility", "integration"]);
 
+// ── Extracción del código refactorizado (versión HANA) ──────────────────────
+// La respuesta de ROCCO viene en Markdown con el código en un bloque ```abap.
+// Devolvemos ese bloque (preferentemente el etiquetado abap; si no, el más
+// largo). Si no hay bloques, devolvemos el texto completo como fallback.
+
+export function extractAbapCode(markdown: string): string {
+  const blocks = [...markdown.matchAll(/```([a-zA-Z0-9_]*)\r?\n?([\s\S]*?)```/g)];
+  if (blocks.length === 0) return markdown.trim();
+  const abap = blocks.find((b) => /abap/i.test(b[1]));
+  const chosen = abap ?? [...blocks].sort((a, b) => b[2].length - a[2].length)[0];
+  return chosen[2].replace(/^\r?\n/, "").replace(/\s+$/, "");
+}
+
 // ── Descarga de archivo en el browser ────────────────────────────────────────
 
 export function downloadText(filename: string, content: string, mime = "text/plain;charset=utf-8;") {
