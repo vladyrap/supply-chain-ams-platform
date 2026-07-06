@@ -200,7 +200,7 @@ export const MODULES: ModuleDef[] = [
   },
   {
     id: "clean-core", label: "Clean Core", icon: "🧼", href: "/clean-core",
-    description: "Gobierno SAP Clean Core: índice 0-100 en 6 dimensiones (código custom, extensibilidad, integración, config, datos, procesos) + backlog de remediación a APIs released",
+    description: "Gobierno SAP Clean Core: índice 0-100 en 6 dimensiones + backlog de remediación + refactorizador de código Z clásico a Clean Core optimizado para HANA (SELECT *, SELECT en loop, DML sobre estándar, ABAP Cloud…)",
     status: "available", phase: 8,
     rolesAllowed: ["viewer", "consultor", "aprobador", "admin"],
     permissionKey: "clean_core", group: "herramientas",
