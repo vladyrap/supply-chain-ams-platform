@@ -33,6 +33,89 @@ export function extractAbapCode(markdown: string): string {
   return chosen[2].replace(/^\r?\n/, "").replace(/\s+$/, "");
 }
 
+// Detecta si una línea es un encabezado (## Título, **Título** o Título:) y
+// devuelve su texto normalizado. Robusto a los formatos que usan los LLMs.
+function headingOf(line: string): string | null {
+  const t = line.trim();
+  if (/^#{1,6}\s/.test(t)) return t.replace(/^#{1,6}\s+/, "").replace(/\*\*/g, "").replace(/:\s*$/, "").trim();
+  const bold = t.match(/^\*\*(.+?)\*\*\s*:?\s*$/);
+  if (bold) return bold[1].replace(/:\s*$/, "").trim();
+  return null;
+}
+
+// Extrae una sección Markdown por su encabezado (hasta el próximo encabezado).
+export function extractSection(markdown: string, headingRegex: RegExp): string {
+  const lines = markdown.split(/\r?\n/);
+  const out: string[] = [];
+  let capturing = false;
+  for (const ln of lines) {
+    const h = headingOf(ln);
+    if (h !== null) {
+      if (capturing) break;
+      if (headingRegex.test(h)) { capturing = true; continue; }
+    } else if (capturing) {
+      out.push(ln);
+    }
+  }
+  return out.join("\n").trim();
+}
+
+// Construye el .abap exportado: cabecera con las notas de migración como
+// comentario ABAP (* …) + el código refactorizado (Clean Core / HANA).
+export function buildHanaExport(markdown: string): string {
+  const code = extractAbapCode(markdown);
+  const notes = extractSection(markdown, /notas de migraci/i);
+  if (!notes) return code;
+  const noteLines = notes.split(/\r?\n/)
+    .map((l) => l.replace(/^[-*]\s*/, "").replace(/\*\*/g, "").trim())
+    .filter((l) => l.length > 0)
+    .map((l) => "*   " + l);
+  const header = [
+    "*" + "-".repeat(72),
+    "* Refactor Clean Core / HANA — generado por ROCCO (Clean Core Governance)",
+    "* Revisar y validar con ATC (variante cloud readiness) antes de transportar.",
+    "*",
+    "* Notas de migración:",
+    ...noteLines,
+    "*" + "-".repeat(72),
+    "",
+  ].join("\n");
+  return header + code;
+}
+
+// ── Diff de líneas (LCS) → filas alineadas para vista lado-a-lado ─────────────
+export type DiffRow = { left: string | null; right: string | null; type: "same" | "add" | "del" };
+
+export function lineDiff(aText: string, bText: string): DiffRow[] {
+  const a = aText.replace(/\s+$/, "").split(/\r?\n/);
+  const b = bText.replace(/\s+$/, "").split(/\r?\n/);
+  const n = a.length, m = b.length;
+  const rows: DiffRow[] = [];
+  // Guardia de tamaño: LCS es O(n*m). Para archivos enormes, alineación simple.
+  if (n * m > 4_000_000) {
+    const max = Math.max(n, m);
+    for (let k = 0; k < max; k++) {
+      const l = k < n ? a[k] : null;
+      const r = k < m ? b[k] : null;
+      rows.push({ left: l, right: r, type: l === r ? "same" : (l === null ? "add" : r === null ? "del" : "same") });
+    }
+    return rows;
+  }
+  const dp: number[][] = Array.from({ length: n + 1 }, () => new Array(m + 1).fill(0));
+  for (let i = n - 1; i >= 0; i--)
+    for (let j = m - 1; j >= 0; j--)
+      dp[i][j] = a[i] === b[j] ? dp[i + 1][j + 1] + 1 : Math.max(dp[i + 1][j], dp[i][j + 1]);
+  let i = 0, j = 0;
+  while (i < n && j < m) {
+    if (a[i] === b[j]) { rows.push({ left: a[i], right: b[j], type: "same" }); i++; j++; }
+    else if (dp[i + 1][j] >= dp[i][j + 1]) { rows.push({ left: a[i], right: null, type: "del" }); i++; }
+    else { rows.push({ left: null, right: b[j], type: "add" }); j++; }
+  }
+  while (i < n) rows.push({ left: a[i++], right: null, type: "del" });
+  while (j < m) rows.push({ left: null, right: b[j++], type: "add" });
+  return rows;
+}
+
 // ── Descarga de archivo en el browser ────────────────────────────────────────
 
 export function downloadText(filename: string, content: string, mime = "text/plain;charset=utf-8;") {

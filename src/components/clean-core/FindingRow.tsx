@@ -3,7 +3,7 @@
 // Fila de un hallazgo Clean Core. Colapsada muestra severidad/objeto/módulo;
 // expandida muestra problema, recomendación, referencia y selector de status.
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import type { CleanCoreFinding, FindingStatus } from "@/lib/clean-core/types";
 import {
   SEVERITY_LABELS, SEVERITY_COLORS, STATUS_LABELS, STATUS_COLORS,
@@ -21,6 +21,18 @@ const STATUS_OPTIONS: FindingStatus[] = ["open", "in_progress", "resolved", "acc
 
 type TicketState = { kind: "idle" } | { kind: "loading" } | { kind: "ok"; key: string } | { kind: "error"; msg: string };
 
+// Mapa hallazgo → nº de ticket de remediación (persistido en localStorage).
+const TKEY = "supply-chain-ams-clean-core-finding-tickets";
+function readTicketMap(): Record<string, string> {
+  if (typeof window === "undefined") return {};
+  try { const r = localStorage.getItem(TKEY); return r ? JSON.parse(r) : {}; } catch { return {}; }
+}
+function saveTicketKey(id: string, key: string) {
+  if (typeof window === "undefined") return;
+  const m = readTicketMap(); m[id] = key;
+  try { localStorage.setItem(TKEY, JSON.stringify(m)); } catch { /* */ }
+}
+
 function dimLabel(id: string): string {
   const d = CLEAN_CORE_DIMENSIONS.find((x) => x.id === id);
   return d ? `${d.icon} ${d.label}` : id;
@@ -29,15 +41,26 @@ function dimLabel(id: string): string {
 export default function FindingRow({ finding, onStatus }: Props) {
   const [open, setOpen] = useState(false);
   const [ticket, setTicket] = useState<TicketState>({ kind: "idle" });
+  const [linkedKey, setLinkedKey] = useState<string | null>(null);
   const sc = SEVERITY_COLORS[finding.severity];
   const stc = STATUS_COLORS[finding.status];
   const muted = finding.status === "resolved";
 
+  // Cargar el ticket vinculado post-mount (evita hydration mismatch).
+  useEffect(() => { setLinkedKey(readTicketMap()[finding.id] ?? null); }, [finding.id]);
+
   async function createRemediationTicket() {
     setTicket({ kind: "loading" });
     const r = await createTicket(findingToTicketInput(finding));
-    if ("success" in r && r.success) setTicket({ kind: "ok", key: r.ticket.key });
-    else setTicket({ kind: "error", msg: "error" in r ? r.error : "no se pudo crear" });
+    if ("success" in r && r.success) {
+      setTicket({ kind: "ok", key: r.ticket.key });
+      saveTicketKey(finding.id, r.ticket.key);
+      setLinkedKey(r.ticket.key);
+      // Un hallazgo abierto pasa a "en progreso" al abrir su ticket.
+      if (finding.status === "open") onStatus(finding.id, "in_progress");
+    } else {
+      setTicket({ kind: "error", msg: "error" in r ? r.error : "no se pudo crear" });
+    }
   }
 
   return (
@@ -70,6 +93,15 @@ export default function FindingRow({ finding, onStatus }: Props) {
           </div>
         </div>
 
+        {linkedKey && (
+          <span title="Ticket de remediación vinculado" style={{
+            fontSize: 10, fontWeight: 700, color: "var(--accent)", flexShrink: 0,
+            padding: "2px 8px", borderRadius: 999, fontFamily: "var(--font-mono, monospace)",
+            background: "color-mix(in srgb, var(--accent) 12%, transparent)",
+          }}>
+            🎫 {linkedKey}
+          </span>
+        )}
         <span style={{
           fontSize: 10, fontWeight: 700, color: stc, flexShrink: 0,
           padding: "2px 8px", borderRadius: 999,
@@ -123,12 +155,13 @@ export default function FindingRow({ finding, onStatus }: Props) {
             <button
               onClick={createRemediationTicket}
               className="btn"
-              disabled={ticket.kind === "loading"}
-              style={{ fontSize: 11, padding: "4px 10px", borderRadius: 4, background: "var(--accent-2, #0043ce)", color: "#fff", border: "none" }}
+              disabled={ticket.kind === "loading" || !!linkedKey}
+              style={{ fontSize: 11, padding: "4px 10px", borderRadius: 4, background: linkedKey ? "var(--bg-elev)" : "var(--accent-2, #0043ce)", color: linkedKey ? "var(--text-dim)" : "#fff", border: linkedKey ? "1px solid var(--border-soft)" : "none" }}
             >
-              {ticket.kind === "loading" ? <><span className="spinner" /> Creando…</> : "🎫 Crear ticket de remediación"}
+              {ticket.kind === "loading" ? <><span className="spinner" /> Creando…</>
+                : linkedKey ? `🎫 Ticket ${linkedKey} vinculado` : "🎫 Crear ticket de remediación"}
             </button>
-            {ticket.kind === "ok" && <span style={{ fontSize: 11.5, color: "var(--ok)", fontWeight: 600 }}>✓ Ticket {ticket.key} creado</span>}
+            {ticket.kind === "ok" && <span style={{ fontSize: 11.5, color: "var(--ok)", fontWeight: 600 }}>✓ Ticket {ticket.key} creado · hallazgo → en progreso</span>}
             {ticket.kind === "error" && <span style={{ fontSize: 11.5, color: "var(--error)" }}>⚠ {ticket.msg}</span>}
           </div>
         </div>
