@@ -82,6 +82,7 @@ export function buildDefaultRoles(): PlatformRole[] {
         global_search:    fullPerm(),
         agent_readiness:  fullPerm(),
         business_value_dashboard: fullPerm(),
+        clean_core:       fullPerm(),
       }),
     },
     {
@@ -123,6 +124,8 @@ export function buildDefaultRoles(): PlatformRole[] {
         global_search:    viewOnly(),
         agent_readiness:  viewExport(),
         business_value_dashboard: viewExportApprove(),
+        // SERVICE_LEAD: gobierna el backlog Clean Core y aprueba remediaciones
+        clean_core:       { ...viewCreateEdit(), export: true, approve: true },
       }),
     },
     {
@@ -164,6 +167,8 @@ export function buildDefaultRoles(): PlatformRole[] {
         global_search:    viewOnly(),
         agent_readiness:  viewOnly(),
         business_value_dashboard: viewOnly(),
+        // AMS_CONSULTANT: opera el backlog Clean Core (cambia estados) y exporta
+        clean_core:       { ...viewCreateEdit(), export: true },
       }),
     },
     {
@@ -201,6 +206,8 @@ export function buildDefaultRoles(): PlatformRole[] {
         // CLIENT_USER ve resumen de su ticket sin acciones operativas
         ticket_command_center: viewOnly(),
         global_search:    viewOnly(),
+        // CLIENT_USER ve la postura Clean Core de su sistema (transparencia)
+        clean_core:       viewOnly(),
       }),
     },
     {

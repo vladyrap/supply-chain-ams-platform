@@ -199,6 +199,13 @@ export const MODULES: ModuleDef[] = [
     permissionKey: "quality_evaluator", group: "herramientas",
   },
   {
+    id: "clean-core", label: "Clean Core", icon: "🧼", href: "/clean-core",
+    description: "Gobierno SAP Clean Core: índice 0-100 en 6 dimensiones (código custom, extensibilidad, integración, config, datos, procesos) + backlog de remediación a APIs released",
+    status: "available", phase: 8,
+    rolesAllowed: ["viewer", "consultor", "aprobador", "admin"],
+    permissionKey: "clean_core", group: "herramientas",
+  },
+  {
     id: "sap-readonly", label: "SAP Read-Only", icon: "🏭", href: "/sap-readonly",
     description: "Consultas S/4HANA: OC, pedidos, materiales, movimientos. Mock o real",
     status: "available", phase: 4,

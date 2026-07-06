@@ -43,7 +43,8 @@ export type PlatformScreen =
   | "audit_trail"
   | "global_search"
   | "agent_readiness"
-  | "business_value_dashboard";
+  | "business_value_dashboard"
+  | "clean_core";
 
 export interface RolePermission {
   view: boolean;
@@ -108,6 +109,7 @@ export const SCREEN_LABELS: Record<PlatformScreen, string> = {
   global_search:    "Global Intelligence Search",
   agent_readiness:  "Agent Readiness Center",
   business_value_dashboard: "Dashboard de Valor Económico",
+  clean_core:       "Clean Core Governance",
 };
 
 export const ACTION_LABELS: Record<PermissionAction, string> = {
@@ -128,7 +130,7 @@ export const ALL_SCREENS: PlatformScreen[] = [
   "playbooks_ams", "document_factory", "quality_evaluator",
   "escalamiento_n2", "testing_intelligence", "time_estimator",
   "ticket_command_center", "audit_trail", "global_search",
-  "agent_readiness", "business_value_dashboard",
+  "agent_readiness", "business_value_dashboard", "clean_core",
 ];
 
 export const ALL_ACTIONS: PermissionAction[] = [
