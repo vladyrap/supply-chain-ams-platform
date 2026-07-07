@@ -17,10 +17,10 @@ name: Deploy on tag
 # =============================================================================
 
 on:
-  push:
-    tags:
-      - "v*-prod"
-      - "v*-hotfix-*-prod"
+  # v1.3.0: SIN trigger por tag. El deploy prod lo orquesta el workflow del repo
+  # AGENT (corre deploy.sh → despliega agent+platform+stack desde origin/main).
+  # Este quedó como dispatch-only para un redeploy AISLADO de solo-platform,
+  # evitando la race de dos workflows tocando el mismo container a la vez.
   workflow_dispatch:
     inputs:
       tag:
