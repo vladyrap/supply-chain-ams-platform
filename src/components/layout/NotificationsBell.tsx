@@ -39,10 +39,9 @@ function timeAgo(iso: string): string {
 export default function NotificationsBell() {
   const router = useRouter();
   const [items, setItems] = useState<NotificationItem[]>([]);
-  const [lastRead, setLastRead] = useState<string>(() => {
-    if (typeof window === "undefined") return new Date(Date.now() - 7 * 24 * 60 * 60 * 1000).toISOString();
-    return window.localStorage.getItem(LAST_READ_KEY) || new Date(Date.now() - 7 * 24 * 60 * 60 * 1000).toISOString();
-  });
+  // SSR-safe: valor inicial determinista (""); se hidrata desde localStorage tras
+  // montar. En el primer render items=[] → unreadCount=0, así que "" no afecta la UI.
+  const [lastRead, setLastRead] = useState<string>("");
   const [open, setOpen] = useState(false);
   const [loading, setLoading] = useState(false);
   const dropdownRef = useRef<HTMLDivElement | null>(null);
@@ -52,6 +51,11 @@ export default function NotificationsBell() {
     const r = await fetchNotifications();
     if (r.ok) setItems(r.items);
     setLoading(false);
+  }, []);
+
+  // Hidratar lastRead desde localStorage tras montar (no en el render → SSR-safe)
+  useEffect(() => {
+    setLastRead(window.localStorage.getItem(LAST_READ_KEY) || new Date(Date.now() - 7 * 24 * 60 * 60 * 1000).toISOString());
   }, []);
 
   // Carga inicial + polling

@@ -39,10 +39,21 @@ interface RbacState {
   currentUserId: string | null;
 }
 
+// Estado RBAC DETERMINISTA (sin tocar localStorage). Es lo que se renderiza en el
+// server y en el PRIMER render del cliente, de modo que la hidratación coincida.
+// La versión real (con overrides de localStorage) se carga en un useEffect tras
+// montar — ver usePermissions(). NUNCA leer localStorage en el initializer de
+// useState: rompe la hidratación (server=null vs cliente=valor guardado).
+function defaultRbacState(): RbacState {
+  return {
+    roles: migrateRolesAddingMissingScreens(buildDefaultRoles()),
+    users: buildDefaultUsers(),
+    currentUserId: null,
+  };
+}
+
 function readRbacState(): RbacState {
-  if (typeof window === "undefined") {
-    return { roles: buildDefaultRoles(), users: buildDefaultUsers(), currentUserId: null };
-  }
+  if (typeof window === "undefined") return defaultRbacState();
   let roles: PlatformRole[] = buildDefaultRoles();
   let users: PlatformUser[] = buildDefaultUsers();
   try { const r = localStorage.getItem(RBAC_STORAGE.roles); if (r) roles = JSON.parse(r); } catch {}
@@ -83,11 +94,14 @@ export interface UsePermissions {
  */
 export function usePermissions(): UsePermissions {
   const { user: authUser, loading: authLoading } = useAuth();
-  const [rbac, setRbac] = useState<RbacState>(() => readRbacState());
+  // Estado inicial determinista (SSR-safe). El valor real de localStorage se carga
+  // en el useEffect de abajo, TRAS montar → primer render idéntico server/cliente.
+  const [rbac, setRbac] = useState<RbacState>(defaultRbacState);
 
-  // Re-leer cuando hay cambios en localStorage o evento custom
+  // Cargar el estado real al montar + re-leer cuando cambie localStorage / evento.
   useEffect(() => {
     function reload() { setRbac(readRbacState()); }
+    reload();  // hidratar overrides de localStorage post-montaje (post-hidratación)
     function onStorage(e: StorageEvent) {
       if (!e.key) return;
       if (e.key === RBAC_STORAGE.roles
@@ -96,7 +110,6 @@ export function usePermissions(): UsePermissions {
         reload();
       }
     }
-    if (typeof window === "undefined") return;
     window.addEventListener("storage", onStorage);
     window.addEventListener(RBAC_CHANGED_EVENT, reload);
     return () => {

@@ -65,16 +65,19 @@ export default function ChatPanel() {
   const [userName, setUserName] = useState("");
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
-  // Modo investigación con tool-use (Gemini function calling)
-  const [useResearch, setUseResearch] = useState<boolean>(() => {
-    if (typeof window === "undefined") return false;
-    return window.localStorage.getItem("ams-research-mode") === "true";
-  });
+  // Modo investigación con tool-use (Gemini function calling).
+  // SSR-safe: arranca en false (igual en server y primer render de cliente) y se
+  // hidrata desde localStorage tras montar → no rompe la hidratación. La escritura
+  // se hace en el onChange (no en un effect, para no clobber-ear la lectura inicial).
+  const [useResearch, setUseResearch] = useState<boolean>(false);
   const [researchStatus, setResearchStatus] = useState<string>("");
   useEffect(() => {
-    if (typeof window === "undefined") return;
-    window.localStorage.setItem("ams-research-mode", String(useResearch));
-  }, [useResearch]);
+    setUseResearch(window.localStorage.getItem("ams-research-mode") === "true");
+  }, []);
+  const toggleResearch = useCallback((v: boolean) => {
+    setUseResearch(v);
+    try { window.localStorage.setItem("ams-research-mode", String(v)); } catch { /* quota */ }
+  }, []);
   // finalAgentText: solo se setea cuando el stream del agente terminó (onDone).
   // Es lo que alimenta la auto-lectura por voz — evita disparar speak() en cada delta.
   const [finalAgentText, setFinalAgentText] = useState<string | null>(null);
@@ -316,7 +319,7 @@ export default function ChatPanel() {
                 <input
                   type="checkbox"
                   checked={useResearch}
-                  onChange={(e) => setUseResearch(e.target.checked)}
+                  onChange={(e) => toggleResearch(e.target.checked)}
                   disabled={loading}
                 />
                 <span className="track" />
