@@ -33,8 +33,13 @@ export const metadata: Metadata = {
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
-    <html lang="es" className={`${plexSans.variable} ${plexMono.variable}`}>
-      <body>
+    // suppressHydrationWarning en <html>/<body>: extensiones del navegador
+    // (Grammarly, traductores, dark-mode, gestores de contraseñas) inyectan
+    // atributos en estos elementos ANTES de que React hidrate → "Hydration failed".
+    // Esto silencia SÓLO el diff de atributos de html/body en sí, NO de sus
+    // descendientes: cualquier mismatch real dentro de la app sigue lanzando error.
+    <html lang="es" className={`${plexSans.variable} ${plexMono.variable}`} suppressHydrationWarning>
+      <body suppressHydrationWarning>
         <BrandSplash />
         <ApiHealthBanner />
         <ToastProvider>
