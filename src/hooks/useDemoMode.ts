@@ -32,16 +32,18 @@ export interface UseDemoMode {
 }
 
 export function useDemoMode(): UseDemoMode {
-  const [state, setState] = useState<DemoModeState>(() => {
-    if (typeof window === "undefined") return defaultState();
-    return safe<DemoModeState>(localStorage.getItem(AMS_MODULES_STORAGE.demoMode)) ?? defaultState();
-  });
+  // SSR-safe: estado inicial DETERMINISTA. NO leer localStorage en el initializer:
+  // rompe la hidratación (server=default `enabled:false` vs cliente=valor guardado
+  // `enabled:true` → DemoModeBanner difiere → React #418/#425 → crash en prod).
+  // El valor real se hidrata en el useEffect de abajo, tras montar.
+  const [state, setState] = useState<DemoModeState>(defaultState);
 
   useEffect(() => {
     function reload() {
       if (typeof window === "undefined") return;
       setState(safe<DemoModeState>(localStorage.getItem(AMS_MODULES_STORAGE.demoMode)) ?? defaultState());
     }
+    reload();  // hidratar el estado real de localStorage TRAS montar (post-hidratación)
     function onStorage(e: StorageEvent) {
       if (e.key === AMS_MODULES_STORAGE.demoMode) reload();
     }

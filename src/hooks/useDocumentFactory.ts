@@ -46,10 +46,9 @@ export interface UseDocumentFactory {
 }
 
 export function useDocumentFactory(): UseDocumentFactory {
-  const [documents, setDocuments] = useState<GeneratedDocument[]>(() => {
-    if (typeof window === "undefined") return [];
-    return safe<GeneratedDocument[]>(localStorage.getItem(AMS_MODULES_STORAGE.documents)) ?? [];
-  });
+  // SSR-safe: initializer determinista (no leer localStorage acá → rompe hidratación).
+  // El cache local se hidrata en el useEffect de abajo tras montar.
+  const [documents, setDocuments] = useState<GeneratedDocument[]>([]);
 
   useEffect(() => {
     function reload() {
@@ -57,6 +56,7 @@ export function useDocumentFactory(): UseDocumentFactory {
       const fresh = safe<GeneratedDocument[]>(localStorage.getItem(AMS_MODULES_STORAGE.documents)) ?? [];
       setDocuments(fresh);
     }
+    reload();  // hidratar cache de localStorage tras montar (post-hidratación)
     function onStorage(e: StorageEvent) {
       if (e.key === AMS_MODULES_STORAGE.documents) reload();
     }
