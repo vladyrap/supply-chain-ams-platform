@@ -169,11 +169,11 @@ export default function CommandPalette({ open, onClose, favorites, onToggleFavor
             placeholder="Buscar módulo o acción…  (↑↓ navegar · ↵ ejecutar · esc cerrar)"
             style={{
               flex: 1, background: "transparent", border: "none", outline: "none",
-              color: "#e2e8f0", fontSize: 15.5, fontFamily: "var(--font-sans, inherit)",
+              color: "#5b6b7d", fontSize: 15.5, fontFamily: "var(--font-sans, inherit)",
             }} />
           <kbd style={{
             fontSize: 10.5, padding: "3px 7px", borderRadius: 4,
-            background: "rgba(255,255,255,0.06)", color: "#94a3b8",
+            background: "rgba(255,255,255,0.06)", color: "#5b6b7d",
             border: "1px solid rgba(255,255,255,0.10)", fontFamily: "var(--font-mono, monospace)",
           }}>esc</kbd>
         </div>
@@ -215,7 +215,7 @@ export default function CommandPalette({ open, onClose, favorites, onToggleFavor
                     }}>
                     <span style={{ fontSize: 18, width: 22, textAlign: "center" }}>{it.icon}</span>
                     <div style={{ flex: 1, minWidth: 0 }}>
-                      <div style={{ fontSize: 13.5, fontWeight: 600, color: "#e2e8f0" }}>{it.label}</div>
+                      <div style={{ fontSize: 13.5, fontWeight: 600, color: "#5b6b7d" }}>{it.label}</div>
                       {it.description && (
                         <div style={{ fontSize: 11.5, color: "#64748b", marginTop: 1, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>
                           {it.description}
@@ -265,7 +265,7 @@ export default function CommandPalette({ open, onClose, favorites, onToggleFavor
 
 const kbdStyle: React.CSSProperties = {
   padding: "2px 5px", borderRadius: 3,
-  background: "rgba(255,255,255,0.07)", color: "#94a3b8",
+  background: "rgba(255,255,255,0.07)", color: "#5b6b7d",
   border: "1px solid rgba(255,255,255,0.10)",
   fontFamily: "var(--font-mono, monospace)",
   fontSize: 10,

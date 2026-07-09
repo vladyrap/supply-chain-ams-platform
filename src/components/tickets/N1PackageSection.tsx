@@ -159,7 +159,7 @@ export default function N1PackageSection({
         <div style={{ fontSize: 10, letterSpacing: 2.4, color: "var(--text-dim)" }}>
           ▸ PAQUETE · N1
         </div>
-        <div style={{ fontSize: 13, color: "#fca5a5" }}>
+        <div style={{ fontSize: 13, color: "#da1e28" }}>
           ⚠ No se pudo generar el Paquete N1: {ticket.intelligence?.error || "error desconocido"}
         </div>
         <div style={{ fontSize: 11, color: "var(--text-dim)" }}>
@@ -307,7 +307,7 @@ export default function N1PackageSection({
                 <div style={{ fontSize: 9.5, letterSpacing: 1.2, color: "var(--text-dim)", marginBottom: 3 }}>
                   FALTA INFORMACIÓN ({ui.missingDataItems.length})
                 </div>
-                <ul style={{ margin: 0, paddingLeft: 16, fontSize: 11, color: "#fca5a5" }}>
+                <ul style={{ margin: 0, paddingLeft: 16, fontSize: 11, color: "#da1e28" }}>
                   {ui.missingDataItems.map((m) => <li key={m} style={{ wordBreak: "break-word" }}>⚠ {m}</li>)}
                 </ul>
               </div>
@@ -423,7 +423,7 @@ export default function N1PackageSection({
                       </div>
                     )}
                     {c.escalateReason && (
-                      <div style={{ fontSize: 10, color: "#fca5a5", marginTop: 2 }}>
+                      <div style={{ fontSize: 10, color: "#da1e28", marginTop: 2 }}>
                         ⚠ {c.escalateReason}
                       </div>
                     )}

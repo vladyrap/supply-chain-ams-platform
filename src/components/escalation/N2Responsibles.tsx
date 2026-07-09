@@ -78,7 +78,7 @@ export default function N2Responsibles({ escalation, canEdit }: { escalation: Us
                     {r.active ? "desactivar" : "activar"}
                   </button>
                   <button className="btn ghost"
-                    style={{ fontSize: 11, padding: "3px 10px", borderColor: "rgba(250,77,86,0.5)", color: "#fca5a5", marginLeft: "auto" }}
+                    style={{ fontSize: 11, padding: "3px 10px", borderColor: "rgba(250,77,86,0.5)", color: "#da1e28", marginLeft: "auto" }}
                     onClick={() => { if (confirm(`¿Eliminar a ${r.name}?`)) escalation.removeResponsible(r.id); }}>
                     eliminar
                   </button>

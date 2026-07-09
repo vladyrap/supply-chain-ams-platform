@@ -48,7 +48,7 @@ export default function EvidenceCard({ evidence: e, scenarioTitle, onRemove, onR
         <video src={e.localPreviewUrl} controls style={{ width: "100%", maxHeight: 200, borderRadius: 4, background: "#000" }} />
       )}
       {isVideo && sessionGone && (
-        <div style={{ fontSize: 11, color: "#fcd34d", padding: 8, background: "rgba(241,194,27,0.07)", borderRadius: 4 }}>
+        <div style={{ fontSize: 11, color: "#8a6d00", padding: 8, background: "rgba(241,194,27,0.07)", borderRadius: 4 }}>
           ⚠ Preview no disponible (video no persistido tras refresh). Volvé a cargar el archivo o consultá el log de la evidencia.
         </div>
       )}
@@ -56,11 +56,11 @@ export default function EvidenceCard({ evidence: e, scenarioTitle, onRemove, onR
         <pre style={{
           margin: 0, padding: 8, background: "rgba(0,0,0,0.25)", borderRadius: 4,
           fontSize: 11.5, fontFamily: "var(--font-mono, monospace)",
-          whiteSpace: "pre-wrap", maxHeight: 160, overflowY: "auto", color: "#cbd5e1",
+          whiteSpace: "pre-wrap", maxHeight: 160, overflowY: "auto", color: "#5b6b7d",
         }}>{e.noteText}</pre>
       )}
       {e.type === "LINK" && e.externalUrl && (
-        <a href={e.externalUrl} target="_blank" rel="noreferrer" style={{ fontSize: 12, color: "#7dd3fc", wordBreak: "break-all" }}>
+        <a href={e.externalUrl} target="_blank" rel="noreferrer" style={{ fontSize: 12, color: "#0284c7", wordBreak: "break-all" }}>
           ↗ {e.externalUrl}
         </a>
       )}
@@ -79,7 +79,7 @@ export default function EvidenceCard({ evidence: e, scenarioTitle, onRemove, onR
           )}
           {onRemove && (
             <button className="btn ghost" onClick={onRemove}
-              style={{ padding: "2px 8px", fontSize: 11, marginLeft: "auto", color: "#fca5a5", borderColor: "rgba(250,77,86,0.4)" }}>
+              style={{ padding: "2px 8px", fontSize: 11, marginLeft: "auto", color: "#da1e28", borderColor: "rgba(250,77,86,0.4)" }}>
               eliminar
             </button>
           )}

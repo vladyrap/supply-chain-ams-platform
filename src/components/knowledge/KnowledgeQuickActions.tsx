@@ -47,7 +47,7 @@ export default function KnowledgeQuickActions({ incident, variant = "compact", o
           <div style={{
             position: "fixed", bottom: 20, right: 20, zIndex: 9001,
             padding: "10px 16px", background: "rgba(16,185,129,0.18)",
-            border: "1px solid rgba(16,185,129,0.5)", color: "#42be65",
+            border: "1px solid rgba(16,185,129,0.5)", color: "#24a148",
             borderRadius: 8, fontSize: 12.5, fontWeight: 600,
             boxShadow: "0 4px 18px rgba(0,0,0,0.4)",
           }}>
@@ -76,7 +76,7 @@ export default function KnowledgeQuickActions({ incident, variant = "compact", o
         <div style={{
           position: "fixed", bottom: 20, right: 20, zIndex: 9001,
           padding: "10px 16px", background: "rgba(16,185,129,0.18)",
-          border: "1px solid rgba(16,185,129,0.5)", color: "#42be65",
+          border: "1px solid rgba(16,185,129,0.5)", color: "#24a148",
           borderRadius: 8, fontSize: 12.5, fontWeight: 600,
         }}>{toast}</div>
       )}

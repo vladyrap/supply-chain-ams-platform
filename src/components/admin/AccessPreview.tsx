@@ -137,7 +137,7 @@ export default function AccessPreview({ admin }: Props) {
                 <div style={{ display: "flex", flexDirection: "column", gap: 3 }}>
                   {visibleScreens.length === 0 && <span style={{ color: "var(--text-dim)", fontSize: 12 }}>(ninguna)</span>}
                   {visibleScreens.map((s) => (
-                    <div key={s} style={{ fontSize: 12, color: "#86efac" }}>● {SCREEN_LABELS[s]}</div>
+                    <div key={s} style={{ fontSize: 12, color: "#24a148" }}>● {SCREEN_LABELS[s]}</div>
                   ))}
                 </div>
               </div>
@@ -146,7 +146,7 @@ export default function AccessPreview({ admin }: Props) {
                 <div style={{ display: "flex", flexDirection: "column", gap: 3 }}>
                   {blockedScreens.length === 0 && <span style={{ color: "var(--text-dim)", fontSize: 12 }}>(ninguna)</span>}
                   {blockedScreens.map((s) => (
-                    <div key={s} style={{ fontSize: 12, color: "#fca5a5", opacity: 0.6 }}>○ {SCREEN_LABELS[s]}</div>
+                    <div key={s} style={{ fontSize: 12, color: "#da1e28", opacity: 0.6 }}>○ {SCREEN_LABELS[s]}</div>
                   ))}
                 </div>
               </div>

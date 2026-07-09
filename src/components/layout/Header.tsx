@@ -88,7 +88,7 @@ export default function Header() {
           style={demo.state.enabled ? {
             background: "linear-gradient(135deg, rgba(168,85,247,0.25), rgba(69,137,255,0.20))",
             borderColor: "rgba(168,85,247,0.55)",
-            color: "#c084fc",
+            color: "#7c3aed",
           } : undefined}
         >
           🎬

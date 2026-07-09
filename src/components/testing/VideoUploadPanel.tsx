@@ -71,7 +71,7 @@ export default function VideoUploadPanel({ testing, actingUserId }: Props) {
 
   return (
     <div className="col" style={{ gap: 14 }}>
-      <div className="card" style={{ background: "rgba(241,194,27,0.07)", borderColor: "rgba(241,194,27,0.30)", color: "#fde68a", fontSize: 12 }}>
+      <div className="card" style={{ background: "rgba(241,194,27,0.07)", borderColor: "rgba(241,194,27,0.30)", color: "#8a6d00", fontSize: 12 }}>
         ⚠ El video <b>no se sube al backend</b> en esta versión. Sólo se guarda metadata localmente. Si refrescás sin descargar, el preview deja de funcionar.
       </div>
 

@@ -65,12 +65,12 @@ export default function TestStepEditor({ scenario, onChange, readOnly }: Props) 
       {steps.map((s, i) => (
         <div key={s.id} className="card" style={{ padding: 10 }}>
           <div className="row" style={{ gap: 8, alignItems: "center", marginBottom: 6 }}>
-            <span style={{ fontWeight: 700, color: "#7dd3fc", fontFamily: "var(--font-mono, monospace)" }}>#{i + 1}</span>
+            <span style={{ fontWeight: 700, color: "#0284c7", fontFamily: "var(--font-mono, monospace)" }}>#{i + 1}</span>
             {!readOnly && (
               <div className="row" style={{ gap: 4, marginLeft: "auto" }}>
                 <button className="btn ghost" onClick={() => moveUp(i)} disabled={i === 0} style={{ padding: "2px 8px", fontSize: 11 }}>↑</button>
                 <button className="btn ghost" onClick={() => moveDown(i)} disabled={i === steps.length - 1} style={{ padding: "2px 8px", fontSize: 11 }}>↓</button>
-                <button className="btn ghost" onClick={() => removeStep(s.id)} style={{ padding: "2px 8px", fontSize: 11, color: "#fca5a5", borderColor: "rgba(250,77,86,0.4)" }}>✕</button>
+                <button className="btn ghost" onClick={() => removeStep(s.id)} style={{ padding: "2px 8px", fontSize: 11, color: "#da1e28", borderColor: "rgba(250,77,86,0.4)" }}>✕</button>
               </div>
             )}
           </div>

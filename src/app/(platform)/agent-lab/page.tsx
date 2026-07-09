@@ -319,7 +319,7 @@ function ReplayDetail({ trace }: { trace: ConversationTrace }) {
             conv #{conv.id.slice(0, 8)}
           </div>
         </div>
-        <span className="kanban-tag" style={{ borderColor: "rgba(168,85,247,0.4)", color: "#c084fc", background: "rgba(168,85,247,0.08)" }}>
+        <span className="kanban-tag" style={{ borderColor: "rgba(168,85,247,0.4)", color: "#7c3aed", background: "rgba(168,85,247,0.08)" }}>
           {conv.channel}
         </span>
       </div>
@@ -474,7 +474,7 @@ function TrainingTab() {
                   {SOURCE_META[f.source].label} · {SOURCE_META[f.source].icon}
                 </span>
                 {f.reason && (
-                  <span className="kanban-tag" style={{ borderColor: "rgba(250,77,86,0.4)", color: "#fca5a5", background: "rgba(250,77,86,0.10)" }}>
+                  <span className="kanban-tag" style={{ borderColor: "rgba(250,77,86,0.4)", color: "#da1e28", background: "rgba(250,77,86,0.10)" }}>
                     {f.reason.slice(0, 50)}
                   </span>
                 )}
@@ -630,7 +630,7 @@ function WizardTab() {
                   <div className="row" style={{ gap: 6, alignItems: "center", marginBottom: 2 }}>
                     <span style={{ fontFamily: "var(--font-mono, monospace)", fontSize: 11, color: "var(--text-dim)" }}>{t.code}</span>
                     {t.has_kb && (
-                      <span className="kanban-tag" style={{ borderColor: "rgba(16,185,129,0.4)", color: "#42be65", background: "rgba(16,185,129,0.08)", fontSize: 9.5 }}>
+                      <span className="kanban-tag" style={{ borderColor: "rgba(16,185,129,0.4)", color: "#24a148", background: "rgba(16,185,129,0.08)", fontSize: 9.5 }}>
                         ✓ ya en KB
                       </span>
                     )}
@@ -644,9 +644,9 @@ function WizardTab() {
                   </div>
                   <div className="row" style={{ gap: 4, marginTop: 4 }}>
                     {t.sap_module && (
-                      <span className="kanban-tag" style={{ borderColor: "rgba(69,137,255,0.4)", color: "#67e8f9", background: "rgba(69,137,255,0.08)", fontSize: 9.5 }}>{t.sap_module}</span>
+                      <span className="kanban-tag" style={{ borderColor: "rgba(69,137,255,0.4)", color: "#0284c7", background: "rgba(69,137,255,0.08)", fontSize: 9.5 }}>{t.sap_module}</span>
                     )}
-                    <span className="kanban-tag" style={{ borderColor: "rgba(168,85,247,0.4)", color: "#c084fc", background: "rgba(168,85,247,0.08)", fontSize: 9.5 }}>{t.status}</span>
+                    <span className="kanban-tag" style={{ borderColor: "rgba(168,85,247,0.4)", color: "#7c3aed", background: "rgba(168,85,247,0.08)", fontSize: 9.5 }}>{t.status}</span>
                   </div>
                 </div>
               </button>
@@ -734,7 +734,7 @@ function WizardTab() {
               <div className="lab-fb-block-head">▸ TAGS · {editing.tags.length}/8</div>
               <div className="row" style={{ gap: 6, flexWrap: "wrap", marginBottom: 8 }}>
                 {editing.tags.map((t) => (
-                  <span key={t} className="kanban-tag" style={{ borderColor: "rgba(69,137,255,0.4)", color: "#67e8f9", background: "rgba(69,137,255,0.08)", cursor: "pointer" }}
+                  <span key={t} className="kanban-tag" style={{ borderColor: "rgba(69,137,255,0.4)", color: "#0284c7", background: "rgba(69,137,255,0.08)", cursor: "pointer" }}
                     onClick={() => removeTag(t)} title="click para eliminar">
                     {t} ×
                   </span>

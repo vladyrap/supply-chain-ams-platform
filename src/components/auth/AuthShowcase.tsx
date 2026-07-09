@@ -72,7 +72,7 @@ export default function AuthShowcase() {
         <h2>
           <span className="auth-grad-text">Tu mesa de soporte</span><br />
           <span>SAP, con IA</span><br />
-          <span style={{ color: "#94a3b8", fontWeight: 300 }}>en tiempo real.</span>
+          <span style={{ color: "#5b6b7d", fontWeight: 300 }}>en tiempo real.</span>
         </h2>
       </div>
 

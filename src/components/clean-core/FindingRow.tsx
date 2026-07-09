@@ -89,7 +89,7 @@ export default function FindingRow({ finding, onStatus }: Props) {
             <span style={{ fontFamily: "var(--font-mono, monospace)" }}>{finding.object}</span>
             <span>· {finding.objectType}</span>
             <span>· {finding.sapModule}</span>
-            {!finding.cloudReady && <span style={{ color: "#ff832b" }}>· ⚠ no cloud-ready</span>}
+            {!finding.cloudReady && <span style={{ color: "#b45309" }}>· ⚠ no cloud-ready</span>}
           </div>
         </div>
 

@@ -50,14 +50,14 @@ export default function ScreenRecorder({ testing, actingUserId }: Props) {
   return (
     <div className="col" style={{ gap: 14 }}>
       {/* Advertencias */}
-      <div className="card" style={{ background: "rgba(241,194,27,0.07)", borderColor: "rgba(241,194,27,0.30)", color: "#fde68a", fontSize: 12 }}>
+      <div className="card" style={{ background: "rgba(241,194,27,0.07)", borderColor: "rgba(241,194,27,0.30)", color: "#8a6d00", fontSize: 12 }}>
         ⚠ <b>Esta versión graba localmente en el navegador.</b> Para persistencia real se requiere backend de almacenamiento. Si refrescás la página sin descargar, perdés el video.
         <br />
         🔒 <b>Privacidad:</b> evitá grabar datos productivos sensibles (PII, claves, datos confidenciales).
       </div>
 
       {!rec.isSupported && (
-        <div className="card" style={{ background: "rgba(250,77,86,0.07)", borderColor: "rgba(250,77,86,0.30)", color: "#fca5a5", fontSize: 12 }}>
+        <div className="card" style={{ background: "rgba(250,77,86,0.07)", borderColor: "rgba(250,77,86,0.30)", color: "#da1e28", fontSize: 12 }}>
           ❌ Tu navegador no soporta <code>getDisplayMedia</code> o <code>MediaRecorder</code>. Usá Chrome / Edge / Firefox actualizados.
         </div>
       )}
@@ -92,12 +92,12 @@ export default function ScreenRecorder({ testing, actingUserId }: Props) {
             </button>
           ) : (
             <button className="btn" onClick={rec.stopRecording}
-              style={{ background: "rgba(250,77,86,0.15)", borderColor: "rgba(250,77,86,0.5)", color: "#fca5a5" }}>
+              style={{ background: "rgba(250,77,86,0.15)", borderColor: "rgba(250,77,86,0.5)", color: "#da1e28" }}>
               ⏹ Detener
             </button>
           )}
           {rec.isRecording && (
-            <span className="row" style={{ gap: 6, color: "#ff8389", fontWeight: 600 }}>
+            <span className="row" style={{ gap: 6, color: "#da1e28", fontWeight: 600 }}>
               <span style={{ width: 10, height: 10, borderRadius: "50%", background: "#fa4d56", animation: "pulse 1s infinite" }} />
               REC · {rec.durationSeconds}s
             </span>

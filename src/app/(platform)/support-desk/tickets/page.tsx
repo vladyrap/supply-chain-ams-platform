@@ -8,13 +8,13 @@ import { supportApi, type SupportTicket, type TicketStatus, type Priority } from
 const PRIORITY_META: Record<Priority, { color: string; icon: string }> = {
   baja:    { color: "#10b981", icon: "○" },
   media:   { color: "#4589ff", icon: "●" },
-  alta:    { color: "#f59e0b", icon: "▲" },
+  alta:    { color: "#b45309", icon: "▲" },
   critica: { color: "#fa4d56", icon: "🔥" },
 };
 
 const STATUS_META: Record<TicketStatus, { color: string; label: string; icon: string }> = {
   new:              { color: "#3b82f6", label: "Nuevo",              icon: "🆕" },
-  in_progress:      { color: "#f59e0b", label: "En progreso",        icon: "⚙" },
+  in_progress:      { color: "#b45309", label: "En progreso",        icon: "⚙" },
   waiting_customer: { color: "#a855f7", label: "Esperando cliente",  icon: "⏳" },
   resolved:         { color: "#10b981", label: "Resuelto",           icon: "✓" },
   closed:           { color: "#6b7280", label: "Cerrado",            icon: "📦" },
@@ -47,7 +47,7 @@ function slaState(t: SupportTicket): SLA {
   const m = Math.round(remainingMs / 60000);
   const text = m < 60 ? `${m}m restantes` : `${Math.floor(m / 60)}h ${m % 60}m`;
   if (pct < 25) return { text, pct, state: "danger", color: "#fa4d56" };
-  if (pct < 50) return { text, pct, state: "warn",   color: "#f59e0b" };
+  if (pct < 50) return { text, pct, state: "warn",   color: "#b45309" };
   return { text, pct, state: "ok", color: "#10b981" };
 }
 
@@ -290,10 +290,10 @@ export default function MesaTicketsPage() {
                     <div className="ticket-title">{t.title}</div>
                     <div className="row" style={{ gap: 6, marginTop: 5, flexWrap: "wrap", alignItems: "center" }}>
                       {t.system_affected && t.system_affected !== "NO_INFORMADO" && (
-                        <span className="kanban-tag" style={{ borderColor: "rgba(69,137,255,0.4)", color: "#67e8f9", background: "rgba(69,137,255,0.08)" }}>{t.system_affected}</span>
+                        <span className="kanban-tag" style={{ borderColor: "rgba(69,137,255,0.4)", color: "#0284c7", background: "rgba(69,137,255,0.08)" }}>{t.system_affected}</span>
                       )}
                       {t.category && (
-                        <span className="kanban-tag" style={{ borderColor: "rgba(168,85,247,0.4)", color: "#c084fc", background: "rgba(168,85,247,0.08)" }}>{t.category}</span>
+                        <span className="kanban-tag" style={{ borderColor: "rgba(168,85,247,0.4)", color: "#7c3aed", background: "rgba(168,85,247,0.08)" }}>{t.category}</span>
                       )}
                       <span style={{ marginLeft: "auto", fontSize: 10.5, color: "var(--text-dim)" }}>
                         {fmtRel(t.created_at)}
@@ -383,13 +383,13 @@ function SelectedTicketDetail({
               {status.icon} {status.label}
             </span>
             {t.system_affected && t.system_affected !== "NO_INFORMADO" && (
-              <span className="kanban-tag" style={{ borderColor: "rgba(69,137,255,0.4)", color: "#67e8f9", background: "rgba(69,137,255,0.08)" }}>{t.system_affected}</span>
+              <span className="kanban-tag" style={{ borderColor: "rgba(69,137,255,0.4)", color: "#0284c7", background: "rgba(69,137,255,0.08)" }}>{t.system_affected}</span>
             )}
             {t.category && (
-              <span className="kanban-tag" style={{ borderColor: "rgba(168,85,247,0.4)", color: "#c084fc", background: "rgba(168,85,247,0.08)" }}>{t.category}</span>
+              <span className="kanban-tag" style={{ borderColor: "rgba(168,85,247,0.4)", color: "#7c3aed", background: "rgba(168,85,247,0.08)" }}>{t.category}</span>
             )}
             {t.assigned_role && (
-              <span className="kanban-tag" style={{ borderColor: "rgba(241,194,27,0.4)", color: "#fcd34d", background: "rgba(241,194,27,0.08)" }}>→ {t.assigned_role}</span>
+              <span className="kanban-tag" style={{ borderColor: "rgba(241,194,27,0.4)", color: "#8a6d00", background: "rgba(241,194,27,0.08)" }}>→ {t.assigned_role}</span>
             )}
           </div>
         </div>

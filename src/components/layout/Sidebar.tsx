@@ -177,7 +177,7 @@ export default function Sidebar() {
             padding: "8px 10px", margin: "10px 0",
             background: "rgba(241,194,27, 0.10)",
             border: "1px solid rgba(241,194,27, 0.35)",
-            borderRadius: 6, fontSize: 11, color: "#fcd34d",
+            borderRadius: 6, fontSize: 11, color: "#8a6d00",
           }}>
             🎭 Simulando como <b>{effectiveUser.name}</b> · {effectiveUser.roleCode}
           </div>

@@ -1571,7 +1571,7 @@ export default function TicketCommandCenter({ ticket, onTicketUpdated }: Props) 
             <button
               className="btn primary"
               onClick={() => openResponseModal()}
-              style={{ background: "#f59e0b", borderColor: "#f59e0b" }}
+              style={{ background: "#f59e0b", borderColor: "#b45309" }}
             >
               ✉ Generar respuesta cliente
             </button>

@@ -112,7 +112,7 @@ function TenantsPanel() {
     return (
       <div style={{ padding: 30 }}>
         <div className="card" style={{ padding: 18, borderLeft: "4px solid #fa4d56" }}>
-          <div style={{ fontSize: 16, fontWeight: 700, marginBottom: 6, color: "#fca5a5" }}>
+          <div style={{ fontSize: 16, fontWeight: 700, marginBottom: 6, color: "#da1e28" }}>
             🔒 Solo super_admin puede ver esto
           </div>
           <div style={{ fontSize: 13, color: "var(--text-soft)" }}>
@@ -147,7 +147,7 @@ function TenantsPanel() {
       {loading && <div style={{ color: "var(--text-dim)" }}>cargando tenants…</div>}
       {error && (
         <div style={{ padding: 12, borderRadius: 6, background: "rgba(250,77,86,0.08)",
-          border: "1px solid rgba(250,77,86,0.30)", color: "#fca5a5", fontSize: 12, marginBottom: 12 }}>
+          border: "1px solid rgba(250,77,86,0.30)", color: "#da1e28", fontSize: 12, marginBottom: 12 }}>
           Error: {error}
         </div>
       )}
@@ -185,7 +185,7 @@ function TenantsPanel() {
                   <td style={td}>
                     <span style={{
                       fontSize: 10, padding: "2px 6px", borderRadius: 4,
-                      background: "rgba(99,102,241,0.16)", color: "#a5b4fc",
+                      background: "rgba(99,102,241,0.16)", color: "#4f46e5",
                       textTransform: "uppercase", letterSpacing: 1,
                     }}>{t.plan}</span>
                   </td>
@@ -210,7 +210,7 @@ function TenantsPanel() {
                     {t.status !== "deleted" && (
                       <button
                         onClick={(e) => { e.stopPropagation(); void handleDelete(t); }}
-                        style={{ ...btnGhost, color: "#fca5a5", marginLeft: 6 }}>Eliminar</button>
+                        style={{ ...btnGhost, color: "#da1e28", marginLeft: 6 }}>Eliminar</button>
                     )}
                   </td>
                 </tr>
@@ -241,7 +241,7 @@ function TenantsPanel() {
         <div style={{
           position: "fixed", bottom: 20, right: 20, padding: "10px 14px",
           background: "rgba(69,137,255,0.14)", border: "1px solid rgba(69,137,255,0.40)",
-          color: "#67e8f9", fontSize: 12, borderRadius: 6, zIndex: 1000,
+          color: "#0284c7", fontSize: 12, borderRadius: 6, zIndex: 1000,
         }}>{toast}</div>
       )}
     </div>

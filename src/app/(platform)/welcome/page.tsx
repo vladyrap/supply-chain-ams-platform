@@ -43,7 +43,7 @@ const FEATURES: FeatureCard[] = [
     title: "Testing Intelligence SAP",
     desc: "Graba pantalla, genera test scripts, organiza evidencias y prepara documentación lista para Cloud ALM. Análisis IA del video opcional.",
     href: "/testing-intelligence",
-    color: "#67e8f9",
+    color: "#0284c7",
     screen: "testing_intelligence",
   },
   {
@@ -51,7 +51,7 @@ const FEATURES: FeatureCard[] = [
     title: "Playbooks AMS ejecutables",
     desc: "Biblioteca de procedimientos operativos (P1, hypercare, RCA, integraciones) ejecutables como checklist con evidencia paso a paso.",
     href: "/playbooks",
-    color: "#42be65",
+    color: "#24a148",
     screen: "playbooks_ams",
   },
   {
@@ -59,7 +59,7 @@ const FEATURES: FeatureCard[] = [
     title: "Document Factory",
     desc: "14 tipos de documentos AMS: RCA, minutas, especificaciones, manuales, hypercare, cutover, informes ejecutivos. Export Markdown.",
     href: "/document-factory",
-    color: "#fdba74",
+    color: "#b45309",
     screen: "document_factory",
   },
   {
@@ -67,7 +67,7 @@ const FEATURES: FeatureCard[] = [
     title: "Quality Evaluator",
     desc: "Evaluación humana de cada respuesta del agente con scoring multi-eje, detección de alucinación y dashboard de calidad agregada.",
     href: "/quality-evaluator",
-    color: "#fcd34d",
+    color: "#8a6d00",
     screen: "quality_evaluator",
   },
 ];
@@ -149,7 +149,7 @@ export default function WelcomePage() {
         }} />
 
         <div style={{ position: "relative", zIndex: 1, maxWidth: 760 }}>
-          <div style={{ fontSize: 11, letterSpacing: 3, color: "#67e8f9", fontFamily: "var(--font-mono, monospace)", marginBottom: 8 }}>
+          <div style={{ fontSize: 11, letterSpacing: 3, color: "#0284c7", fontFamily: "var(--font-mono, monospace)", marginBottom: 8 }}>
             AMS · SUPPLY CHAIN · SAP
           </div>
           <h1 style={{
@@ -166,7 +166,7 @@ export default function WelcomePage() {
             </span>
           </h1>
           <p style={{
-            marginTop: 14, fontSize: 16, color: "#cbd5e1",
+            marginTop: 14, fontSize: 16, color: "#5b6b7d",
             maxWidth: 620, lineHeight: 1.55,
           }}>
             La plataforma única para industrializar tu servicio AMS de SAP Supply Chain.
@@ -205,8 +205,8 @@ export default function WelcomePage() {
         }}>
           {STATS.map((s, i) => (
             <div key={i} className="anim-fade-up" style={{ animationDelay: `${i * 0.08}s` }}>
-              <div style={{ fontSize: 28, fontWeight: 800, color: "#e0e7ff", fontVariantNumeric: "tabular-nums" }}>{s.value}</div>
-              <div style={{ fontSize: 11.5, color: "#94a3b8", letterSpacing: 1, textTransform: "uppercase" }}>{s.label}</div>
+              <div style={{ fontSize: 28, fontWeight: 800, color: "#4f46e5", fontVariantNumeric: "tabular-nums" }}>{s.value}</div>
+              <div style={{ fontSize: 11.5, color: "#5b6b7d", letterSpacing: 1, textTransform: "uppercase" }}>{s.label}</div>
             </div>
           ))}
         </div>
@@ -238,7 +238,7 @@ export default function WelcomePage() {
               borderLeft: `3px solid ${f.color}`,
             }}>
             <div style={{ fontSize: 32, marginBottom: 10 }}>{f.icon}</div>
-            <div style={{ fontWeight: 700, fontSize: 15, color: "#e2e8f0", marginBottom: 6 }}>{f.title}</div>
+            <div style={{ fontWeight: 700, fontSize: 15, color: "#5b6b7d", marginBottom: 6 }}>{f.title}</div>
             <div style={{ fontSize: 12.5, color: "var(--text-soft)", lineHeight: 1.5 }}>{f.desc}</div>
             <div style={{ marginTop: 12, fontSize: 11, color: f.color, fontWeight: 600 }}>
               Explorar →
@@ -256,7 +256,7 @@ export default function WelcomePage() {
         display: "flex", justifyContent: "space-between", alignItems: "center", gap: 16, flexWrap: "wrap",
       }}>
         <div>
-          <div style={{ fontSize: 16, fontWeight: 700, color: "#e2e8f0", marginBottom: 4 }}>
+          <div style={{ fontSize: 16, fontWeight: 700, color: "#5b6b7d", marginBottom: 4 }}>
             ¿Listo para industrializar tu AMS?
           </div>
           <div style={{ fontSize: 13, color: "var(--text-soft)" }}>

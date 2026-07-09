@@ -49,7 +49,7 @@ export default function EscalationDetailModal({ record, escalation, actingUserId
             <div style={{ marginTop: 4 }}>
               <EscalationStatusBadge status={record.status} />
               {record.externalTicketId && (
-                <a href={record.externalTicketUrl} target="_blank" rel="noreferrer" style={{ fontSize: 11.5, marginLeft: 10, color: "#7dd3fc" }}>
+                <a href={record.externalTicketUrl} target="_blank" rel="noreferrer" style={{ fontSize: 11.5, marginLeft: 10, color: "#0284c7" }}>
                   ↗ {record.externalTicketId}
                 </a>
               )}
@@ -72,7 +72,7 @@ export default function EscalationDetailModal({ record, escalation, actingUserId
                 <div style={{ fontSize: 11, color: "var(--text-dim)", letterSpacing: 1, textTransform: "uppercase", marginBottom: 6 }}>
                   Resumen técnico (N2)
                 </div>
-                <pre style={{ margin: 0, fontFamily: "var(--font-mono, monospace)", fontSize: 12, whiteSpace: "pre-wrap", color: "#cbd5e1" }}>
+                <pre style={{ margin: 0, fontFamily: "var(--font-mono, monospace)", fontSize: 12, whiteSpace: "pre-wrap", color: "#5b6b7d" }}>
 {record.summary}
                 </pre>
               </div>
@@ -82,7 +82,7 @@ export default function EscalationDetailModal({ record, escalation, actingUserId
                   <div style={{ fontSize: 11, color: "var(--text-dim)", letterSpacing: 1, textTransform: "uppercase", marginBottom: 6 }}>
                     Mensaje al cliente
                   </div>
-                  <pre style={{ margin: 0, fontFamily: "var(--font-mono, monospace)", fontSize: 12, whiteSpace: "pre-wrap", color: "#fef3c7" }}>
+                  <pre style={{ margin: 0, fontFamily: "var(--font-mono, monospace)", fontSize: 12, whiteSpace: "pre-wrap", color: "#8a6d00" }}>
 {record.clientSummary}
                   </pre>
                 </div>
@@ -125,7 +125,7 @@ export default function EscalationDetailModal({ record, escalation, actingUserId
                 <div className="col" style={{ gap: 4 }}>
                   {record.events.map((e, i) => (
                     <div key={i} style={{ fontSize: 11.5, paddingLeft: 10, borderLeft: "2px solid rgba(69,137,255,0.4)" }}>
-                      <div style={{ fontFamily: "var(--font-mono, monospace)", color: "#7dd3fc" }}>
+                      <div style={{ fontFamily: "var(--font-mono, monospace)", color: "#0284c7" }}>
                         {e.type}
                       </div>
                       <div style={{ color: "var(--text-soft)" }}>{new Date(e.at).toLocaleString()} · {e.by}</div>
@@ -148,7 +148,7 @@ export default function EscalationDetailModal({ record, escalation, actingUserId
           <div className="row" style={{ gap: 8, flexWrap: "wrap", justifyContent: "flex-end" }}>
             {record.status === "REVIEW_REQUIRED" && canApprove && (
               <>
-                <button className="btn" style={{ borderColor: "rgba(250,77,86,0.5)", color: "#fca5a5" }} onClick={reject}>✕ Rechazar</button>
+                <button className="btn" style={{ borderColor: "rgba(250,77,86,0.5)", color: "#da1e28" }} onClick={reject}>✕ Rechazar</button>
                 <button className="btn primary" onClick={approve}>✓ Aprobar</button>
               </>
             )}

@@ -162,7 +162,7 @@ export default function KnowledgeBaseTable({ ctx, onSimulateItem, onOpenQA }: Pr
                     <td><span style={{ fontSize: 10.5, color: "var(--text-dim)" }}>{new Date(k.updatedAt).toLocaleDateString("es-CL")}</span></td>
                     <td>
                       <div className="row" style={{ gap: 3, flexWrap: "wrap" }}>
-                        {k.tags.slice(0, 3).map((t) => <span key={t} className="kanban-tag" style={{ fontSize: 9.5, padding: "1px 6px", borderColor: "rgba(168,85,247,0.4)", color: "#c084fc", background: "rgba(168,85,247,0.08)" }}>{t}</span>)}
+                        {k.tags.slice(0, 3).map((t) => <span key={t} className="kanban-tag" style={{ fontSize: 9.5, padding: "1px 6px", borderColor: "rgba(168,85,247,0.4)", color: "#7c3aed", background: "rgba(168,85,247,0.08)" }}>{t}</span>)}
                       </div>
                     </td>
                     <td style={{ textAlign: "right", whiteSpace: "nowrap" }}>

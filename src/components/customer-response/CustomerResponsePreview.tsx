@@ -105,7 +105,7 @@ export default function CustomerResponsePreview({
           marginTop: 10, padding: 10, borderRadius: 4,
           background: "#f59e0b11", border: "1px solid #f59e0b55",
         }}>
-          <div style={{ fontSize: 10, color: "#f59e0b", letterSpacing: 1.5, fontWeight: 700, marginBottom: 4 }}>
+          <div style={{ fontSize: 10, color: "#b45309", letterSpacing: 1.5, fontWeight: 700, marginBottom: 4 }}>
             ⚠ RIESGOS IDENTIFICADOS
           </div>
           <ul style={{ margin: 0, paddingLeft: 16, fontSize: 11.5, color: "var(--text-soft)" }}>

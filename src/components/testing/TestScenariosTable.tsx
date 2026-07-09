@@ -91,7 +91,7 @@ export default function TestScenariosTable({ testing, actingUserId, canEdit }: P
                       <button className="btn ghost" onClick={() => setEditing(s)} style={{ padding: "2px 8px", fontSize: 11 }}>editar</button>
                       {" "}
                       <button className="btn ghost" onClick={() => { if (confirm(`¿Eliminar "${s.title}"?`)) testing.deleteScenario(s.id); }}
-                        style={{ padding: "2px 8px", fontSize: 11, color: "#fca5a5", borderColor: "rgba(250,77,86,0.4)" }}>✕</button>
+                        style={{ padding: "2px 8px", fontSize: 11, color: "#da1e28", borderColor: "rgba(250,77,86,0.4)" }}>✕</button>
                     </>
                   )}
                 </td>

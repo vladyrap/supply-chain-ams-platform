@@ -81,7 +81,7 @@ export default function UserManualGenerator({ testing }: Props) {
             margin: 0, padding: "10px 12px",
             background: "rgba(0,0,0,0.30)", borderRadius: 6,
             fontFamily: "var(--font-mono, monospace)", fontSize: 11.5, lineHeight: 1.55,
-            color: "#cbd5e1", maxHeight: 520, overflow: "auto", whiteSpace: "pre-wrap",
+            color: "#5b6b7d", maxHeight: 520, overflow: "auto", whiteSpace: "pre-wrap",
           }}>{content}</pre>
         </div>
       )}

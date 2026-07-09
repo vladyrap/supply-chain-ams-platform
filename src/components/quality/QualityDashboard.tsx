@@ -71,7 +71,7 @@ export default function QualityDashboard({ metrics, evaluations }: Props) {
             <div className="col" style={{ gap: 6 }}>
               {metrics.topModulesLowQuality.map((m) => (
                 <div key={m.module} className="row between" style={{ alignItems: "center", fontSize: 12.5 }}>
-                  <span className="kanban-tag" style={{ borderColor: "rgba(69,137,255,0.4)", color: "#67e8f9", background: "rgba(69,137,255,0.08)" }}>
+                  <span className="kanban-tag" style={{ borderColor: "rgba(69,137,255,0.4)", color: "#0284c7", background: "rgba(69,137,255,0.08)" }}>
                     {m.module}
                   </span>
                   <span style={{ fontFamily: "var(--font-mono, monospace)" }}>

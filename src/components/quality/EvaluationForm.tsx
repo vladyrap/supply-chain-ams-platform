@@ -197,7 +197,7 @@ export default function EvaluationForm({ incident, onClose, onSaved }: Props) {
           {canBecomeKnowledge && (
             <KnowledgeQuickActions incident={incident} variant="compact" />
           )}
-          <button className="btn primary" onClick={save} style={{ marginLeft: "auto", background: "linear-gradient(135deg, #f1c21b, #d97706)", borderColor: "#f1c21b" }}>
+          <button className="btn primary" onClick={save} style={{ marginLeft: "auto", background: "linear-gradient(135deg, #f1c21b, #d97706)", borderColor: "#8a6d00" }}>
             🏅 Guardar evaluación
           </button>
         </div>

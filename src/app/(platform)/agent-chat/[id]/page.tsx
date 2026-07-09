@@ -141,7 +141,7 @@ export default function AgentChatPage() {
   if (loadError) {
     return (
       <div className="card" style={{ padding: 30, textAlign: "center" }}>
-        <div style={{ color: "#fca5a5", marginBottom: 12 }}>{loadError}</div>
+        <div style={{ color: "#da1e28", marginBottom: 12 }}>{loadError}</div>
         <Link href="/agent-hub?tab=library" className="btn ghost">← Volver a la biblioteca</Link>
       </div>
     );

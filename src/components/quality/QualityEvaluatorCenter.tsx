@@ -91,7 +91,7 @@ export default function QualityEvaluatorCenter() {
             filteredPending.slice(0, 30).map((inc) => (
               <div key={inc.id} className="lab-fb-card" style={{ ["--fb-color" as never]: "#f1c21b" }}>
                 <div className="row" style={{ gap: 8, alignItems: "center", flexWrap: "wrap", marginBottom: 6 }}>
-                  <span className="kanban-tag" style={{ borderColor: "rgba(69,137,255,0.4)", color: "#67e8f9", background: "rgba(69,137,255,0.08)" }}>
+                  <span className="kanban-tag" style={{ borderColor: "rgba(69,137,255,0.4)", color: "#0284c7", background: "rgba(69,137,255,0.08)" }}>
                     {inc.sap_module ?? "AMS"}
                   </span>
                   <span style={{ fontSize: 11, color: "var(--text-dim)" }}>
@@ -104,7 +104,7 @@ export default function QualityEvaluatorCenter() {
                 <div style={{ fontSize: 12.5, marginBottom: 6 }}>{inc.message.slice(0, 220)}</div>
                 <div className="row" style={{ gap: 6, flexWrap: "wrap", marginTop: 6 }}>
                   <button className="btn primary" onClick={() => setEvaluating(inc)}
-                    style={{ background: "linear-gradient(135deg, #f1c21b, #d97706)", borderColor: "#f1c21b", fontSize: 12, padding: "5px 12px" }}>
+                    style={{ background: "linear-gradient(135deg, #f1c21b, #d97706)", borderColor: "#8a6d00", fontSize: 12, padding: "5px 12px" }}>
                     🏅 Evaluar
                   </button>
                   <KnowledgeQuickActions incident={inc} variant="compact" />

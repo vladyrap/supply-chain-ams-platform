@@ -26,7 +26,7 @@ interface MetricsState {
 
 const PRIORITY_META: Record<string, { color: string; icon: string }> = {
   critica: { color: "#fa4d56", icon: "🔥" },
-  alta:    { color: "#f59e0b", icon: "⚠" },
+  alta:    { color: "#b45309", icon: "⚠" },
   media:   { color: "#4589ff", icon: "●" },
   baja:    { color: "#10b981", icon: "○" },
 };
@@ -35,7 +35,7 @@ const CHANNEL_META: Record<string, { color: string; icon: string; label: string 
   chat:     { color: "#4589ff", icon: "💬", label: "Chat web" },
   whatsapp: { color: "#10b981", icon: "📱", label: "WhatsApp" },
   voice:    { color: "#a855f7", icon: "📞", label: "Voz" },
-  email:    { color: "#f1c21b", icon: "✉",  label: "Email" },
+  email:    { color: "#8a6d00", icon: "✉",  label: "Email" },
 };
 
 const SUPPORT_NOTIF_KINDS = new Set<NotificationItem["kind"]>([
@@ -309,7 +309,7 @@ function ChannelDonut({ items }: { items: { key: string; count: number }[] }) {
         {items.map((it) => {
           const frac = it.count / total;
           const dash = c * frac;
-          const meta = CHANNEL_META[it.key] ?? { color: "#94a3b8", icon: "•", label: it.key };
+          const meta = CHANNEL_META[it.key] ?? { color: "#5b6b7d", icon: "•", label: it.key };
           const offset = c * (cumulative);
           cumulative += frac;
           return (
@@ -327,7 +327,7 @@ function ChannelDonut({ items }: { items: { key: string; count: number }[] }) {
       </svg>
       <div style={{ flex: 1, display: "flex", flexDirection: "column", gap: 4 }}>
         {items.map((it) => {
-          const meta = CHANNEL_META[it.key] ?? { color: "#94a3b8", icon: "•", label: it.key };
+          const meta = CHANNEL_META[it.key] ?? { color: "#5b6b7d", icon: "•", label: it.key };
           const pct = total > 0 ? Math.round((it.count / total) * 100) : 0;
           return (
             <div key={it.key} className="sd-donut-row" style={{ borderLeft: `3px solid ${meta.color}` }}>
@@ -348,7 +348,7 @@ function PriorityBars({ items }: { items: { key: string; count: number }[] }) {
   return (
     <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
       {items.map((it) => {
-        const meta = PRIORITY_META[it.key] ?? { color: "#94a3b8", icon: "•" };
+        const meta = PRIORITY_META[it.key] ?? { color: "#5b6b7d", icon: "•" };
         const pct = (it.count / max) * 100;
         return (
           <div key={it.key}>
@@ -399,7 +399,7 @@ function LiveFeed({ items }: { items: NotificationItem[] }) {
     return <div style={{ color: "var(--text-dim)", fontSize: 12, padding: 10, textAlign: "center" }}>(esperando actividad…)</div>;
   }
   const KIND_META: Record<string, { color: string; icon: string }> = {
-    ticket_escalated: { color: "#f1c21b", icon: "📤" },
+    ticket_escalated: { color: "#8a6d00", icon: "📤" },
     ticket_resolved:  { color: "#10b981", icon: "✓" },
     kb_approved:      { color: "#a855f7", icon: "📘" },
     incident_created: { color: "#4589ff", icon: "💡" },
@@ -407,7 +407,7 @@ function LiveFeed({ items }: { items: NotificationItem[] }) {
   return (
     <div className="sd-feed">
       {items.map((it) => {
-        const meta = KIND_META[it.kind] ?? { color: "#94a3b8", icon: "•" };
+        const meta = KIND_META[it.kind] ?? { color: "#5b6b7d", icon: "•" };
         const diff = Date.now() - new Date(it.createdAt).getTime();
         const ago = diff < 60_000 ? `${Math.floor(diff / 1000)}s` : diff < 3_600_000 ? `${Math.floor(diff / 60_000)}m` : `${Math.floor(diff / 3_600_000)}h`;
         return (

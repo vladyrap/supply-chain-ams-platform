@@ -48,7 +48,7 @@ export default function CloudAlmExportPanel({ testing }: Props) {
 
   return (
     <div className="col" style={{ gap: 14 }}>
-      <div className="card" style={{ background: "rgba(99,102,241,0.07)", borderColor: "rgba(99,102,241,0.30)", color: "#a5b4fc", fontSize: 12 }}>
+      <div className="card" style={{ background: "rgba(99,102,241,0.07)", borderColor: "rgba(99,102,241,0.30)", color: "#4f46e5", fontSize: 12 }}>
         🔮 <b>Integración real con SAP Cloud ALM se habilitará en fase futura</b> mediante API autorizada. En esta versión sólo se prepara el payload local; ninguna llamada externa se ejecuta.
       </div>
 
@@ -67,8 +67,8 @@ export default function CloudAlmExportPanel({ testing }: Props) {
           <tbody>
             {FIELD_MAPPING.map((m) => (
               <tr key={m.local} style={{ borderTop: "1px solid rgba(255,255,255,0.04)" }}>
-                <td style={{ padding: "6px 10px", fontFamily: "var(--font-mono, monospace)", color: "#7dd3fc" }}>{m.local}</td>
-                <td style={{ padding: "6px 10px", fontFamily: "var(--font-mono, monospace)", color: "#c084fc" }}>{m.cloudAlm}</td>
+                <td style={{ padding: "6px 10px", fontFamily: "var(--font-mono, monospace)", color: "#0284c7" }}>{m.local}</td>
+                <td style={{ padding: "6px 10px", fontFamily: "var(--font-mono, monospace)", color: "#7c3aed" }}>{m.cloudAlm}</td>
                 <td style={{ padding: "6px 10px", color: "var(--text-soft)" }}>{m.description}</td>
               </tr>
             ))}
@@ -100,7 +100,7 @@ export default function CloudAlmExportPanel({ testing }: Props) {
           <pre style={{
             margin: 0, padding: "10px 12px",
             background: "rgba(0,0,0,0.30)", borderRadius: 6,
-            fontFamily: "var(--font-mono, monospace)", fontSize: 11.5, lineHeight: 1.5, color: "#a5f3fc",
+            fontFamily: "var(--font-mono, monospace)", fontSize: 11.5, lineHeight: 1.5, color: "#0284c7",
             maxHeight: 460, overflow: "auto", whiteSpace: "pre-wrap",
           }}>{JSON.stringify(payload, null, 2)}</pre>
           <div style={{ marginTop: 8, fontSize: 11, color: "var(--text-dim)" }}>

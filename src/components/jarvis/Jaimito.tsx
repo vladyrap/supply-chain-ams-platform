@@ -155,7 +155,7 @@ export default function Jaimito({ client = "DEMO", environment = "DEV" }: Jaimit
         <div className="jarvis-head">
           <div>
             <div style={{ fontSize: 13, fontWeight: 700, letterSpacing: 2, color: "#4589ff", textShadow: "0 0 8px rgba(69,137,255,0.6)" }}>◤ JAIMITO</div>
-            <div style={{ fontSize: 9.5, color: "#67e8f9", letterSpacing: 1.5 }}>AMS · CONVERSATIONAL OPS</div>
+            <div style={{ fontSize: 9.5, color: "#0284c7", letterSpacing: 1.5 }}>AMS · CONVERSATIONAL OPS</div>
           </div>
           <div className="row" style={{ gap: 6 }}>
             <span className={`jarvis-dot ${tts.isSpeaking ? "speaking" : ""}`} title={tts.isSpeaking ? "hablando" : "idle"} />
@@ -179,7 +179,7 @@ export default function Jaimito({ client = "DEMO", environment = "DEV" }: Jaimit
           ))}
           {loading && (
             <div className="jarvis-turn agent">
-              <div style={{ fontSize: 9, color: "#c084fc", letterSpacing: 1.5, marginBottom: 2 }}>◀ JARVIS · pensando…</div>
+              <div style={{ fontSize: 9, color: "#7c3aed", letterSpacing: 1.5, marginBottom: 2 }}>◀ JARVIS · pensando…</div>
               <div className="jarvis-thinking"><span /><span /><span /></div>
             </div>
           )}
@@ -249,7 +249,7 @@ export default function Jaimito({ client = "DEMO", environment = "DEV" }: Jaimit
           border: 1px solid rgba(69,137,255,0.45);
           border-radius: 10px;
           padding: 12px;
-          color: #cbd5e1;
+          color: #5b6b7d;
           font-family: var(--font-mono, "Consolas", monospace);
           backdrop-filter: blur(6px);
           box-shadow: 0 20px 60px rgba(0,0,0,0.6), 0 0 40px rgba(69,137,255,0.15);
@@ -321,7 +321,7 @@ export default function Jaimito({ client = "DEMO", environment = "DEV" }: Jaimit
           flex: 1;
           background: rgba(0,0,0,0.4);
           border: 1px solid rgba(69,137,255,0.25);
-          color: #cbd5e1;
+          color: #5b6b7d;
           padding: 0 10px;
           font-family: inherit;
           font-size: 12px;
@@ -336,7 +336,7 @@ export default function Jaimito({ client = "DEMO", environment = "DEV" }: Jaimit
         .jarvis-chip {
           background: rgba(69,137,255,0.06);
           border: 1px solid rgba(69,137,255,0.18);
-          color: #67e8f9;
+          color: #0284c7;
           padding: 2px 8px;
           font-size: 10px;
           border-radius: 12px;

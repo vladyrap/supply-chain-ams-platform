@@ -76,7 +76,7 @@ export default function TestScenarioDetailModal({ scenario, testing, onClose, ca
                     )}
                     {scenario.steps.sort((a, b) => a.order - b.order).map((s) => (
                       <tr key={s.id} style={{ borderTop: "1px solid rgba(255,255,255,0.04)" }}>
-                        <td style={{ padding: "6px 8px", color: "#7dd3fc" }}>{s.order}</td>
+                        <td style={{ padding: "6px 8px", color: "#0284c7" }}>{s.order}</td>
                         <td style={{ padding: "6px 8px" }}>{s.action}</td>
                         <td style={{ padding: "6px 8px", color: "var(--text-dim)" }}>{s.data || "—"}</td>
                         <td style={{ padding: "6px 8px", color: "var(--text-soft)" }}>{s.expectedResult}</td>
@@ -151,13 +151,13 @@ export default function TestScenarioDetailModal({ scenario, testing, onClose, ca
               <button className="btn ghost" onClick={() => testing.prepareCloudAlmExport(scenario.id)}>🔮 Preparar Cloud ALM</button>
               <div style={{ marginLeft: "auto" }} />
               {scenario.status !== "PASSED" && (
-                <button className="btn" style={{ color: "#86efac", borderColor: "rgba(66,190,101,0.4)" }}
+                <button className="btn" style={{ color: "#24a148", borderColor: "rgba(66,190,101,0.4)" }}
                   onClick={() => testing.markScenarioPassed(scenario.id, "Aprobado por evaluación humana")}>
                   ✓ Marcar PASSED
                 </button>
               )}
               {scenario.status !== "FAILED" && (
-                <button className="btn" style={{ color: "#fca5a5", borderColor: "rgba(250,77,86,0.4)" }}
+                <button className="btn" style={{ color: "#da1e28", borderColor: "rgba(250,77,86,0.4)" }}
                   onClick={() => {
                     const note = window.prompt("Describí el resultado actual / falla", scenario.actualResult || "");
                     if (note !== null) testing.markScenarioFailed(scenario.id, note);

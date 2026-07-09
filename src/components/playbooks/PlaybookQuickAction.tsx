@@ -123,7 +123,7 @@ export default function PlaybookQuickAction({
         <div style={{
           position: "fixed", bottom: 20, right: 20, zIndex: 9001,
           padding: "10px 16px", background: "rgba(168,85,247,0.18)",
-          border: "1px solid rgba(168,85,247,0.5)", color: "#c4b5fd",
+          border: "1px solid rgba(168,85,247,0.5)", color: "#7c3aed",
           borderRadius: 8, fontSize: 12.5, fontWeight: 600,
         }}>{toast}</div>
       )}

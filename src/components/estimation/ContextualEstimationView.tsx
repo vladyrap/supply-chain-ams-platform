@@ -333,7 +333,7 @@ export default function ContextualEstimationView({
       {result.missingData.length > 0 && (
         <div id="ctx-missing-data" className="card" style={{ padding: 14, borderLeft: "3px solid #f59e0b", background: "#f59e0b08", transition: "background 1s" }}>
           <div className="row between" style={{ marginBottom: 8 }}>
-            <div style={{ fontSize: 10, letterSpacing: 2, color: "#f59e0b" }}>
+            <div style={{ fontSize: 10, letterSpacing: 2, color: "#b45309" }}>
               ⚠ DATOS FALTANTES ({result.missingData.length})
             </div>
             <div style={{ fontSize: 11, color: "var(--text-soft)" }}>

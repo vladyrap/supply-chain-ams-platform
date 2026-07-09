@@ -369,8 +369,8 @@ function DashboardPageInner() {
               labels={d.timeline.map((t) => t.day)}
               series={[
                 { name: "Incidentes", color: "#4589ff", values: d.timeline.map((t) => t.incidents) },
-                { name: "Tickets mesa", color: "#f0b66c", values: d.timeline.map((t) => t.tickets) },
-                { name: "Reuniones", color: "#c780f0", values: d.timeline.map((t) => t.meetings) },
+                { name: "Tickets mesa", color: "#b45309", values: d.timeline.map((t) => t.tickets) },
+                { name: "Reuniones", color: "#7c3aed", values: d.timeline.map((t) => t.meetings) },
               ]}
               height={120}
             />

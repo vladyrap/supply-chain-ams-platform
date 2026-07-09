@@ -140,7 +140,7 @@ export default function TrainingSettingsPanel({ ctx }: Props) {
           No afecta usuarios, roles ni el chat del agente.
         </p>
         {!confirmReset ? (
-          <button className="btn ghost" onClick={() => setConfirmReset(true)} style={{ borderColor: "#fa4d56", color: "#fca5a5" }}>
+          <button className="btn ghost" onClick={() => setConfirmReset(true)} style={{ borderColor: "#fa4d56", color: "#da1e28" }}>
             ♻ Restaurar datos demo
           </button>
         ) : (

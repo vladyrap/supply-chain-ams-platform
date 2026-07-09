@@ -142,7 +142,7 @@ export default function N2IntelligenceCard({ analysis, onEscalateToSpecialist, c
           {/* Missing data */}
           {analysis.missingData.length > 0 && (
             <div style={{ marginBottom: 8 }}>
-              <div style={{ fontSize: 10, letterSpacing: 1.5, color: "#f59e0b", marginBottom: 4, fontWeight: 700 }}>
+              <div style={{ fontSize: 10, letterSpacing: 1.5, color: "#b45309", marginBottom: 4, fontWeight: 700 }}>
                 ❓ DATOS FALTANTES ({analysis.missingData.length})
               </div>
               <ul style={{ margin: 0, paddingLeft: 16, fontSize: 11.5, color: "var(--text-soft)" }}>

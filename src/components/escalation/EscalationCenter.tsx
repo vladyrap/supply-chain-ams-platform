@@ -41,7 +41,7 @@ export default function EscalationCenter({ actingUserId, canEdit, canConfigure, 
         <p className="subtitle">
           Deriva incidentes críticos o complejos al especialista correcto, con trazabilidad, SLA y preparación para Jira o ServiceNow.
         </p>
-        <div style={{ marginTop: 8, fontSize: 11, color: "#fde68a" }}>
+        <div style={{ marginTop: 8, fontSize: 11, color: "#8a6d00" }}>
           <span className="live-dot" /> Modo demo activo · los tickets no se envían sin confirmación humana y credenciales backend.
         </div>
       </div>

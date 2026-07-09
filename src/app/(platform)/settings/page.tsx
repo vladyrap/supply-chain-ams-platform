@@ -89,7 +89,7 @@ function ProfileTab({ user, roleLabel }: { user: ReturnType<typeof useAuth>["use
 
   // Clearance level por rol legacy
   const clearance: Record<string, { tier: number; label: string; color: string; bars: number }> = {
-    admin:     { tier: 5, label: "ULTRA", color: "#f59e0b", bars: 5 },
+    admin:     { tier: 5, label: "ULTRA", color: "#b45309", bars: 5 },
     aprobador: { tier: 4, label: "ALTA",  color: "#a855f7", bars: 4 },
     consultor: { tier: 3, label: "MEDIA", color: "#4589ff", bars: 3 },
     viewer:    { tier: 2, label: "BAJA",  color: "#64748b", bars: 2 },

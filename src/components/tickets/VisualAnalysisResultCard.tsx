@@ -81,7 +81,7 @@ export default function VisualAnalysisResultCard({ analysis, consideredForEstima
       {analysis.missingData.length > 0 && (
         <div style={{ marginTop: 6 }}>
           <div style={{ fontSize: 10.5, color: "var(--text-dim)", letterSpacing: 1 }}>DATOS FALTANTES SUGERIDOS</div>
-          <ul style={{ margin: "4px 0 0", paddingLeft: 18, fontSize: 11.5, color: "#f1c21b" }}>
+          <ul style={{ margin: "4px 0 0", paddingLeft: 18, fontSize: 11.5, color: "#8a6d00" }}>
             {analysis.missingData.map((m, i) => <li key={i}>{m}</li>)}
           </ul>
         </div>

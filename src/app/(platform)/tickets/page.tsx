@@ -90,7 +90,7 @@ export default function TicketsPage() {
             <button
               className="btn ghost"
               onClick={() => setDemoOpen(true)}
-              style={{ borderColor: "#f1c21b", color: "#f1c21b" }}
+              style={{ borderColor: "#8a6d00", color: "#8a6d00" }}
               title="Ejecuta el flujo completo AMS sobre un ticket demo (crea ticket, clasifica con agente real, RCA, test, etc.)"
             >
               🎬 Ejecutar demo completa

@@ -69,7 +69,7 @@ export default function ValidationQueue({ ctx, currentUserName = "Validador AMS"
         <div className="row" style={{ gap: 6, flexWrap: "wrap" }}>
           {[
             { id: "all",         label: "▸ Todos",                color: "#4589ff", count: queue.length },
-            { id: "functional",  label: "Pendiente funcional",    color: "#f1c21b", count: ctx.knowledge.filter((k) => !k.functionalValidatedBy && k.status !== "PUBLISHED" && k.status !== "ARCHIVED" && k.status !== "REJECTED").length },
+            { id: "functional",  label: "Pendiente funcional",    color: "#8a6d00", count: ctx.knowledge.filter((k) => !k.functionalValidatedBy && k.status !== "PUBLISHED" && k.status !== "ARCHIVED" && k.status !== "REJECTED").length },
             { id: "technical",   label: "Pendiente técnica",      color: "#a855f7", count: ctx.knowledge.filter((k) => k.functionalValidatedBy && !k.technicalValidatedBy && k.status !== "PUBLISHED" && k.status !== "ARCHIVED" && k.status !== "REJECTED").length },
             { id: "critical",    label: "🔥 Críticos",            color: "#fa4d56", count: ctx.knowledge.filter((k) => k.priority === "critical" && k.status !== "PUBLISHED" && k.status !== "ARCHIVED" && k.status !== "REJECTED").length },
           ].map((f) => (
@@ -120,7 +120,7 @@ export default function ValidationQueue({ ctx, currentUserName = "Validador AMS"
                   <strong>Riesgo</strong> · <span style={{ color: riskColor }}>{PRIORITY_LABELS[k.priority]}</span>
                 </div>
                 <div>
-                  <strong>Funcional</strong> · {k.functionalValidatedBy ?? <span style={{ color: "#f1c21b" }}>pendiente</span>}
+                  <strong>Funcional</strong> · {k.functionalValidatedBy ?? <span style={{ color: "#8a6d00" }}>pendiente</span>}
                 </div>
                 <div>
                   <strong>Técnica</strong> · {k.technicalValidatedBy ?? <span style={{ color: "#a855f7" }}>pendiente</span>}
@@ -135,17 +135,17 @@ export default function ValidationQueue({ ctx, currentUserName = "Validador AMS"
 
               <div className="row" style={{ gap: 6, marginTop: 10, flexWrap: "wrap" }}>
                 {!k.functionalValidatedBy && (
-                  <button className="btn ghost" style={{ borderColor: "#f1c21b", color: "#f1c21b" }} onClick={() => approveFunctional(k)}>
+                  <button className="btn ghost" style={{ borderColor: "#8a6d00", color: "#8a6d00" }} onClick={() => approveFunctional(k)}>
                     ✓ aprobar funcional
                   </button>
                 )}
                 {!k.technicalValidatedBy && (
-                  <button className="btn ghost" style={{ borderColor: "#a855f7", color: "#c084fc" }} onClick={() => approveTechnical(k)}>
+                  <button className="btn ghost" style={{ borderColor: "#a855f7", color: "#7c3aed" }} onClick={() => approveTechnical(k)}>
                     ✓ aprobar técnica
                   </button>
                 )}
                 <button className="btn ghost" onClick={() => askCorrection(k)}>↩ pedir corrección</button>
-                <button className="btn ghost" style={{ borderColor: "#fa4d56", color: "#fca5a5" }} onClick={() => setRejectTarget(k)}>✕ rechazar</button>
+                <button className="btn ghost" style={{ borderColor: "#fa4d56", color: "#da1e28" }} onClick={() => setRejectTarget(k)}>✕ rechazar</button>
                 {k.priority !== "critical" && (
                   <button className="btn ghost" onClick={() => markCritical(k)}>🔥 marcar crítico</button>
                 )}
@@ -162,7 +162,7 @@ export default function ValidationQueue({ ctx, currentUserName = "Validador AMS"
         <div className="tc-modal-back" onClick={() => setRejectTarget(null)}>
           <div className="tc-modal" style={{ maxWidth: 480 }} onClick={(e) => e.stopPropagation()}>
             <div className="tc-modal-head">
-              <h2 style={{ margin: 0, fontSize: 16, color: "#fca5a5" }}>Rechazar conocimiento</h2>
+              <h2 style={{ margin: 0, fontSize: 16, color: "#da1e28" }}>Rechazar conocimiento</h2>
               <button onClick={() => setRejectTarget(null)} className="btn ghost" style={{ padding: "4px 10px" }}>✕</button>
             </div>
             <div className="tc-modal-body">

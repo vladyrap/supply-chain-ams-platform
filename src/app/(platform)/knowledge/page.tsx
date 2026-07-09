@@ -40,7 +40,7 @@ const TYPE_META: Record<string, { color: string; icon: string }> = {
   xlsx: { color: "#10b981", icon: "📗" },
   md:   { color: "#a855f7", icon: "📝" },
   txt:  { color: "#6b7280", icon: "📄" },
-  unknown: { color: "#94a3b8", icon: "📎" },
+  unknown: { color: "#5b6b7d", icon: "📎" },
 };
 
 function formatSize(bytes: number | null | undefined): string {
@@ -314,7 +314,7 @@ function DocsTab({ docs, loading, stats, onRefresh }: {
                   {p.state === "uploading" ? <span className="spinner" /> : p.state === "ok" ? "✓" : "✗"}
                 </span>
                 <span style={{ flex: 1, fontSize: 12.5, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{p.name}</span>
-                {p.error && <span style={{ fontSize: 11, color: "#fca5a5" }}>{p.error}</span>}
+                {p.error && <span style={{ fontSize: 11, color: "#da1e28" }}>{p.error}</span>}
               </div>
             ))}
           </div>
@@ -389,10 +389,10 @@ function DocsTab({ docs, loading, stats, onRefresh }: {
 
                 <div className="row" style={{ gap: 4, flexWrap: "wrap", marginTop: 8 }}>
                   {d.module && d.module !== "NO_INFORMADO" && (
-                    <span className="kanban-tag" style={{ borderColor: "rgba(69,137,255,0.4)", color: "#67e8f9", background: "rgba(69,137,255,0.08)" }}>{d.module}</span>
+                    <span className="kanban-tag" style={{ borderColor: "rgba(69,137,255,0.4)", color: "#0284c7", background: "rgba(69,137,255,0.08)" }}>{d.module}</span>
                   )}
                   {d.client && (
-                    <span className="kanban-tag" style={{ borderColor: "rgba(168,85,247,0.4)", color: "#c084fc", background: "rgba(168,85,247,0.08)" }}>cliente {d.client}</span>
+                    <span className="kanban-tag" style={{ borderColor: "rgba(168,85,247,0.4)", color: "#7c3aed", background: "rgba(168,85,247,0.08)" }}>cliente {d.client}</span>
                   )}
                   <span style={{ marginLeft: "auto", fontSize: 10, color: "var(--text-dim)" }}>
                     {new Date(d.created_at).toLocaleDateString()}
@@ -545,7 +545,7 @@ function PlaygroundTab() {
                       <span className="kanban-tag" style={{ borderColor: "rgba(255,255,255,0.15)", color: "var(--text-dim)" }}>{c.sourceType}</span>
                       <span className="kanban-tag" style={{ borderColor: "rgba(255,255,255,0.15)", color: "var(--text-dim)" }}>chunk {c.chunkIndex}</span>
                       {c.module && (
-                        <span className="kanban-tag" style={{ borderColor: "rgba(69,137,255,0.4)", color: "#67e8f9", background: "rgba(69,137,255,0.08)" }}>{c.module}</span>
+                        <span className="kanban-tag" style={{ borderColor: "rgba(69,137,255,0.4)", color: "#0284c7", background: "rgba(69,137,255,0.08)" }}>{c.module}</span>
                       )}
                     </div>
                     <ScoreBar score={c.score} />

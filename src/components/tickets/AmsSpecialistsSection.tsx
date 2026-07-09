@@ -84,7 +84,7 @@ export default function AmsSpecialistsSection({ intelligence, onReanalyze }: Pro
             Confianza global: <strong style={{ color: primaryColor }}>{sa.confidenceScore}%</strong>
             {" · "}nivel: <strong>{sa.confidenceLevel.toLowerCase()}</strong>
             {sa.requiresHumanReview && (
-              <span style={{ marginLeft: 6, color: "#f59e0b" }}>· requiere revisión humana</span>
+              <span style={{ marginLeft: 6, color: "#b45309" }}>· requiere revisión humana</span>
             )}
           </div>
         </div>
@@ -224,7 +224,7 @@ export default function AmsSpecialistsSection({ intelligence, onReanalyze }: Pro
               <div style={{ fontSize: 10, color: "var(--text-dim)", letterSpacing: 1.3, marginBottom: 2 }}>
                 DATOS FALTANTES ({sa.consolidatedMissingData.length})
               </div>
-              <ul style={{ margin: 0, paddingLeft: 18, fontSize: 11, color: "#fca5a5" }}>
+              <ul style={{ margin: 0, paddingLeft: 18, fontSize: 11, color: "#da1e28" }}>
                 {sa.consolidatedMissingData.map((m, i) => <li key={i}>{m}</li>)}
               </ul>
             </div>

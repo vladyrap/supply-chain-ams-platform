@@ -21,13 +21,13 @@ export default function ItsmTicketPreview({ payload }: { payload: ItsmTicketPayl
         <div style={{ fontSize: 11, color: "var(--text-dim)", letterSpacing: 1, textTransform: "uppercase" }}>
           {title}
         </div>
-        <div style={{ fontSize: 10.5, color: "#fcd34d", fontWeight: 700 }}>preview</div>
+        <div style={{ fontSize: 10.5, color: "#8a6d00", fontWeight: 700 }}>preview</div>
       </div>
       <pre style={{
         margin: 0, padding: "10px 12px",
         background: "rgba(0,0,0,0.30)", borderRadius: 6,
         fontFamily: "var(--font-mono, monospace)",
-        fontSize: 11.5, lineHeight: 1.5, color: "#a5f3fc",
+        fontSize: 11.5, lineHeight: 1.5, color: "#0284c7",
         maxHeight: 280, overflowY: "auto",
         whiteSpace: "pre-wrap", wordBreak: "break-word",
       }}>

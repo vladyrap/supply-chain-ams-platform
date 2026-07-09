@@ -83,7 +83,7 @@ export default function TicketReadinessScore({ ticket, onRecalculate }: Props) {
                   {c.fixHint && <div style={{ fontSize: 10.5, color: "var(--text-dim)", fontWeight: 400, marginTop: 2 }}>{c.fixHint}</div>}
                 </span>
                 <span style={{ color: "var(--text-dim)", fontSize: 10, alignSelf: "center" }}>+{c.points}pt</span>
-                <span style={{ color: "#f1c21b", fontSize: 14, alignSelf: "center" }}>↗</span>
+                <span style={{ color: "#8a6d00", fontSize: 14, alignSelf: "center" }}>↗</span>
               </button>
             ))}
           </div>

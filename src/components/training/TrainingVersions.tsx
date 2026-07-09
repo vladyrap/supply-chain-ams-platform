@@ -98,7 +98,7 @@ export default function TrainingVersions({ ctx, currentUserName = "Líder Servic
                   <button className="btn primary" onClick={() => setConfirmPublish(v)}>🚀 publicar versión</button>
                 ) : null}
                 {v.status === "PUBLISHED" && (
-                  <button className="btn ghost" onClick={() => setConfirmRollback(v)} style={{ borderColor: "#f59e0b", color: "#f1c21b" }}>
+                  <button className="btn ghost" onClick={() => setConfirmRollback(v)} style={{ borderColor: "#b45309", color: "#8a6d00" }}>
                     ↩ rollback simulado
                   </button>
                 )}

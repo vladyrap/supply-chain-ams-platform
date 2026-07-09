@@ -32,7 +32,7 @@ export default function TicketEstimateSummary({ estimate, title = "ETA estimada"
       <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
         <div style={{ fontWeight: 600, fontSize: 12, color: c }}>⏱ {title}</div>
         {estimate.manuallyAdjusted && (
-          <span style={{ fontSize: 10, color: "#f1c21b", padding: "1px 6px", border: "1px solid #f1c21b", borderRadius: 3 }}>
+          <span style={{ fontSize: 10, color: "#8a6d00", padding: "1px 6px", border: "1px solid #f1c21b", borderRadius: 3 }}>
             ajuste manual
           </span>
         )}

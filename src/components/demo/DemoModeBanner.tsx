@@ -27,7 +27,7 @@ export default function DemoModeBanner() {
         fontSize: 12.5,
       }}>
         <div className="row" style={{ gap: 10, alignItems: "center", flexWrap: "wrap" }}>
-          <span style={{ fontWeight: 800, color: "#c084fc", letterSpacing: 1 }}>
+          <span style={{ fontWeight: 800, color: "#7c3aed", letterSpacing: 1 }}>
             🎬 MODO DEMO CLIENTE
           </span>
           <span style={{ color: "var(--text-soft)" }}>
@@ -62,7 +62,7 @@ export default function DemoModeBanner() {
               cambiar escenario
             </button>
             <button className="btn ghost" onClick={demo.disable}
-              style={{ padding: "3px 10px", fontSize: 11, borderColor: "rgba(250,77,86,0.4)", color: "#fca5a5" }}>
+              style={{ padding: "3px 10px", fontSize: 11, borderColor: "rgba(250,77,86,0.4)", color: "#da1e28" }}>
               ✕ desactivar
             </button>
           </div>
