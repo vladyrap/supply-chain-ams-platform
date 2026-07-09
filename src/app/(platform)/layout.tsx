@@ -7,6 +7,7 @@ import Jaimito from "@/components/jarvis/Jaimito";
 import TourController from "@/components/jarvis/TourController";
 import DemoModeBanner from "@/components/demo/DemoModeBanner";
 import SentryBoot from "@/components/fx/SentryBoot";
+import ClientOnly from "@/components/common/ClientOnly";
 
 export default function PlatformLayout({ children }: { children: React.ReactNode }) {
   return (
@@ -17,7 +18,22 @@ export default function PlatformLayout({ children }: { children: React.ReactNode
       <div className="main">
         <Header />
         <DemoModeBanner />
-        <div className="content">{children}</div>
+        {/* ClientOnly a nivel de layout: TODA página autenticada se monta solo en
+            cliente. Elimina de raíz cualquier mismatch de hidratación (React
+            #418/#423/#425) en cualquier page, presente o futuro, sin auditar
+            valor por valor. Es un tool interno tras login → el SSR no aporta
+            (sin SEO). */}
+        <div className="content">
+          <ClientOnly
+            fallback={
+              <div style={{ display: "grid", placeItems: "center", minHeight: "60vh" }}>
+                <div className="spinner" />
+              </div>
+            }
+          >
+            {children}
+          </ClientOnly>
+        </div>
       </div>
       <EventEffects />
       <TourController />

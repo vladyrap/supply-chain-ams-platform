@@ -99,11 +99,14 @@ function loadFromStorage(): PersistedState {
       // Migración suave: si existe la clave v2 vieja, importamos sus campos
       const old = window.localStorage.getItem("ams-platform-state-v2");
       if (old) {
-        return { ...DEFAULTS, ...(JSON.parse(old) as Partial<PersistedState>) };
+        return { ...DEFAULTS, ...(JSON.parse(old) as Partial<PersistedState>), theme: "default" };
       }
       return DEFAULTS;
     }
-    return { ...DEFAULTS, ...(JSON.parse(raw) as Partial<PersistedState>) };
+    // theme: "default" forzado — la plataforma queda SIEMPRE en tema claro IBM
+    // Carbon (blanco), aunque el usuario tuviera "cyberpunk" persistido de una
+    // sesión previa. El toggle de tema se removió del Header.
+    return { ...DEFAULTS, ...(JSON.parse(raw) as Partial<PersistedState>), theme: "default" };
   } catch {
     return DEFAULTS;
   }

@@ -16,7 +16,7 @@ export default function Header() {
   // Cliente/Ambiente quedan con su valor por defecto en PlatformContext
   // (el resto de la app los sigue usando como contexto del agente); solo se
   // quitaron los selectores del header por pedido del usuario.
-  const { theme, setTheme, fxEnabled, setFxEnabled } = usePlatform();
+  const { fxEnabled, setFxEnabled } = usePlatform();
   const { user, logout } = useAuth();
   const { tenant } = useTenant();
   const { open: openPalette } = useCommandPalette();
@@ -71,14 +71,6 @@ export default function Header() {
 
         <div style={{ width: 1, height: 24, background: "var(--border-soft)" }} />
 
-        <button
-          onClick={() => setTheme(theme === "cyberpunk" ? "default" : "cyberpunk")}
-          className="btn ghost btn-icon"
-          aria-label="Alternar tema cyberpunk"
-          title={theme === "cyberpunk" ? "Volver al tema normal" : "Activar tema cyberpunk"}
-        >
-          {theme === "cyberpunk" ? "🌙" : "🌃"}
-        </button>
         <button
           onClick={() => setFxEnabled(!fxEnabled)}
           className="btn ghost btn-icon"
