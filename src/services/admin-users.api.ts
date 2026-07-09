@@ -53,3 +53,30 @@ export async function inviteUser(
     };
   }
 }
+
+export interface ResetLinkResponse {
+  success: true;
+  welcomeUrl: string;
+  emailSent: boolean;
+}
+
+/** Genera un link de acceso (set-password) para un usuario que YA existe. */
+export async function getUserResetLink(
+  email: string,
+): Promise<ResetLinkResponse | InviteUserError> {
+  try {
+    const data = await apiFetch<ResetLinkResponse>("/api/admin/users/reset-link", {
+      method: "POST",
+      body: { email },
+    });
+    return data;
+  } catch (err) {
+    if (err instanceof ApiError) {
+      return { success: false, error: err.message };
+    }
+    return {
+      success: false,
+      error: err instanceof Error ? err.message : "Error de red",
+    };
+  }
+}

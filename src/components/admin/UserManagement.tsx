@@ -5,7 +5,7 @@ import type { UseAccessAdmin } from "@/hooks/useAccessAdmin";
 import type { PlatformUser } from "@/types/rbac";
 import Badge from "@/components/ui/Badge";
 import UserFormModal from "./UserFormModal";
-import { inviteUser } from "@/services/admin-users.api";
+import { inviteUser, getUserResetLink } from "@/services/admin-users.api";
 
 interface Props { admin: UseAccessAdmin }
 
@@ -68,6 +68,22 @@ export default function UserManagement({ admin }: Props) {
     if (!window.confirm(`¿Eliminar el usuario "${u.name}"? Esta acción no se puede deshacer.`)) return;
     const r = admin.deleteUser(u.id);
     if (!r.ok) window.alert(r.error);
+  }
+
+  async function handleResetLink(u: PlatformUser) {
+    setWelcomeLink(null);
+    setCopied(false);
+    setInviteMsg(`Generando link de acceso para ${u.email}…`);
+    const r = await getUserResetLink(u.email);
+    if (r.success) {
+      setWelcomeLink(r.welcomeUrl);
+      setInviteMsg(r.emailSent
+        ? `✓ Link generado para ${u.email} (también se envió por email).`
+        : `✓ Link generado para ${u.email}. Copiálo abajo y envíaselo.`);
+    } else {
+      setInviteMsg(`✗ ${r.error}`);
+    }
+    setTimeout(() => setInviteMsg(null), 15000);
   }
 
   return (
@@ -220,6 +236,9 @@ export default function UserManagement({ admin }: Props) {
                         title="Vista previa como este usuario">
                         {admin.currentUserId === u.id ? "🛑 dejar de simular" : "👁 simular"}
                       </button>
+                      <button className="btn ghost" style={{ padding: "3px 8px", fontSize: 11 }}
+                        onClick={() => handleResetLink(u)}
+                        title="Generar link de acceso (para que cree/resetee su clave)">🔗</button>
                       <button className="btn ghost" style={{ padding: "3px 8px", fontSize: 11 }}
                         onClick={() => { setEditing(u); setShowModal(true); }}>✎</button>
                       <button className="btn ghost" style={{ padding: "3px 8px", fontSize: 11, color: "#fa4d56" }}
