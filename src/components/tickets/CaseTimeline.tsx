@@ -19,7 +19,7 @@ import { TimelineIcon } from "@/lib/timeline-icons";
 import { SkeletonCard } from "@/components/common/Skeleton";
 import {
   Search, RefreshCw, Inbox, AlertCircle, Activity, GitBranch, GitCompare,
-  Paperclip, RotateCcw, X,
+  Paperclip, RotateCcw, X, Download,
 } from "lucide-react";
 import CompareVersions from "./CompareVersions";
 import KnowledgeEvolutionCard from "./KnowledgeEvolutionCard";
@@ -140,6 +140,25 @@ export default function CaseTimeline({ ticketKey, refreshKey, actor, onReanalyze
     }
   }, [onReanalyze, load]);
 
+  // F5 — export del timeline del caso (JSON, client-side, sin secretos: ya
+  // vienen redactados del backend).
+  const exportJson = useCallback(() => {
+    const payload = {
+      ticketKey,
+      exportedAt: new Date().toISOString(),
+      eventCount: counts.events,
+      versionCount: counts.versions,
+      items,
+    };
+    const blob = new Blob([JSON.stringify(payload, null, 2)], { type: "application/json" });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement("a");
+    a.href = url;
+    a.download = `${ticketKey}-case-timeline.json`;
+    a.click();
+    setTimeout(() => URL.revokeObjectURL(url), 0);
+  }, [ticketKey, items, counts]);
+
   const filtered = useMemo(() => {
     const q = query.trim().toLowerCase();
     return items.filter((it) => {
@@ -230,6 +249,16 @@ export default function CaseTimeline({ ticketKey, refreshKey, actor, onReanalyze
             style={{ padding: "6px 11px", fontSize: 12 }}
           >
             <GitCompare size={14} /> Comparar
+          </button>
+          <button
+            type="button"
+            className="btn ghost"
+            onClick={exportJson}
+            disabled={items.length === 0}
+            title="Exportar timeline (JSON)"
+            style={{ padding: "6px 10px" }}
+          >
+            <Download size={14} />
           </button>
           <button
             type="button"
