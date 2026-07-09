@@ -98,7 +98,7 @@ import CaseTimeline from "./CaseTimeline";
 // Sección colapsable
 // --------------------------------------------------------------------
 function Section({
-  title, icon, accent, defaultOpen = true, count, children, id,
+  title, icon, accent, defaultOpen = true, count, children, id, order,
 }: {
   title: string;
   icon: React.ReactNode;
@@ -108,10 +108,12 @@ function Section({
   children: React.ReactNode;
   /** id HTML para scroll-to (usado por TicketReadinessScore) */
   id?: string;
+  /** order CSS para reordenar la card dentro de la pila flex (.col). */
+  order?: number;
 }) {
   const [open, setOpen] = useState(defaultOpen);
   return (
-    <div className="card" id={id} style={{ borderLeft: `3px solid ${accent || "var(--accent)"}` }}>
+    <div className="card" id={id} style={{ borderLeft: `3px solid ${accent || "var(--accent)"}`, order }}>
       <button
         onClick={() => setOpen((o) => !o)}
         style={{
@@ -899,7 +901,7 @@ export default function TicketCommandCenter({ ticket, onTicketUpdated }: Props) 
   return (
     <div className="col" style={{ gap: 12 }}>
       {/* Header del ticket */}
-      <div id="section-header" className="card">
+      <div id="section-header" className="card" style={{ order: -3 }}>
         <div className="row between" style={{ flexWrap: "wrap", gap: 8, alignItems: "flex-start" }}>
           <div style={{ minWidth: 0, flex: 1 }}>
             <div style={{ fontFamily: "ui-monospace, monospace", fontSize: 11.5, color: "var(--text-dim)" }}>{ticket.key}</div>
@@ -935,6 +937,10 @@ export default function TicketCommandCenter({ ticket, onTicketUpdated }: Props) 
             </div>
             {/* v1.2.7-prod · Descargar ticket como PDF (todo el análisis) */}
             <TicketPdfButton mode="single" ticket={ticket} compact />
+            {/* Editar ticket — siempre visible en el header */}
+            <button className="btn ghost sm" onClick={() => setEditOpen(true)} style={{ fontSize: 11 }}>
+              <Pencil size={14} /> Editar ticket
+            </button>
 
             {/* Cerrar ticket (oculto si ya está resuelto). Captura horas reales
                 que alimentan el tile "Desviación" del dashboard y la calibración
@@ -1070,7 +1076,7 @@ export default function TicketCommandCenter({ ticket, onTicketUpdated }: Props) 
 
       {/* Sección 1: Resumen / descripción */}
       {/* Case Timeline (F1) — tab shell: Centro de Comando · Case Timeline */}
-      <div className="ct-tabbar" role="tablist" aria-label="Vistas del caso">
+      <div className="ct-tabbar" role="tablist" aria-label="Vistas del caso" style={{ order: -2 }}>
         <button
           type="button"
           role="tab"
@@ -1176,7 +1182,7 @@ export default function TicketCommandCenter({ ticket, onTicketUpdated }: Props) 
       </Section>
 
       {/* Sección 3-4: Clasificación + diagnóstico — TCC v0.12 con 4 estados */}
-      <Section id="section-classification" title="CLASIFICACIÓN AMS · DIAGNÓSTICO" icon={<Bot size={16} />} accent="#10b981">
+      <Section id="section-classification" title="CLASIFICACIÓN AMS · DIAGNÓSTICO" icon={<Bot size={16} />} accent="#10b981" order={-1} defaultOpen>
         {(() => {
           const status = aie.intelligence?.status;
           const sa = aie.intelligence?.specialistAnalysis;
