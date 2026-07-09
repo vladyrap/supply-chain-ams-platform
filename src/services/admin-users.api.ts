@@ -24,6 +24,8 @@ export interface InviteUserResponse {
     createdAt: string;
   };
   emailSent: boolean;
+  /** Link de bienvenida (set-password). El admin lo copia y lo envía manual si el email no salió. */
+  welcomeUrl?: string;
   message: string;
 }
 

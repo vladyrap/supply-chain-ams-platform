@@ -19,6 +19,8 @@ export default function UserManagement({ admin }: Props) {
   const [filterRole, setFilterRole]     = useState<string>("all");
   const [filterStatus, setFilterStatus] = useState<"all" | "ACTIVE" | "INACTIVE">("all");
   const [inviteMsg, setInviteMsg]       = useState<string | null>(null);
+  const [welcomeLink, setWelcomeLink]   = useState<string | null>(null);
+  const [copied, setCopied]             = useState(false);
 
   const filtered = useMemo(() => {
     return admin.users.filter((u) => {
@@ -38,19 +40,22 @@ export default function UserManagement({ admin }: Props) {
     // Disparamos en background, no esperamos la respuesta para cerrar el modal.
     // El UserFormModal se cierra inmediatamente; el resultado se muestra en `inviteMsg`.
     setInviteMsg("Enviando invitación…");
+    setWelcomeLink(null);
+    setCopied(false);
     inviteUser({
       name: data.name, email: data.email, roleCode: data.roleCode,
       serviceLevel: data.serviceLevel as "BASIC" | "STANDARD" | "PREMIUM" | "ENTERPRISE",
     })
       .then((r) => {
         if (r.success) {
+          if (r.welcomeUrl) setWelcomeLink(r.welcomeUrl);
           setInviteMsg(r.emailSent
             ? `✓ ${r.message}. Recargá la página para verlo en la lista.`
-            : `⚠ Usuario creado, pero el email NO se pudo enviar (revisá SMTP). El usuario puede usar "Olvidé contraseña".`);
+            : `⚠ Usuario creado. El email no salió — copiá el link de abajo y envíaselo al usuario. Recargá para verlo en la lista.`);
         } else {
           setInviteMsg(`✗ ${r.error}`);
         }
-        setTimeout(() => setInviteMsg(null), 12000);
+        setTimeout(() => setInviteMsg(null), 15000);
       })
       .catch((err) => {
         setInviteMsg(`✗ ${(err as Error).message}`);
@@ -107,6 +112,53 @@ export default function UserManagement({ admin }: Props) {
           }}
         >
           {inviteMsg}
+        </div>
+      )}
+
+      {welcomeLink && (
+        <div style={{
+          marginBottom: 12, padding: "12px 14px", borderRadius: 8,
+          background: "var(--accent-soft)", border: "1px solid rgba(var(--accent-rgb), 0.35)",
+          fontSize: 13,
+        }}>
+          <div style={{ fontWeight: 600, marginBottom: 6 }}>🔗 Link de bienvenida — para que el usuario cree su clave de ingreso</div>
+          <div style={{ display: "flex", gap: 8, alignItems: "center", flexWrap: "wrap" }}>
+            <input
+              readOnly
+              value={welcomeLink}
+              onFocus={(e) => e.currentTarget.select()}
+              style={{
+                flex: 1, minWidth: 240, padding: "6px 8px", fontSize: 12,
+                fontFamily: "var(--font-mono, monospace)", background: "#fff",
+                border: "1px solid var(--border)", borderRadius: 6, color: "var(--text)",
+              }}
+            />
+            <button
+              type="button"
+              className="btn primary"
+              style={{ fontSize: 12, padding: "6px 12px" }}
+              onClick={() => {
+                navigator.clipboard?.writeText(welcomeLink).then(() => {
+                  setCopied(true);
+                  setTimeout(() => setCopied(false), 2000);
+                }).catch(() => { /* clipboard no disponible */ });
+              }}
+            >
+              {copied ? "✓ Copiado" : "📋 Copiar"}
+            </button>
+            <button
+              type="button"
+              className="btn ghost"
+              style={{ fontSize: 12, padding: "6px 10px" }}
+              onClick={() => setWelcomeLink(null)}
+              title="Ocultar"
+            >
+              ✕
+            </button>
+          </div>
+          <div style={{ marginTop: 6, fontSize: 11, color: "var(--text-dim)" }}>
+            Válido 2 horas. Envíaselo por WhatsApp o el medio que prefieras.
+          </div>
         </div>
       )}
 
