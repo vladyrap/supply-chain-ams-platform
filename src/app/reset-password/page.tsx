@@ -7,12 +7,32 @@
 // 2. Si válido, muestra form de nueva contraseña
 // 3. POST /api/auth/reset-password con { token, newPassword }
 // 4. On success redirige a /login
+// Estilos: tema claro celeste + blanco (inputs con texto oscuro, visibles).
 // =============================================================================
 
 import { Suspense, useEffect, useState } from "react";
 import Link from "next/link";
 import { useRouter, useSearchParams } from "next/navigation";
 import { apiGet, apiPost } from "@/services/_http";
+
+const inputStyle: React.CSSProperties = {
+  width: "100%",
+  padding: 12,
+  background: "#ffffff",
+  border: "1px solid var(--border)",
+  borderRadius: 8,
+  color: "var(--text)",
+  fontSize: 14,
+};
+
+const errorBoxStyle: React.CSSProperties = {
+  background: "rgba(218,30,40,0.08)",
+  border: "1px solid rgba(218,30,40,0.28)",
+  color: "var(--error)",
+  padding: 12,
+  borderRadius: 8,
+  fontSize: 14,
+};
 
 function ResetPasswordInner(): React.ReactElement {
   const router = useRouter();
@@ -72,7 +92,7 @@ function ResetPasswordInner(): React.ReactElement {
     return (
       <main className="auth-main">
         <section className="auth-section">
-          <div className="auth-card" style={{ maxWidth: 480, margin: "auto", textAlign: "center" }}>
+          <div className="auth-card" style={{ textAlign: "center" }}>
             Validando link…
           </div>
         </section>
@@ -84,16 +104,9 @@ function ResetPasswordInner(): React.ReactElement {
     return (
       <main className="auth-main">
         <section className="auth-section">
-          <div className="auth-card" style={{ maxWidth: 480, margin: "auto" }}>
+          <div className="auth-card">
             <h1 style={{ fontSize: 24, marginBottom: 8 }}>Link inválido</h1>
-            <div role="alert" style={{
-              background: "rgba(250,77,86, 0.1)",
-              border: "1px solid rgba(250,77,86, 0.3)",
-              color: "#fca5a5",
-              padding: 16,
-              borderRadius: 8,
-              marginBottom: 16,
-            }}>
+            <div role="alert" style={{ ...errorBoxStyle, padding: 16, marginBottom: 16 }}>
               {validation.error ?? "El link de recuperación no es válido o expiró."}
             </div>
             <Link href="/forgot-password" style={{ textDecoration: "underline" }}>
@@ -109,9 +122,9 @@ function ResetPasswordInner(): React.ReactElement {
     return (
       <main className="auth-main">
         <section className="auth-section">
-          <div className="auth-card" style={{ maxWidth: 480, margin: "auto" }}>
+          <div className="auth-card">
             <h1 style={{ fontSize: 24, marginBottom: 8 }}>Contraseña actualizada</h1>
-            <p style={{ opacity: 0.85 }}>
+            <p style={{ color: "var(--text-soft)" }}>
               Tu contraseña cambió correctamente. Te llevo al login…
             </p>
           </div>
@@ -123,14 +136,14 @@ function ResetPasswordInner(): React.ReactElement {
   return (
     <main className="auth-main">
       <section className="auth-section">
-        <div className="auth-card" style={{ maxWidth: 480, margin: "auto" }}>
+        <div className="auth-card">
           <h1 style={{ fontSize: 24, marginBottom: 8 }}>Nueva contraseña</h1>
-          <p style={{ opacity: 0.7, marginBottom: 24 }}>
+          <p style={{ color: "var(--text-soft)", marginBottom: 24 }}>
             Para <strong>{validation.email}</strong>
           </p>
           <form onSubmit={handleSubmit} style={{ display: "flex", flexDirection: "column", gap: 16 }}>
             <label>
-              <div style={{ fontSize: 12, opacity: 0.7, marginBottom: 4 }}>NUEVA CONTRASEÑA</div>
+              <div style={{ fontSize: 12, color: "var(--text-dim)", marginBottom: 4, letterSpacing: 0.5 }}>NUEVA CONTRASEÑA</div>
               <input
                 type="password"
                 value={newPassword}
@@ -138,45 +151,22 @@ function ResetPasswordInner(): React.ReactElement {
                 required
                 minLength={8}
                 placeholder="mínimo 8 caracteres"
-                style={{
-                  width: "100%",
-                  padding: 12,
-                  background: "rgba(255,255,255,0.05)",
-                  border: "1px solid rgba(255,255,255,0.1)",
-                  borderRadius: 8,
-                  color: "white",
-                  fontSize: 14,
-                }}
+                style={inputStyle}
               />
             </label>
             <label>
-              <div style={{ fontSize: 12, opacity: 0.7, marginBottom: 4 }}>CONFIRMAR</div>
+              <div style={{ fontSize: 12, color: "var(--text-dim)", marginBottom: 4, letterSpacing: 0.5 }}>CONFIRMAR</div>
               <input
                 type="password"
                 value={confirm}
                 onChange={(e) => setConfirm(e.target.value)}
                 required
-                style={{
-                  width: "100%",
-                  padding: 12,
-                  background: "rgba(255,255,255,0.05)",
-                  border: "1px solid rgba(255,255,255,0.1)",
-                  borderRadius: 8,
-                  color: "white",
-                  fontSize: 14,
-                }}
+                style={inputStyle}
               />
             </label>
 
             {err && (
-              <div role="alert" style={{
-                background: "rgba(250,77,86, 0.1)",
-                border: "1px solid rgba(250,77,86, 0.3)",
-                color: "#fca5a5",
-                padding: 12,
-                borderRadius: 8,
-                fontSize: 14,
-              }}>
+              <div role="alert" style={errorBoxStyle}>
                 ⚠ {err}
               </div>
             )}
@@ -186,7 +176,7 @@ function ResetPasswordInner(): React.ReactElement {
               disabled={busy || !newPassword || !confirm}
               style={{
                 padding: "14px",
-                background: busy ? "rgba(69,137,255, 0.5)" : "linear-gradient(to right, #4589ff, #be95ff)",
+                background: busy ? "rgba(14,165,233,0.5)" : "linear-gradient(to right, #0ea5e9, #38bdf8)",
                 color: "white",
                 border: "none",
                 borderRadius: 8,
@@ -206,7 +196,7 @@ function ResetPasswordInner(): React.ReactElement {
 
 export default function ResetPasswordPage(): React.ReactElement {
   return (
-    <Suspense fallback={<main className="auth-main"><section className="auth-section">Cargando…</section></main>}>
+    <Suspense fallback={<main className="auth-main"><section className="auth-section"><div className="auth-card" style={{ textAlign: "center" }}>Cargando…</div></section></main>}>
       <ResetPasswordInner />
     </Suspense>
   );

@@ -5,6 +5,7 @@
 // =============================================================================
 // Pide email, llama POST /api/auth/forgot-password.
 // Siempre muestra mensaje genérico (no revela si email existió).
+// Estilos: tema claro celeste + blanco (inputs con texto oscuro, visibles).
 // =============================================================================
 
 import { useState } from "react";
@@ -35,9 +36,9 @@ export default function ForgotPasswordPage(): React.ReactElement {
   return (
     <main className="auth-main">
       <section className="auth-section">
-        <div className="auth-card" style={{ maxWidth: 480, margin: "auto" }}>
+        <div className="auth-card">
           <h1 style={{ fontSize: 24, marginBottom: 8 }}>Recuperar contraseña</h1>
-          <p style={{ opacity: 0.7, marginBottom: 24 }}>
+          <p style={{ color: "var(--text-soft)", marginBottom: 24 }}>
             Ingresá tu email y te enviamos un link para crear una nueva contraseña. El link expira en 2 horas.
           </p>
 
@@ -46,9 +47,9 @@ export default function ForgotPasswordPage(): React.ReactElement {
               role="status"
               aria-live="polite"
               style={{
-                background: "rgba(66,190,101, 0.1)",
-                border: "1px solid rgba(66,190,101, 0.3)",
-                color: "#86efac",
+                background: "rgba(36,161,72,0.08)",
+                border: "1px solid rgba(36,161,72,0.3)",
+                color: "var(--ok)",
                 padding: 16,
                 borderRadius: 8,
                 marginBottom: 16,
@@ -60,20 +61,20 @@ export default function ForgotPasswordPage(): React.ReactElement {
           ) : (
             <form onSubmit={handleSubmit} style={{ display: "flex", flexDirection: "column", gap: 16 }}>
               <label>
-                <div style={{ fontSize: 12, opacity: 0.7, marginBottom: 4 }}>EMAIL</div>
+                <div style={{ fontSize: 12, color: "var(--text-dim)", marginBottom: 4, letterSpacing: 0.5 }}>EMAIL</div>
                 <input
                   type="email"
                   value={email}
                   onChange={(e) => setEmail(e.target.value)}
                   required
-                  placeholder="vladimir.matta.barahona@gmail.com"
+                  placeholder="nombre@empresa.cl"
                   style={{
                     width: "100%",
                     padding: 12,
-                    background: "rgba(255,255,255,0.05)",
-                    border: "1px solid rgba(255,255,255,0.1)",
+                    background: "#ffffff",
+                    border: "1px solid var(--border)",
                     borderRadius: 8,
-                    color: "white",
+                    color: "var(--text)",
                     fontSize: 14,
                   }}
                 />
@@ -81,9 +82,9 @@ export default function ForgotPasswordPage(): React.ReactElement {
 
               {err && (
                 <div role="alert" style={{
-                  background: "rgba(250,77,86, 0.1)",
-                  border: "1px solid rgba(250,77,86, 0.3)",
-                  color: "#fca5a5",
+                  background: "rgba(218,30,40,0.08)",
+                  border: "1px solid rgba(218,30,40,0.28)",
+                  color: "var(--error)",
                   padding: 12,
                   borderRadius: 8,
                   fontSize: 14,
@@ -97,7 +98,7 @@ export default function ForgotPasswordPage(): React.ReactElement {
                 disabled={busy || !email}
                 style={{
                   padding: "14px",
-                  background: busy ? "rgba(69,137,255, 0.5)" : "linear-gradient(to right, #4589ff, #be95ff)",
+                  background: busy ? "rgba(14,165,233,0.5)" : "linear-gradient(to right, #0ea5e9, #38bdf8)",
                   color: "white",
                   border: "none",
                   borderRadius: 8,
@@ -111,7 +112,7 @@ export default function ForgotPasswordPage(): React.ReactElement {
             </form>
           )}
 
-          <div style={{ marginTop: 24, textAlign: "center", fontSize: 14, opacity: 0.7 }}>
+          <div style={{ marginTop: 24, textAlign: "center", fontSize: 14 }}>
             <Link href="/login">← Volver al login</Link>
           </div>
         </div>
