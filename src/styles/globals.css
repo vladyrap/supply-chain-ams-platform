@@ -1,20 +1,19 @@
 :root {
-  /* Tema CLARO IBM Carbon (Gray 10) — estilo IBM Consulting Advantage.
-     Fondo gris-10 / superficies blancas, azul IBM #0f62fe, texto gris-100.
-     Colores de soporte Carbon en sus versiones para fondo claro. */
-  --bg:           #f4f4f4;
+  /* Tema CLARO CELESTE + BLANCO — superficies celeste muy claras / blancas,
+     acento celeste (sky), texto azul-grisáceo oscuro. */
+  --bg:           #eaf3fc;
   --bg-panel:    #ffffff;
   --bg-card:     #ffffff;
-  --bg-elev:     #f4f4f4;
-  --bg-elev-2:   #e8e8e8;
-  --border:      #c6c6c6;
-  --border-soft: #e0e0e0;
-  --text:        #161616;
-  --text-soft:   #525252;
-  --text-dim:    #6f6f6f;
-  --accent:      #0f62fe;
-  --accent-2:    #0043ce;
-  --accent-soft: rgba(15, 98, 254, 0.12);
+  --bg-elev:     #e2eef9;
+  --bg-elev-2:   #cfe3f5;
+  --border:      #b6d4ee;
+  --border-soft: #d8e8f7;
+  --text:        #14202b;
+  --text-soft:   #45586b;
+  --text-dim:    #6a7d8e;
+  --accent:      #0ea5e9;
+  --accent-2:    #0284c7;
+  --accent-soft: rgba(14, 165, 233, 0.12);
   --ok:          #24a148;
   --warn:        #f1c21b;
   --error:       #da1e28;
@@ -579,7 +578,7 @@ button { font-family: inherit; }
 /* Modal */
 .admin-modal-overlay {
   position: fixed; inset: 0; z-index: 9500;
-  background: rgba(0, 0, 0, 0.65);
+  background: rgba(14, 165, 233, 0.06);
   backdrop-filter: blur(4px);
   display: grid; place-items: center;
   padding: 20px;
@@ -913,7 +912,7 @@ button { font-family: inherit; }
      interno usa var(--text)/--text-soft → oscuro y legible sobre el fondo claro. */
   background:
     radial-gradient(ellipse at 30% 30%, rgba(var(--accent-rgb), 0.10), transparent 62%),
-    linear-gradient(135deg, #ffffff, #eef2f8);
+    linear-gradient(135deg, #ffffff, #e8f3fd);
   border: 1px solid rgba(var(--accent-rgb), 0.35);
   border-radius: 12px;
   padding: 0;
@@ -1047,7 +1046,7 @@ button { font-family: inherit; }
 .id-stat-mini {
   display: flex; justify-content: space-between;
   padding: 4px 8px; font-size: 11px;
-  background: rgba(0, 0, 0, 0.04);
+  background: rgba(14, 165, 233, 0.06);
   border-radius: 4px;
 }
 .id-stat-mini span { color: var(--text-dim); letter-spacing: 1px; }
@@ -1057,7 +1056,7 @@ button { font-family: inherit; }
   display: flex; align-items: flex-end; gap: 1.5px;
   height: 36px;
   padding: 8px 18px;
-  background: rgba(0, 0, 0, 0.04);
+  background: rgba(14, 165, 233, 0.06);
   border-top: 1px solid rgba(var(--accent-rgb), 0.18);
   position: relative; z-index: 2;
 }
@@ -1187,7 +1186,7 @@ button { font-family: inherit; }
   text-shadow: 0 0 6px var(--accent);
 }
 .voice-eq {
-  background: rgba(0, 0, 0, 0.25);
+  background: rgba(14, 165, 233, 0.06);
   border: 1px solid rgba(var(--accent-rgb), 0.15);
   border-radius: 8px;
   padding: 8px;
@@ -1328,7 +1327,7 @@ button { font-family: inherit; }
 .kbd-detector {
   margin-top: 8px;
   min-height: 130px;
-  background: rgba(0, 0, 0, 0.35);
+  background: rgba(14, 165, 233, 0.06);
   border: 2px dashed rgba(var(--accent-rgb), 0.25);
   border-radius: 8px;
   display: grid; place-items: center;
@@ -1374,7 +1373,7 @@ button { font-family: inherit; }
 .kbd-history {
   display: flex; flex-direction: column; gap: 3px;
   padding: 8px;
-  background: rgba(0, 0, 0, 0.25);
+  background: rgba(14, 165, 233, 0.06);
   border-radius: 4px;
   max-height: 220px; overflow-y: auto;
 }
@@ -1504,7 +1503,7 @@ button { font-family: inherit; }
   /* Tema claro IBM Carbon: superficie blanca con tinte de acento sutil. */
   background:
     radial-gradient(ellipse at 30% 30%, rgba(var(--accent-rgb), 0.10), transparent 62%),
-    linear-gradient(135deg, #ffffff, #eef2f8);
+    linear-gradient(135deg, #ffffff, #e8f3fd);
   border: 1px solid rgba(var(--accent-rgb), 0.30);
   border-radius: 12px;
   padding: 16px 22px;
@@ -1523,7 +1522,7 @@ button { font-family: inherit; }
 .sd-status-strip {
   display: inline-flex; align-items: center; gap: 12px;
   padding: 5px 12px;
-  background: rgba(0, 0, 0, 0.4);
+  background: rgba(14, 165, 233, 0.06);
   border: 1px solid rgba(var(--accent-rgb), 0.30);
   border-radius: 16px;
   font-size: 10.5px; letter-spacing: 1.2px;
@@ -1968,7 +1967,7 @@ button { font-family: inherit; }
 .ticket-filter {
   display: inline-flex; align-items: center; gap: 6px;
   padding: 5px 12px;
-  background: rgba(0, 0, 0, 0.3);
+  background: rgba(14, 165, 233, 0.06);
   border: 1px solid rgba(255, 255, 255, 0.08);
   border-radius: 16px;
   font-size: 11.5px;
@@ -2022,7 +2021,7 @@ button { font-family: inherit; }
 .ticket-list-head {
   display: flex; align-items: center; gap: 8px;
   padding: 10px 14px;
-  background: rgba(0, 0, 0, 0.3);
+  background: rgba(14, 165, 233, 0.06);
   border-bottom: 1px solid rgba(255, 255, 255, 0.06);
   font-size: 11.5px; color: var(--text-soft);
   letter-spacing: 0.5px;
@@ -2132,7 +2131,7 @@ button { font-family: inherit; }
 }
 .ticket-sla-hero {
   padding: 12px 14px;
-  background: rgba(0, 0, 0, 0.3);
+  background: rgba(14, 165, 233, 0.06);
   border: 1px solid rgba(255, 255, 255, 0.06);
   border-radius: 8px;
 }
@@ -2231,7 +2230,7 @@ button { font-family: inherit; }
 
 /* Messages */
 .conv-messages {
-  background: rgba(0, 0, 0, 0.25);
+  background: rgba(14, 165, 233, 0.06);
   border: 1px solid rgba(255, 255, 255, 0.05);
   border-radius: 8px;
   padding: 14px;
@@ -2325,7 +2324,7 @@ button { font-family: inherit; }
 .kn-tab {
   display: inline-flex; align-items: center; gap: 6px;
   padding: 8px 14px;
-  background: rgba(0, 0, 0, 0.25);
+  background: rgba(14, 165, 233, 0.06);
   border: 1px solid rgba(255, 255, 255, 0.06);
   border-radius: 8px 8px 0 0;
   font-size: 12px; color: var(--text-soft);
@@ -2438,7 +2437,7 @@ button { font-family: inherit; }
 .kn-card-stats {
   display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 4px;
   margin-top: 6px; padding: 8px;
-  background: rgba(0, 0, 0, 0.25);
+  background: rgba(14, 165, 233, 0.06);
   border-radius: 6px;
 }
 .kn-card-stats > div { text-align: center; display: flex; flex-direction: column; gap: 1px; }
@@ -2470,7 +2469,7 @@ button { font-family: inherit; }
 .rag-chunk-text {
   font-size: 12.5px; line-height: 1.55;
   color: var(--text-soft); white-space: pre-wrap;
-  background: rgba(0, 0, 0, 0.25);
+  background: rgba(14, 165, 233, 0.06);
   padding: 10px 12px; border-radius: 6px;
   font-family: var(--font-mono, monospace);
   max-height: 200px; overflow-y: auto;

@@ -147,7 +147,7 @@ export default function CommandPalette({ open, onClose, favorites, onToggleFavor
       onClick={onClose}
       style={{
         position: "fixed", inset: 0, zIndex: 9999,
-        background: "rgba(0,0,0,0.55)", backdropFilter: "blur(8px)",
+        background: "rgba(56,132,200,0.32)", backdropFilter: "blur(8px)",
         display: "flex", alignItems: "flex-start", justifyContent: "center",
         paddingTop: "12vh",
       }}>

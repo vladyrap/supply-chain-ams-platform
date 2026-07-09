@@ -120,7 +120,7 @@ export default function ModalPortal({
       }}
       style={{
         position: "fixed", inset: 0, zIndex,
-        background: "rgba(2,6,23,0.78)",
+        background: "rgba(56,132,200,0.32)",
         backdropFilter: "blur(4px)",
         display: "flex", alignItems: "center", justifyContent: "center",
         padding,
