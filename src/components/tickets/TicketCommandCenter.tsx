@@ -1095,6 +1095,7 @@ export default function TicketCommandCenter({ ticket, onTicketUpdated }: Props) 
         <CaseTimeline
           ticketKey={ticket.key}
           refreshKey={aie.intelligence?.analysisVersion ?? 0}
+          actor={actor}
         />
       )}
 

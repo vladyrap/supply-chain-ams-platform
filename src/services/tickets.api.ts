@@ -223,6 +223,32 @@ export async function getCaseTimeline(key: string, limit?: number) {
   );
 }
 
+/**
+ * POST /api/memory/learning — persiste un aprendizaje del caso a la Memoria
+ * Organizacional (kind=learning) y emite KNOWLEDGE_UPDATED en el timeline (F3).
+ */
+export async function recordCaseLearning(input: {
+  ticketKey: string;
+  title: string;
+  body?: string;
+  createdBy?: string;
+  dedupeKey?: string;
+}) {
+  return call<
+    | { success: true; result: { id: string; created: boolean } }
+    | { success: false; error: string }
+  >(`/api/memory/learning`, {
+    method: "POST",
+    body: {
+      title: input.title,
+      body: input.body,
+      ticketKey: input.ticketKey,
+      createdBy: input.createdBy,
+      dedupeKey: input.dedupeKey,
+    },
+  });
+}
+
 /** Campos editables del ticket via PATCH /api/tickets/:key. */
 export interface UpdateTicketInput {
   title?: string;

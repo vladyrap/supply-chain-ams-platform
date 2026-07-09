@@ -16,11 +16,14 @@ import { TimelineIcon } from "@/lib/timeline-icons";
 import { SkeletonCard } from "@/components/common/Skeleton";
 import { Search, RefreshCw, Inbox, AlertCircle, Activity, GitBranch, GitCompare } from "lucide-react";
 import CompareVersions from "./CompareVersions";
+import KnowledgeEvolutionCard from "./KnowledgeEvolutionCard";
 
 interface Props {
   ticketKey: string;
   /** Bump para recargar (ej. tras un reanalyze). */
   refreshKey?: number;
+  /** Actor para atribuir aprendizajes guardados. */
+  actor?: string;
 }
 
 type KindFilter = "all" | "event" | "version";
@@ -47,7 +50,7 @@ function fmtDate(iso: string): { date: string; time: string } {
   }
 }
 
-export default function CaseTimeline({ ticketKey, refreshKey }: Props) {
+export default function CaseTimeline({ ticketKey, refreshKey, actor }: Props) {
   const [items, setItems] = useState<CaseTimelineItem[]>([]);
   const [counts, setCounts] = useState({ events: 0, versions: 0 });
   const [loading, setLoading] = useState(true);
@@ -157,6 +160,9 @@ export default function CaseTimeline({ ticketKey, refreshKey }: Props) {
           </button>
         </div>
       </div>
+
+      {/* Knowledge Evolution (F3) — se auto-oculta si <2 versiones o sin cambios */}
+      <KnowledgeEvolutionCard ticketKey={ticketKey} actor={actor} refreshKey={refreshKey} />
 
       {/* Loading */}
       {loading && (
