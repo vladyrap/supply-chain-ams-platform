@@ -93,7 +93,7 @@ export default function CloudAlmExportPanel({ testing }: Props) {
       </div>
 
       {payload && (
-        <div className="card" style={{ background: "rgba(15,23,42,0.5)" }}>
+        <div className="card" style={{ background: "var(--bg-elev)" }}>
           <div style={{ fontSize: 11, color: "var(--text-dim)", letterSpacing: 1, textTransform: "uppercase", marginBottom: 8 }}>
             Preview JSON · {scenario?.title}
           </div>

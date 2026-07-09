@@ -232,7 +232,7 @@ export default function GuidedTicketIntakeModal({
           {/* Readiness en vivo */}
           <div style={{
             padding: "6px 10px",
-            background: "rgba(15,23,42,0.45)",
+            background: "rgba(0,0,0,0.03)",
             border: `1px solid ${READINESS_COLORS[readiness.status]}55`,
             borderLeft: `3px solid ${READINESS_COLORS[readiness.status]}`,
             borderRadius: 6,
@@ -440,7 +440,7 @@ export default function GuidedTicketIntakeModal({
           <Section title="5 · Readiness Score">
             <div style={{
               padding: 14, borderRadius: 8,
-              background: "rgba(15,23,42,0.45)",
+              background: "rgba(0,0,0,0.03)",
               border: `2px solid ${READINESS_COLORS[readiness.status]}`,
               textAlign: "center",
             }}>
@@ -509,7 +509,7 @@ export default function GuidedTicketIntakeModal({
             </Field>
 
             <div style={{ marginTop: 10, padding: 10,
-              background: "rgba(15,23,42,0.45)", border: "1px solid var(--border-soft)",
+              background: "rgba(0,0,0,0.03)", border: "1px solid var(--border-soft)",
               borderRadius: 6, fontSize: 11.5 }}>
               <div style={{ fontSize: 10, color: "var(--text-dim)", letterSpacing: 1.4, marginBottom: 6 }}>
                 PAQUETE N1 PREVIEW
@@ -531,7 +531,7 @@ export default function GuidedTicketIntakeModal({
                 <summary style={{ cursor: "pointer", fontSize: 11.5, color: "var(--text-soft)" }}>
                   ▶ Previsualizar respuesta inicial al cliente
                 </summary>
-                <div style={{ marginTop: 6, padding: 10, background: "rgba(15,23,42,0.55)",
+                <div style={{ marginTop: 6, padding: 10, background: "rgba(0,0,0,0.05)",
                   borderRadius: 4, fontSize: 11, fontFamily: "ui-monospace, monospace",
                   whiteSpace: "pre-wrap" }}>
                   <strong>Asunto:</strong> {n1Package.initialCustomerResponse.subject}{"\n\n"}
