@@ -93,6 +93,8 @@ import {
 } from "lucide-react";
 // Case Timeline (F1)
 import CaseTimeline from "./CaseTimeline";
+// Reinvestigación completa (RE-R3)
+import InvestigationPanel from "./InvestigationPanel";
 
 // --------------------------------------------------------------------
 // Sección colapsable
@@ -1182,6 +1184,15 @@ export default function TicketCommandCenter({ ticket, onTicketUpdated }: Props) 
       </Section>
 
       {/* Sección 3-4: Clasificación + diagnóstico — TCC v0.12 con 4 estados */}
+      {/* RE-R3 — Reinvestigación completa (evidencia → razonamiento fresco) */}
+      <Section id="section-investigation" title="REINVESTIGACIÓN DEL CASO" icon={<Brain size={16} />} accent="#0F62FE" order={-1} defaultOpen>
+        <InvestigationPanel
+          ticketKey={ticket.key}
+          intelligence={aie.intelligence}
+          actor={actor}
+        />
+      </Section>
+
       <Section id="section-classification" title="CLASIFICACIÓN AMS · DIAGNÓSTICO" icon={<Bot size={16} />} accent="#10b981" order={-1} defaultOpen>
         {(() => {
           const status = aie.intelligence?.status;

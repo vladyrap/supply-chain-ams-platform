@@ -1,6 +1,6 @@
 import type { TicketEstimatedResolution } from "@/types/estimation";
 import type { VisualEvidenceNote } from "@/types/visual-evidence";
-import type { TicketIntelligence, IntelligenceHistoryEntry } from "@/types/ticket-intelligence";
+import type { TicketIntelligence, IntelligenceHistoryEntry, CaseInvestigation } from "@/types/ticket-intelligence";
 import { apiFetch, ApiError, type ApiFetchOptions } from "./_http";
 
 export interface Ticket {
@@ -292,6 +292,30 @@ export async function addCaseArtifact(
 export async function listCaseArtifacts(key: string) {
   return call<{ success: true; artifacts: CaseArtifact[] } | { success: false; error: string }>(
     `/api/tickets/${encodeURIComponent(key)}/artifacts`,
+  );
+}
+
+// =============================================================================
+// Reinvestigación completa (RE-R2) — investigación NUEVA con todo el paquete
+// de evidencia. Nunca reusa la respuesta previa.
+// =============================================================================
+
+export interface InvestigateResponse {
+  success: true;
+  ok: boolean;
+  investigation: CaseInvestigation | null;
+  evidenceFingerprint: string | null;
+  counts?: { artifacts: number; timelineEvents: number; priorVersions: number; memoryHits: number };
+  model?: string;
+  durationMs?: number;
+  reason?: string;
+}
+
+/** POST /api/tickets/:key/investigate — dispara una reinvestigación completa. */
+export async function investigateTicket(key: string, force = true) {
+  return call<InvestigateResponse | { success: false; error: string }>(
+    `/api/tickets/${encodeURIComponent(key)}/investigate`,
+    { method: "POST", body: { force } },
   );
 }
 

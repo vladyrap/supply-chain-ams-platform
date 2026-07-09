@@ -22,6 +22,41 @@ export interface AgentClassificationResult {
   confidence: string;
 }
 
+/** Hipótesis de una reinvestigación (RE-R2). */
+export interface InvestigationHypothesis {
+  statement: string;
+  confidence: string; // alta | media | baja
+  status: string;     // new | gained_confidence | lost_confidence | discarded | unchanged
+}
+
+/**
+ * Resultado de una reinvestigación completa del caso (RE-R2). El LLM reconstruye
+ * las hipótesis desde cero con TODA la evidencia — nunca reusa la respuesta previa.
+ */
+export interface CaseInvestigation {
+  executiveSummary?: string;
+  currentUnderstanding?: string;
+  evidenceConsidered?: { original?: string[]; new?: string[] };
+  rootCauseAnalysis?: string;
+  probableRootCause?: string | null;
+  hypotheses?: InvestigationHypothesis[];
+  findings?: { new?: string[]; modified?: string[]; removed?: string[] };
+  recommendations?: string[];
+  confidenceLevel?: string;
+  knowledgeLearned?: string;
+  changesVsPrevious?: {
+    summary?: string;
+    hypothesesDiscarded?: string[];
+    hypothesesGainedConfidence?: string[];
+    findingsRemoved?: string[];
+    recommendationsChanged?: string[];
+    rootCauseChanged?: boolean;
+    why?: string;
+  };
+  /** Metadata de la corrida (no del LLM). */
+  meta?: { model?: string; durationMs?: number; evidenceFingerprint?: string; at?: string };
+}
+
 export interface TicketIntelligence {
   status: IntelligenceStatus;
   enrichedAt?: string;
@@ -36,6 +71,8 @@ export interface TicketIntelligence {
   agentClassification?: AgentClassificationResult;
   /** AMS Specialists v0.11 — análisis del orchestrator (router + specialists). */
   specialistAnalysis?: OrchestratedAMSAnalysis;
+  /** RE-R2 — reinvestigación completa vía LLM (evidencia → razonamiento fresco). */
+  investigation?: CaseInvestigation;
   /** TCC v0.12 — versión incremental del análisis (incrementa cada reanalyze). */
   analysisVersion?: number;
   /** Mensaje de error si status=enrichment_failed. */
