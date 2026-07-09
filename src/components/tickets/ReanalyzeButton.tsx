@@ -5,6 +5,7 @@
 // =============================================================================
 
 import { useState } from "react";
+import { RefreshCw } from "lucide-react";
 import type { TicketIntelligence } from "@/types/ticket-intelligence";
 
 interface Props {
@@ -34,9 +35,9 @@ export default function ReanalyzeButton({
     }
   }
 
-  const label = isFailed ? "↻ Reintentar análisis"
-              : hasNewData ? "↻ Reanalizar con datos nuevos"
-              : "↻ Reanalizar con Agente AMS";
+  const label = isFailed ? <><RefreshCw size={14} /> Reintentar análisis</>
+              : hasNewData ? <><RefreshCw size={14} /> Reanalizar con datos nuevos</>
+              : <><RefreshCw size={14} /> Reanalizar con Agente AMS</>;
 
   const color = isFailed ? "#fa4d56"
               : hasNewData ? "#a855f7"

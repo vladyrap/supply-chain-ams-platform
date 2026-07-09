@@ -2,6 +2,7 @@
 
 import type { UseTestingIntelligence } from "@/hooks/useTestingIntelligence";
 import type { TestingSettings } from "@/types/testing";
+import { Settings, Video, FileText, Clapperboard, RefreshCw } from "lucide-react";
 
 export default function TestingSettingsPanel({ testing, canConfigure }: { testing: UseTestingIntelligence; canConfigure: boolean }) {
   const s = testing.settings;
@@ -14,7 +15,7 @@ export default function TestingSettingsPanel({ testing, canConfigure }: { testin
   return (
     <div className="col" style={{ gap: 14 }}>
       <div className="card">
-        <h3 style={{ margin: "0 0 10px", fontSize: 14 }}>⚙ Requisitos para aprobar pruebas</h3>
+        <h3 style={{ margin: "0 0 10px", fontSize: 14 }}><Settings size={16} /> Requisitos para aprobar pruebas</h3>
         <div className="col" style={{ gap: 8 }}>
           <label className="row" style={{ gap: 6, fontSize: 12.5 }}>
             <input type="checkbox" disabled={disabled} checked={s.requireEvidenceToApprove}
@@ -35,7 +36,7 @@ export default function TestingSettingsPanel({ testing, canConfigure }: { testin
       </div>
 
       <div className="card">
-        <h3 style={{ margin: "0 0 10px", fontSize: 14 }}>🎥 Captura de evidencias</h3>
+        <h3 style={{ margin: "0 0 10px", fontSize: 14 }}><Video size={16} /> Captura de evidencias</h3>
         <div className="col" style={{ gap: 8 }}>
           <label className="row" style={{ gap: 6, fontSize: 12.5 }}>
             <input type="checkbox" disabled={disabled} checked={s.allowScreenRecording}
@@ -56,7 +57,7 @@ export default function TestingSettingsPanel({ testing, canConfigure }: { testin
       </div>
 
       <div className="card">
-        <h3 style={{ margin: "0 0 10px", fontSize: 14 }}>📄 Formato y exportación</h3>
+        <h3 style={{ margin: "0 0 10px", fontSize: 14 }}><FileText size={16} /> Formato y exportación</h3>
         <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr 1fr", gap: 10 }}>
           <div>
             <label style={{ fontSize: 11, color: "var(--text-dim)" }}>Plantilla por defecto</label>
@@ -86,7 +87,7 @@ export default function TestingSettingsPanel({ testing, canConfigure }: { testin
       </div>
 
       <div className="card">
-        <h3 style={{ margin: "0 0 10px", fontSize: 14 }}>🎬 Modo demo</h3>
+        <h3 style={{ margin: "0 0 10px", fontSize: 14 }}><Clapperboard size={16} /> Modo demo</h3>
         <label className="row" style={{ gap: 6, fontSize: 12.5 }}>
           <input type="checkbox" disabled={disabled} checked={s.demoMode} onChange={(e) => set("demoMode", e.target.checked)} />
           Marcar todos los escenarios como demo (sin envío real ni acciones destructivas).
@@ -101,7 +102,7 @@ export default function TestingSettingsPanel({ testing, canConfigure }: { testin
           <button className="btn ghost"
             style={{ marginTop: 8, borderColor: "rgba(250,77,86,0.5)", color: "#fca5a5" }}
             onClick={() => { if (confirm("¿Restaurar datos demo de testing? Esto sobrescribe lo actual.")) testing.resetDemoTestingData(); }}>
-            ↻ Restaurar demo
+            <RefreshCw size={16} /> Restaurar demo
           </button>
         </div>
       )}

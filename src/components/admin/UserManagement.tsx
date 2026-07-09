@@ -6,6 +6,7 @@ import type { PlatformUser } from "@/types/rbac";
 import Badge from "@/components/ui/Badge";
 import UserFormModal from "./UserFormModal";
 import { inviteUser, getUserResetLink } from "@/services/admin-users.api";
+import { Link2, Check, Clipboard, X, Pause, Play, CircleStop, Eye, Pencil, Trash2 } from "lucide-react";
 
 interface Props { admin: UseAccessAdmin }
 
@@ -138,7 +139,7 @@ export default function UserManagement({ admin }: Props) {
           background: "var(--accent-soft)", border: "1px solid rgba(var(--accent-rgb), 0.35)",
           fontSize: 13,
         }}>
-          <div style={{ fontWeight: 600, marginBottom: 6 }}>🔗 Link de bienvenida — para que el usuario cree su clave de ingreso</div>
+          <div style={{ fontWeight: 600, marginBottom: 6 }}><Link2 size={14} /> Link de bienvenida — para que el usuario cree su clave de ingreso</div>
           <div style={{ display: "flex", gap: 8, alignItems: "center", flexWrap: "wrap" }}>
             <input
               readOnly
@@ -161,7 +162,7 @@ export default function UserManagement({ admin }: Props) {
                 }).catch(() => { /* clipboard no disponible */ });
               }}
             >
-              {copied ? "✓ Copiado" : "📋 Copiar"}
+              {copied ? <><Check size={14} /> Copiado</> : <><Clipboard size={14} /> Copiar</>}
             </button>
             <button
               type="button"
@@ -170,7 +171,7 @@ export default function UserManagement({ admin }: Props) {
               onClick={() => setWelcomeLink(null)}
               title="Ocultar"
             >
-              ✕
+              <X size={14} />
             </button>
           </div>
           <div style={{ marginTop: 6, fontSize: 11, color: "var(--text-dim)" }}>
@@ -230,20 +231,20 @@ export default function UserManagement({ admin }: Props) {
                       <button className="btn ghost" style={{ padding: "3px 8px", fontSize: 11 }}
                         onClick={() => admin.toggleUserStatus(u.id)}
                         title={u.status === "ACTIVE" ? "Desactivar" : "Activar"}>
-                        {u.status === "ACTIVE" ? "⏸" : "▶"}
+                        {u.status === "ACTIVE" ? <Pause size={14} /> : <Play size={14} />}
                       </button>
                       <button className="btn ghost" style={{ padding: "3px 8px", fontSize: 11 }}
                         onClick={() => admin.setCurrentUser(admin.currentUserId === u.id ? null : u.id)}
                         title="Vista previa como este usuario">
-                        {admin.currentUserId === u.id ? "🛑 dejar de simular" : "👁 simular"}
+                        {admin.currentUserId === u.id ? <><CircleStop size={14} /> dejar de simular</> : <><Eye size={14} /> simular</>}
                       </button>
                       <button className="btn ghost" style={{ padding: "3px 8px", fontSize: 11 }}
                         onClick={() => handleResetLink(u)}
-                        title="Reenviar acceso · genera el link (y email) para que cree/resetee su clave">🔗</button>
+                        title="Reenviar acceso · genera el link (y email) para que cree/resetee su clave"><Link2 size={14} /></button>
                       <button className="btn ghost" style={{ padding: "3px 8px", fontSize: 11 }}
-                        onClick={() => { setEditing(u); setShowModal(true); }}>✎</button>
+                        onClick={() => { setEditing(u); setShowModal(true); }}><Pencil size={14} /></button>
                       <button className="btn ghost" style={{ padding: "3px 8px", fontSize: 11, color: "#fa4d56" }}
-                        onClick={() => handleDelete(u)}>🗑</button>
+                        onClick={() => handleDelete(u)}><Trash2 size={14} /></button>
                     </div>
                   </td>
                 </tr>

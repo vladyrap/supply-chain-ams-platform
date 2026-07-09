@@ -4,15 +4,19 @@ import type { EvidenceItem } from "@/types/testing";
 import { EVIDENCE_TYPE_LABELS } from "@/types/testing";
 import { humanFileSize } from "@/utils/testing-engine";
 import { formatDate } from "@/lib/format-date";
+import {
+  Video, FileVideo, Image, FileText, Paperclip, Link2, ScrollText,
+  AlertTriangle, ExternalLink, Tag, type LucideIcon,
+} from "lucide-react";
 
-const TYPE_ICONS: Record<EvidenceItem["type"], string> = {
-  SCREEN_RECORDING: "🎥",
-  UPLOADED_VIDEO:   "📼",
-  SCREENSHOT:       "🖼",
-  NOTE:             "📝",
-  FILE:             "📎",
-  LINK:             "🔗",
-  LOG:              "📜",
+const TYPE_ICONS: Record<EvidenceItem["type"], LucideIcon> = {
+  SCREEN_RECORDING: Video,
+  UPLOADED_VIDEO:   FileVideo,
+  SCREENSHOT:       Image,
+  NOTE:             FileText,
+  FILE:             Paperclip,
+  LINK:             Link2,
+  LOG:              ScrollText,
 };
 
 interface Props {
@@ -25,13 +29,14 @@ interface Props {
 export default function EvidenceCard({ evidence: e, scenarioTitle, onRemove, onRename }: Props) {
   const isVideo = e.type === "SCREEN_RECORDING" || e.type === "UPLOADED_VIDEO";
   const sessionGone = isVideo && !e.localPreviewUrl;
+  const TypeIcon = TYPE_ICONS[e.type];
 
   return (
     <div className="card" style={{ display: "flex", flexDirection: "column", gap: 8 }}>
       <div className="row" style={{ justifyContent: "space-between", alignItems: "flex-start" }}>
         <div style={{ flex: 1, minWidth: 0 }}>
           <div style={{ fontWeight: 700, fontSize: 13 }}>
-            <span style={{ marginRight: 6 }}>{TYPE_ICONS[e.type]}</span>
+            <span style={{ marginRight: 6 }}><TypeIcon size={16} /></span>
             {e.title}
           </div>
           <div style={{ fontSize: 10.5, color: "var(--text-dim)", marginTop: 2 }}>
@@ -49,7 +54,7 @@ export default function EvidenceCard({ evidence: e, scenarioTitle, onRemove, onR
       )}
       {isVideo && sessionGone && (
         <div style={{ fontSize: 11, color: "#fcd34d", padding: 8, background: "rgba(241,194,27,0.07)", borderRadius: 4 }}>
-          ⚠ Preview no disponible (video no persistido tras refresh). Volvé a cargar el archivo o consultá el log de la evidencia.
+          <AlertTriangle size={14} /> Preview no disponible (video no persistido tras refresh). Volvé a cargar el archivo o consultá el log de la evidencia.
         </div>
       )}
       {(e.type === "NOTE" || e.type === "LOG") && e.noteText && (
@@ -61,15 +66,15 @@ export default function EvidenceCard({ evidence: e, scenarioTitle, onRemove, onR
       )}
       {e.type === "LINK" && e.externalUrl && (
         <a href={e.externalUrl} target="_blank" rel="noreferrer" style={{ fontSize: 12, color: "#7dd3fc", wordBreak: "break-all" }}>
-          ↗ {e.externalUrl}
+          <ExternalLink size={14} /> {e.externalUrl}
         </a>
       )}
 
       <div style={{ fontSize: 10.5, color: "var(--text-soft)" }}>
-        {e.fileName && <>📄 {e.fileName}</>}
+        {e.fileName && <><FileText size={14} /> {e.fileName}</>}
         {e.fileSize ? <> · {humanFileSize(e.fileSize)}</> : null}
         {e.durationSeconds ? <> · {e.durationSeconds}s</> : null}
-        {e.tags && e.tags.length > 0 && <> · 🏷 {e.tags.slice(0, 3).join(", ")}</>}
+        {e.tags && e.tags.length > 0 && <> · <Tag size={14} /> {e.tags.slice(0, 3).join(", ")}</>}
       </div>
 
       {(onRename || onRemove) && (

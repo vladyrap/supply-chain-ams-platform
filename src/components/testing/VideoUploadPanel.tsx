@@ -5,6 +5,7 @@
 import { useRef, useState } from "react";
 import type { UseTestingIntelligence } from "@/hooks/useTestingIntelligence";
 import { humanFileSize } from "@/utils/testing-engine";
+import { AlertTriangle, Check, Paperclip, RefreshCw } from "lucide-react";
 
 interface Props {
   testing: UseTestingIntelligence;
@@ -72,7 +73,7 @@ export default function VideoUploadPanel({ testing, actingUserId }: Props) {
   return (
     <div className="col" style={{ gap: 14 }}>
       <div className="card" style={{ background: "rgba(241,194,27,0.07)", borderColor: "rgba(241,194,27,0.30)", color: "#fde68a", fontSize: 12 }}>
-        ⚠ El video <b>no se sube al backend</b> en esta versión. Sólo se guarda metadata localmente. Si refrescás sin descargar, el preview deja de funcionar.
+        <AlertTriangle size={16} /> El video <b>no se sube al backend</b> en esta versión. Sólo se guarda metadata localmente. Si refrescás sin descargar, el preview deja de funcionar.
       </div>
 
       <div className="card">
@@ -110,10 +111,10 @@ export default function VideoUploadPanel({ testing, actingUserId }: Props) {
             style={{ width: "100%", maxHeight: 420, borderRadius: 6, background: "#000" }} />
           <div className="row" style={{ gap: 8, marginTop: 12 }}>
             <button className="btn primary" onClick={handleAttach} disabled={!scenarioId || attached}>
-              {attached ? "✓ Adjuntado" : "📎 Adjuntar como evidencia"}
+              {attached ? <><Check size={16} /> Adjuntado</> : <><Paperclip size={16} /> Adjuntar como evidencia</>}
             </button>
             <button className="btn ghost" onClick={handleClear} style={{ marginLeft: "auto" }}>
-              ↻ Limpiar
+              <RefreshCw size={16} /> Limpiar
             </button>
           </div>
         </div>

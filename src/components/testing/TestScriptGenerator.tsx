@@ -6,6 +6,7 @@ import { useMemo, useState } from "react";
 import type { UseTestingIntelligence } from "@/hooks/useTestingIntelligence";
 import type { TestStep, TestingScenario } from "@/types/testing";
 import TestStepEditor from "./TestStepEditor";
+import { FileText, Download, Check, Clipboard } from "lucide-react";
 
 interface Props {
   testing: UseTestingIntelligence;
@@ -77,11 +78,11 @@ export default function TestScriptGenerator({ testing, canEdit }: Props) {
             </select>
           </div>
           <div className="row" style={{ gap: 8, alignSelf: "flex-end" }}>
-            <button className="btn primary" onClick={handleGenerate} disabled={!scenario}>📝 Generar script</button>
-            <button className="btn ghost" onClick={() => handleDownload("md")} disabled={!scenario}>⬇ Markdown</button>
-            <button className="btn ghost" onClick={() => handleDownload("json")} disabled={!scenario}>⬇ JSON</button>
+            <button className="btn primary" onClick={handleGenerate} disabled={!scenario}><FileText size={16} /> Generar script</button>
+            <button className="btn ghost" onClick={() => handleDownload("md")} disabled={!scenario}><Download size={16} /> Markdown</button>
+            <button className="btn ghost" onClick={() => handleDownload("json")} disabled={!scenario}><Download size={16} /> JSON</button>
             <button className="btn ghost" onClick={handleCopy} disabled={!generatedMd}>
-              {copied ? "✓ Copiado" : "📋 Copiar"}
+              {copied ? <><Check size={16} /> Copiado</> : <><Clipboard size={16} /> Copiar</>}
             </button>
           </div>
         </div>

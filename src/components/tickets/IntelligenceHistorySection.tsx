@@ -9,6 +9,7 @@
 // =============================================================================
 
 import { useEffect, useState } from "react";
+import { ChevronUp, ChevronDown } from "lucide-react";
 import { getIntelligenceHistory } from "@/services/tickets.api";
 import type { IntelligenceHistoryEntry } from "@/types/ticket-intelligence";
 
@@ -90,7 +91,7 @@ export default function IntelligenceHistorySection({ ticketKey, refreshKey = 0 }
                 onClick={() => setExpandedId(expanded ? null : e.id)}
                 style={{ fontSize: 10, padding: "2px 8px" }}
               >
-                {expanded ? "▲ menos" : "▼ ver"}
+                {expanded ? <><ChevronUp size={12} /> menos</> : <><ChevronDown size={12} /> ver</>}
               </button>
             </div>
             <div className="row" style={{ gap: 8, flexWrap: "wrap", marginTop: 4, fontSize: 11, color: "var(--text-soft)" }}>

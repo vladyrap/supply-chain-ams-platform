@@ -6,6 +6,7 @@ import { listIncidents, type IncidentSummary } from "@/services/agent.api";
 import EvaluationForm from "./EvaluationForm";
 import QualityDashboard from "./QualityDashboard";
 import KnowledgeQuickActions from "@/components/knowledge/KnowledgeQuickActions";
+import { Award, BarChart3, Hourglass, ScrollText, PartyPopper, Clipboard, Trash2, Download } from "lucide-react";
 
 type Tab = "dashboard" | "pending" | "all";
 
@@ -39,7 +40,7 @@ export default function QualityEvaluatorCenter() {
         <div className="row between" style={{ flexWrap: "wrap", gap: 14, alignItems: "center", position: "relative", zIndex: 2 }}>
           <div>
             <div style={{ fontSize: 11, letterSpacing: 3, color: "var(--text-dim)" }}>QUALITY · EVALUATOR · AMS</div>
-            <h1 style={{ margin: "2px 0 0", fontSize: 24 }}>🏅 Quality Evaluator</h1>
+            <h1 style={{ margin: "2px 0 0", fontSize: 24 }}><Award size={18} /> Quality Evaluator</h1>
             <p style={{ margin: "4px 0 0", color: "var(--text-soft)", fontSize: 12.5 }}>
               Evaluá la calidad de cada respuesta del agente. Detectá alucinaciones, brechas y respuestas convertibles en conocimiento.
             </p>
@@ -66,9 +67,9 @@ export default function QualityEvaluatorCenter() {
 
         <div className="row" style={{ gap: 4, marginTop: 14, position: "relative", zIndex: 2 }}>
           {[
-            { id: "dashboard", label: "📊 Dashboard" },
-            { id: "pending",   label: `⏳ Por evaluar (${pending.length})` },
-            { id: "all",       label: `📜 Todas (${hook.evaluations.length})` },
+            { id: "dashboard", label: <><BarChart3 size={16} /> Dashboard</> },
+            { id: "pending",   label: <><Hourglass size={16} /> Por evaluar ({pending.length})</> },
+            { id: "all",       label: <><ScrollText size={16} /> Todas ({hook.evaluations.length})</> },
           ].map((t) => (
             <button key={t.id} onClick={() => setTab(t.id as Tab)}
               className={`kn-tab ${tab === t.id ? "active" : ""}`}>{t.label}</button>

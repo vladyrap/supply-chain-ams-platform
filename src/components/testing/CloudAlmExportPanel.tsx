@@ -3,6 +3,7 @@
 import { useMemo, useState } from "react";
 import type { UseTestingIntelligence } from "@/hooks/useTestingIntelligence";
 import type { CloudAlmExportPayload } from "@/types/testing";
+import { Sparkles, Download, Check } from "lucide-react";
 
 interface Props { testing: UseTestingIntelligence }
 
@@ -49,7 +50,7 @@ export default function CloudAlmExportPanel({ testing }: Props) {
   return (
     <div className="col" style={{ gap: 14 }}>
       <div className="card" style={{ background: "rgba(99,102,241,0.07)", borderColor: "rgba(99,102,241,0.30)", color: "#a5b4fc", fontSize: 12 }}>
-        🔮 <b>Integración real con SAP Cloud ALM se habilitará en fase futura</b> mediante API autorizada. En esta versión sólo se prepara el payload local; ninguna llamada externa se ejecuta.
+        <Sparkles size={16} /> <b>Integración real con SAP Cloud ALM se habilitará en fase futura</b> mediante API autorizada. En esta versión sólo se prepara el payload local; ninguna llamada externa se ejecuta.
       </div>
 
       <div className="card">
@@ -86,8 +87,8 @@ export default function CloudAlmExportPanel({ testing }: Props) {
             </select>
           </div>
           <div className="row" style={{ gap: 8, alignSelf: "flex-end" }}>
-            <button className="btn primary" onClick={prepare} disabled={!scenarioId}>🔮 Preparar exportación</button>
-            <button className="btn ghost" onClick={exportJson} disabled={!payload}>⬇ Exportar JSON</button>
+            <button className="btn primary" onClick={prepare} disabled={!scenarioId}><Sparkles size={16} /> Preparar exportación</button>
+            <button className="btn ghost" onClick={exportJson} disabled={!payload}><Download size={16} /> Exportar JSON</button>
           </div>
         </div>
       </div>
@@ -104,7 +105,7 @@ export default function CloudAlmExportPanel({ testing }: Props) {
             maxHeight: 460, overflow: "auto", whiteSpace: "pre-wrap",
           }}>{JSON.stringify(payload, null, 2)}</pre>
           <div style={{ marginTop: 8, fontSize: 11, color: "var(--text-dim)" }}>
-            ✓ Estado: {scenario?.cloudAlmReady ? "preparado · sin envío real" : "no preparado"}
+            <Check size={14} /> Estado: {scenario?.cloudAlmReady ? "preparado · sin envío real" : "no preparado"}
           </div>
         </div>
       )}

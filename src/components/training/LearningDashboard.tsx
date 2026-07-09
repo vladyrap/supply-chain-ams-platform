@@ -17,6 +17,12 @@ import {
   type FeedbackPatternReport, type EmbeddingsBackfillReport,
   type HallucinationReport, type BorderlineQA,
 } from "@/services/training.api";
+import {
+  Zap, Hourglass, Check, X, Sprout, Wand2, BookOpen, MessageSquare, Construction,
+  Target, FlaskConical, ChevronUp, ChevronDown, ChevronRight, BarChart3, AlertTriangle,
+  AlarmClock, Siren, TrendingUp, TrendingDown, Dna, Microscope, ThumbsDown, Search,
+  StickyNote, Inbox, Eye, Ticket, Bot, FileText, Timer,
+} from "lucide-react";
 
 interface Props { ctx: UseAgentTraining }
 
@@ -289,7 +295,7 @@ export default function LearningDashboard({ ctx }: Props) {
         position: "relative", overflow: "hidden",
       }}>
         <div className="ticket-section-head">
-          <span style={{ color: "#c084fc" }}>⚡</span> AUTO-PULIDO DEL AGENTE · self-training cycle
+          <span style={{ color: "#c084fc" }}><Zap size={16} /></span> AUTO-PULIDO DEL AGENTE · self-training cycle
         </div>
         <p className="settings-section-desc">
           Un click corre el ciclo completo: <b>detecta brechas</b> → <b>convierte tickets en Q&amp;A</b>
@@ -319,7 +325,7 @@ export default function LearningDashboard({ ctx }: Props) {
                   animation: active ? "tc-pulse 1.8s ease-in-out infinite" : "none",
                 }}>
                   <div style={{ fontSize: 16, marginBottom: 4 }}>
-                    {!stageData ? "⏳" : stageData.status === "ok" ? "✓" : stageData.status === "skipped" ? "−" : "✕"}
+                    {!stageData ? <Hourglass size={16} /> : stageData.status === "ok" ? <Check size={16} /> : stageData.status === "skipped" ? "−" : <X size={16} />}
                   </div>
                   <div style={{ fontSize: 10, color, fontWeight: 700, letterSpacing: 0.5 }}>
                     {label}
@@ -348,21 +354,21 @@ export default function LearningDashboard({ ctx }: Props) {
               borderColor: "#a855f7",
               minWidth: 220, fontWeight: 700,
             }}>
-            {stRunning ? <><span className="spinner" /> Pulido en curso…</> : "⚡ Pulir agente ahora"}
+            {stRunning ? <><span className="spinner" /> Pulido en curso…</> : <><Zap size={16} /> Pulir agente ahora</>}
           </button>
 
           <button className="btn ghost" onClick={loadCorpus} disabled={corpusLoading}>
-            {corpusLoading ? <><span className="spinner" /> cargando corpus…</> : "🌱 Cargar corpus expandido (26 items)"}
+            {corpusLoading ? <><span className="spinner" /> cargando corpus…</> : <><Sprout size={16} /> Cargar corpus expandido (26 items)</>}
           </button>
 
           <button className="btn ghost" onClick={autoGen} disabled={autoQaLoading} style={{ marginLeft: "auto" }}>
-            {autoQaLoading ? <><span className="spinner" /> generando…</> : "🪄 Auto-Q&A items sin entrenamiento"}
+            {autoQaLoading ? <><span className="spinner" /> generando…</> : <><Wand2 size={16} /> Auto-Q&A items sin entrenamiento</>}
           </button>
         </div>
 
         {corpusResult && (
           <div className="alert ok" style={{ marginTop: 10, fontSize: 12.5 }}>
-            ✓ Corpus cargado: <b>{corpusResult.itemsCreated}</b> items nuevos ·
+            <Check size={14} /> Corpus cargado: <b>{corpusResult.itemsCreated}</b> items nuevos ·
             <b> {corpusResult.itemsSkipped}</b> ya existían ·
             <b> {corpusResult.qasCreated}</b> Q&amp;A aprobadas ·
             <b> {corpusResult.publishedCount}</b> publicados (de {corpusResult.corpusSize} en el corpus total)
@@ -371,7 +377,7 @@ export default function LearningDashboard({ ctx }: Props) {
 
         {autoQaResult && (
           <div className="alert ok" style={{ marginTop: 10, fontSize: 12.5 }}>
-            ✓ Auto-Q&amp;A generadas: <b>{autoQaResult.itemsScanned}</b> items procesados ·
+            <Check size={14} /> Auto-Q&amp;A generadas: <b>{autoQaResult.itemsScanned}</b> items procesados ·
             <b> {autoQaResult.qasCreated}</b> Q&amp;A creadas ·
             <b> {autoQaResult.qasApproved}</b> aprobadas automáticamente
             {autoQaResult.byModule.length > 0 && (
@@ -388,19 +394,19 @@ export default function LearningDashboard({ ctx }: Props) {
             <div className="lab-fb-block" style={{ borderLeft: "3px solid #64748b" }}>
               <div className="lab-fb-block-head">▸ ANTES</div>
               <div style={{ fontSize: 12, lineHeight: 1.7 }}>
-                <div>📚 <b>{stReport.before.itemsTotal}</b> items · <b>{stReport.before.itemsPublished}</b> publicados</div>
-                <div>💬 <b>{stReport.before.qasApproved}</b> Q&amp;A aprobadas (de {stReport.before.qasTotal})</div>
-                <div>🚧 <b>{stReport.before.openGaps}</b> brechas abiertas</div>
+                <div><BookOpen size={14} /> <b>{stReport.before.itemsTotal}</b> items · <b>{stReport.before.itemsPublished}</b> publicados</div>
+                <div><MessageSquare size={14} /> <b>{stReport.before.qasApproved}</b> Q&amp;A aprobadas (de {stReport.before.qasTotal})</div>
+                <div><Construction size={14} /> <b>{stReport.before.openGaps}</b> brechas abiertas</div>
               </div>
             </div>
             <div className="lab-fb-block" style={{ borderLeft: "3px solid #10b981" }}>
               <div className="lab-fb-block-head" style={{ color: "#10b981" }}>▸ DESPUÉS</div>
               <div style={{ fontSize: 12, lineHeight: 1.7 }}>
-                <div>📚 <b>{stReport.after.itemsTotal}</b> items {delta(stReport.before.itemsTotal, stReport.after.itemsTotal)} · <b>{stReport.after.itemsPublished}</b> publicados</div>
-                <div>💬 <b>{stReport.after.qasApproved}</b> aprobadas {delta(stReport.before.qasApproved, stReport.after.qasApproved)}</div>
-                <div>🚧 <b>{stReport.after.openGaps}</b> brechas {delta(stReport.before.openGaps, stReport.after.openGaps, true)}</div>
+                <div><BookOpen size={14} /> <b>{stReport.after.itemsTotal}</b> items {delta(stReport.before.itemsTotal, stReport.after.itemsTotal)} · <b>{stReport.after.itemsPublished}</b> publicados</div>
+                <div><MessageSquare size={14} /> <b>{stReport.after.qasApproved}</b> aprobadas {delta(stReport.before.qasApproved, stReport.after.qasApproved)}</div>
+                <div><Construction size={14} /> <b>{stReport.after.openGaps}</b> brechas {delta(stReport.before.openGaps, stReport.after.openGaps, true)}</div>
                 {stReport.after.evalAvgScore !== null && (
-                  <div>🎯 score eval <b>{stReport.after.evalAvgScore}</b> · pass <b>{stReport.after.evalPassRate}%</b></div>
+                  <div><Target size={14} /> score eval <b>{stReport.after.evalAvgScore}</b> · pass <b>{stReport.after.evalPassRate}%</b></div>
                 )}
               </div>
             </div>
@@ -414,12 +420,12 @@ export default function LearningDashboard({ ctx }: Props) {
       {/* Hero metric cards */}
       <div className="tc-metric-grid">
         <div className="tc-metric" style={{ ["--tc-acc" as never]: "#4589ff" }}>
-          <div className="tc-metric-head"><span className="tc-metric-icon">🧪</span><span className="tc-metric-label">Q&amp;A aprobadas</span></div>
+          <div className="tc-metric-head"><span className="tc-metric-icon"><FlaskConical size={16} /></span><span className="tc-metric-label">Q&amp;A aprobadas</span></div>
           <div className="tc-metric-value">{totalQAsApproved}</div>
           <div className="tc-metric-foot">de {totalQAs} totales</div>
         </div>
         <div className="tc-metric" style={{ ["--tc-acc" as never]: "#10b981" }}>
-          <div className="tc-metric-head"><span className="tc-metric-icon">✓</span><span className="tc-metric-label">Pass rate última eval</span></div>
+          <div className="tc-metric-head"><span className="tc-metric-icon"><Check size={16} /></span><span className="tc-metric-label">Pass rate última eval</span></div>
           <div className="tc-metric-value">{passRate !== null ? `${passRate}%` : "—"}</div>
           <div className="tc-metric-foot">
             {lastRun
@@ -428,18 +434,18 @@ export default function LearningDashboard({ ctx }: Props) {
           </div>
         </div>
         <div className="tc-metric" style={{ ["--tc-acc" as never]: "#a855f7" }}>
-          <div className="tc-metric-head"><span className="tc-metric-icon">🎯</span><span className="tc-metric-label">Score promedio</span></div>
+          <div className="tc-metric-head"><span className="tc-metric-icon"><Target size={16} /></span><span className="tc-metric-label">Score promedio</span></div>
           <div className="tc-metric-value">{lastRun ? lastRun.avg_score : "—"}</div>
           <div className="tc-metric-foot">
             {trendDelta === null ? "primer run" : trendDelta > 0 ? (
-              <><span className="tc-trend up">▲</span>+{trendDelta} vs anterior</>
+              <><span className="tc-trend up"><ChevronUp size={12} /></span>+{trendDelta} vs anterior</>
             ) : trendDelta < 0 ? (
-              <><span className="tc-trend down">▼</span>{trendDelta} vs anterior</>
+              <><span className="tc-trend down"><ChevronDown size={12} /></span>{trendDelta} vs anterior</>
             ) : "sin cambio"}
           </div>
         </div>
         <div className="tc-metric" style={{ ["--tc-acc" as never]: "#f1c21b" }}>
-          <div className="tc-metric-head"><span className="tc-metric-icon">📊</span><span className="tc-metric-label">Runs ejecutados</span></div>
+          <div className="tc-metric-head"><span className="tc-metric-icon"><BarChart3 size={16} /></span><span className="tc-metric-label">Runs ejecutados</span></div>
           <div className="tc-metric-value">{runs.length}</div>
           <div className="tc-metric-foot">historial completo</div>
         </div>
@@ -448,7 +454,7 @@ export default function LearningDashboard({ ctx }: Props) {
       {/* Trigger eval */}
       <div className="card" style={{ borderLeft: "3px solid #a855f7" }}>
         <div className="ticket-section-head">
-          <span style={{ color: "#c084fc" }}>⚡</span> EVALUACIÓN AUTOMÁTICA · Q&amp;A vs Agente real
+          <span style={{ color: "#c084fc" }}><Zap size={16} /></span> EVALUACIÓN AUTOMÁTICA · Q&amp;A vs Agente real
         </div>
         <p className="settings-section-desc">
           Cada Q&amp;A aprobada se convierte en un <b>test de regresión</b>. El agente responde la pregunta,
@@ -475,11 +481,11 @@ export default function LearningDashboard({ ctx }: Props) {
             No hay Q&amp;A aprobadas todavía. Generá Q&amp;A en la tab "Generador" y aprobalas para poder evaluar.
           </div>
         )}
-        {error && <div className="alert error" style={{ marginTop: 10, fontSize: 12 }}>⚠ {error}</div>}
+        {error && <div className="alert error" style={{ marginTop: 10, fontSize: 12 }}><AlertTriangle size={14} /> {error}</div>}
 
         {last && (
           <div className="alert ok" style={{ marginTop: 10, fontSize: 12.5 }}>
-            ✓ Eval completada en {(last.durationMs / 1000).toFixed(1)}s ·{" "}
+            <Check size={14} /> Eval completada en {(last.durationMs / 1000).toFixed(1)}s ·{" "}
             <b style={{ color: VERDICT_COLORS.pass }}>{last.passed} pass</b> /{" "}
             <b style={{ color: VERDICT_COLORS.partial }}>{last.partial} partial</b> /{" "}
             <b style={{ color: VERDICT_COLORS.fail }}>{last.failed} fail</b> ·

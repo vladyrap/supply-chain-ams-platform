@@ -28,6 +28,7 @@ import { usePermissions } from "@/hooks/usePermissions";
 import AccessLockedCard from "@/components/admin/AccessLockedCard";
 import { appendRbacAuditEvent } from "@/lib/rbac-audit";
 import type { PlatformScreen, PermissionAction } from "@/types/rbac";
+import { Lock } from "lucide-react";
 
 interface Props {
   /** Screen RBAC a chequear. */
@@ -94,7 +95,7 @@ export default function RequirePermission({
           border: "1px solid rgba(250,77,86,0.25)",
           color: "#fca5a5", fontSize: 12,
         }}>
-          🔒 Sin permiso para <code>{screen}</code>{action !== "view" && <> ({action})</>}.
+          <Lock size={14} /> Sin permiso para <code>{screen}</code>{action !== "view" && <> ({action})</>}.
         </div>
       );
     }

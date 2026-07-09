@@ -30,6 +30,7 @@ import type {
 import { WAITING_INFORMATION_STATUS } from "@/types/guided-ticket-intake";
 import type { TemporaryVisualEvidence } from "@/types/visual-evidence";
 import { temporaryToNote } from "@/types/visual-evidence";
+import { Compass, Lightbulb, AlertTriangle, ChevronRight, ArrowLeft, ArrowRight, Loader, Check, Plus, Bot } from "lucide-react";
 
 // ============================================================
 // Constantes UI
@@ -224,7 +225,7 @@ export default function GuidedTicketIntakeModal({
             <div style={{ fontSize: 10.5, letterSpacing: 2.4, color: "var(--text-dim)" }}>
               GUIDED · TICKET · INTAKE
             </div>
-            <h3 style={{ margin: "2px 0 0", fontSize: 17 }}>🧭 Crear Ticket Guiado</h3>
+            <h3 style={{ margin: "2px 0 0", fontSize: 17 }}><Compass size={18} /> Crear Ticket Guiado</h3>
             <p style={{ margin: "2px 0 0", fontSize: 11.5, color: "var(--text-soft)" }}>
               Paso {step} de 6 — pasaremos de texto libre a un caso accionable para N1.
             </p>
@@ -480,7 +481,7 @@ export default function GuidedTicketIntakeModal({
               <div style={{ marginTop: 12, padding: 10,
                 background: "rgba(241,194,27,0.10)", border: "1px solid rgba(241,194,27,0.30)",
                 borderRadius: 6, fontSize: 11.5 }}>
-                <div style={{ color: "#f1c21b", fontWeight: 600, marginBottom: 4 }}>💡 Recomendaciones</div>
+                <div style={{ color: "#f1c21b", fontWeight: 600, marginBottom: 4 }}><Lightbulb size={14} /> Recomendaciones</div>
                 <ul style={{ margin: 0, paddingLeft: 18 }}>
                   {readiness.recommendations.slice(0, 5).map((r, i) => <li key={i}>{r}</li>)}
                 </ul>
@@ -491,7 +492,7 @@ export default function GuidedTicketIntakeModal({
               <div style={{ marginTop: 12, padding: 10,
                 background: "rgba(250,77,86,0.10)", border: "1px solid rgba(250,77,86,0.30)",
                 borderRadius: 6, fontSize: 12, color: "#fca5a5" }}>
-                ⚠ Este ticket aún no tiene información suficiente para resolución N1.
+                <AlertTriangle size={14} /> Este ticket aún no tiene información suficiente para resolución N1.
                 Podés volver atrás a completar datos, guardarlo como borrador, o crearlo
                 con status "Espera información" para que el cliente complete.
               </div>
@@ -520,7 +521,7 @@ export default function GuidedTicketIntakeModal({
               <div><strong>Checklist N1:</strong> {n1Package.n1Checklist.length} pasos ({n1Package.n1Checklist.filter((c) => c.resolvableN1).length} resolubles N1)</div>
               {n1Package.escalationCriteria.length > 0 && (
                 <div style={{ marginTop: 4, color: "#f1c21b" }}>
-                  <strong>⚠ Criterios escalamiento:</strong> {n1Package.escalationCriteria.join(" · ")}
+                  <strong><AlertTriangle size={14} /> Criterios escalamiento:</strong> {n1Package.escalationCriteria.join(" · ")}
                 </div>
               )}
               <div style={{ marginTop: 6, fontSize: 11, color: "var(--text-soft)" }}>{n1Package.summary}</div>
@@ -529,7 +530,7 @@ export default function GuidedTicketIntakeModal({
             {n1Package.initialCustomerResponse && (
               <details style={{ marginTop: 10 }}>
                 <summary style={{ cursor: "pointer", fontSize: 11.5, color: "var(--text-soft)" }}>
-                  ▶ Previsualizar respuesta inicial al cliente
+                  <ChevronRight size={14} /> Previsualizar respuesta inicial al cliente
                 </summary>
                 <div style={{ marginTop: 6, padding: 10, background: "rgba(0,0,0,0.05)",
                   borderRadius: 4, fontSize: 11, fontFamily: "ui-monospace, monospace",
@@ -550,13 +551,13 @@ export default function GuidedTicketIntakeModal({
           <div className="row" style={{ gap: 8 }}>
             {step > 1 && (
               <button className="btn ghost" onClick={() => setStep((s) => (s - 1) as Step)} disabled={busy}>
-                ← Atrás
+                <ArrowLeft size={14} /> Atrás
               </button>
             )}
             {step < 6 && (
               <button className="btn primary" onClick={() => setStep((s) => (s + 1) as Step)}
                 disabled={busy || !canAdvance()}>
-                Siguiente →
+                Siguiente <ArrowRight size={14} />
               </button>
             )}
             {step === 6 && (
@@ -565,7 +566,7 @@ export default function GuidedTicketIntakeModal({
                   <button className="btn ghost" onClick={() => submit({ waitingInformation: true })}
                     disabled={busy || enriching}
                     style={{ borderColor: "#f1c21b", color: "#f1c21b" }}>
-                    {enriching ? "analizando…" : busy ? "creando…" : `⏳ Crear como "Espera información"`}
+                    {enriching ? "analizando…" : busy ? "creando…" : <><Loader size={14} /> Crear como &quot;Espera información&quot;</>}
                   </button>
                 )}
                 <button className="btn primary" onClick={() => submit({ waitingInformation: false })}
@@ -578,8 +579,8 @@ export default function GuidedTicketIntakeModal({
                   }}>
                   {enriching ? <><span className="spinner" /> analizando…</>
                     : busy ? "creando…"
-                    : readiness.score >= 70 ? "✓ Crear ticket y preparar N1"
-                    : "＋ Crear ticket"}
+                    : readiness.score >= 70 ? <><Check size={14} /> Crear ticket y preparar N1</>
+                    : <><Plus size={14} /> Crear ticket</>}
                 </button>
               </>
             )}
@@ -589,7 +590,7 @@ export default function GuidedTicketIntakeModal({
         {/* TCC v0.12 — banner enriching post-create */}
         {enriching && (
           <div className="alert info" style={{ marginTop: 10, fontSize: 12, display: "flex", alignItems: "center", gap: 8 }}>
-            <span className="spinner" /> 🤖 Agente AMS está analizando el ticket recién creado…
+            <span className="spinner" /> <Bot size={14} /> Agente AMS está analizando el ticket recién creado…
           </div>
         )}
       </div>

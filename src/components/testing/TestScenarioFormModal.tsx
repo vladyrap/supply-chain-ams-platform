@@ -9,6 +9,7 @@ import {
   TESTING_TYPE_LABELS,
 } from "@/types/testing";
 import TcModalShell from "@/components/ui/TcModalShell";
+import { Pencil, Plus, X } from "lucide-react";
 
 interface Props {
   scenario: TestingScenario | null;
@@ -55,10 +56,10 @@ export default function TestScenarioFormModal({ scenario, onClose, onSave, defau
               TESTING · ESCENARIO
             </div>
             <h2 style={{ margin: "2px 0 0", fontSize: 17 }}>
-              {scenario ? "✏️ Editar escenario" : "🆕 Nuevo escenario de prueba"}
+              {scenario ? <><Pencil size={18} /> Editar escenario</> : <><Plus size={18} /> Nuevo escenario de prueba</>}
             </h2>
           </div>
-          <button onClick={onClose} className="btn ghost" style={{ padding: "4px 10px" }}>✕</button>
+          <button onClick={onClose} className="btn ghost" style={{ padding: "4px 10px" }}><X size={16} /></button>
         </div>
 
         <div className="tc-modal-body" style={{ maxHeight: "70vh", overflowY: "auto" }}>

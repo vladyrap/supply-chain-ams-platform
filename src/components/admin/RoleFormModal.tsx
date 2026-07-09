@@ -3,6 +3,7 @@
 import { useEffect, useState } from "react";
 import type { PlatformRole } from "@/types/rbac";
 import { normalizeRoleCode } from "@/utils/rbac";
+import { AlertTriangle, X } from "lucide-react";
 
 interface Props {
   open: boolean;
@@ -43,13 +44,13 @@ export default function RoleFormModal({ open, initial, onClose, onSave }: Props)
           <h3 style={{ margin: 0, fontSize: 16, letterSpacing: 0.5 }}>
             {initial ? `Editar rol · ${initial.name}` : "Nuevo rol"}
           </h3>
-          <button className="admin-modal-close" onClick={onClose} aria-label="Cerrar">×</button>
+          <button className="admin-modal-close" onClick={onClose} aria-label="Cerrar"><X size={16} /></button>
         </div>
 
         <form onSubmit={handleSubmit} className="admin-modal-body">
           {initial?.isSystem && (
             <div className="alert info" style={{ fontSize: 12, marginBottom: 12 }}>
-              ⚠ Este es un rol de <b>sistema</b>. En producción se recomienda protegerlo de cambios.
+              <AlertTriangle size={14} /> Este es un rol de <b>sistema</b>. En producción se recomienda protegerlo de cambios.
             </div>
           )}
 

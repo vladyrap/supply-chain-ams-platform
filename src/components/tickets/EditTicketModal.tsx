@@ -18,6 +18,7 @@
 
 import { useState } from "react";
 import ModalPortal from "@/components/ui/ModalPortal";
+import { Pencil, Check } from "lucide-react";
 import { updateTicket, type UpdateTicketInput, type Ticket } from "@/services/tickets.api";
 import { detectCriticalChanges, type CriticalChangeReport } from "@/intelligence/critical-fields-detector";
 
@@ -94,7 +95,7 @@ export default function EditTicketModal({ open, ticket, onClose, onSaved }: Prop
   return (
     <ModalPortal open={open} onClose={onClose} maxWidth={640} contentClassName="card">
       <div style={{ padding: 20 }}>
-        <div className="ticket-section-head">✎ EDITAR DATOS DEL TICKET</div>
+        <div className="ticket-section-head"><Pencil size={16} /> EDITAR DATOS DEL TICKET</div>
         <p className="settings-section-desc">
           {ticket.key} · Cambios en módulo, descripción o ambiente pueden invalidar el análisis vigente.
         </p>
@@ -154,7 +155,7 @@ export default function EditTicketModal({ open, ticket, onClose, onSaved }: Prop
           <div className="row" style={{ gap: 8 }}>
             <button className="btn ghost" onClick={onClose} disabled={busy}>cancelar</button>
             <button className="btn primary" onClick={save} disabled={busy}>
-              {busy ? <><span className="spinner" /> guardando…</> : "✓ Guardar cambios"}
+              {busy ? <><span className="spinner" /> guardando…</> : <><Check size={14} /> Guardar cambios</>}
             </button>
           </div>
         </div>

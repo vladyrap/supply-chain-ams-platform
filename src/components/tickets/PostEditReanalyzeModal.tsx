@@ -9,6 +9,7 @@
 
 import { useState } from "react";
 import ModalPortal from "@/components/ui/ModalPortal";
+import { AlertTriangle, RefreshCw } from "lucide-react";
 import type { CriticalChangeReport } from "@/intelligence/critical-fields-detector";
 
 interface Props {
@@ -38,7 +39,7 @@ export default function PostEditReanalyzeModal({
     <ModalPortal open={open} onClose={onClose} maxWidth={520} contentClassName="card">
       <div style={{ padding: 18 }}>
         <div className="ticket-section-head" style={{ color: "#f59e0b" }}>
-          ⚠ DATOS CRÍTICOS MODIFICADOS
+          <AlertTriangle size={16} /> DATOS CRÍTICOS MODIFICADOS
         </div>
         <p style={{ fontSize: 13, color: "var(--text-soft)", marginTop: 8, lineHeight: 1.5 }}>
           Cambiaron campos que afectan el diagnóstico del Agente AMS.
@@ -86,7 +87,7 @@ export default function PostEditReanalyzeModal({
             disabled={busy}
             style={{ background: "linear-gradient(135deg, #4589ff, #6366f1)" }}
           >
-            {busy ? <><span className="spinner" /> reanalizando…</> : "↻ Reanalizar ahora"}
+            {busy ? <><span className="spinner" /> reanalizando…</> : <><RefreshCw size={14} /> Reanalizar ahora</>}
           </button>
         </div>
       </div>

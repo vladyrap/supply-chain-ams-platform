@@ -4,6 +4,7 @@ import { useState } from "react";
 import type { UseAccessAdmin } from "@/hooks/useAccessAdmin";
 import type { PlatformScreen, PermissionAction } from "@/types/rbac";
 import { ALL_SCREENS, ALL_ACTIONS, SCREEN_LABELS, ACTION_LABELS } from "@/types/rbac";
+import { AlertTriangle, ShieldCheck, Check, X } from "lucide-react";
 
 interface Props { admin: UseAccessAdmin }
 
@@ -39,14 +40,14 @@ export default function PermissionMatrix({ admin }: Props) {
         </div>
         {role.isSystem && (
           <div className="alert info" style={{ fontSize: 11.5, padding: "6px 10px", margin: 0 }}>
-            ⚠ Rol de sistema. En producción se recomienda protegerlo.
+            <AlertTriangle size={14} /> Rol de sistema. En producción se recomienda protegerlo.
           </div>
         )}
       </div>
 
       {role.code === "ADMIN" && (
         <div className="alert warn" style={{ fontSize: 12, marginBottom: 12 }}>
-          🛡 Este rol tiene <b>acceso total</b>. Tocar permisos aquí dejará a los administradores fuera de algunas vistas. Procede con cuidado.
+          <ShieldCheck size={14} /> Este rol tiene <b>acceso total</b>. Tocar permisos aquí dejará a los administradores fuera de algunas vistas. Procede con cuidado.
         </div>
       )}
 
@@ -83,7 +84,7 @@ export default function PermissionMatrix({ admin }: Props) {
                     <button className="btn ghost" style={{ padding: "2px 6px", fontSize: 10.5 }}
                       onClick={() => setRowAll(s, activeCount < ALL_ACTIONS.length)}
                       title={activeCount < ALL_ACTIONS.length ? "Activar todo" : "Quitar todo"}>
-                      {activeCount < ALL_ACTIONS.length ? "✓ todo" : "✗ ninguno"}
+                      {activeCount < ALL_ACTIONS.length ? <><Check size={14} /> todo</> : <><X size={14} /> ninguno</>}
                     </button>
                   </td>
                 </tr>

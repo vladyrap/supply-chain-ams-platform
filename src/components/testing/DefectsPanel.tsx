@@ -5,6 +5,7 @@ import type { UseTestingIntelligence } from "@/hooks/useTestingIntelligence";
 import type { TestDefect, DefectStatus } from "@/types/testing";
 import { DEFECT_STATUS_LABELS } from "@/types/testing";
 import DefectFormModal from "./DefectFormModal";
+import { Sparkles } from "lucide-react";
 
 const SEV_COLORS: Record<string, string> = {
   CRITICAL: "#fca5a5", HIGH: "#fdba74", MEDIUM: "#fcd34d", LOW: "#86efac",
@@ -95,7 +96,7 @@ export default function DefectsPanel({ testing, actingUserId, canEdit }: Props) 
       </div>
 
       <div className="card" style={{ fontSize: 11, color: "var(--text-soft)" }}>
-        🔮 <b>Futuro:</b> los defectos podrán convertirse en incidentes AMS, generar payload Jira o preparar reporte para Cloud ALM. En esta fase quedan en localStorage como trazabilidad de testing.
+        <Sparkles size={16} /> <b>Futuro:</b> los defectos podrán convertirse en incidentes AMS, generar payload Jira o preparar reporte para Cloud ALM. En esta fase quedan en localStorage como trazabilidad de testing.
       </div>
 
       {(editing || creating) && (

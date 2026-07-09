@@ -8,6 +8,7 @@ import { useScreenRecorder } from "@/hooks/useScreenRecorder";
 import type { UseTestingIntelligence } from "@/hooks/useTestingIntelligence";
 import type { TestingScenario } from "@/types/testing";
 import { humanFileSize } from "@/utils/testing-engine";
+import { AlertTriangle, Lock, X, Circle, Square, Check, Download, Paperclip, RefreshCw } from "lucide-react";
 
 interface Props {
   testing: UseTestingIntelligence;
@@ -51,14 +52,14 @@ export default function ScreenRecorder({ testing, actingUserId }: Props) {
     <div className="col" style={{ gap: 14 }}>
       {/* Advertencias */}
       <div className="card" style={{ background: "rgba(241,194,27,0.07)", borderColor: "rgba(241,194,27,0.30)", color: "#fde68a", fontSize: 12 }}>
-        ⚠ <b>Esta versión graba localmente en el navegador.</b> Para persistencia real se requiere backend de almacenamiento. Si refrescás la página sin descargar, perdés el video.
+        <AlertTriangle size={16} /> <b>Esta versión graba localmente en el navegador.</b> Para persistencia real se requiere backend de almacenamiento. Si refrescás la página sin descargar, perdés el video.
         <br />
-        🔒 <b>Privacidad:</b> evitá grabar datos productivos sensibles (PII, claves, datos confidenciales).
+        <Lock size={16} /> <b>Privacidad:</b> evitá grabar datos productivos sensibles (PII, claves, datos confidenciales).
       </div>
 
       {!rec.isSupported && (
         <div className="card" style={{ background: "rgba(250,77,86,0.07)", borderColor: "rgba(250,77,86,0.30)", color: "#fca5a5", fontSize: 12 }}>
-          ❌ Tu navegador no soporta <code>getDisplayMedia</code> o <code>MediaRecorder</code>. Usá Chrome / Edge / Firefox actualizados.
+          <X size={16} /> Tu navegador no soporta <code>getDisplayMedia</code> o <code>MediaRecorder</code>. Usá Chrome / Edge / Firefox actualizados.
         </div>
       )}
 
@@ -88,12 +89,12 @@ export default function ScreenRecorder({ testing, actingUserId }: Props) {
             <button className="btn primary" disabled={!rec.isSupported || !scenarioId}
               onClick={() => rec.startRecording({ audio: includeAudio })}
               style={{ background: "linear-gradient(135deg, #fa4d56, #a855f7)" }}>
-              ⏺ Iniciar grabación
+              <Circle size={16} /> Iniciar grabación
             </button>
           ) : (
             <button className="btn" onClick={rec.stopRecording}
               style={{ background: "rgba(250,77,86,0.15)", borderColor: "rgba(250,77,86,0.5)", color: "#fca5a5" }}>
-              ⏹ Detener
+              <Square size={16} /> Detener
             </button>
           )}
           {rec.isRecording && (
@@ -104,7 +105,7 @@ export default function ScreenRecorder({ testing, actingUserId }: Props) {
           )}
           {!rec.isRecording && rec.recordedBlob && (
             <span style={{ fontSize: 11.5, color: "var(--text-soft)" }}>
-              ✓ {humanFileSize(rec.recordedBlob.size)} · {rec.durationSeconds}s · {rec.mimeType}
+              <Check size={14} /> {humanFileSize(rec.recordedBlob.size)} · {rec.durationSeconds}s · {rec.mimeType}
             </span>
           )}
         </div>
@@ -122,13 +123,13 @@ export default function ScreenRecorder({ testing, actingUserId }: Props) {
           <video src={rec.recordedUrl} controls style={{ width: "100%", maxHeight: 420, borderRadius: 6, background: "#000" }} />
           <div className="row" style={{ gap: 8, marginTop: 12, flexWrap: "wrap" }}>
             <button className="btn" onClick={() => rec.downloadRecording(`testing-${scenarioId || "demo"}`)}>
-              ⬇ Descargar video
+              <Download size={16} /> Descargar video
             </button>
             <button className="btn primary" onClick={handleAttach} disabled={!scenarioId || attached}>
-              {attached ? "✓ Adjuntado al escenario" : "📎 Adjuntar como evidencia"}
+              {attached ? <><Check size={16} /> Adjuntado al escenario</> : <><Paperclip size={16} /> Adjuntar como evidencia</>}
             </button>
             <button className="btn ghost" onClick={rec.resetRecording} style={{ marginLeft: "auto" }}>
-              ↻ Descartar grabación
+              <RefreshCw size={16} /> Descartar grabación
             </button>
           </div>
         </div>

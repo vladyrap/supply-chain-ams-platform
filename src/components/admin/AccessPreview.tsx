@@ -10,6 +10,7 @@ import { modulesForScreen } from "@/utils/permissions";
 import { MODULES } from "@/lib/modules";
 import PermissionBadge from "./PermissionBadge";
 import Badge from "@/components/ui/Badge";
+import { Check, X } from "lucide-react";
 
 interface Props { admin: UseAccessAdmin }
 
@@ -79,7 +80,7 @@ export default function AccessPreview({ admin }: Props) {
         <button className="btn" onClick={() => admin.setCurrentUser(user.id)}
           disabled={admin.currentUserId === user.id}
           title="Aplica este usuario como activo y refresca el sidebar de la plataforma">
-          {admin.currentUserId === user.id ? "✓ Activo en el sidebar" : "Aplicar al sidebar"}
+          {admin.currentUserId === user.id ? <><Check size={14} /> Activo en el sidebar</> : "Aplicar al sidebar"}
         </button>
         {admin.currentUserId && (
           <button className="btn ghost" onClick={() => admin.setCurrentUser(null)} style={{ marginLeft: "auto", fontSize: 12 }}>
@@ -128,7 +129,7 @@ export default function AccessPreview({ admin }: Props) {
         <div className="col" style={{ gap: 12 }}>
           <div className="card">
             <div style={{ fontSize: 11, color: "var(--text-dim)", letterSpacing: 1, textTransform: "uppercase", marginBottom: 8 }}>
-              ✔ {visibleScreens.length} pantallas visibles · ✗ {blockedScreens.length} bloqueadas
+              <Check size={14} /> {visibleScreens.length} pantallas visibles · <X size={14} /> {blockedScreens.length} bloqueadas
             </div>
 
             <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 12 }}>

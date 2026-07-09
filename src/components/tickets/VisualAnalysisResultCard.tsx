@@ -4,6 +4,7 @@
 // No es persistente — se renderiza desde TemporaryVisualEvidence.visualAnalysis.
 
 import type { VisualErrorAnalysis } from "@/types/visual-evidence";
+import { Microscope } from "lucide-react";
 
 interface Props {
   analysis: VisualErrorAnalysis;
@@ -25,7 +26,7 @@ export default function VisualAnalysisResultCard({ analysis, consideredForEstima
     <div className="lab-fb-block" style={{ borderLeft: `3px solid ${c}`, marginTop: 8 }}>
       <div className="row between" style={{ alignItems: "center", flexWrap: "wrap", gap: 8 }}>
         <div style={{ fontWeight: 600, fontSize: 12.5, color: c }}>
-          🔬 Análisis visual detectado
+          <Microscope size={15} /> Análisis visual detectado
           <span style={{ marginLeft: 8, fontSize: 10.5, color: "var(--text-dim)", fontWeight: 400 }}>
             modo: {MODE_LABEL[analysis.analysisMode]}
           </span>

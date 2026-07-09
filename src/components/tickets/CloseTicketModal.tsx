@@ -1,6 +1,7 @@
 "use client";
 
 import { useMemo, useState } from "react";
+import { X, Mail } from "lucide-react";
 import TcModalShell from "@/components/ui/TcModalShell";
 import type { Ticket } from "@/services/tickets.api";
 import type { TicketEstimatedResolution } from "@/types/estimation";
@@ -81,7 +82,7 @@ export default function CloseTicketModal({
             <h3 style={{ margin: "4px 0 0", fontSize: 18 }}>Registrar horas reales</h3>
           </div>
           {!busy && (
-            <button className="btn ghost sm" onClick={onClose} aria-label="Cerrar">✕</button>
+            <button className="btn ghost sm" onClick={onClose} aria-label="Cerrar"><X size={14} /></button>
           )}
         </div>
 
@@ -182,7 +183,7 @@ export default function CloseTicketModal({
                 onChange={(e) => setGenerateClosure(e.target.checked)}
                 disabled={busy}
               />
-              <span>✉ <strong>Generar respuesta de cierre al cliente</strong></span>
+              <span><Mail size={14} /> <strong>Generar respuesta de cierre al cliente</strong></span>
             </label>
             <div style={{ fontSize: 11, color: "var(--text-soft)", marginTop: 4 }}>
               Customer Response Intelligence creará una respuesta tipo CLOSURE con

@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import type { TestDefect, DefectSeverity, DefectPriority, DefectStatus } from "@/types/testing";
+import { Pencil, Plus, X } from "lucide-react";
 
 interface Props {
   defect: TestDefect | null;
@@ -45,10 +46,10 @@ export default function DefectFormModal({ defect, scenarioId, onClose, onSave, a
               TESTING · DEFECTO
             </div>
             <h2 style={{ margin: "2px 0 0", fontSize: 17 }}>
-              {defect ? "✏️ Editar defecto" : "🆕 Nuevo defecto"}
+              {defect ? <><Pencil size={18} /> Editar defecto</> : <><Plus size={18} /> Nuevo defecto</>}
             </h2>
           </div>
-          <button onClick={onClose} className="btn ghost" style={{ padding: "4px 10px" }}>✕</button>
+          <button onClick={onClose} className="btn ghost" style={{ padding: "4px 10px" }}><X size={16} /></button>
         </div>
         <div className="tc-modal-body" style={{ maxHeight: "70vh", overflowY: "auto" }}>
           <div className="col" style={{ gap: 10 }}>

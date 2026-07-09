@@ -12,6 +12,7 @@ import TicketCommandCenter from "@/components/tickets/TicketCommandCenter";
 import GuidedAmsDemo from "@/components/demo/GuidedAmsDemo";
 import TicketPdfButton from "@/components/tickets/TicketPdfButton";
 import { useAuth } from "@/context/AuthContext";
+import { Ticket as TicketIcon, Clapperboard, Compass, Plus, RefreshCw } from "lucide-react";
 
 function statusVariant(s: string): "ok" | "warn" | "error" | "muted" | "info" {
   const lower = s.toLowerCase();
@@ -64,7 +65,7 @@ export default function TicketsPage() {
       {/* ── Header de página (flex-shrink: 0, altura estable) ───────── */}
       <div className="tickets-page-header">
         <div className="page-title" style={{ marginBottom: 8 }}>
-          <h1 style={{ marginBottom: 2 }}>🎫 Tickets</h1>
+          <h1 style={{ marginBottom: 2 }}><TicketIcon size={18} /> Tickets</h1>
           <p style={{ marginBottom: 0 }}>Listado de tickets desde Jira (si hay credenciales) o set de demo. Cada ticket se puede clasificar con el Agente AMS.</p>
         </div>
 
@@ -93,7 +94,7 @@ export default function TicketsPage() {
               style={{ borderColor: "#f1c21b", color: "#f1c21b" }}
               title="Ejecuta el flujo completo AMS sobre un ticket demo (crea ticket, clasifica con agente real, RCA, test, etc.)"
             >
-              🎬 Ejecutar demo completa
+              <Clapperboard size={16} /> Ejecutar demo completa
             </button>
             <button
               className="btn primary"
@@ -101,17 +102,17 @@ export default function TicketsPage() {
               title="Wizard guiado de 6 pasos · prepara paquete N1 automáticamente (recomendado)"
               style={{ background: "linear-gradient(135deg, #10b981, #4589ff)", borderColor: "#10b981" }}
             >
-              🧭 Crear ticket guiado
+              <Compass size={16} /> Crear ticket guiado
             </button>
             <button
               className="btn ghost"
               onClick={() => setCreateOpen(true)}
               title="Formulario rápido (1 paso) — para usuarios que ya saben qué información dar"
             >
-              ＋ Crear rápido
+              <Plus size={16} /> Crear rápido
             </button>
             <button className="btn ghost" onClick={refresh} disabled={loading}>
-              {loading ? <><span className="spinner" /> cargando</> : "↻ Refrescar"}
+              {loading ? <><span className="spinner" /> cargando</> : <><RefreshCw size={14} /> Refrescar</>}
             </button>
             <TicketPdfButton mode="bulk" tickets={tickets} />
           </div>

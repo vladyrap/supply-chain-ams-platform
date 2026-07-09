@@ -14,6 +14,7 @@ import type { TicketIntelligence } from "@/types/ticket-intelligence";
 import {
   ENRICHMENT_LABELS, ENRICHMENT_ICONS, ENRICHMENT_COLORS,
 } from "@/types/ticket-intelligence";
+import { RefreshCw } from "lucide-react";
 
 interface Props {
   intelligence?: TicketIntelligence | null;
@@ -47,7 +48,7 @@ export default function TicketEnrichmentBadge({
           display: "inline-flex", alignItems: "center", gap: 4,
         }}
       >
-        🔄 datos nuevos
+        <RefreshCw size={12} /> datos nuevos
       </span>
     );
   }

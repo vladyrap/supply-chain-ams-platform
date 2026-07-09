@@ -4,6 +4,7 @@ import { useState } from "react";
 import type { UseAgentTraining } from "@/hooks/useAgentTraining";
 import type { KnowledgeItem } from "@/types/training";
 import { STATUS_COLORS, PRIORITY_COLORS, PRIORITY_LABELS, KNOWLEDGE_STATUS_LABELS } from "@/types/training";
+import { Check, X, Flame, Rocket, PartyPopper } from "lucide-react";
 
 interface Props { ctx: UseAgentTraining; currentUserName?: string }
 
@@ -61,7 +62,7 @@ export default function ValidationQueue({ ctx, currentUserName = "Validador AMS"
 
       <div className="card">
         <div className="ticket-section-head">
-          <span style={{ color: "var(--accent)" }}>✓</span> COLA DE VALIDACIÓN · DOBLE FILTRO
+          <span style={{ color: "var(--accent)" }}><Check size={16} /></span> COLA DE VALIDACIÓN · DOBLE FILTRO
         </div>
         <p className="settings-section-desc">
           Cada ítem requiere validación funcional + técnica. Una vez aprobado en ambas, queda listo para publicar a la próxima versión del agente.
@@ -84,7 +85,7 @@ export default function ValidationQueue({ ctx, currentUserName = "Validador AMS"
 
       {queue.length === 0 && (
         <div className="ticket-empty">
-          <div style={{ fontSize: 44, marginBottom: 8 }}>🎉</div>
+          <div style={{ fontSize: 44, marginBottom: 8 }}><PartyPopper size={40} /></div>
           <div style={{ fontSize: 13.5 }}>Cola limpia. Nada pendiente de validar.</div>
         </div>
       )}
@@ -136,21 +137,21 @@ export default function ValidationQueue({ ctx, currentUserName = "Validador AMS"
               <div className="row" style={{ gap: 6, marginTop: 10, flexWrap: "wrap" }}>
                 {!k.functionalValidatedBy && (
                   <button className="btn ghost" style={{ borderColor: "#f1c21b", color: "#f1c21b" }} onClick={() => approveFunctional(k)}>
-                    ✓ aprobar funcional
+                    <Check size={16} /> aprobar funcional
                   </button>
                 )}
                 {!k.technicalValidatedBy && (
                   <button className="btn ghost" style={{ borderColor: "#a855f7", color: "#c084fc" }} onClick={() => approveTechnical(k)}>
-                    ✓ aprobar técnica
+                    <Check size={16} /> aprobar técnica
                   </button>
                 )}
                 <button className="btn ghost" onClick={() => askCorrection(k)}>↩ pedir corrección</button>
-                <button className="btn ghost" style={{ borderColor: "#fa4d56", color: "#fca5a5" }} onClick={() => setRejectTarget(k)}>✕ rechazar</button>
+                <button className="btn ghost" style={{ borderColor: "#fa4d56", color: "#fca5a5" }} onClick={() => setRejectTarget(k)}><X size={16} /> rechazar</button>
                 {k.priority !== "critical" && (
-                  <button className="btn ghost" onClick={() => markCritical(k)}>🔥 marcar crítico</button>
+                  <button className="btn ghost" onClick={() => markCritical(k)}><Flame size={16} /> marcar crítico</button>
                 )}
                 <button className="btn primary" onClick={() => publishNow(k)} disabled={k.validationStage !== "FULLY_VALIDATED"}>
-                  🚀 publicar
+                  <Rocket size={16} /> publicar
                 </button>
               </div>
             </div>
@@ -163,7 +164,7 @@ export default function ValidationQueue({ ctx, currentUserName = "Validador AMS"
           <div className="tc-modal" style={{ maxWidth: 480 }} onClick={(e) => e.stopPropagation()}>
             <div className="tc-modal-head">
               <h2 style={{ margin: 0, fontSize: 16, color: "#fca5a5" }}>Rechazar conocimiento</h2>
-              <button onClick={() => setRejectTarget(null)} className="btn ghost" style={{ padding: "4px 10px" }}>✕</button>
+              <button onClick={() => setRejectTarget(null)} className="btn ghost" style={{ padding: "4px 10px" }}><X size={16} /></button>
             </div>
             <div className="tc-modal-body">
               <p style={{ fontSize: 13, color: "var(--text-soft)", margin: "0 0 8px" }}>
@@ -179,7 +180,7 @@ export default function ValidationQueue({ ctx, currentUserName = "Validador AMS"
               <button className="btn ghost" onClick={() => setRejectTarget(null)}>cancelar</button>
               <button className="btn primary" style={{ background: "#fa4d56", borderColor: "#fa4d56", marginLeft: "auto" }}
                 onClick={() => reject(rejectTarget)}>
-                ✕ rechazar
+                <X size={16} /> rechazar
               </button>
             </div>
           </div>

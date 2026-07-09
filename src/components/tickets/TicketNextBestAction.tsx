@@ -8,6 +8,11 @@
 
 import type { AmsDecisionResult, AmsRecommendedAction } from "@/utils/ams-decision-engine";
 import { AMS_ACTION_LABELS } from "@/utils/ams-decision-engine";
+import {
+  HelpCircle, Lightbulb, Book, AlertTriangle, ArrowUpRight, FileText,
+  FlaskConical, Brain, Search, CheckCircle2, Loader, RefreshCw, Scissors, Phone,
+  ChevronRight, type LucideIcon,
+} from "lucide-react";
 
 interface Props {
   decision: AmsDecisionResult;
@@ -16,22 +21,22 @@ interface Props {
   readinessScore?: number;
 }
 
-const ICONS: Record<AmsRecommendedAction, string> = {
-  REQUEST_MORE_INFO: "❓",
-  SUGGEST_SOLUTION: "💡",
-  USE_PLAYBOOK: "📕",
-  ESCALATE_N2: "🚨",
-  CREATE_JIRA: "↗",
-  CREATE_SERVICENOW: "↗",
-  GENERATE_RCA: "📄",
-  CREATE_TEST_CASE: "🧪",
-  CONVERT_TO_KNOWLEDGE: "🧠",
-  CREATE_KNOWLEDGE_GAP: "🔍",
-  CLOSE_WITH_DOCUMENTATION: "✅",
-  WAIT_FOR_USER_CONFIRMATION: "⏳",
-  REUSE_PREVIOUS_RESOLUTION: "♻",
-  SPLIT_INTO_SUBTASKS: "✂",
-  FOLLOW_UP_WITH_USER: "📞",
+const ICONS: Record<AmsRecommendedAction, LucideIcon> = {
+  REQUEST_MORE_INFO: HelpCircle,
+  SUGGEST_SOLUTION: Lightbulb,
+  USE_PLAYBOOK: Book,
+  ESCALATE_N2: AlertTriangle,
+  CREATE_JIRA: ArrowUpRight,
+  CREATE_SERVICENOW: ArrowUpRight,
+  GENERATE_RCA: FileText,
+  CREATE_TEST_CASE: FlaskConical,
+  CONVERT_TO_KNOWLEDGE: Brain,
+  CREATE_KNOWLEDGE_GAP: Search,
+  CLOSE_WITH_DOCUMENTATION: CheckCircle2,
+  WAIT_FOR_USER_CONFIRMATION: Loader,
+  REUSE_PREVIOUS_RESOLUTION: RefreshCw,
+  SPLIT_INTO_SUBTASKS: Scissors,
+  FOLLOW_UP_WITH_USER: Phone,
 };
 
 const PRIORITY_COLOR = {
@@ -53,6 +58,7 @@ export default function TicketNextBestAction({ decision, onAction, readinessScor
   const others = decision.nextBestActions.slice(1, 4);
   const priority = priorityFromWeight(top.weight);
   const color = PRIORITY_COLOR[priority];
+  const TopIcon = ICONS[top.action];
 
   return (
     <div className="card" style={{
@@ -63,10 +69,10 @@ export default function TicketNextBestAction({ decision, onAction, readinessScor
       <div className="row between" style={{ alignItems: "flex-start", gap: 12, flexWrap: "wrap" }}>
         <div style={{ minWidth: 0, flex: 1 }}>
           <div style={{ fontSize: 10, letterSpacing: 3, color: "var(--text-dim)", marginBottom: 4 }}>
-            ▸ NEXT BEST ACTION · sugerido por Decision Engine
+            <ChevronRight size={14} /> NEXT BEST ACTION · sugerido por Decision Engine
           </div>
           <div className="row" style={{ gap: 10, alignItems: "center" }}>
-            <span style={{ fontSize: 28 }}>{ICONS[top.action]}</span>
+            <span style={{ fontSize: 28 }}><TopIcon size={28} /></span>
             <div>
               <div style={{ fontSize: 18, fontWeight: 700, color }}>
                 {AMS_ACTION_LABELS[top.action]}
@@ -93,16 +99,19 @@ export default function TicketNextBestAction({ decision, onAction, readinessScor
             borderColor: color, color: "#0b1220",
             padding: "8px 16px", fontSize: 13, fontWeight: 700,
           }}>
-          {ICONS[top.action]} {AMS_ACTION_LABELS[top.action]}
+          <TopIcon size={16} /> {AMS_ACTION_LABELS[top.action]}
         </button>
-        {others.map((a) => (
+        {others.map((a) => {
+          const OIcon = ICONS[a.action];
+          return (
           <button key={a.action} onClick={() => onAction(a.action)}
             className="btn ghost"
             style={{ padding: "6px 12px", fontSize: 11.5 }}
             title={a.reason}>
-            {ICONS[a.action]} {AMS_ACTION_LABELS[a.action]}
+            <OIcon size={14} /> {AMS_ACTION_LABELS[a.action]}
           </button>
-        ))}
+          );
+        })}
       </div>
 
       {/* Hint adicional: razones top del engine */}
@@ -120,7 +129,7 @@ export default function TicketNextBestAction({ decision, onAction, readinessScor
           background: "rgba(241,194,27,0.12)", border: "1px solid #f1c21b44",
           fontSize: 11, color: "#f1c21b",
         }}>
-          ⚠ Ticket readiness es bajo ({readinessScore}%). Considerá completar la información antes de avanzar.
+          <AlertTriangle size={14} /> Ticket readiness es bajo ({readinessScore}%). Considerá completar la información antes de avanzar.
         </div>
       )}
     </div>

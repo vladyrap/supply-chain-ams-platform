@@ -9,6 +9,7 @@ import type { Ticket } from "@/services/tickets.api";
 import {
   calculateTicketReadiness, READINESS_COLORS, READINESS_LABELS,
 } from "@/utils/ticket-readiness-engine";
+import { ChevronRight, RefreshCw, ArrowUpRight, Check } from "lucide-react";
 
 interface Props {
   ticket: Ticket;
@@ -39,7 +40,7 @@ export default function TicketReadinessScore({ ticket, onRecalculate }: Props) {
       <div className="row between" style={{ alignItems: "center", flexWrap: "wrap", gap: 12 }}>
         <div>
           <div style={{ fontSize: 10, letterSpacing: 3, color: "var(--text-dim)" }}>
-            ▸ TICKET READINESS
+            <ChevronRight size={14} /> TICKET READINESS
           </div>
           <div style={{ fontSize: 28, fontWeight: 800, color, fontVariantNumeric: "tabular-nums" }}>
             {r.score}<span style={{ fontSize: 14, color: "var(--text-dim)" }}>/100</span>
@@ -50,7 +51,7 @@ export default function TicketReadinessScore({ ticket, onRecalculate }: Props) {
         </div>
         {onRecalculate && (
           <button onClick={onRecalculate} className="btn ghost" style={{ padding: "4px 10px", fontSize: 11 }}>
-            ↻ recalcular
+            <RefreshCw size={14} /> recalcular
           </button>
         )}
       </div>
@@ -83,7 +84,7 @@ export default function TicketReadinessScore({ ticket, onRecalculate }: Props) {
                   {c.fixHint && <div style={{ fontSize: 10.5, color: "var(--text-dim)", fontWeight: 400, marginTop: 2 }}>{c.fixHint}</div>}
                 </span>
                 <span style={{ color: "var(--text-dim)", fontSize: 10, alignSelf: "center" }}>+{c.points}pt</span>
-                <span style={{ color: "#f1c21b", fontSize: 14, alignSelf: "center" }}>↗</span>
+                <span style={{ color: "#f1c21b", fontSize: 14, alignSelf: "center" }}><ArrowUpRight size={14} /></span>
               </button>
             ))}
           </div>
@@ -93,13 +94,13 @@ export default function TicketReadinessScore({ ticket, onRecalculate }: Props) {
       {/* Completados (resumen) */}
       {r.completedItems.length > 0 && (
         <div style={{ marginTop: 10, fontSize: 11, color: "var(--text-dim)" }}>
-          ✓ <strong>Completado:</strong> {r.completedItems.join(" · ")}
+          <Check size={14} /> <strong>Completado:</strong> {r.completedItems.join(" · ")}
         </div>
       )}
 
       {r.status === "READY" && (
         <div className="alert ok" style={{ marginTop: 8, fontSize: 12 }}>
-          ✓ Ticket listo para resolver. El equipo AMS tiene todo lo necesario.
+          <Check size={14} /> Ticket listo para resolver. El equipo AMS tiene todo lo necesario.
         </div>
       )}
     </div>

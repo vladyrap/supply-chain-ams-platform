@@ -29,6 +29,11 @@ import {
   type UsageSummaryResponse, type UsageDelta, type UsageHeatmapHour,
   type UsageHealth, type UsageRecommendation,
 } from "@/services/admin-usage.api";
+import {
+  Stethoscope, Target, DollarSign, Flame, Ticket, Calendar, BarChart3,
+  Sparkles, PiggyBank, ShieldCheck, AlertTriangle, TrendingUp, Circle,
+  Siren, Check, Bot, RefreshCw, Download,
+} from "lucide-react";
 
 const fmtUSD = (n: number) => `$${n.toFixed(4)}`;
 const fmtCLP = (n: number) => `CLP ${n.toLocaleString("es-CL")}`;
@@ -65,7 +70,7 @@ function HealthScoreRing({ health }: { health: UsageHealth }) {
   return (
     <div className="card" style={{ padding: 14, flex: "1 1 320px", borderLeft: `4px solid ${color}` }}>
       <div style={{ fontSize: 10, letterSpacing: 1.4, color: "var(--text-dim)", marginBottom: 8 }}>
-        🩺 HEALTH SCORE
+        <Stethoscope size={14} /> HEALTH SCORE
       </div>
       <div style={{ display: "flex", alignItems: "center", gap: 14 }}>
         <svg width={120} height={120} viewBox="0 0 120 120" style={{ flexShrink: 0 }}>
@@ -104,7 +109,7 @@ function RecommendationsPanel({ recs }: { recs: UsageRecommendation[] }) {
   return (
     <div className="card" style={{ padding: 14, flex: "1 1 380px", borderLeft: "4px solid #a855f7" }}>
       <div style={{ fontSize: 10, letterSpacing: 1.4, color: "var(--text-dim)", marginBottom: 8 }}>
-        🎯 RECOMENDACIONES INTELIGENTES · {recs.length}
+        <Target size={14} /> RECOMENDACIONES INTELIGENTES · {recs.length}
       </div>
       <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
         {recs.map((r) => {
@@ -129,7 +134,7 @@ function RecommendationsPanel({ recs }: { recs: UsageRecommendation[] }) {
                   </div>
                   {r.estimatedSavingClp ? (
                     <div style={{ fontSize: 10, color: "#10b981", marginTop: 4, fontWeight: 600 }}>
-                      💰 Ahorro estimado: CLP {r.estimatedSavingClp.toLocaleString("es-CL")}/mes
+                      <DollarSign size={14} /> Ahorro estimado: CLP {r.estimatedSavingClp.toLocaleString("es-CL")}/mes
                     </div>
                   ) : null}
                 </div>
@@ -151,7 +156,7 @@ function BurnRateWidget({ br }: { br: UsageSummaryResponse["burnRate"] }) {
   return (
     <div className="card" style={{ padding: 14, flex: "1 1 280px", borderLeft: "4px solid #fb923c" }}>
       <div style={{ fontSize: 10, letterSpacing: 1.4, color: "var(--text-dim)", marginBottom: 4 }}>
-        🔥 BURN RATE · ÚLTIMA HORA
+        <Flame size={14} /> BURN RATE · ÚLTIMA HORA
       </div>
       <div className="row" style={{ gap: 12, alignItems: "baseline" }}>
         <div style={{ fontSize: 28, fontWeight: 700, color: "#fb923c" }}>{br.lastHourCalls}</div>
@@ -174,7 +179,7 @@ function TokensWidget({ tokens }: { tokens: UsageSummaryResponse["tokens"] }) {
   return (
     <div className="card" style={{ padding: 14, flex: "1 1 280px", borderLeft: "4px solid #4589ff" }}>
       <div style={{ fontSize: 10, letterSpacing: 1.4, color: "var(--text-dim)", marginBottom: 6 }}>
-        🎟️ TOKENS TOTALES · {fmtNum(tokens.total)}
+        <Ticket size={14} /> TOKENS TOTALES · {fmtNum(tokens.total)}
       </div>
       <div style={{ display: "flex", height: 24, borderRadius: 4, overflow: "hidden", marginBottom: 6 }}>
         <div title={`Input: ${fmtNum(tokens.input)} (${tokens.inputPct}%)`}
@@ -203,7 +208,7 @@ function SameDayWidget({ data }: { data: UsageSummaryResponse["sameDayLastWeek"]
   return (
     <div className="card" style={{ padding: 14, flex: "1 1 280px", borderLeft: "4px solid #0891b2" }}>
       <div style={{ fontSize: 10, letterSpacing: 1.4, color: "var(--text-dim)", marginBottom: 6 }}>
-        📅 HOY vs MISMO DÍA SEMANA PASADA
+        <Calendar size={14} /> HOY vs MISMO DÍA SEMANA PASADA
       </div>
       <div className="row" style={{ gap: 12, alignItems: "center" }}>
         <div style={{ flex: 1 }}>
@@ -240,7 +245,7 @@ function HistogramWidget({ hist }: { hist: UsageSummaryResponse["histogram"] }) 
   return (
     <div className="card" style={{ padding: 14, flex: "1 1 360px" }}>
       <div style={{ fontSize: 10, letterSpacing: 1.4, color: "var(--text-dim)", marginBottom: 8 }}>
-        📊 DISTRIBUCIÓN COSTO POR CALL
+        <BarChart3 size={14} /> DISTRIBUCIÓN COSTO POR CALL
       </div>
       {hist.map((h) => {
         const pct = (h.calls / maxCalls) * 100;
@@ -305,7 +310,7 @@ function ForecastWidget({ forecast }: { forecast: UsageSummaryResponse["forecast
   return (
     <div className="card" style={{ padding: 14, flex: "1 1 280px", borderLeft: "4px solid #a855f7" }}>
       <div className="row between" style={{ alignItems: "center", marginBottom: 4 }}>
-        <span style={{ fontSize: 10, letterSpacing: 1.4, color: "var(--text-dim)" }}>🔮 FORECAST FIN DE MES</span>
+        <span style={{ fontSize: 10, letterSpacing: 1.4, color: "var(--text-dim)" }}><Sparkles size={14} /> FORECAST FIN DE MES</span>
         <span style={{ fontSize: 9, padding: "2px 6px", borderRadius: 3, background: `${confColor}22`, color: confColor, fontWeight: 600 }}>
           {forecast.confidence.toUpperCase()}
         </span>
@@ -326,14 +331,14 @@ function SavingsWidget({ savings }: { savings: UsageSummaryResponse["savings"] }
   if (s.savedClp === 0) {
     return (
       <div className="card" style={{ padding: 14, flex: "1 1 280px", borderLeft: "4px solid #64748b" }}>
-        <div style={{ fontSize: 10, letterSpacing: 1.4, color: "var(--text-dim)" }}>💸 AHORRO POTENCIAL</div>
+        <div style={{ fontSize: 10, letterSpacing: 1.4, color: "var(--text-dim)" }}><PiggyBank size={14} /> AHORRO POTENCIAL</div>
         <div style={{ fontSize: 14, color: "var(--text-soft)", marginTop: 6 }}>Ya optimizado.</div>
       </div>
     );
   }
   return (
     <div className="card" style={{ padding: 14, flex: "1 1 280px", borderLeft: "4px solid #10b981" }}>
-      <div style={{ fontSize: 10, letterSpacing: 1.4, color: "var(--text-dim)" }}>💸 AHORRO POTENCIAL (flash-lite)</div>
+      <div style={{ fontSize: 10, letterSpacing: 1.4, color: "var(--text-dim)" }}><PiggyBank size={14} /> AHORRO POTENCIAL (flash-lite)</div>
       <div style={{ fontSize: 22, fontWeight: 700, color: "#10b981" }}>
         {fmtCLP(s.savedClp)} <span style={{ fontSize: 14 }}>(-{s.savedPct}%)</span>
       </div>
@@ -351,12 +356,12 @@ function RateLimiterStrip({ rl }: { rl: UsageSummaryResponse["rateLimiter"] }) {
       <div className="row between" style={{ alignItems: "center", marginBottom: 8 }}>
         <div>
           <div style={{ fontSize: 10, letterSpacing: 1.4, color: "var(--text-dim)" }}>
-            🛡️ RATE LIMITER LOCAL · {rl.enabled ? "ACTIVO" : "DESHABILITADO"}
+            <ShieldCheck size={14} /> RATE LIMITER LOCAL · {rl.enabled ? "ACTIVO" : "DESHABILITADO"}
           </div>
           <div style={{ fontSize: 13, fontWeight: 600, marginTop: 2 }}>3 ventanas anti-cobros</div>
         </div>
         {warn ? (
-          <span style={{ fontSize: 11, padding: "4px 10px", background: "rgba(245,158,11,0.15)", border: "1px solid #f59e0b", borderRadius: 4, color: "#f59e0b", fontWeight: 600 }}>⚠ Cap próximo</span>
+          <span style={{ fontSize: 11, padding: "4px 10px", background: "rgba(245,158,11,0.15)", border: "1px solid #f59e0b", borderRadius: 4, color: "#f59e0b", fontWeight: 600 }}><AlertTriangle size={14} /> Cap próximo</span>
         ) : null}
       </div>
       <div style={{ display: "flex", gap: 12, flexWrap: "wrap", fontSize: 11.5 }}>
@@ -387,7 +392,7 @@ function Heatmap({ heatmap }: { heatmap: UsageHeatmapHour[] }) {
   return (
     <div className="card" style={{ padding: 14, marginBottom: 14 }}>
       <div style={{ fontSize: 10, letterSpacing: 1.4, color: "var(--text-dim)", marginBottom: 8 }}>
-        🔥 HEATMAP HORARIO · ÚLTIMOS 7 DÍAS (24h)
+        <Flame size={14} /> HEATMAP HORARIO · ÚLTIMOS 7 DÍAS (24h)
       </div>
       <div style={{ display: "grid", gridTemplateColumns: "repeat(24, 1fr)", gap: 2, marginBottom: 6 }}>
         {heatmap.map((h) => {
@@ -418,7 +423,7 @@ function DailyChart({ daily }: { daily: UsageSummaryResponse["daily"] }) {
   return (
     <div className="card" style={{ padding: 14, marginBottom: 14 }}>
       <div style={{ fontSize: 10, letterSpacing: 1.4, color: "var(--text-dim)", marginBottom: 8 }}>
-        📈 GASTO DIARIO · ÚLTIMOS {daily.length} DÍAS · 🔴 = anomalía
+        <TrendingUp size={14} /> GASTO DIARIO · ÚLTIMOS {daily.length} DÍAS · <Circle size={14} /> = anomalía
       </div>
       <div style={{ display: "flex", alignItems: "flex-end", gap: 2, height: 100, marginBottom: 6 }}>
         {daily.map((d) => {
@@ -448,15 +453,15 @@ function AnomalyList({ anomalies }: { anomalies: UsageSummaryResponse["anomalies
   if (!anomalies.length) {
     return (
       <div className="card" style={{ padding: 14, flex: "1 1 280px", borderLeft: "4px solid #10b981" }}>
-        <div style={{ fontSize: 10, letterSpacing: 1.4, color: "var(--text-dim)" }}>🚨 ANOMALÍAS</div>
-        <div style={{ fontSize: 13, color: "#10b981", marginTop: 6 }}>✓ Sin anomalías</div>
+        <div style={{ fontSize: 10, letterSpacing: 1.4, color: "var(--text-dim)" }}><Siren size={14} /> ANOMALÍAS</div>
+        <div style={{ fontSize: 13, color: "#10b981", marginTop: 6 }}><Check size={14} /> Sin anomalías</div>
       </div>
     );
   }
   return (
     <div className="card" style={{ padding: 14, flex: "1 1 280px", borderLeft: "4px solid #fa4d56" }}>
       <div style={{ fontSize: 10, letterSpacing: 1.4, color: "var(--text-dim)", marginBottom: 6 }}>
-        🚨 {anomalies.length} ANOMALÍA{anomalies.length === 1 ? "" : "S"} (μ+2σ)
+        <Siren size={14} /> {anomalies.length} ANOMALÍA{anomalies.length === 1 ? "" : "S"} (μ+2σ)
       </div>
       <ul style={{ margin: 0, paddingLeft: 16, fontSize: 11.5 }}>
         {anomalies.map((a) => (
@@ -473,7 +478,7 @@ function ModelTable({ byModel }: { byModel: UsageSummaryResponse["byModel"] }) {
   if (!byModel.length) return null;
   return (
     <div className="card" style={{ padding: 14 }}>
-      <div style={{ fontSize: 10, letterSpacing: 1.4, color: "var(--text-dim)", marginBottom: 8 }}>🤖 POR MODELO</div>
+      <div style={{ fontSize: 10, letterSpacing: 1.4, color: "var(--text-dim)", marginBottom: 8 }}><Bot size={14} /> POR MODELO</div>
       <table style={{ width: "100%", fontSize: 12, borderCollapse: "collapse" }}>
         <thead>
           <tr style={{ borderBottom: "1px solid var(--border-soft)", textAlign: "left" }}>

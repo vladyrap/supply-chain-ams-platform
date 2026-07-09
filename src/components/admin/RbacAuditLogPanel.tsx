@@ -17,6 +17,7 @@ import {
   RBAC_EVENT_LABELS, RBAC_EVENT_ICONS,
   type RbacAuditEvent, type RbacAuditEventType,
 } from "@/lib/rbac-audit";
+import { FileText, Download, Trash2 } from "lucide-react";
 
 const EVENT_COLORS: Record<RbacAuditEventType, string> = {
   ROLE_PERMISSIONS_UPDATED: "#a855f7",
@@ -83,7 +84,7 @@ export default function RbacAuditLogPanel() {
     <div>
       <div className="row between" style={{ marginBottom: 12, flexWrap: "wrap", gap: 10 }}>
         <div>
-          <h3 style={{ margin: 0, fontSize: 15 }}>📜 Log de eventos RBAC</h3>
+          <h3 style={{ margin: 0, fontSize: 15 }}><FileText size={16} /> Log de eventos RBAC</h3>
           <p style={{ margin: "4px 0 0", color: "var(--text-soft)", fontSize: 12 }}>
             {events.length} eventos registrados · persistencia local (cap 500)
           </p>
@@ -91,11 +92,11 @@ export default function RbacAuditLogPanel() {
         <div className="row" style={{ gap: 6 }}>
           <button className="btn ghost sm" onClick={handleExport} disabled={events.length === 0}
             style={{ fontSize: 11 }}>
-            ⬇ Exportar JSON
+            <Download size={14} /> Exportar JSON
           </button>
           <button className="btn ghost sm" onClick={handleClear} disabled={events.length === 0}
             style={{ fontSize: 11, color: "#fa4d56" }}>
-            🗑 Limpiar log
+            <Trash2 size={14} /> Limpiar log
           </button>
         </div>
       </div>

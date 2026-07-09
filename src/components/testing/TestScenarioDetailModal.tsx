@@ -9,6 +9,7 @@ import {
 import { formatDateTime } from "@/lib/format-date";
 import TestingStatusBadge from "./TestingStatusBadge";
 import EvidenceCard from "./EvidenceCard";
+import { X, Check, FileText, BookOpen, Sparkles } from "lucide-react";
 
 interface Props {
   scenario: TestingScenario;
@@ -44,7 +45,7 @@ export default function TestScenarioDetailModal({ scenario, testing, onClose, ca
               </span>
             </div>
           </div>
-          <button onClick={onClose} className="btn ghost" style={{ padding: "4px 10px" }}>✕</button>
+          <button onClick={onClose} className="btn ghost" style={{ padding: "4px 10px" }}><X size={16} /></button>
         </div>
 
         <div className="tc-modal-body" style={{ maxHeight: "72vh", overflowY: "auto" }}>
@@ -117,7 +118,7 @@ export default function TestScenarioDetailModal({ scenario, testing, onClose, ca
                     <tr><td style={{ color: "var(--text-dim)" }}>Responsable</td><td style={{ textAlign: "right" }}>{scenario.owner}</td></tr>
                     <tr><td style={{ color: "var(--text-dim)" }}>Scope Items</td><td style={{ textAlign: "right" }}>{scenario.scopeItemIds.join(", ") || "—"}</td></tr>
                     <tr><td style={{ color: "var(--text-dim)" }}>Ambiente</td><td style={{ textAlign: "right" }}>{scenario.environment}</td></tr>
-                    <tr><td style={{ color: "var(--text-dim)" }}>Cloud ALM</td><td style={{ textAlign: "right" }}>{scenario.cloudAlmReady ? "✓ preparado" : "— pendiente"}</td></tr>
+                    <tr><td style={{ color: "var(--text-dim)" }}>Cloud ALM</td><td style={{ textAlign: "right" }}>{scenario.cloudAlmReady ? <><Check size={14} /> preparado</> : "— pendiente"}</td></tr>
                     <tr><td style={{ color: "var(--text-dim)" }}>Creado</td><td style={{ textAlign: "right", fontSize: 11 }}>{formatDateTime(scenario.createdAt)}</td></tr>
                   </tbody>
                 </table>
@@ -146,14 +147,14 @@ export default function TestScenarioDetailModal({ scenario, testing, onClose, ca
         <div className="tc-modal-foot" style={{ gap: 6, flexWrap: "wrap" }}>
           {canEdit && (
             <>
-              <button className="btn ghost" onClick={() => testing.generateScript(scenario.id)}>📝 Generar script</button>
-              <button className="btn ghost" onClick={() => testing.generateManual(scenario.id)}>📖 Generar manual</button>
-              <button className="btn ghost" onClick={() => testing.prepareCloudAlmExport(scenario.id)}>🔮 Preparar Cloud ALM</button>
+              <button className="btn ghost" onClick={() => testing.generateScript(scenario.id)}><FileText size={16} /> Generar script</button>
+              <button className="btn ghost" onClick={() => testing.generateManual(scenario.id)}><BookOpen size={16} /> Generar manual</button>
+              <button className="btn ghost" onClick={() => testing.prepareCloudAlmExport(scenario.id)}><Sparkles size={16} /> Preparar Cloud ALM</button>
               <div style={{ marginLeft: "auto" }} />
               {scenario.status !== "PASSED" && (
                 <button className="btn" style={{ color: "#86efac", borderColor: "rgba(66,190,101,0.4)" }}
                   onClick={() => testing.markScenarioPassed(scenario.id, "Aprobado por evaluación humana")}>
-                  ✓ Marcar PASSED
+                  <Check size={16} /> Marcar PASSED
                 </button>
               )}
               {scenario.status !== "FAILED" && (
@@ -162,7 +163,7 @@ export default function TestScenarioDetailModal({ scenario, testing, onClose, ca
                     const note = window.prompt("Describí el resultado actual / falla", scenario.actualResult || "");
                     if (note !== null) testing.markScenarioFailed(scenario.id, note);
                   }}>
-                  ✕ Marcar FAILED
+                  <X size={16} /> Marcar FAILED
                 </button>
               )}
             </>

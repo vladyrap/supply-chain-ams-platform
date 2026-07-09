@@ -4,6 +4,7 @@ import { useState } from "react";
 import type { UseAgentTraining } from "@/hooks/useAgentTraining";
 import type { TrainingVersion } from "@/types/training";
 import { VERSION_STATUS_COLORS, VERSION_STATUS_LABELS } from "@/types/training";
+import { Tag, FileText, Rocket, BookOpen, Check, Search, X } from "lucide-react";
 
 interface Props { ctx: UseAgentTraining; currentUserName?: string }
 
@@ -48,7 +49,7 @@ export default function TrainingVersions({ ctx, currentUserName = "Líder Servic
 
       <div className="card">
         <div className="ticket-section-head">
-          <span style={{ color: "var(--accent)" }}>🏷</span> NUEVA VERSIÓN DEL AGENTE
+          <span style={{ color: "var(--accent)" }}><Tag size={16} /></span> NUEVA VERSIÓN DEL AGENTE
         </div>
         <p className="settings-section-desc">
           Una versión es un snapshot del conocimiento activo. Al publicarla, las versiones anteriores pasan a archivadas.
@@ -61,7 +62,7 @@ export default function TrainingVersions({ ctx, currentUserName = "Líder Servic
 
       <div className="card">
         <div className="ticket-section-head">
-          <span style={{ color: "var(--accent)" }}>📜</span> HISTORIAL · {versions.length}
+          <span style={{ color: "var(--accent)" }}><FileText size={16} /></span> HISTORIAL · {versions.length}
         </div>
         <div className="col" style={{ gap: 10 }}>
           {versions.map((v) => (
@@ -74,14 +75,14 @@ export default function TrainingVersions({ ctx, currentUserName = "Líder Servic
                 <span style={{ fontSize: 11, color: "var(--text-dim)" }}>
                   por <b>{v.createdBy}</b> · {new Date(v.createdAt).toLocaleString("es-CL")}
                 </span>
-                {v.publishedAt && <span style={{ fontSize: 11, color: "#10b981" }}>🚀 publicada {new Date(v.publishedAt).toLocaleDateString("es-CL")}</span>}
+                {v.publishedAt && <span style={{ fontSize: 11, color: "#10b981" }}><Rocket size={14} /> publicada {new Date(v.publishedAt).toLocaleDateString("es-CL")}</span>}
               </div>
               <div style={{ fontSize: 13.5, marginBottom: 6 }}>{v.description}</div>
 
               <div className="row" style={{ gap: 10, flexWrap: "wrap", fontSize: 11.5, color: "var(--text-soft)", marginBottom: 8 }}>
-                <span>📚 <b>{v.itemCount}</b> ítems</span>
-                <span>✓ <b>{v.validatedCount}</b> validados</span>
-                <span>🚀 <b>{v.publishedCount}</b> publicados</span>
+                <span><BookOpen size={14} /> <b>{v.itemCount}</b> ítems</span>
+                <span><Check size={14} /> <b>{v.validatedCount}</b> validados</span>
+                <span><Rocket size={14} /> <b>{v.publishedCount}</b> publicados</span>
               </div>
 
               {v.changelog.length > 0 && (
@@ -95,7 +96,7 @@ export default function TrainingVersions({ ctx, currentUserName = "Líder Servic
 
               <div className="row" style={{ gap: 6, marginTop: 8, flexWrap: "wrap" }}>
                 {v.status === "DRAFT" || v.status === "READY" ? (
-                  <button className="btn primary" onClick={() => setConfirmPublish(v)}>🚀 publicar versión</button>
+                  <button className="btn primary" onClick={() => setConfirmPublish(v)}><Rocket size={16} /> publicar versión</button>
                 ) : null}
                 {v.status === "PUBLISHED" && (
                   <button className="btn ghost" onClick={() => setConfirmRollback(v)} style={{ borderColor: "#f59e0b", color: "#f1c21b" }}>
@@ -111,7 +112,7 @@ export default function TrainingVersions({ ctx, currentUserName = "Líder Servic
 
       <div className="card">
         <div className="ticket-section-head">
-          <span style={{ color: "var(--accent)" }}>🔍</span> COMPARAR VERSIONES
+          <span style={{ color: "var(--accent)" }}><Search size={16} /></span> COMPARAR VERSIONES
         </div>
         <div className="row" style={{ gap: 8, alignItems: "center", flexWrap: "wrap" }}>
           <select value={compareA} onChange={(e) => setCompareA(e.target.value)} style={{ minWidth: 200 }}>
@@ -194,7 +195,7 @@ function ConfirmDialog({ title, message, confirmLabel, color, onCancel, onConfir
       <div className="tc-modal" style={{ maxWidth: 440 }} onClick={(e) => e.stopPropagation()}>
         <div className="tc-modal-head">
           <h2 style={{ margin: 0, fontSize: 16, color }}>{title}</h2>
-          <button onClick={onCancel} className="btn ghost" style={{ padding: "4px 10px" }}>✕</button>
+          <button onClick={onCancel} className="btn ghost" style={{ padding: "4px 10px" }}><X size={16} /></button>
         </div>
         <div className="tc-modal-body">
           <p style={{ fontSize: 13.5, color: "var(--text-soft)", lineHeight: 1.55 }}>{message}</p>

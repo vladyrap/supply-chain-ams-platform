@@ -19,6 +19,7 @@ import type { GuidedTicketDraft, ChecklistN1Item } from "@/types/guided-ticket-i
 import { buildN1Package, buildEscalationPayload } from "@/intelligence/n1-package-builder";
 import { ESCALATION_CRITERION_LABELS } from "@/types/guided-ticket-intake";
 import { normalizeN1PackageForUI } from "@/intelligence/n1-package-ui-normalizer";
+import { ChevronRight, Compass, AlertTriangle, Book, Check, Rocket } from "lucide-react";
 
 interface Props {
   ticket: Ticket;
@@ -129,10 +130,10 @@ export default function N1PackageSection({
         width: "100%", minWidth: 0, boxSizing: "border-box",
       }}>
         <div style={{ fontSize: 10, letterSpacing: 2.4, color: "var(--text-dim)" }}>
-          ▸ PAQUETE · N1
+          <ChevronRight size={14} /> PAQUETE · N1
         </div>
         <div style={{ display: "flex", alignItems: "center", gap: 8, fontSize: 13, color: "var(--text-soft)" }}>
-          <span className="spinner" /> 🧭 Generando Paquete N1…
+          <span className="spinner" /> <Compass size={14} /> Generando Paquete N1…
         </div>
         {/* skeleton 3 filas */}
         <div style={{ display: "flex", flexDirection: "column", gap: 6, marginTop: 4 }}>
@@ -157,10 +158,10 @@ export default function N1PackageSection({
         width: "100%", minWidth: 0, boxSizing: "border-box",
       }}>
         <div style={{ fontSize: 10, letterSpacing: 2.4, color: "var(--text-dim)" }}>
-          ▸ PAQUETE · N1
+          <ChevronRight size={14} /> PAQUETE · N1
         </div>
         <div style={{ fontSize: 13, color: "#fca5a5" }}>
-          ⚠ No se pudo generar el Paquete N1: {ticket.intelligence?.error || "error desconocido"}
+          <AlertTriangle size={14} /> No se pudo generar el Paquete N1: {ticket.intelligence?.error || "error desconocido"}
         </div>
         <div style={{ fontSize: 11, color: "var(--text-dim)" }}>
           Tocá <strong>Reanalizar con Agente AMS</strong> arriba para reintentar.
@@ -178,10 +179,10 @@ export default function N1PackageSection({
         width: "100%", minWidth: 0, boxSizing: "border-box",
       }}>
         <div style={{ fontSize: 10, letterSpacing: 2.4, color: "var(--text-dim)" }}>
-          ▸ PAQUETE · N1
+          <ChevronRight size={14} /> PAQUETE · N1
         </div>
         <div style={{ fontSize: 13, color: "var(--text-soft)" }}>
-          🧭 Este ticket aún no tiene Paquete N1 generado.
+          <Compass size={14} /> Este ticket aún no tiene Paquete N1 generado.
         </div>
         <div style={{ fontSize: 11, color: "var(--text-dim)" }}>
           Se generará automáticamente cuando el ticket termine de enriquecerse, o reanalizá manualmente.
@@ -209,10 +210,10 @@ export default function N1PackageSection({
         <div className="row between" style={{ alignItems: "center", gap: 8, flexWrap: "wrap" }}>
           <div style={{ minWidth: 0, flex: "1 1 200px" }}>
             <div style={{ fontSize: 10, letterSpacing: 2.4, color: "var(--text-dim)" }}>
-              ▸ PAQUETE · N1
+              <ChevronRight size={14} /> PAQUETE · N1
             </div>
             <div style={{ fontSize: 14, fontWeight: 700, marginTop: 2 }}>
-              🧭 Resolución guiada N1
+              <Compass size={14} /> Resolución guiada N1
             </div>
           </div>
           <div style={{ flexShrink: 0, textAlign: "right" }}>
@@ -279,7 +280,7 @@ export default function N1PackageSection({
             border: "1px solid rgba(168,85,247,0.30)",
             borderRadius: 4, fontSize: 11.5,
           }}>
-            <div style={{ color: "#a855f7", fontWeight: 600 }}>📕 Playbook sugerido</div>
+            <div style={{ color: "#a855f7", fontWeight: 600 }}><Book size={14} /> Playbook sugerido</div>
             <div style={{ color: "var(--text-soft)" }}>{ui.suggestedPlaybook.title}</div>
             {ui.suggestedPlaybook.reason && (
               <div style={{ color: "var(--text-dim)", fontSize: 10.5, marginTop: 2 }}>
@@ -298,7 +299,7 @@ export default function N1PackageSection({
                   DATOS RECIBIDOS ({ui.receivedDataItems.length})
                 </div>
                 <ul style={{ margin: 0, paddingLeft: 16, fontSize: 11, color: "#10b981" }}>
-                  {ui.receivedDataItems.map((d) => <li key={d} style={{ wordBreak: "break-word" }}>✓ {d}</li>)}
+                  {ui.receivedDataItems.map((d) => <li key={d} style={{ wordBreak: "break-word" }}><Check size={12} /> {d}</li>)}
                 </ul>
               </div>
             )}
@@ -308,7 +309,7 @@ export default function N1PackageSection({
                   FALTA INFORMACIÓN ({ui.missingDataItems.length})
                 </div>
                 <ul style={{ margin: 0, paddingLeft: 16, fontSize: 11, color: "#fca5a5" }}>
-                  {ui.missingDataItems.map((m) => <li key={m} style={{ wordBreak: "break-word" }}>⚠ {m}</li>)}
+                  {ui.missingDataItems.map((m) => <li key={m} style={{ wordBreak: "break-word" }}><AlertTriangle size={12} /> {m}</li>)}
                 </ul>
               </div>
             )}
@@ -324,7 +325,7 @@ export default function N1PackageSection({
             borderRadius: 4, fontSize: 11.5,
           }}>
             <div style={{ color: "#fa4d56", fontWeight: 600, marginBottom: 2 }}>
-              ⚠ {ui.escalationItems.length} criterio{ui.escalationItems.length === 1 ? "" : "s"} de escalamiento N2
+              <AlertTriangle size={14} /> {ui.escalationItems.length} criterio{ui.escalationItems.length === 1 ? "" : "s"} de escalamiento N2
             </div>
             <ul style={{ margin: 0, paddingLeft: 18, fontSize: 11 }}>
               {ui.escalationItems.map((e) => (
@@ -424,7 +425,7 @@ export default function N1PackageSection({
                     )}
                     {c.escalateReason && (
                       <div style={{ fontSize: 10, color: "#fca5a5", marginTop: 2 }}>
-                        ⚠ {c.escalateReason}
+                        <AlertTriangle size={12} /> {c.escalateReason}
                       </div>
                     )}
                   </div>
@@ -447,7 +448,7 @@ export default function N1PackageSection({
             borderRadius: 4,
           }}>
             <div style={{ fontSize: 11, color: "#10b981", fontWeight: 600, marginBottom: 4 }}>
-              ✓ Marcar resuelto en N1
+              <Check size={14} /> Marcar resuelto en N1
             </div>
             <textarea rows={3} value={resolutionNote}
               onChange={(e) => setResolutionNote(e.target.value)}
@@ -474,7 +475,7 @@ export default function N1PackageSection({
             borderRadius: 4,
           }}>
             <div style={{ fontSize: 11, color: "#fa4d56", fontWeight: 600, marginBottom: 4 }}>
-              🚀 Escalar a N2 con paquete completo
+              <Rocket size={14} /> Escalar a N2 con paquete completo
             </div>
             <label style={{ display: "block", fontSize: 11, color: "var(--text-soft)", marginBottom: 2 }}>
               Criterio principal:
@@ -521,11 +522,11 @@ export default function N1PackageSection({
                 borderColor: ui.canResolveAtN1 ? "#10b98155" : "var(--border-soft)",
               }}
               title={ui.canResolveAtN1 ? "Marcar el ticket como resuelto en N1" : "Sin pasos N1 resolubles"}>
-              ✓ Marcar resuelto N1
+              <Check size={14} /> Marcar resuelto N1
             </button>
             <button className="btn ghost sm" onClick={() => setShowEscalateForm(true)}
               style={{ fontSize: 11, color: "#fa4d56", borderColor: "#fa4d5655" }}>
-              🚀 Escalar a N2 con paquete completo
+              <Rocket size={14} /> Escalar a N2 con paquete completo
             </button>
           </>
         )}

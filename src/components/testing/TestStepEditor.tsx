@@ -4,6 +4,7 @@
 
 import { useState } from "react";
 import type { TestStep, TestingScenario } from "@/types/testing";
+import { ArrowUp, ArrowDown, X, Paperclip } from "lucide-react";
 
 interface Props {
   scenario: TestingScenario;
@@ -68,9 +69,9 @@ export default function TestStepEditor({ scenario, onChange, readOnly }: Props) 
             <span style={{ fontWeight: 700, color: "#7dd3fc", fontFamily: "var(--font-mono, monospace)" }}>#{i + 1}</span>
             {!readOnly && (
               <div className="row" style={{ gap: 4, marginLeft: "auto" }}>
-                <button className="btn ghost" onClick={() => moveUp(i)} disabled={i === 0} style={{ padding: "2px 8px", fontSize: 11 }}>↑</button>
-                <button className="btn ghost" onClick={() => moveDown(i)} disabled={i === steps.length - 1} style={{ padding: "2px 8px", fontSize: 11 }}>↓</button>
-                <button className="btn ghost" onClick={() => removeStep(s.id)} style={{ padding: "2px 8px", fontSize: 11, color: "#fca5a5", borderColor: "rgba(250,77,86,0.4)" }}>✕</button>
+                <button className="btn ghost" onClick={() => moveUp(i)} disabled={i === 0} style={{ padding: "2px 8px", fontSize: 11 }}><ArrowUp size={14} /></button>
+                <button className="btn ghost" onClick={() => moveDown(i)} disabled={i === steps.length - 1} style={{ padding: "2px 8px", fontSize: 11 }}><ArrowDown size={14} /></button>
+                <button className="btn ghost" onClick={() => removeStep(s.id)} style={{ padding: "2px 8px", fontSize: 11, color: "#fca5a5", borderColor: "rgba(250,77,86,0.4)" }}><X size={14} /></button>
               </div>
             )}
           </div>
@@ -94,7 +95,7 @@ export default function TestStepEditor({ scenario, onChange, readOnly }: Props) 
                 evidencia requerida
               </label>
               <div style={{ marginLeft: "auto", fontSize: 11, color: "var(--text-dim)" }}>
-                {(s.evidenceIds?.length || 0) > 0 && <>📎 {s.evidenceIds!.length} evidencia(s)</>}
+                {(s.evidenceIds?.length || 0) > 0 && <><Paperclip size={14} /> {s.evidenceIds!.length} evidencia(s)</>}
               </div>
             </div>
           </div>

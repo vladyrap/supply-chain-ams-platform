@@ -12,6 +12,7 @@ import { useCallback, useState } from "react";
 import type { Ticket } from "@/services/tickets.api";
 import { useTicketAudit } from "@/hooks/useTicketAudit";
 import { downloadSingleTicketPdf, downloadTicketsZip } from "@/lib/tickets-bulk-pdf";
+import { Package, Download } from "lucide-react";
 
 type Props =
   | {
@@ -102,8 +103,8 @@ export default function TicketPdfButton(props: Props) {
           : "Descargar este ticket como PDF con todo su análisis"
       }
     >
-      <span aria-hidden style={{ fontSize: props.compact ? 13 : 15 }}>
-        {isBulk ? "📦" : "📥"}
+      <span aria-hidden style={{ fontSize: props.compact ? 13 : 15, display: "inline-flex" }}>
+        {isBulk ? <Package size={props.compact ? 13 : 15} /> : <Download size={props.compact ? 13 : 15} />}
       </span>
       <span>{props.label ?? defaultLabel}</span>
     </button>

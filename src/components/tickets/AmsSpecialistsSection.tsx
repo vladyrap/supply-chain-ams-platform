@@ -14,6 +14,7 @@ import type { TicketIntelligence } from "@/types/ticket-intelligence";
 import {
   SPECIALIST_LABELS, SPECIALIST_ICONS, SPECIALIST_COLORS,
 } from "@/intelligence/specialists/types";
+import { ChevronRight, Target, ChevronUp, ChevronDown, RefreshCw, Star } from "lucide-react";
 
 interface Props {
   intelligence?: TicketIntelligence | null;
@@ -30,10 +31,10 @@ export default function AmsSpecialistsSection({ intelligence, onReanalyze }: Pro
     return (
       <div className="card" style={{ borderLeft: "3px solid #94a3b8", padding: 12 }}>
         <div style={{ fontSize: 10, letterSpacing: 2.5, color: "var(--text-dim)" }}>
-          ▸ AMS · ESPECIALISTAS
+          <ChevronRight size={14} /> AMS · ESPECIALISTAS
         </div>
         <div style={{ fontSize: 12.5, color: "var(--text-soft)", marginTop: 4 }}>
-          🎯 Aún sin análisis de especialistas. Se ejecutará automáticamente al enriquecer el ticket.
+          <Target size={14} /> Aún sin análisis de especialistas. Se ejecutará automáticamente al enriquecer el ticket.
         </div>
       </div>
     );
@@ -72,7 +73,7 @@ export default function AmsSpecialistsSection({ intelligence, onReanalyze }: Pro
       }}>
         <div style={{ minWidth: 0, flex: "1 1 200px" }}>
           <div style={{ fontSize: 10, letterSpacing: 2.5, color: "var(--text-dim)" }}>
-            ▸ AMS · ESPECIALISTAS
+            <ChevronRight size={14} /> AMS · ESPECIALISTAS
           </div>
           <div style={{
             fontSize: 14, fontWeight: 700, marginTop: 2, color: primaryColor,
@@ -94,7 +95,7 @@ export default function AmsSpecialistsSection({ intelligence, onReanalyze }: Pro
             onClick={() => setExpanded((e) => !e)}
             style={{ fontSize: 11, padding: "4px 10px", whiteSpace: "nowrap" }}
           >
-            {expanded ? "▲ Compactar" : "▼ Ver detalle"}
+            {expanded ? <><ChevronUp size={12} /> Compactar</> : <><ChevronDown size={12} /> Ver detalle</>}
           </button>
           {onReanalyze && (
             <button
@@ -107,7 +108,7 @@ export default function AmsSpecialistsSection({ intelligence, onReanalyze }: Pro
               }}
               title="Reejecuta router + especialistas con la data actual"
             >
-              {busy ? <><span className="spinner" /> analizando…</> : "↻ Reanalizar"}
+              {busy ? <><span className="spinner" /> analizando…</> : <><RefreshCw size={12} /> Reanalizar</>}
             </button>
           )}
         </div>
@@ -120,7 +121,7 @@ export default function AmsSpecialistsSection({ intelligence, onReanalyze }: Pro
           background: `${primaryColor}22`, color: primaryColor,
           border: `1px solid ${primaryColor}66`, fontWeight: 600,
         }}>
-          ★ {primary.specialist} {primary.confidenceScore}%
+          <Star size={12} /> {primary.specialist} {primary.confidenceScore}%
         </span>
         {sa.secondaryAnalyses.map((s) => {
           const c = SPECIALIST_COLORS[s.specialist];

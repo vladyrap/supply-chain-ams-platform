@@ -12,6 +12,7 @@ import { temporaryToNote } from "@/types/visual-evidence";
 import ModalPortal from "@/components/ui/ModalPortal";
 import { kickoffEnrichmentForNewTicket } from "@/intelligence/enrichment-kickoff";
 import { useAuth } from "@/context/AuthContext";
+import { Plus, Bot, Camera } from "lucide-react";
 
 const SAP_MODULES = ["", "MM", "SD", "PP", "WM", "EWM", "QM", "PM", "ARIBA", "IBP", "BTP", "INTEGRACION"];
 const PRIORITIES = ["Highest", "High", "Medium", "Low"];
@@ -102,7 +103,7 @@ export default function CreateTicketModal({ open, defaultReporter, onClose, onCr
   return (
     <ModalPortal open={open} onClose={onClose} maxWidth={640} contentClassName="card">
       <div style={{ padding: 20 }}>
-        <div className="ticket-section-head">＋ NUEVO TICKET</div>
+        <div className="ticket-section-head"><Plus size={16} /> NUEVO TICKET</div>
         <p className="settings-section-desc">
           Al guardar, el agente generará automáticamente la estimación de resolución (rango horas, fases, confianza).
         </p>
@@ -187,23 +188,23 @@ export default function CreateTicketModal({ open, defaultReporter, onClose, onCr
             sobre su ticket recién creado. */}
         {enriching && (
           <div className="alert info" style={{ marginTop: 10, fontSize: 12, display: "flex", alignItems: "center", gap: 8 }}>
-            <span className="spinner" /> 🤖 Agente AMS está analizando el ticket…
+            <span className="spinner" /> <Bot size={14} /> Agente AMS está analizando el ticket…
           </div>
         )}
 
         <div className="row between" style={{ gap: 8, marginTop: 14, alignItems: "center" }}>
           <div style={{ fontSize: 11, color: "var(--text-dim)" }}>
             {evidence.filter((e) => e.visualAnalysis && e.consideredForEstimate).length > 0
-              ? `📷 ${evidence.filter((e) => e.visualAnalysis && e.consideredForEstimate).length} análisis visual será usado para estimar`
+              ? <><Camera size={14} /> {evidence.filter((e) => e.visualAnalysis && e.consideredForEstimate).length} análisis visual será usado para estimar</>
               : evidence.length > 0
-                ? "📷 Imágenes adjuntas sin análisis — no influirán en la estimación"
+                ? <><Camera size={14} /> Imágenes adjuntas sin análisis — no influirán en la estimación</>
                 : ""}
           </div>
           <div className="row" style={{ gap: 8 }}>
             <button className="btn ghost" onClick={() => { cleanupPreviews(); setEvidence([]); onClose(); }} disabled={busy || enriching}>cancelar</button>
             <button className="btn primary" onClick={submit} disabled={busy || enriching}>
               {enriching ? <><span className="spinner" /> analizando…</> :
-               busy ? <><span className="spinner" /> creando…</> : "＋ crear ticket"}
+               busy ? <><span className="spinner" /> creando…</> : <><Plus size={14} /> crear ticket</>}
             </button>
           </div>
         </div>

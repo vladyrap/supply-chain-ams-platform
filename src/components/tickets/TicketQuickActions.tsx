@@ -7,6 +7,11 @@
 
 import type { AmsDecisionResult, AmsRecommendedAction } from "@/utils/ams-decision-engine";
 import { AMS_ACTION_LABELS } from "@/utils/ams-decision-engine";
+import {
+  Zap, HelpCircle, Lightbulb, Book, AlertTriangle, ArrowUpRight, FileText,
+  FlaskConical, Brain, Search, CheckCircle2, Loader, RefreshCw, Scissors, Phone,
+  type LucideIcon,
+} from "lucide-react";
 
 interface Props {
   decision: AmsDecisionResult;
@@ -15,22 +20,22 @@ interface Props {
   disabledActions?: Set<AmsRecommendedAction>;
 }
 
-const ICONS: Record<AmsRecommendedAction, string> = {
-  REQUEST_MORE_INFO: "❓",
-  SUGGEST_SOLUTION: "💡",
-  USE_PLAYBOOK: "📕",
-  ESCALATE_N2: "🚨",
-  CREATE_JIRA: "↗",
-  CREATE_SERVICENOW: "↗",
-  GENERATE_RCA: "📄",
-  CREATE_TEST_CASE: "🧪",
-  CONVERT_TO_KNOWLEDGE: "🧠",
-  CREATE_KNOWLEDGE_GAP: "🔍",
-  CLOSE_WITH_DOCUMENTATION: "✅",
-  WAIT_FOR_USER_CONFIRMATION: "⏳",
-  REUSE_PREVIOUS_RESOLUTION: "♻",
-  SPLIT_INTO_SUBTASKS: "✂",
-  FOLLOW_UP_WITH_USER: "📞",
+const ICONS: Record<AmsRecommendedAction, LucideIcon> = {
+  REQUEST_MORE_INFO: HelpCircle,
+  SUGGEST_SOLUTION: Lightbulb,
+  USE_PLAYBOOK: Book,
+  ESCALATE_N2: AlertTriangle,
+  CREATE_JIRA: ArrowUpRight,
+  CREATE_SERVICENOW: ArrowUpRight,
+  GENERATE_RCA: FileText,
+  CREATE_TEST_CASE: FlaskConical,
+  CONVERT_TO_KNOWLEDGE: Brain,
+  CREATE_KNOWLEDGE_GAP: Search,
+  CLOSE_WITH_DOCUMENTATION: CheckCircle2,
+  WAIT_FOR_USER_CONFIRMATION: Loader,
+  REUSE_PREVIOUS_RESOLUTION: RefreshCw,
+  SPLIT_INTO_SUBTASKS: Scissors,
+  FOLLOW_UP_WITH_USER: Phone,
 };
 
 function weightColor(w: number): string {
@@ -44,11 +49,12 @@ export default function TicketQuickActions({ decision, onAction, disabledActions
   if (decision.nextBestActions.length === 0) return null;
   return (
     <div>
-      <div className="ticket-section-head">⚡ ACCIONES RÁPIDAS</div>
+      <div className="ticket-section-head"><Zap size={16} /> ACCIONES RÁPIDAS</div>
       <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(220px, 1fr))", gap: 8 }}>
         {decision.nextBestActions.map((a) => {
           const isDisabled = disabledActions?.has(a.action);
           const c = weightColor(a.weight);
+          const AIcon = ICONS[a.action];
           return (
             <button
               key={a.action}
@@ -66,7 +72,7 @@ export default function TicketQuickActions({ decision, onAction, disabledActions
               title={a.reason}
             >
               <span style={{ fontSize: 12, fontWeight: 600 }}>
-                {ICONS[a.action]} {AMS_ACTION_LABELS[a.action]}
+                <AIcon size={14} /> {AMS_ACTION_LABELS[a.action]}
               </span>
               <span style={{ fontSize: 10.5, color: "var(--text-dim)" }}>{a.reason}</span>
               <span style={{ fontSize: 9.5, color: c, letterSpacing: 1 }}>peso {a.weight}/100</span>

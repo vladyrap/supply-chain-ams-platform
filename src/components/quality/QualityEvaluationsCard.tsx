@@ -20,6 +20,7 @@ import { RISK_COLORS } from "@/types/ams-modules";
 import {
   getQualityEvaluatorSummary, getVisibleQualityEvaluations,
 } from "@/utils/quality-evaluator-helpers";
+import { AlertTriangle, ChevronUp, ChevronDown } from "lucide-react";
 
 interface Props {
   evaluations: AgentEvaluation[];
@@ -116,7 +117,7 @@ export default function QualityEvaluationsCard({
           display: "flex", alignItems: "center", justifyContent: "space-between", gap: 8,
           flexShrink: 0,
         }}>
-          <span>⚠ {summary.duplicatesFound} duplicad{summary.duplicatesFound === 1 ? "a" : "as"} detectada{summary.duplicatesFound === 1 ? "" : "s"}</span>
+          <span><AlertTriangle size={14} /> {summary.duplicatesFound} duplicad{summary.duplicatesFound === 1 ? "a" : "as"} detectada{summary.duplicatesFound === 1 ? "" : "s"}</span>
           {showCompactBtn && (
             <button
               onClick={onCompactDuplicates}
@@ -162,7 +163,7 @@ export default function QualityEvaluationsCard({
           className="btn ghost"
           style={{ marginTop: 8, fontSize: 11, padding: "4px 10px", alignSelf: "flex-start", flexShrink: 0 }}
         >
-          {expanded ? "▲ Ver menos" : `▼ Ver más (${Math.min(20, summary.totalCount)})`}
+          {expanded ? <><ChevronUp size={14} /> Ver menos</> : <><ChevronDown size={14} /> Ver más ({Math.min(20, summary.totalCount)})</>}
         </button>
       )}
     </div>

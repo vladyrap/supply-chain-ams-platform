@@ -4,6 +4,7 @@ import { useMemo, useState } from "react";
 import type { UseTestingIntelligence } from "@/hooks/useTestingIntelligence";
 import { EVIDENCE_TYPE_LABELS, type EvidenceType } from "@/types/testing";
 import EvidenceCard from "./EvidenceCard";
+import { FileText, Link2, ScrollText } from "lucide-react";
 
 interface Props {
   testing: UseTestingIntelligence;
@@ -61,9 +62,9 @@ export default function EvidenceLibrary({ testing, actingUserId, canEdit }: Prop
       {canEdit && (
         <div className="row" style={{ gap: 6, flexWrap: "wrap" }}>
           <span style={{ fontSize: 11, color: "var(--text-dim)" }}>Crear:</span>
-          <button className="btn ghost" onClick={() => setCreating("NOTE")} style={{ fontSize: 11, padding: "3px 10px" }}>📝 Nota</button>
-          <button className="btn ghost" onClick={() => setCreating("LINK")} style={{ fontSize: 11, padding: "3px 10px" }}>🔗 Enlace</button>
-          <button className="btn ghost" onClick={() => setCreating("LOG")} style={{ fontSize: 11, padding: "3px 10px" }}>📜 Log</button>
+          <button className="btn ghost" onClick={() => setCreating("NOTE")} style={{ fontSize: 11, padding: "3px 10px" }}><FileText size={14} /> Nota</button>
+          <button className="btn ghost" onClick={() => setCreating("LINK")} style={{ fontSize: 11, padding: "3px 10px" }}><Link2 size={14} /> Enlace</button>
+          <button className="btn ghost" onClick={() => setCreating("LOG")} style={{ fontSize: 11, padding: "3px 10px" }}><ScrollText size={14} /> Log</button>
           <span style={{ fontSize: 11, color: "var(--text-dim)", marginLeft: 10 }}>
             (Videos: usá las tabs "Grabación" o "Carga de video")
           </span>

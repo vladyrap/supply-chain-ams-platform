@@ -8,6 +8,7 @@ import PermissionMatrix from "./PermissionMatrix";
 import AccessPreview from "./AccessPreview";
 import RbacAuditLogPanel from "./RbacAuditLogPanel";
 import { ALL_SCREENS, ALL_ACTIONS } from "@/types/rbac";
+import { ShieldCheck, RefreshCw } from "lucide-react";
 
 type Tab = "users" | "roles" | "matrix" | "preview" | "audit";
 
@@ -44,13 +45,13 @@ export default function AdminAccessPanel() {
       <div className="page-title" style={{ marginBottom: 12 }}>
         <div className="row between" style={{ flexWrap: "wrap", gap: 10 }}>
           <div>
-            <h1 style={{ margin: 0 }}>🛡️ Administración de Accesos</h1>
+            <h1 style={{ margin: 0 }}><ShieldCheck size={18} /> Administración de Accesos</h1>
             <p style={{ margin: "4px 0 0", color: "var(--text-soft)", fontSize: 13 }}>
               Gestión visual de roles, usuarios y permisos por pantalla.
             </p>
           </div>
           <button className="btn ghost" onClick={handleReset} style={{ fontSize: 12 }}>
-            ↻ Restaurar matriz base de permisos
+<RefreshCw size={14} /> Restaurar matriz base de permisos
           </button>
         </div>
       </div>

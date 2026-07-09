@@ -16,6 +16,7 @@ import {
   analyzeVisualEvidenceDemo, buildManualVisualAnalysis,
 } from "@/utils/visual-error-analysis-engine";
 import VisualAnalysisResultCard from "./VisualAnalysisResultCard";
+import { Camera, Lock, AlertTriangle, Paperclip, Bot, Pencil, Trash2 } from "lucide-react";
 
 const MAX_FILES = 4;
 const MAX_SIZE_BYTES = 4 * 1024 * 1024;
@@ -123,22 +124,22 @@ export default function VisualEvidenceUploader({ evidence, onChange, ticketTitle
 
   return (
     <div>
-      <div className="ticket-section-head">📷 EVIDENCIA VISUAL DEL ERROR</div>
+      <div className="ticket-section-head"><Camera size={16} /> EVIDENCIA VISUAL DEL ERROR</div>
       <p className="settings-section-desc">
         Adjuntá una captura del error SAP. El agente intentará leer el mensaje visible y usarlo
         junto con la descripción para estimar el tiempo de resolución.
       </p>
       <div className="alert info" style={{ fontSize: 11, padding: "6px 10px" }}>
-        🔒 <strong>Imágenes temporales:</strong> el archivo NO se guardará. Solo se conservará
+        <Lock size={14} /> <strong>Imágenes temporales:</strong> el archivo NO se guardará. Solo se conservará
         el resumen textual del análisis si creás el ticket.
         <br />
-        ⚠ No adjuntes información productiva sensible si no está autorizada.
+        <AlertTriangle size={14} /> No adjuntes información productiva sensible si no está autorizada.
       </div>
 
       <div className="row" style={{ gap: 8, marginTop: 8, flexWrap: "wrap" }}>
         <button type="button" className="btn ghost" onClick={pickFiles}
           disabled={evidence.length >= MAX_FILES}>
-          📎 Adjuntar imagen ({evidence.length}/{MAX_FILES})
+          <Paperclip size={14} /> Adjuntar imagen ({evidence.length}/{MAX_FILES})
         </button>
         <input ref={inputRef} type="file" hidden multiple
           accept={ACCEPTED_TYPES.join(",")}
@@ -188,17 +189,17 @@ export default function VisualEvidenceUploader({ evidence, onChange, ticketTitle
                       style={{ padding: "4px 10px", fontSize: 11.5 }}>
                       {ev.analysisStatus === "ANALYZING"
                         ? <><span className="spinner" /> analizando…</>
-                        : "🤖 Analizar imagen con IA"}
+                        : <><Bot size={14} /> Analizar imagen con IA</>}
                     </button>
                     <button type="button" className="btn ghost"
                       onClick={() => useManualSummary(ev)}
                       style={{ padding: "4px 10px", fontSize: 11.5 }}>
-                      ✎ Usar comentario como resumen
+                      <Pencil size={14} /> Usar comentario como resumen
                     </button>
                     <button type="button" className="btn ghost"
                       onClick={() => removeOne(ev.id)}
                       style={{ padding: "4px 10px", fontSize: 11.5, color: "#fa4d56", marginLeft: "auto" }}>
-                      🗑 Quitar
+                      <Trash2 size={14} /> Quitar
                     </button>
                   </div>
                 </div>
@@ -213,7 +214,7 @@ export default function VisualEvidenceUploader({ evidence, onChange, ticketTitle
               )}
               {ev.analysisStatus === "FAILED" && (
                 <div className="alert error" style={{ marginTop: 6, fontSize: 11.5 }}>
-                  El análisis falló. Podés usar el comentario manual con &quot;✎ Usar comentario como resumen&quot;.
+                  El análisis falló. Podés usar el comentario manual con &quot;<Pencil size={14} /> Usar comentario como resumen&quot;.
                 </div>
               )}
             </div>

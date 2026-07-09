@@ -18,6 +18,7 @@ import { useMemo } from "react";
 import type { Ticket } from "@/services/tickets.api";
 import { computeN1Metrics } from "@/utils/n1-metrics";
 import { useTicketAudit } from "@/hooks/useTicketAudit";
+import { ChevronRight } from "lucide-react";
 
 interface Props {
   tickets: Ticket[];
@@ -41,7 +42,7 @@ export default function N1MetricsTile({ tickets }: Props) {
   return (
     <div className="card" style={{ padding: 12, borderLeft: "3px solid #10b981" }}>
       <div style={{ fontSize: 10, letterSpacing: 2, color: "var(--text-dim)", marginBottom: 8 }}>
-        ▸ N1 · GUIDED INTAKE · MÉTRICAS
+        <ChevronRight size={14} /> N1 · GUIDED INTAKE · MÉTRICAS
       </div>
 
       {/* 3 KPIs principales */}

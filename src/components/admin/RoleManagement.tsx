@@ -5,6 +5,7 @@ import type { UseAccessAdmin } from "@/hooks/useAccessAdmin";
 import type { PlatformRole } from "@/types/rbac";
 import Badge from "@/components/ui/Badge";
 import RoleFormModal from "./RoleFormModal";
+import { Users, Key, Pencil, Copy, Trash2 } from "lucide-react";
 
 interface Props { admin: UseAccessAdmin }
 
@@ -56,19 +57,19 @@ export default function RoleManagement({ admin }: Props) {
               </p>
 
               <div className="row" style={{ gap: 6, fontSize: 11, color: "var(--text-dim)" }}>
-                <span>👥 {userCount} usuario{userCount === 1 ? "" : "s"}</span>
+                <span><Users size={14} /> {userCount} usuario{userCount === 1 ? "" : "s"}</span>
                 <span>·</span>
-                <span>🔑 {totalPerms} permisos activos</span>
+                <span><Key size={14} /> {totalPerms} permisos activos</span>
               </div>
 
               <div className="row" style={{ gap: 4, marginTop: 10, flexWrap: "wrap" }}>
                 <button className="btn ghost" style={{ padding: "3px 10px", fontSize: 11.5 }}
-                  onClick={() => { setEditing(r); setShowModal(true); }}>✎ Editar</button>
+                  onClick={() => { setEditing(r); setShowModal(true); }}><Pencil size={14} /> Editar</button>
                 <button className="btn ghost" style={{ padding: "3px 10px", fontSize: 11.5 }}
-                  onClick={() => handleDuplicate(r)}>⎘ Duplicar</button>
+                  onClick={() => handleDuplicate(r)}><Copy size={14} /> Duplicar</button>
                 {!r.isSystem && (
                   <button className="btn ghost" style={{ padding: "3px 10px", fontSize: 11.5, color: "#fa4d56" }}
-                    onClick={() => handleDelete(r)}>🗑 Eliminar</button>
+                    onClick={() => handleDelete(r)}><Trash2 size={14} /> Eliminar</button>
                 )}
               </div>
             </div>

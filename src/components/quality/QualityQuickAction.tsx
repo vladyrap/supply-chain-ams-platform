@@ -11,6 +11,7 @@ import { useQualityEvaluator } from "@/hooks/useQualityEvaluator";
 import EvaluationForm from "./EvaluationForm";
 import type { IncidentSummary } from "@/services/agent.api";
 import type { AgentEvaluation } from "@/types/ams-modules";
+import { Award } from "lucide-react";
 
 interface Props {
   /** Incidente "compatible" — puede venir del adapter ticketToIncidentLike() */
@@ -55,7 +56,7 @@ export default function QualityQuickAction({ incident, variant = "full", onSaved
         }}
         title={`Click para re-abrir evaluación: ${overall}/5`}
       >
-        🏅 {overall}/5
+        <Award size={14} /> {overall}/5
       </button>
     );
   }
@@ -71,7 +72,7 @@ export default function QualityQuickAction({ incident, variant = "full", onSaved
         }}
         title="Clasificá primero el ticket con el Agente AMS para tener una respuesta evaluable"
       >
-        🏅 Evaluar (sin respuesta)
+        <Award size={14} /> Evaluar (sin respuesta)
       </button>
     );
   }
@@ -85,7 +86,7 @@ export default function QualityQuickAction({ incident, variant = "full", onSaved
           ? { padding: "3px 9px", fontSize: 11 }
           : { background: "linear-gradient(135deg, #f1c21b, #f59e0b)", borderColor: "#f1c21b", color: "#0b1220" }}
       >
-        🏅 {variant === "compact" ? "evaluar" : "Evaluar respuesta"}
+        <Award size={14} /> {variant === "compact" ? "evaluar" : "Evaluar respuesta"}
       </button>
 
       {open && (

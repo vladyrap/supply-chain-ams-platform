@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import type { UseTestingIntelligence } from "@/hooks/useTestingIntelligence";
+import { BookOpen, Check, Clipboard, Download } from "lucide-react";
 
 interface Props {
   testing: UseTestingIntelligence;
@@ -66,9 +67,9 @@ export default function UserManualGenerator({ testing }: Props) {
           </div>
         </div>
         <div className="row" style={{ gap: 8, marginTop: 12 }}>
-          <button className="btn primary" onClick={generate} disabled={!scenarioId}>📖 Generar manual</button>
-          <button className="btn ghost" onClick={copy} disabled={!content}>{copied ? "✓ Copiado" : "📋 Copiar"}</button>
-          <button className="btn ghost" onClick={download} disabled={!content}>⬇ Descargar .md</button>
+          <button className="btn primary" onClick={generate} disabled={!scenarioId}><BookOpen size={16} /> Generar manual</button>
+          <button className="btn ghost" onClick={copy} disabled={!content}>{copied ? <><Check size={16} /> Copiado</> : <><Clipboard size={16} /> Copiar</>}</button>
+          <button className="btn ghost" onClick={download} disabled={!content}><Download size={16} /> Descargar .md</button>
         </div>
       </div>
 

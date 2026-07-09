@@ -13,6 +13,7 @@ import TestScenarioFormModal from "./TestScenarioFormModal";
 import type {
   TestingScenario, TestingSapModule, TestingProcess,
 } from "@/types/testing";
+import { FlaskConical } from "lucide-react";
 
 interface Props {
   /** Key del ticket — usado en title del escenario y tags. */
@@ -102,7 +103,7 @@ export default function TestingQuickAction({
           ? { padding: "3px 9px", fontSize: 11 }
           : { background: "linear-gradient(135deg, #4589ff, #06b6d4)", borderColor: "#4589ff", color: "#0b1220" }}
       >
-        🧪 {variant === "compact" ? "test" : "Crear caso de prueba"}
+        <FlaskConical size={16} /> {variant === "compact" ? "test" : "Crear caso de prueba"}
       </button>
 
       {showModal && (
