@@ -7,6 +7,7 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
 import { MODULES } from "@/lib/modules";
+import { ModuleIcon } from "@/lib/module-icons";
 import type { ModuleDef } from "@/types";
 
 interface Props {
@@ -213,7 +214,7 @@ export default function CommandPalette({ open, onClose, favorites, onToggleFavor
                       background: isActive ? "linear-gradient(90deg, rgba(99,102,241,0.18), rgba(69,137,255,0.10))" : "transparent",
                       borderLeft: isActive ? "2px solid #818cf8" : "2px solid transparent",
                     }}>
-                    <span style={{ fontSize: 18, width: 22, textAlign: "center" }}>{it.icon}</span>
+                    <span style={{ width: 22, display: "inline-flex", alignItems: "center", justifyContent: "center" }}><ModuleIcon id={it.id} size={18} /></span>
                     <div style={{ flex: 1, minWidth: 0 }}>
                       <div style={{ fontSize: 13.5, fontWeight: 600, color: "#e2e8f0" }}>{it.label}</div>
                       {it.description && (

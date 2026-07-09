@@ -8,6 +8,7 @@ import TourController from "@/components/jarvis/TourController";
 import DemoModeBanner from "@/components/demo/DemoModeBanner";
 import SentryBoot from "@/components/fx/SentryBoot";
 import ClientOnly from "@/components/common/ClientOnly";
+import { SkeletonCard } from "@/components/common/Skeleton";
 
 export default function PlatformLayout({ children }: { children: React.ReactNode }) {
   return (
@@ -26,8 +27,8 @@ export default function PlatformLayout({ children }: { children: React.ReactNode
         <div className="content">
           <ClientOnly
             fallback={
-              <div style={{ display: "grid", placeItems: "center", minHeight: "60vh" }}>
-                <div className="spinner" />
+              <div style={{ display: "grid", placeItems: "center", minHeight: "60vh", padding: 24 }}>
+                <SkeletonCard />
               </div>
             }
           >

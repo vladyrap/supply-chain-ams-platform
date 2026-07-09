@@ -10,6 +10,7 @@ import { useCommandPalette } from "@/context/CommandPaletteContext";
 import { ROLES } from "@/lib/roles";
 import NotificationsBell from "./NotificationsBell";
 import { useDemoMode } from "@/hooks/useDemoMode";
+import { Search, Volume2, VolumeX, Clapperboard, LogOut } from "lucide-react";
 
 export default function Header() {
   const pathname = usePathname();
@@ -55,7 +56,7 @@ export default function Header() {
           }}
         >
           <span style={{ display: "flex", alignItems: "center", gap: 6 }}>
-            <span style={{ opacity: 0.7 }}>🔍</span>
+            <Search size={15} style={{ opacity: 0.7 }} />
             <span>Buscar o saltar a…</span>
           </span>
           <kbd style={{
@@ -77,7 +78,7 @@ export default function Header() {
           aria-label="Alternar efectos sonoros + confetti"
           title={fxEnabled ? "Desactivar efectos" : "Activar efectos (confetti + audio)"}
         >
-          {fxEnabled ? "🔊" : "🔇"}
+          {fxEnabled ? <Volume2 size={16} /> : <VolumeX size={16} />}
         </button>
 
         <button
@@ -86,12 +87,12 @@ export default function Header() {
           aria-label="Modo demo cliente"
           title={demo.state.enabled ? "Modo Demo Cliente activo · click para desactivar" : "Activar Modo Demo Cliente"}
           style={demo.state.enabled ? {
-            background: "linear-gradient(135deg, rgba(168,85,247,0.25), rgba(69,137,255,0.20))",
-            borderColor: "rgba(168,85,247,0.55)",
-            color: "#c084fc",
+            background: "var(--accent-soft)",
+            borderColor: "var(--accent)",
+            color: "var(--accent-3)",
           } : undefined}
         >
-          🎬
+          <Clapperboard size={16} />
         </button>
 
         <NotificationsBell />
@@ -104,7 +105,7 @@ export default function Header() {
             </div>
           </div>
           <button onClick={logout} className="btn ghost btn-icon" aria-label="Cerrar sesión" title="Cerrar sesión">
-            ⎋
+            <LogOut size={16} />
           </button>
         </div>
       </div>
