@@ -52,11 +52,6 @@ function LoginInner() {
     }
   }
 
-  function quickFill(email: string, pass: string) {
-    setEmail(email);
-    setPassword(pass);
-  }
-
   return (
     <main className="auth-shell">
       <AuthShowcase />
@@ -105,25 +100,6 @@ function LoginInner() {
               {loading ? <><span className="spinner" /> entrando…</> : <>Entrar <span style={{ marginLeft: 8 }}>→</span></>}
             </button>
           </form>
-
-          {/* Demo creds quick fill */}
-          <div className="auth-demo">
-            <div className="auth-demo-label">Acceso demo rápido:</div>
-            <div className="auth-demo-grid">
-              <button type="button" className="auth-demo-btn" onClick={() => quickFill("viewer@demo.cl", "Viewer2026!")}>
-                <span>👁</span> Viewer
-              </button>
-              <button type="button" className="auth-demo-btn" onClick={() => quickFill("consultor@demo.cl", "Consultor2026!")}>
-                <span>🧠</span> Consultor
-              </button>
-              <button type="button" className="auth-demo-btn" onClick={() => quickFill("aprobador@demo.cl", "Aprobador2026!")}>
-                <span>✓</span> Aprobador
-              </button>
-              <button type="button" className="auth-demo-btn" onClick={() => quickFill("admin@demo.cl", "Admin2026!")}>
-                <span>🛡</span> Admin
-              </button>
-            </div>
-          </div>
 
           <div className="auth-footer-link">
             <Link href="/forgot-password" style={{ display: "block", marginBottom: 8 }}>¿Olvidaste tu contraseña?</Link>
