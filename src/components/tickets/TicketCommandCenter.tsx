@@ -1096,6 +1096,7 @@ export default function TicketCommandCenter({ ticket, onTicketUpdated }: Props) 
           ticketKey={ticket.key}
           refreshKey={aie.intelligence?.analysisVersion ?? 0}
           actor={actor}
+          onReanalyze={aie.reanalyze}
         />
       )}
 

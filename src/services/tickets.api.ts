@@ -249,6 +249,52 @@ export async function recordCaseLearning(input: {
   });
 }
 
+// =============================================================================
+// Case Timeline (F4) — Artefactos de 1ª clase
+// =============================================================================
+
+export type CaseArtifactKind =
+  | "sap_note" | "abap" | "attachment" | "evidence"
+  | "log" | "dump" | "screenshot" | "email";
+
+export interface CaseArtifact {
+  id: string;
+  ticketKey: string;
+  kind: CaseArtifactKind;
+  title: string;
+  ref: string | null;
+  content: string | null;
+  contentHash: string | null;
+  meta: Record<string, unknown> | null;
+  createdBy: string;
+  createdAt: string;
+}
+
+/** POST /api/tickets/:key/artifacts — registra un artefacto (redacta + hashea + emite evento). */
+export async function addCaseArtifact(
+  key: string,
+  input: {
+    kind: CaseArtifactKind;
+    title: string;
+    ref?: string | null;
+    content?: string | null;
+    meta?: Record<string, unknown> | null;
+    createdBy?: string;
+  },
+) {
+  return call<{ success: true; artifact: CaseArtifact } | { success: false; error: string }>(
+    `/api/tickets/${encodeURIComponent(key)}/artifacts`,
+    { method: "POST", body: input },
+  );
+}
+
+/** GET /api/tickets/:key/artifacts — lista artefactos del caso. */
+export async function listCaseArtifacts(key: string) {
+  return call<{ success: true; artifacts: CaseArtifact[] } | { success: false; error: string }>(
+    `/api/tickets/${encodeURIComponent(key)}/artifacts`,
+  );
+}
+
 /** Campos editables del ticket via PATCH /api/tickets/:key. */
 export interface UpdateTicketInput {
   title?: string;

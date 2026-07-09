@@ -10,20 +10,39 @@
 // =============================================================================
 
 import { useCallback, useEffect, useMemo, useState } from "react";
-import { getCaseTimeline, type CaseTimelineItem } from "@/services/tickets.api";
+import {
+  getCaseTimeline, addCaseArtifact,
+  type CaseTimelineItem, type CaseArtifactKind,
+} from "@/services/tickets.api";
 import { EVENT_LABELS, EVENT_COLORS } from "@/types/audit";
 import { TimelineIcon } from "@/lib/timeline-icons";
 import { SkeletonCard } from "@/components/common/Skeleton";
-import { Search, RefreshCw, Inbox, AlertCircle, Activity, GitBranch, GitCompare } from "lucide-react";
+import {
+  Search, RefreshCw, Inbox, AlertCircle, Activity, GitBranch, GitCompare,
+  Paperclip, RotateCcw, X,
+} from "lucide-react";
 import CompareVersions from "./CompareVersions";
 import KnowledgeEvolutionCard from "./KnowledgeEvolutionCard";
+
+const ARTIFACT_KINDS: { value: CaseArtifactKind; label: string }[] = [
+  { value: "sap_note", label: "SAP Note" },
+  { value: "abap", label: "Código ABAP" },
+  { value: "attachment", label: "Adjunto" },
+  { value: "evidence", label: "Evidencia" },
+  { value: "log", label: "Log" },
+  { value: "dump", label: "Dump ST22" },
+  { value: "screenshot", label: "Captura" },
+  { value: "email", label: "Correo" },
+];
 
 interface Props {
   ticketKey: string;
   /** Bump para recargar (ej. tras un reanalyze). */
   refreshKey?: number;
-  /** Actor para atribuir aprendizajes guardados. */
+  /** Actor para atribuir aprendizajes y artefactos. */
   actor?: string;
+  /** Dispara un re-análisis del caso desde el timeline (F4). */
+  onReanalyze?: () => Promise<void> | void;
 }
 
 type KindFilter = "all" | "event" | "version";
@@ -50,7 +69,7 @@ function fmtDate(iso: string): { date: string; time: string } {
   }
 }
 
-export default function CaseTimeline({ ticketKey, refreshKey, actor }: Props) {
+export default function CaseTimeline({ ticketKey, refreshKey, actor, onReanalyze }: Props) {
   const [items, setItems] = useState<CaseTimelineItem[]>([]);
   const [counts, setCounts] = useState({ events: 0, versions: 0 });
   const [loading, setLoading] = useState(true);
@@ -58,6 +77,14 @@ export default function CaseTimeline({ ticketKey, refreshKey, actor }: Props) {
   const [query, setQuery] = useState("");
   const [kind, setKind] = useState<KindFilter>("all");
   const [mode, setMode] = useState<"timeline" | "compare">("timeline");
+  // F4 — alta de artefactos + re-análisis desde el timeline
+  const [showAdd, setShowAdd] = useState(false);
+  const [artKind, setArtKind] = useState<CaseArtifactKind>("sap_note");
+  const [artTitle, setArtTitle] = useState("");
+  const [artRef, setArtRef] = useState("");
+  const [artNote, setArtNote] = useState("");
+  const [submitting, setSubmitting] = useState(false);
+  const [reanalyzing, setReanalyzing] = useState(false);
 
   const load = useCallback(async () => {
     setLoading(true);
@@ -78,6 +105,40 @@ export default function CaseTimeline({ ticketKey, refreshKey, actor }: Props) {
   }, [ticketKey]);
 
   useEffect(() => { void load(); }, [load, refreshKey]);
+
+  const submitArtifact = useCallback(async () => {
+    if (!artTitle.trim()) return;
+    setSubmitting(true);
+    try {
+      const res = await addCaseArtifact(ticketKey, {
+        kind: artKind,
+        title: artTitle.trim(),
+        ref: artRef.trim() || null,
+        content: artNote.trim() || null,
+        createdBy: actor,
+      });
+      if (res.success) {
+        setArtTitle("");
+        setArtRef("");
+        setArtNote("");
+        setShowAdd(false);
+        await load();
+      }
+    } finally {
+      setSubmitting(false);
+    }
+  }, [artKind, artTitle, artRef, artNote, ticketKey, actor, load]);
+
+  const runReanalyze = useCallback(async () => {
+    if (!onReanalyze) return;
+    setReanalyzing(true);
+    try {
+      await onReanalyze();
+      await load();
+    } finally {
+      setReanalyzing(false);
+    }
+  }, [onReanalyze, load]);
 
   const filtered = useMemo(() => {
     const q = query.trim().toLowerCase();
@@ -142,6 +203,27 @@ export default function CaseTimeline({ ticketKey, refreshKey, actor }: Props) {
           <button
             type="button"
             className="btn"
+            onClick={() => setShowAdd((v) => !v)}
+            title="Agregar artefacto al caso"
+            style={{ padding: "6px 11px", fontSize: 12 }}
+          >
+            <Paperclip size={14} /> Agregar
+          </button>
+          {onReanalyze && (
+            <button
+              type="button"
+              className="btn"
+              onClick={() => void runReanalyze()}
+              disabled={reanalyzing}
+              title="Re-analizar el caso (genera nueva versión)"
+              style={{ padding: "6px 11px", fontSize: 12 }}
+            >
+              <RotateCcw size={14} /> {reanalyzing ? "Analizando…" : "Re-analizar"}
+            </button>
+          )}
+          <button
+            type="button"
+            className="btn"
             onClick={() => setMode("compare")}
             disabled={counts.versions < 2}
             title={counts.versions < 2 ? "Se necesitan 2 o más versiones" : "Comparar versiones"}
@@ -160,6 +242,38 @@ export default function CaseTimeline({ ticketKey, refreshKey, actor }: Props) {
           </button>
         </div>
       </div>
+
+      {/* Alta de artefacto (F4) */}
+      {showAdd && (
+        <div className="card" style={{ display: "flex", flexDirection: "column", gap: 10 }}>
+          <div className="row between" style={{ alignItems: "center" }}>
+            <span style={{ fontSize: 12.5, fontWeight: 600, color: "var(--text)" }}>Agregar artefacto al caso</span>
+            <button type="button" className="btn ghost" style={{ padding: "3px 7px" }} onClick={() => setShowAdd(false)} aria-label="Cerrar">
+              <X size={14} />
+            </button>
+          </div>
+          <div className="row" style={{ gap: 10, flexWrap: "wrap" }}>
+            <select value={artKind} onChange={(e) => setArtKind(e.target.value as CaseArtifactKind)} style={{ minWidth: 150, fontSize: 12.5 }}>
+              {ARTIFACT_KINDS.map((k) => <option key={k.value} value={k.value}>{k.label}</option>)}
+            </select>
+            <input value={artTitle} onChange={(e) => setArtTitle(e.target.value)} placeholder="Título *" style={{ flex: 1, minWidth: 180, fontSize: 12.5 }} />
+          </div>
+          <input value={artRef} onChange={(e) => setArtRef(e.target.value)} placeholder="Referencia (URL, N° de SAP Note, path lógico…)" style={{ fontSize: 12.5 }} />
+          <textarea
+            value={artNote}
+            onChange={(e) => setArtNote(e.target.value)}
+            placeholder="Contenido / nota (los secretos y datos personales se redactan automáticamente al guardar)"
+            rows={3}
+            style={{ fontSize: 12.5, resize: "vertical" }}
+          />
+          <div className="row" style={{ justifyContent: "flex-end", gap: 8 }}>
+            <button type="button" className="btn ghost" onClick={() => setShowAdd(false)} style={{ fontSize: 12 }}>Cancelar</button>
+            <button type="button" className="btn primary" onClick={() => void submitArtifact()} disabled={submitting || !artTitle.trim()} style={{ fontSize: 12 }}>
+              {submitting ? "Guardando…" : "Registrar artefacto"}
+            </button>
+          </div>
+        </div>
+      )}
 
       {/* Knowledge Evolution (F3) — se auto-oculta si <2 versiones o sin cambios */}
       <KnowledgeEvolutionCard ticketKey={ticketKey} actor={actor} refreshKey={refreshKey} />
