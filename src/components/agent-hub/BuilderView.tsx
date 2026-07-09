@@ -560,8 +560,8 @@ function AgentBuilderInner() {
                     <div style={{ fontSize: 11.5, color: "var(--text-soft)", lineHeight: 1.45, marginBottom: 6 }}>{m.description}</div>
                     {avail && (
                       avail.available
-                        ? <span style={{ fontSize: 10.5, color: "#24a148" }}>✓ Disponible</span>
-                        : <span style={{ fontSize: 10.5, color: "#8a6d00" }} title={avail.reason}>⚠ Requiere configuración</span>
+                        ? <span style={{ fontSize: 10.5, color: "#42be65" }}>✓ Disponible</span>
+                        : <span style={{ fontSize: 10.5, color: "#f1c21b" }} title={avail.reason}>⚠ Requiere configuración</span>
                     )}
                   </button>
                 );
@@ -570,7 +570,7 @@ function AgentBuilderInner() {
             {model.startsWith("claude-") && modelsAvail[model] && !modelsAvail[model].available && (
               <div style={{
                 fontSize: 11.5, marginTop: 10, padding: "8px 12px", borderRadius: 8,
-                background: "rgba(241,194,27,0.08)", border: "1px solid rgba(241,194,27,0.25)", color: "#8a6d00",
+                background: "rgba(241,194,27,0.08)", border: "1px solid rgba(241,194,27,0.25)", color: "#f1c21b",
               }}>
                 ⚠ {modelsAvail[model].reason}. Podés guardar el agente igual — funcionará apenas
                 se agregue la key (los modelos Claude tienen costo por uso).
@@ -605,7 +605,7 @@ function AgentBuilderInner() {
             {notice && !error && (
               <div style={{
                 fontSize: 12.5, marginBottom: 10, padding: "8px 12px", borderRadius: 8,
-                background: "rgba(66,190,101,0.1)", border: "1px solid rgba(66,190,101,0.3)", color: "#24a148",
+                background: "rgba(66,190,101,0.1)", border: "1px solid rgba(66,190,101,0.3)", color: "#42be65",
               }}>{notice}</div>
             )}
             {/* Onda 6 · Checklist de publicación en vivo */}
@@ -637,7 +637,7 @@ function AgentBuilderInner() {
                 </button>
               ) : (
                 <button className="btn ghost" onClick={handleUnpublish} disabled={busy}
-                  style={{ width: "100%", justifyContent: "center", color: "#8a6d00" }}>
+                  style={{ width: "100%", justifyContent: "center", color: "#f1c21b" }}>
                   ↩ Volver a borrador
                 </button>
               )}
@@ -693,11 +693,11 @@ function AgentBuilderInner() {
                   <div style={{ fontSize: 10.5, color: "var(--text-dim)" }}>conversaciones</div>
                 </div>
                 <div>
-                  <div style={{ fontSize: 19, fontWeight: 700, color: "#7c3aed" }}>{stats.messages}</div>
+                  <div style={{ fontSize: 19, fontWeight: 700, color: "#be95ff" }}>{stats.messages}</div>
                   <div style={{ fontSize: 10.5, color: "var(--text-dim)" }}>mensajes</div>
                 </div>
                 <div>
-                  <div style={{ fontSize: 19, fontWeight: 700, color: "#24a148" }}>{stats.uniqueUsers}</div>
+                  <div style={{ fontSize: 19, fontWeight: 700, color: "#42be65" }}>{stats.uniqueUsers}</div>
                   <div style={{ fontSize: 10.5, color: "var(--text-dim)" }}>usuarios</div>
                 </div>
               </div>
@@ -787,7 +787,7 @@ function AgentBuilderInner() {
                       style={{ flex: 1, fontSize: 12.5 }}
                     />
                     <button type="submit" className="btn sm" disabled={compareBusy || !compareMsg.trim() || !compareModel2}
-                      style={{ borderColor: "#7c3aed", color: "#7c3aed" }}>
+                      style={{ borderColor: "#be95ff", color: "#be95ff" }}>
                       {compareBusy ? "…" : "⚔"}
                     </button>
                   </div>
@@ -805,7 +805,7 @@ function AgentBuilderInner() {
                         borderRadius: 10, padding: 10,
                       }}>
                         <div className="row between" style={{ marginBottom: 6 }}>
-                          <span style={{ fontSize: 12, fontWeight: 600, color: "#7c3aed" }}>🧠 {modelLabel(res.model)}</span>
+                          <span style={{ fontSize: 12, fontWeight: 600, color: "#be95ff" }}>🧠 {modelLabel(res.model)}</span>
                           <span style={{ fontSize: 11, color: "var(--text-dim)" }}>⏱ {(res.durationMs / 1000).toFixed(1)}s</span>
                         </div>
                         {res.error ? (

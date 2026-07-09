@@ -82,7 +82,7 @@ export default function DefectsPanel({ testing, actingUserId, canEdit }: Props) 
                       <>
                         <button className="btn ghost" onClick={() => setEditing(d)} style={{ padding: "2px 8px", fontSize: 11 }}>editar</button>{" "}
                         {d.status !== "RESOLVED" && d.status !== "CLOSED" && (
-                          <button className="btn ghost" onClick={() => testing.updateDefectStatus(d.id, "RESOLVED")} style={{ padding: "2px 8px", fontSize: 11, color: "#24a148" }}>resolver</button>
+                          <button className="btn ghost" onClick={() => testing.updateDefectStatus(d.id, "RESOLVED")} style={{ padding: "2px 8px", fontSize: 11, color: "#86efac" }}>resolver</button>
                         )}
                       </>
                     )}

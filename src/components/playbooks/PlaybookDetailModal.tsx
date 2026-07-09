@@ -68,10 +68,10 @@ export default function PlaybookDetailModal({
             </div>
             <h2 style={{ margin: "2px 0 0", fontSize: 17 }}>{p.title}</h2>
             <div className="row" style={{ gap: 6, marginTop: 6, flexWrap: "wrap", fontSize: 11 }}>
-              <span className="kanban-tag" style={{ borderColor: "rgba(250,77,86,0.4)", color: "#da1e28", background: "rgba(250,77,86,0.08)" }}>
+              <span className="kanban-tag" style={{ borderColor: "rgba(250,77,86,0.4)", color: "#fca5a5", background: "rgba(250,77,86,0.08)" }}>
                 {p.severity}
               </span>
-              <span className="kanban-tag" style={{ borderColor: "rgba(69,137,255,0.4)", color: "#0284c7", background: "rgba(69,137,255,0.08)" }}>
+              <span className="kanban-tag" style={{ borderColor: "rgba(69,137,255,0.4)", color: "#67e8f9", background: "rgba(69,137,255,0.08)" }}>
                 {p.sapModule}
               </span>
               <span style={{ color: "var(--text-dim)" }}>{p.process}</span>

@@ -83,7 +83,7 @@ export default function QualityEvaluationsCard({
       {/* ── Resumen ejecutivo ─────────────────────────────────────── */}
       <div style={{ display: "grid", gridTemplateColumns: "auto 1fr auto", gap: 10, alignItems: "center", flexShrink: 0 }}>
         <div style={{ textAlign: "center", minWidth: 60 }}>
-          <div style={{ fontSize: 22, fontWeight: 800, color: "#8a6d00", fontVariantNumeric: "tabular-nums", lineHeight: 1 }}>
+          <div style={{ fontSize: 22, fontWeight: 800, color: "#f1c21b", fontVariantNumeric: "tabular-nums", lineHeight: 1 }}>
             {summary.averageScore.toFixed(1)}
             <span style={{ fontSize: 12, color: "var(--text-dim)" }}>/5</span>
           </div>
@@ -111,7 +111,7 @@ export default function QualityEvaluationsCard({
       {summary.duplicatesFound > 0 && (
         <div style={{
           marginTop: 6, padding: "4px 8px", fontSize: 10.5,
-          background: "rgba(241,194,27, 0.10)", color: "#8a6d00",
+          background: "rgba(241,194,27, 0.10)", color: "#f1c21b",
           border: "1px solid rgba(241,194,27, 0.35)", borderRadius: 4,
           display: "flex", alignItems: "center", justifyContent: "space-between", gap: 8,
           flexShrink: 0,
@@ -121,7 +121,7 @@ export default function QualityEvaluationsCard({
             <button
               onClick={onCompactDuplicates}
               className="btn ghost sm"
-              style={{ fontSize: 10, padding: "2px 6px", color: "#8a6d00", borderColor: "#f1c21b55" }}
+              style={{ fontSize: 10, padding: "2px 6px", color: "#f1c21b", borderColor: "#f1c21b55" }}
             >
               Compactar
             </button>

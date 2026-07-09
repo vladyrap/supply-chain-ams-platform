@@ -27,12 +27,12 @@ export default function EscalationRules({ escalation, canEdit }: { escalation: U
             <div className="row" style={{ justifyContent: "space-between", alignItems: "flex-start", gap: 12 }}>
               <div style={{ flex: 1, minWidth: 0 }}>
                 <div className="row" style={{ gap: 8, alignItems: "center" }}>
-                  <span style={{ fontSize: 11, color: "#0284c7", fontFamily: "var(--font-mono, monospace)" }}>P{r.priority}</span>
+                  <span style={{ fontSize: 11, color: "#a5f3fc", fontFamily: "var(--font-mono, monospace)" }}>P{r.priority}</span>
                   <div style={{ fontWeight: 700, fontSize: 14 }}>{r.name}</div>
                   <span style={{ fontSize: 10, color: r.enabled ? "#86efac" : "#fcd34d" }}>
                     {r.enabled ? "● habilitada" : "○ inhabilitada"}
                   </span>
-                  {r.requiresApproval && <span style={{ fontSize: 10, color: "#8a6d00" }}>requiere aprobación</span>}
+                  {r.requiresApproval && <span style={{ fontSize: 10, color: "#fde68a" }}>requiere aprobación</span>}
                 </div>
                 <div style={{ fontSize: 12, color: "var(--text-soft)", marginTop: 4 }}>{r.description}</div>
                 <div style={{ fontSize: 11, color: "var(--text-dim)", marginTop: 6, fontFamily: "var(--font-mono, monospace)" }}>
@@ -51,7 +51,7 @@ export default function EscalationRules({ escalation, canEdit }: { escalation: U
                     {r.enabled ? "deshabilitar" : "habilitar"}
                   </button>
                   <button className="btn ghost"
-                    style={{ fontSize: 11, padding: "3px 10px", borderColor: "rgba(250,77,86,0.5)", color: "#da1e28" }}
+                    style={{ fontSize: 11, padding: "3px 10px", borderColor: "rgba(250,77,86,0.5)", color: "#fca5a5" }}
                     onClick={() => { if (confirm(`¿Eliminar regla "${r.name}"?`)) escalation.removeRule(r.id); }}>
                     eliminar
                   </button>

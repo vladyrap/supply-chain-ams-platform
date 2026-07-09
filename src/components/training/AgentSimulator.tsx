@@ -154,7 +154,7 @@ export default function AgentSimulator({ ctx, presetItemId }: Props) {
                   <div key={m.item.id} className="tc-used-card">
                     <div className="row" style={{ gap: 8, alignItems: "center", marginBottom: 4 }}>
                       <span style={{ fontWeight: 700, fontSize: 13 }}>{m.item.title}</span>
-                      <span className="kanban-tag" style={{ borderColor: "rgba(69,137,255,0.4)", color: "#0284c7", background: "rgba(69,137,255,0.08)" }}>{m.item.module}</span>
+                      <span className="kanban-tag" style={{ borderColor: "rgba(69,137,255,0.4)", color: "#67e8f9", background: "rgba(69,137,255,0.08)" }}>{m.item.module}</span>
                       <span style={{ marginLeft: "auto", fontSize: 11, fontFamily: "var(--font-mono, monospace)", color: m.score >= 0.5 ? "#10b981" : m.score >= 0.3 ? "#f1c21b" : "#fa4d56" }}>
                         match {(m.score * 100).toFixed(0)}%
                       </span>

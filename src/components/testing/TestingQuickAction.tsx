@@ -118,7 +118,7 @@ export default function TestingQuickAction({
         <div style={{
           position: "fixed", bottom: 20, right: 20, zIndex: 9001,
           padding: "10px 16px", background: "rgba(69,137,255,0.18)",
-          border: "1px solid rgba(69,137,255,0.5)", color: "#0284c7",
+          border: "1px solid rgba(69,137,255,0.5)", color: "#67e8f9",
           borderRadius: 8, fontSize: 12.5, fontWeight: 600,
         }}>
           {toast}

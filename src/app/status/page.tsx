@@ -105,14 +105,14 @@ export default function StatusPage() {
 
   return (
     <div style={{
-      minHeight: "100vh", background: "#0b1220", color: "#5b6b7d",
+      minHeight: "100vh", background: "#0b1220", color: "#e2e8f0",
       fontFamily: "system-ui, -apple-system, sans-serif", padding: "40px 20px",
     }}>
       <div style={{ maxWidth: 720, margin: "0 auto" }}>
         <h1 style={{ fontSize: 28, fontWeight: 700, marginBottom: 4 }}>
           🟢 AMS Platform · Estado del sistema
         </h1>
-        <p style={{ color: "#5b6b7d", marginBottom: 30 }}>
+        <p style={{ color: "#94a3b8", marginBottom: 30 }}>
           Última actualización: {lastUpdate?.toLocaleString("es-CL") ?? "—"} · Auto-refresh cada 30s
         </p>
 
@@ -128,7 +128,7 @@ export default function StatusPage() {
             }} />
             <div>
               <div style={{ fontSize: 24, fontWeight: 700, color: color.bg }}>{color.label}</div>
-              <div style={{ fontSize: 12, color: "#5b6b7d" }}>
+              <div style={{ fontSize: 12, color: "#94a3b8" }}>
                 {data ? `v${data.version} · ${data.environment}` : "Conectando..."}
               </div>
             </div>
@@ -185,7 +185,7 @@ function ServiceRow({ name, status, detail }: { name: string; status: string; de
       <div style={{ width: 10, height: 10, borderRadius: "50%", background: color }} />
       <div style={{ flex: 1 }}>
         <div style={{ fontSize: 14, fontWeight: 600 }}>{name}</div>
-        <div style={{ fontSize: 11, color: "#5b6b7d" }}>{detail}</div>
+        <div style={{ fontSize: 11, color: "#94a3b8" }}>{detail}</div>
       </div>
       <div style={{ fontSize: 11, fontWeight: 600, color }}>{isUp ? "✓ UP" : isDown ? "✗ DOWN" : "⚠ WARN"}</div>
     </div>

@@ -289,7 +289,7 @@ export default function LearningDashboard({ ctx }: Props) {
         position: "relative", overflow: "hidden",
       }}>
         <div className="ticket-section-head">
-          <span style={{ color: "#7c3aed" }}>⚡</span> AUTO-PULIDO DEL AGENTE · self-training cycle
+          <span style={{ color: "#c084fc" }}>⚡</span> AUTO-PULIDO DEL AGENTE · self-training cycle
         </div>
         <p className="settings-section-desc">
           Un click corre el ciclo completo: <b>detecta brechas</b> → <b>convierte tickets en Q&amp;A</b>
@@ -336,7 +336,7 @@ export default function LearningDashboard({ ctx }: Props) {
         )}
 
         {stRunning && stCurrentStage && (
-          <div style={{ marginTop: 10, fontSize: 12, color: "#7c3aed", fontFamily: "var(--font-mono, monospace)" }}>
+          <div style={{ marginTop: 10, fontSize: 12, color: "#c084fc", fontFamily: "var(--font-mono, monospace)" }}>
             <span className="spinner" /> {stCurrentStage}…
           </div>
         )}
@@ -448,7 +448,7 @@ export default function LearningDashboard({ ctx }: Props) {
       {/* Trigger eval */}
       <div className="card" style={{ borderLeft: "3px solid #a855f7" }}>
         <div className="ticket-section-head">
-          <span style={{ color: "#7c3aed" }}>⚡</span> EVALUACIÓN AUTOMÁTICA · Q&amp;A vs Agente real
+          <span style={{ color: "#c084fc" }}>⚡</span> EVALUACIÓN AUTOMÁTICA · Q&amp;A vs Agente real
         </div>
         <p className="settings-section-desc">
           Cada Q&amp;A aprobada se convierte en un <b>test de regresión</b>. El agente responde la pregunta,
@@ -581,7 +581,7 @@ export default function LearningDashboard({ ctx }: Props) {
       {/* ============================================================== */}
       <div className="card" style={{ borderLeft: "3px solid #f43f5e" }}>
         <div className="ticket-section-head">
-          <span style={{ color: "#da1e28" }}>🧬</span> EMBEDDINGS SEMÁNTICOS · few-shot inteligente
+          <span style={{ color: "#ff8389" }}>🧬</span> EMBEDDINGS SEMÁNTICOS · few-shot inteligente
         </div>
         <p className="settings-section-desc">
           Reemplaza el match léxico por embeddings reales de Gemini. El agente encuentra Q&amp;A relevantes
@@ -606,14 +606,14 @@ export default function LearningDashboard({ ctx }: Props) {
       {/* ============================================================== */}
       <div className="card" style={{ borderLeft: "3px solid #f59e0b" }}>
         <div className="ticket-section-head">
-          <span style={{ color: "#8a6d00" }}>🔬</span> DETECTAR PATRONES DE FEEDBACK NEGATIVO
+          <span style={{ color: "#f1c21b" }}>🔬</span> DETECTAR PATRONES DE FEEDBACK NEGATIVO
         </div>
         <p className="settings-section-desc">
           Cluster por embeddings de razones de feedback 👎 recurrentes. Cada cluster ≥ 3 genera una
           KnowledgeGap automática con sugerencia de cómo curar el contenido.
         </p>
         <button className="btn primary" onClick={detectPatterns} disabled={patternsLoading}
-          style={{ background: "linear-gradient(135deg, #f59e0b, #d97706)", borderColor: "#b45309" }}>
+          style={{ background: "linear-gradient(135deg, #f59e0b, #d97706)", borderColor: "#f59e0b" }}>
           {patternsLoading ? <><span className="spinner" /> clusterizando…</> : "🔬 Buscar patrones (14 días)"}
         </button>
         {patternsReport && (
@@ -688,7 +688,7 @@ export default function LearningDashboard({ ctx }: Props) {
               <div className="row" style={{ gap: 6, flexWrap: "wrap" }}>
                 {hallucination.topSuspicious.map((t) => (
                   <span key={t.tx} className="kanban-tag" style={{
-                    borderColor: "rgba(250,77,86,0.4)", color: "#da1e28",
+                    borderColor: "rgba(250,77,86,0.4)", color: "#fca5a5",
                     background: "rgba(250,77,86,0.08)", fontFamily: "var(--font-mono, monospace)",
                   }}>
                     {t.tx} <b style={{ marginLeft: 4 }}>×{t.count}</b>
@@ -733,7 +733,7 @@ export default function LearningDashboard({ ctx }: Props) {
                       score {q.avgScore}/100
                     </span>
                     {q.module && (
-                      <span className="kanban-tag" style={{ borderColor: "rgba(69,137,255,0.4)", color: "#0284c7", background: "rgba(69,137,255,0.08)" }}>
+                      <span className="kanban-tag" style={{ borderColor: "rgba(69,137,255,0.4)", color: "#67e8f9", background: "rgba(69,137,255,0.08)" }}>
                         {q.module}
                       </span>
                     )}
@@ -824,7 +824,7 @@ export default function LearningDashboard({ ctx }: Props) {
       {/* ============================================================== */}
       <div className="card" style={{ borderLeft: "3px solid #f1c21b" }}>
         <div className="ticket-section-head">
-          <span style={{ color: "#8a6d00" }}>🎫</span> TICKETS RESUELTOS → Q&amp;A PROPUESTAS
+          <span style={{ color: "#f1c21b" }}>🎫</span> TICKETS RESUELTOS → Q&amp;A PROPUESTAS
         </div>
         <p className="settings-section-desc">
           Tomamos tickets cerrados sin Q&amp;A. Gemini lee la conversación, crea un knowledge item base
@@ -838,7 +838,7 @@ export default function LearningDashboard({ ctx }: Props) {
             <span style={{ fontFamily: "var(--font-mono, monospace)", fontWeight: 700, minWidth: 22 }}>{ticketsLimit}</span>
           </label>
           <button className="btn primary" onClick={runTicketsToQa} disabled={ticketsRunning}
-            style={{ background: "linear-gradient(135deg, #f1c21b, #f59e0b)", borderColor: "#8a6d00", marginLeft: "auto" }}>
+            style={{ background: "linear-gradient(135deg, #f1c21b, #f59e0b)", borderColor: "#f1c21b", marginLeft: "auto" }}>
             {ticketsRunning ? <><span className="spinner" /> Gemini proponiendo…</> : "🤖 Generar Q&A desde tickets"}
           </button>
         </div>
@@ -864,7 +864,7 @@ export default function LearningDashboard({ ctx }: Props) {
       {/* ============================================================== */}
       <div className="card" style={{ borderLeft: "3px solid #4589ff" }}>
         <div className="ticket-section-head" style={{ cursor: "pointer" }} onClick={() => setShowAb(!showAb)}>
-          <span style={{ color: "#0284c7" }}>🆎</span> A/B TEST · COMPARAR PROMPT CANDIDATO VS ACTIVO
+          <span style={{ color: "#67e8f9" }}>🆎</span> A/B TEST · COMPARAR PROMPT CANDIDATO VS ACTIVO
           <span style={{ marginLeft: "auto", fontSize: 11, color: "var(--text-dim)" }}>{showAb ? "▼" : "▶"}</span>
         </div>
         {showAb && (
@@ -949,7 +949,7 @@ export default function LearningDashboard({ ctx }: Props) {
       {/* ============================================================== */}
       <div className="card" style={{ borderLeft: "3px solid #a855f7" }}>
         <div className="ticket-section-head">
-          <span style={{ color: "#7c3aed" }}>🔍</span> COMPARAR DOS EVAL RUNS
+          <span style={{ color: "#c084fc" }}>🔍</span> COMPARAR DOS EVAL RUNS
         </div>
         <p className="settings-section-desc">
           Elegí 2 runs del historial → te mostramos qué Q&amp;A mejoraron, cuáles empeoraron y cuáles quedaron igual.
@@ -1029,7 +1029,7 @@ export default function LearningDashboard({ ctx }: Props) {
                 <div className="row" style={{ gap: 8, marginTop: 6, flexWrap: "wrap", fontSize: 11 }}>
                   <span className="tc-pill ok">{detail.passed} pass</span>
                   <span className="tc-pill pend">{detail.results.filter((r) => r.verdict === "partial").length} partial</span>
-                  <span style={{ background: "rgba(250,77,86,0.18)", border: "1px solid rgba(250,77,86,0.4)", color: "#da1e28", padding: "2px 8px", borderRadius: 999, fontWeight: 600 }}>
+                  <span style={{ background: "rgba(250,77,86,0.18)", border: "1px solid rgba(250,77,86,0.4)", color: "#fca5a5", padding: "2px 8px", borderRadius: 999, fontWeight: 600 }}>
                     {detail.failed} fail
                   </span>
                 </div>

@@ -21,11 +21,11 @@ const KIND_META: Record<string, { color: string; icon: string }> = {
   user_message:         { color: "#3b82f6", icon: "👤" },
   ai_triage:            { color: "#06b6d4", icon: "🧠" },
   ai_message:           { color: "#10b981", icon: "🤖" },
-  ticket_created:       { color: "#b45309", icon: "🎫" },
+  ticket_created:       { color: "#f59e0b", icon: "🎫" },
   ticket_assigned:      { color: "#a855f7", icon: "👨‍💻" },
   ticket_resolved:      { color: "#10b981", icon: "✅" },
-  kb_created:           { color: "#8a6d00", icon: "📘" },
-  done:                 { color: "#24a148", icon: "🎉" },
+  kb_created:           { color: "#f1c21b", icon: "📘" },
+  done:                 { color: "#42be65", icon: "🎉" },
   error:                { color: "#fa4d56", icon: "⚠" },
 };
 

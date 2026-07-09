@@ -78,10 +78,10 @@ export default class ErrorBoundary extends Component<Props, State> {
               marginBottom: 20, padding: 12, background: "rgba(0,0,0,0.3)",
               borderRadius: 4, fontFamily: "monospace", fontSize: 11,
             }}>
-              <summary style={{ cursor: "pointer", color: "#b45309" }}>
+              <summary style={{ cursor: "pointer", color: "#fb923c" }}>
                 Detalles técnicos (solo dev)
               </summary>
-              <pre style={{ marginTop: 10, whiteSpace: "pre-wrap", color: "#da1e28" }}>
+              <pre style={{ marginTop: 10, whiteSpace: "pre-wrap", color: "#fca5a5" }}>
                 {this.state.error.message}
                 {"\n\n"}
                 {this.state.error.stack}

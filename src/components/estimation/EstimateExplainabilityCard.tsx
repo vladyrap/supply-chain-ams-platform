@@ -72,7 +72,7 @@ export default function EstimateExplainabilityCard({
 
       {/* Resumen */}
       <div className="row" style={{ gap: 14, marginTop: 10, flexWrap: "wrap", fontSize: 12 }}>
-        <div><span style={{ color: "var(--text-dim)" }}>Rango:</span> <strong style={{ color: "#8a6d00", fontSize: 14 }}>{explanation.totalRangeLabel}</strong></div>
+        <div><span style={{ color: "var(--text-dim)" }}>Rango:</span> <strong style={{ color: "#f1c21b", fontSize: 14 }}>{explanation.totalRangeLabel}</strong></div>
         <div><span style={{ color: "var(--text-dim)" }}>Confianza:</span> <strong>{explanation.confidence}</strong></div>
         <div><span style={{ color: "var(--text-dim)" }}>Complejidad:</span> <strong>{explanation.complexity}</strong></div>
         <div><span style={{ color: "var(--text-dim)" }}>Fuente:</span> <strong>{explanation.calculationSource}</strong></div>
@@ -117,7 +117,7 @@ export default function EstimateExplainabilityCard({
       {/* Datos faltantes destacados */}
       {explanation.missingData.length > 0 && (
         <div className="lab-fb-block" style={{ borderLeft: "3px solid #f1c21b", marginTop: 10 }}>
-          <div style={{ fontWeight: 600, fontSize: 11.5, color: "#8a6d00" }}>❓ DATOS FALTANTES ({explanation.missingData.length})</div>
+          <div style={{ fontWeight: 600, fontSize: 11.5, color: "#f1c21b" }}>❓ DATOS FALTANTES ({explanation.missingData.length})</div>
           <ul style={{ margin: "4px 0 0", paddingLeft: 18, fontSize: 11, color: "var(--text-soft)" }}>
             {explanation.missingData.map((m, i) => <li key={i}>{m}</li>)}
           </ul>

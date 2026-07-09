@@ -16,7 +16,7 @@ export default function AccessLockedCard({ screen, reason }: Props) {
       backdropFilter: "blur(14px)",
     }}>
       <div style={{ fontSize: 48, marginBottom: 12 }}>🔒</div>
-      <h2 style={{ margin: "0 0 8px", fontSize: 20, color: "#da1e28" }}>Acceso restringido</h2>
+      <h2 style={{ margin: "0 0 8px", fontSize: 20, color: "#fca5a5" }}>Acceso restringido</h2>
       <p style={{ color: "var(--text-soft)", fontSize: 13.5, margin: "0 0 16px", lineHeight: 1.6 }}>
         {reason || "Tu rol no tiene permiso para ver esta pantalla."}
         {screen && <><br /><span style={{ color: "var(--text-dim)", fontSize: 11 }}>pantalla: <code>{screen}</code></span></>}

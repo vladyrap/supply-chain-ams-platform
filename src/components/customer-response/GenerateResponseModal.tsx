@@ -247,7 +247,7 @@ export default function GenerateResponseModal({
             <button
               className="btn"
               onClick={handleReview}
-              style={{ background: "#f59e0b22", color: "#b45309", borderColor: "#f59e0b55" }}
+              style={{ background: "#f59e0b22", color: "#f59e0b", borderColor: "#f59e0b55" }}
             >
               👤 Enviar a revisión humana
             </button>

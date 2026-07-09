@@ -49,7 +49,7 @@ export default function TestingIntelligenceCenter({ actingUserId, canEdit, canCo
         <p className="subtitle">
           Graba procesos, genera scripts de prueba, organiza evidencias y prepara documentación para SAP Cloud ALM.
         </p>
-        <div style={{ marginTop: 8, fontSize: 11, color: "#8a6d00" }}>
+        <div style={{ marginTop: 8, fontSize: 11, color: "#fde68a" }}>
           <span className="live-dot" /> Modo demo activo · Cloud ALM en modo preparación (sin envío real).
         </div>
       </div>

@@ -29,10 +29,10 @@ function greeting(name: string, date: Date | null): string {
 }
 
 function climaIcon(escalations: number, responseRate: number): { icon: string; label: string; color: string } {
-  if (escalations > 5) return { icon: "🌩", label: "Tormenta operativa", color: "#da1e28" };
-  if (escalations > 2) return { icon: "🌧", label: "Carga alta", color: "#b45309" };
-  if (responseRate < 70) return { icon: "⛅", label: "Operación estable", color: "#8a6d00" };
-  return { icon: "☀", label: "Operación nominal", color: "#24a148" };
+  if (escalations > 5) return { icon: "🌩", label: "Tormenta operativa", color: "#fca5a5" };
+  if (escalations > 2) return { icon: "🌧", label: "Carga alta", color: "#fdba74" };
+  if (responseRate < 70) return { icon: "⛅", label: "Operación estable", color: "#fcd34d" };
+  return { icon: "☀", label: "Operación nominal", color: "#86efac" };
 }
 
 export default function HeroCard({ userName, role, totalIncidents, resolvedToday, activeEscalations, agentResponseRate }: Props) {

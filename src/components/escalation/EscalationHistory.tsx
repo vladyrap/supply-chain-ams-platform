@@ -72,13 +72,13 @@ export default function EscalationHistory({
             )}
             {filtered.map((r) => (
               <tr key={r.id} style={{ borderTop: "1px solid rgba(255,255,255,0.05)" }}>
-                <td style={{ padding: "8px 10px", fontFamily: "var(--font-mono, monospace)", color: "#7c3aed" }}>{r.escalationNumber}</td>
+                <td style={{ padding: "8px 10px", fontFamily: "var(--font-mono, monospace)", color: "#c084fc" }}>{r.escalationNumber}</td>
                 <td style={{ padding: "8px 10px", fontFamily: "var(--font-mono, monospace)", fontSize: 11 }}>{r.incidentId.slice(-8)}</td>
                 <td style={{ padding: "8px 10px" }}>{r.assignedToName || "—"}</td>
                 <td style={{ padding: "8px 10px" }}>{r.channel}</td>
                 <td style={{ padding: "8px 10px" }}>
                   {r.externalTicketId ? (
-                    <a href={r.externalTicketUrl} target="_blank" rel="noreferrer" style={{ color: "#0284c7" }}>{r.externalTicketId}</a>
+                    <a href={r.externalTicketUrl} target="_blank" rel="noreferrer" style={{ color: "#7dd3fc" }}>{r.externalTicketId}</a>
                   ) : <span style={{ color: "var(--text-dim)" }}>—</span>}
                 </td>
                 <td style={{ padding: "8px 10px" }}>{r.slaMinutes}min</td>

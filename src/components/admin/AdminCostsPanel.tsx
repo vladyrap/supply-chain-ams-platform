@@ -154,7 +154,7 @@ function BurnRateWidget({ br }: { br: UsageSummaryResponse["burnRate"] }) {
         🔥 BURN RATE · ÚLTIMA HORA
       </div>
       <div className="row" style={{ gap: 12, alignItems: "baseline" }}>
-        <div style={{ fontSize: 28, fontWeight: 700, color: "#b45309" }}>{br.lastHourCalls}</div>
+        <div style={{ fontSize: 28, fontWeight: 700, color: "#fb923c" }}>{br.lastHourCalls}</div>
         <div style={{ fontSize: 11, color: "var(--text-dim)" }}>calls</div>
         <div style={{ fontSize: 12, color, fontWeight: 600, marginLeft: "auto" }}>
           {arrow} {Math.abs(br.deltaPct)}% vs hora previa
@@ -356,7 +356,7 @@ function RateLimiterStrip({ rl }: { rl: UsageSummaryResponse["rateLimiter"] }) {
           <div style={{ fontSize: 13, fontWeight: 600, marginTop: 2 }}>3 ventanas anti-cobros</div>
         </div>
         {warn ? (
-          <span style={{ fontSize: 11, padding: "4px 10px", background: "rgba(245,158,11,0.15)", border: "1px solid #f59e0b", borderRadius: 4, color: "#b45309", fontWeight: 600 }}>⚠ Cap próximo</span>
+          <span style={{ fontSize: 11, padding: "4px 10px", background: "rgba(245,158,11,0.15)", border: "1px solid #f59e0b", borderRadius: 4, color: "#f59e0b", fontWeight: 600 }}>⚠ Cap próximo</span>
         ) : null}
       </div>
       <div style={{ display: "flex", gap: 12, flexWrap: "wrap", fontSize: 11.5 }}>

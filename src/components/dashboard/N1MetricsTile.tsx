@@ -76,7 +76,7 @@ export default function N1MetricsTile({ tickets }: Props) {
             {metrics.topIncompleteModules.map((m) => (
               <div key={m.module} style={{
                 padding: "3px 8px", fontSize: 10.5, borderRadius: 3,
-                background: "rgba(250,77,86,0.12)", color: "#da1e28",
+                background: "rgba(250,77,86,0.12)", color: "#fca5a5",
                 border: "1px solid rgba(250,77,86,0.25)",
               }}>
                 <strong>{m.module}</strong> · avg {m.avgReadiness}/100 · {m.count} tickets

@@ -37,7 +37,7 @@ export default function PostEditReanalyzeModal({
   return (
     <ModalPortal open={open} onClose={onClose} maxWidth={520} contentClassName="card">
       <div style={{ padding: 18 }}>
-        <div className="ticket-section-head" style={{ color: "#b45309" }}>
+        <div className="ticket-section-head" style={{ color: "#f59e0b" }}>
           ⚠ DATOS CRÍTICOS MODIFICADOS
         </div>
         <p style={{ fontSize: 13, color: "var(--text-soft)", marginTop: 8, lineHeight: 1.5 }}>
@@ -54,7 +54,7 @@ export default function PostEditReanalyzeModal({
           <div style={{ fontSize: 10.5, color: "var(--text-dim)", letterSpacing: 1.4, marginBottom: 4 }}>
             CAMPOS CRÍTICOS CAMBIADOS
           </div>
-          <ul style={{ margin: 0, paddingLeft: 18, color: "#b45309" }}>
+          <ul style={{ margin: 0, paddingLeft: 18, color: "#f59e0b" }}>
             {report.criticalFieldsChanged.map((f) => <li key={f}><strong>{f}</strong></li>)}
           </ul>
           {report.cosmeticFieldsChanged.length > 0 && (

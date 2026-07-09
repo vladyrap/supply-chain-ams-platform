@@ -72,13 +72,13 @@ export default function EscalationQuickAction({ incident, actingUserId, canAppro
           fontSize: variant === "compact" ? 10.5 : 11.5,
           background: "linear-gradient(135deg, rgba(250,77,86,0.18), rgba(168,85,247,0.12))",
           borderColor: "rgba(250,77,86,0.45)",
-          color: "#da1e28",
+          color: "#fca5a5",
         }}
         title={candidate.matchedRule ? `Regla detectada: ${candidate.matchedRule.name}` : "Escalación manual"}
       >
         🚨 Escalar N2
         {variant === "full" && candidate.matchedRule && (
-          <span style={{ fontSize: 10, color: "#8a6d00", marginLeft: 6 }}>
+          <span style={{ fontSize: 10, color: "#fde68a", marginLeft: 6 }}>
             · {candidate.severity}
           </span>
         )}

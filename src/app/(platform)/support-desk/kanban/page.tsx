@@ -8,13 +8,13 @@ import { supportApi, type SupportTicket, type TicketStatus, type Priority } from
 const PRIORITY_META: Record<Priority, { color: string; icon: string; glow: string }> = {
   baja:    { color: "#10b981", icon: "○", glow: "0 0 6px #10b98166" },
   media:   { color: "#4589ff", icon: "●", glow: "0 0 6px #4589ff66" },
-  alta:    { color: "#b45309", icon: "▲", glow: "0 0 8px #f59e0b88" },
+  alta:    { color: "#f59e0b", icon: "▲", glow: "0 0 8px #f59e0b88" },
   critica: { color: "#fa4d56", icon: "🔥", glow: "0 0 12px #fa4d56aa" },
 };
 
 const COLUMNS: { id: TicketStatus; label: string; icon: string; color: string; sub: string }[] = [
   { id: "new",              label: "Nuevos",            icon: "🆕", color: "#3b82f6", sub: "esperando triage humano" },
-  { id: "in_progress",      label: "En progreso",       icon: "⚙",  color: "#b45309", sub: "consultor trabajando" },
+  { id: "in_progress",      label: "En progreso",       icon: "⚙",  color: "#f59e0b", sub: "consultor trabajando" },
   { id: "waiting_customer", label: "Esperando cliente", icon: "⏳", color: "#a855f7", sub: "esperando respuesta" },
   { id: "resolved",         label: "Resueltos",         icon: "✓", color: "#10b981", sub: "solución entregada" },
   { id: "closed",           label: "Cerrados",          icon: "📦", color: "#6b7280", sub: "casos archivados" },
@@ -46,7 +46,7 @@ function slaState(t: SupportTicket): SLA {
   const m = Math.round(remainingMs / 60000);
   const text = m < 60 ? `⏰ ${m}m` : `⏰ ${Math.floor(m / 60)}h ${m % 60}m`;
   if (pct < 25) return { text, pct, state: "danger", color: "#fa4d56" };
-  if (pct < 50) return { text, pct, state: "warn",   color: "#b45309" };
+  if (pct < 50) return { text, pct, state: "warn",   color: "#f59e0b" };
   return { text, pct, state: "ok", color: "#10b981" };
 }
 
@@ -270,12 +270,12 @@ export default function MesaKanbanPage() {
                       {/* Footer tags */}
                       <div className="row" style={{ gap: 4, flexWrap: "wrap", marginTop: 6 }}>
                         {t.system_affected && t.system_affected !== "NO_INFORMADO" && (
-                          <span className="kanban-tag" style={{ borderColor: "rgba(69,137,255,0.4)", color: "#0284c7", background: "rgba(69,137,255,0.08)" }}>
+                          <span className="kanban-tag" style={{ borderColor: "rgba(69,137,255,0.4)", color: "#67e8f9", background: "rgba(69,137,255,0.08)" }}>
                             {t.system_affected}
                           </span>
                         )}
                         {t.category && (
-                          <span className="kanban-tag" style={{ borderColor: "rgba(168,85,247,0.4)", color: "#7c3aed", background: "rgba(168,85,247,0.08)" }}>
+                          <span className="kanban-tag" style={{ borderColor: "rgba(168,85,247,0.4)", color: "#c084fc", background: "rgba(168,85,247,0.08)" }}>
                             {t.category}
                           </span>
                         )}

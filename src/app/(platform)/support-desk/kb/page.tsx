@@ -14,7 +14,7 @@ const SAP_MODULES: SapModule[] = [
 ];
 
 const STATUS_META: Record<KbStatus, { color: string; label: string; icon: string }> = {
-  draft:    { color: "#8a6d00", label: "Draft",     icon: "📝" },
+  draft:    { color: "#f1c21b", label: "Draft",     icon: "📝" },
   approved: { color: "#10b981", label: "Aprobado",  icon: "✓" },
   archived: { color: "#6b7280", label: "Archivado", icon: "📦" },
 };
@@ -373,10 +373,10 @@ export default function KbPage() {
                     </div>
                     <div className="row" style={{ gap: 6, marginTop: 5, flexWrap: "wrap", alignItems: "center" }}>
                       {a.category && (
-                        <span className="kanban-tag" style={{ borderColor: "rgba(168,85,247,0.4)", color: "#7c3aed", background: "rgba(168,85,247,0.08)" }}>{a.category}</span>
+                        <span className="kanban-tag" style={{ borderColor: "rgba(168,85,247,0.4)", color: "#c084fc", background: "rgba(168,85,247,0.08)" }}>{a.category}</span>
                       )}
                       {a.source === "from_ticket" && (
-                        <span className="kanban-tag" style={{ borderColor: "rgba(241,194,27,0.4)", color: "#8a6d00", background: "rgba(241,194,27,0.08)" }}>📤 de ticket</span>
+                        <span className="kanban-tag" style={{ borderColor: "rgba(241,194,27,0.4)", color: "#fcd34d", background: "rgba(241,194,27,0.08)" }}>📤 de ticket</span>
                       )}
                       <span style={{ marginLeft: "auto", fontSize: 10.5, color: "var(--text-dim)", fontFamily: "var(--font-mono, monospace)" }}>
                         👍 {a.helpful_count} · 🤖 {a.use_count}
@@ -438,10 +438,10 @@ function KbDetail({ article, isApprover, onApprove, onArchive, onDelete, onHelpf
               {status.icon} {status.label}
             </span>
             {article.category && (
-              <span className="kanban-tag" style={{ borderColor: "rgba(168,85,247,0.4)", color: "#7c3aed", background: "rgba(168,85,247,0.08)" }}>{article.category}</span>
+              <span className="kanban-tag" style={{ borderColor: "rgba(168,85,247,0.4)", color: "#c084fc", background: "rgba(168,85,247,0.08)" }}>{article.category}</span>
             )}
             {article.source === "from_ticket" && (
-              <span className="kanban-tag" style={{ borderColor: "rgba(241,194,27,0.4)", color: "#8a6d00", background: "rgba(241,194,27,0.08)" }}>📤 de ticket</span>
+              <span className="kanban-tag" style={{ borderColor: "rgba(241,194,27,0.4)", color: "#fcd34d", background: "rgba(241,194,27,0.08)" }}>📤 de ticket</span>
             )}
           </div>
         </div>

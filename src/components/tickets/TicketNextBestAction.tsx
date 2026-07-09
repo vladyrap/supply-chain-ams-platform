@@ -118,7 +118,7 @@ export default function TicketNextBestAction({ decision, onAction, readinessScor
         <div style={{
           marginTop: 8, padding: "6px 10px", borderRadius: 4,
           background: "rgba(241,194,27,0.12)", border: "1px solid #f1c21b44",
-          fontSize: 11, color: "#8a6d00",
+          fontSize: 11, color: "#f1c21b",
         }}>
           ⚠ Ticket readiness es bajo ({readinessScore}%). Considerá completar la información antes de avanzar.
         </div>

@@ -49,16 +49,16 @@ export default function KnowledgeItemModal({ item, onClose, onSave, readOnly }: 
               <span className="tc-pill" style={{ background: `${STATUS_COLORS[item.status]}20`, border: `1px solid ${STATUS_COLORS[item.status]}66`, color: STATUS_COLORS[item.status] }}>
                 {KNOWLEDGE_STATUS_LABELS[item.status]}
               </span>
-              <span className="tc-pill" style={{ background: "rgba(69,137,255,0.10)", border: "1px solid rgba(69,137,255,0.4)", color: "#0284c7" }}>
+              <span className="tc-pill" style={{ background: "rgba(69,137,255,0.10)", border: "1px solid rgba(69,137,255,0.4)", color: "#67e8f9" }}>
                 {item.module}
               </span>
-              <span className="tc-pill" style={{ background: "rgba(168,85,247,0.10)", border: "1px solid rgba(168,85,247,0.4)", color: "#7c3aed" }}>
+              <span className="tc-pill" style={{ background: "rgba(168,85,247,0.10)", border: "1px solid rgba(168,85,247,0.4)", color: "#c084fc" }}>
                 {item.process}
               </span>
               <span className="tc-pill" style={{ background: `${PRIORITY_COLORS[item.priority]}15`, border: `1px solid ${PRIORITY_COLORS[item.priority]}55`, color: PRIORITY_COLORS[item.priority] }}>
                 {PRIORITY_LABELS[item.priority]}
               </span>
-              <span className="tc-pill" style={{ background: "rgba(69,137,255,0.10)", border: "1px solid rgba(69,137,255,0.4)", color: "#1d4ed8" }}>
+              <span className="tc-pill" style={{ background: "rgba(69,137,255,0.10)", border: "1px solid rgba(69,137,255,0.4)", color: "#93c5fd" }}>
                 {KNOWLEDGE_TYPE_LABELS[item.type]}
               </span>
             </div>
@@ -84,7 +84,7 @@ export default function KnowledgeItemModal({ item, onClose, onSave, readOnly }: 
                   <div className="lab-fb-block-head">▸ TAGS</div>
                   <div className="row" style={{ gap: 6, flexWrap: "wrap" }}>
                     {item.tags.map((t) => (
-                      <span key={t} className="kanban-tag" style={{ borderColor: "rgba(69,137,255,0.4)", color: "#0284c7", background: "rgba(69,137,255,0.08)" }}>{t}</span>
+                      <span key={t} className="kanban-tag" style={{ borderColor: "rgba(69,137,255,0.4)", color: "#67e8f9", background: "rgba(69,137,255,0.08)" }}>{t}</span>
                     ))}
                   </div>
                 </div>
@@ -97,7 +97,7 @@ export default function KnowledgeItemModal({ item, onClose, onSave, readOnly }: 
                 <div><strong>Validación funcional</strong><br/>{item.functionalValidatedBy ?? "—"}</div>
                 <div><strong>Validación técnica</strong><br/>{item.technicalValidatedBy ?? "—"}</div>
                 {item.publishedAt && <div><strong>Publicado</strong><br/>{new Date(item.publishedAt).toLocaleString("es-CL")}</div>}
-                {item.rejectionReason && <div style={{ gridColumn: "1 / -1", color: "#da1e28" }}><strong>Rechazo</strong><br/>{item.rejectionReason}</div>}
+                {item.rejectionReason && <div style={{ gridColumn: "1 / -1", color: "#fca5a5" }}><strong>Rechazo</strong><br/>{item.rejectionReason}</div>}
               </div>
             </>
           ) : (

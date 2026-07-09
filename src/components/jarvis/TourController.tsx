@@ -168,7 +168,7 @@ export default function TourController() {
         <div className="tour-banner-glow" />
         <div style={{ display: "flex", alignItems: "center", gap: 14, flex: 1, position: "relative", zIndex: 1 }}>
           <div className="tour-step-counter">
-            <span style={{ fontSize: 10, color: "#0284c7", letterSpacing: 2 }}>STEP</span>
+            <span style={{ fontSize: 10, color: "#67e8f9", letterSpacing: 2 }}>STEP</span>
             <span style={{ fontSize: 22, color: "#4589ff", fontWeight: 700, lineHeight: 1, textShadow: "0 0 8px rgba(69,137,255,0.6)" }}>{stepIdx + 1}/{TOUR.length}</span>
           </div>
           <div style={{ flex: 1 }}>
@@ -220,7 +220,7 @@ export default function TourController() {
           padding: 10px 16px;
           width: min(720px, 92vw);
           font-family: var(--font-mono, monospace);
-          color: #5b6b7d;
+          color: #cbd5e1;
           backdrop-filter: blur(8px);
           box-shadow: 0 8px 32px rgba(0,0,0,0.6), 0 0 30px rgba(69,137,255,0.25);
           overflow: hidden;

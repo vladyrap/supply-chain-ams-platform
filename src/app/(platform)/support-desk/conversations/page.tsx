@@ -9,8 +9,8 @@ import { supportApi, type SupportConversation, type SupportMessage, type Support
 const STATUS_META: Record<SupportStatus, { color: string; label: string; icon: string }> = {
   open:            { color: "#4589ff", label: "Abierta",          icon: "○" },
   ai_handling:     { color: "#3b82f6", label: "IA atendiendo",    icon: "🤖" },
-  waiting_user:    { color: "#8a6d00", label: "Esperando usuario", icon: "⏳" },
-  escalated:       { color: "#b45309", label: "Escalada N2",      icon: "📤" },
+  waiting_user:    { color: "#f1c21b", label: "Esperando usuario", icon: "⏳" },
+  escalated:       { color: "#f59e0b", label: "Escalada N2",      icon: "📤" },
   resolved:        { color: "#10b981", label: "Resuelta IA",      icon: "✓" },
   closed:          { color: "#6b7280", label: "Cerrada",          icon: "📦" },
 };
@@ -19,13 +19,13 @@ const CHANNEL_META: Record<SupportChannel, { color: string; icon: string; label:
   chat:     { color: "#4589ff", icon: "💬", label: "Chat web" },
   whatsapp: { color: "#10b981", icon: "📱", label: "WhatsApp" },
   voice:    { color: "#a855f7", icon: "📞", label: "Voz" },
-  email:    { color: "#8a6d00", icon: "✉",  label: "Email" },
+  email:    { color: "#f1c21b", icon: "✉",  label: "Email" },
 };
 
 const URGENCY_META: Record<string, { color: string; icon: string }> = {
   baja:    { color: "#10b981", icon: "○" },
   media:   { color: "#4589ff", icon: "●" },
-  alta:    { color: "#b45309", icon: "▲" },
+  alta:    { color: "#f59e0b", icon: "▲" },
   critica: { color: "#fa4d56", icon: "🔥" },
 };
 
@@ -251,7 +251,7 @@ export default function ConversationsPage() {
                     </div>
                     <div className="row" style={{ gap: 6, marginTop: 5, flexWrap: "wrap", alignItems: "center" }}>
                       {c.sap_module && c.sap_module !== "NO_INFORMADO" && (
-                        <span className="kanban-tag" style={{ borderColor: "rgba(69,137,255,0.4)", color: "#0284c7", background: "rgba(69,137,255,0.08)" }}>{c.sap_module}</span>
+                        <span className="kanban-tag" style={{ borderColor: "rgba(69,137,255,0.4)", color: "#67e8f9", background: "rgba(69,137,255,0.08)" }}>{c.sap_module}</span>
                       )}
                       {urgency && (
                         <span className="kanban-tag" style={{ borderColor: `${urgency.color}55`, color: urgency.color, background: `${urgency.color}11` }}>
@@ -400,7 +400,7 @@ function ConversationDetail({ detail, messagesEndRef }: { detail: { conv: Suppor
                 <div key={m.id}>
                   {showDate && <DateDivider date={m.created_at} />}
                   <div className="conv-msg-system">
-                    <span style={{ marginRight: 6, color: "#8a6d00" }}>⚙</span>
+                    <span style={{ marginRight: 6, color: "#f1c21b" }}>⚙</span>
                     {m.text}
                   </div>
                 </div>

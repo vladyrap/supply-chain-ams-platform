@@ -210,9 +210,9 @@ export default function EscalationModal({ incident, escalation, createdByUserId,
 
               {/* Aviso modo real */}
               {isRealMode && (
-                <div className="card" style={{ background: "rgba(241,194,27,0.10)", borderColor: "rgba(241,194,27,0.5)", fontSize: 12, color: "#8a6d00" }}>
+                <div className="card" style={{ background: "rgba(241,194,27,0.10)", borderColor: "rgba(241,194,27,0.5)", fontSize: 12, color: "#fde68a" }}>
                   ⚠ <b>Modo REAL detectado para {channel}.</b> No se envía desde el frontend. Backend debe estar configurado con variables de entorno y se requerirá confirmación humana adicional.
-                  {!realCredsConfigured && <div style={{ marginTop: 4, color: "#da1e28" }}>Credenciales no marcadas como configuradas — escalación bloqueada hasta que el admin las habilite.</div>}
+                  {!realCredsConfigured && <div style={{ marginTop: 4, color: "#fca5a5" }}>Credenciales no marcadas como configuradas — escalación bloqueada hasta que el admin las habilite.</div>}
                 </div>
               )}
 
@@ -236,7 +236,7 @@ export default function EscalationModal({ incident, escalation, createdByUserId,
             </>
           ) : (
             <>
-              <div style={{ fontSize: 12, color: "#8a6d00", flex: 1 }}>
+              <div style={{ fontSize: 12, color: "#fde68a", flex: 1 }}>
                 ¿Confirmás escalar este incidente con los datos mostrados?
               </div>
               <button className="btn ghost" onClick={() => setConfirming(false)} disabled={busy}>← Volver</button>

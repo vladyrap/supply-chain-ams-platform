@@ -99,7 +99,7 @@ export default function TestingSettingsPanel({ testing, canConfigure }: { testin
             Restaurar datos demo (escenarios, evidencias, defectos, manuales y settings).
           </div>
           <button className="btn ghost"
-            style={{ marginTop: 8, borderColor: "rgba(250,77,86,0.5)", color: "#da1e28" }}
+            style={{ marginTop: 8, borderColor: "rgba(250,77,86,0.5)", color: "#fca5a5" }}
             onClick={() => { if (confirm("¿Restaurar datos demo de testing? Esto sobrescribe lo actual.")) testing.resetDemoTestingData(); }}>
             ↻ Restaurar demo
           </button>

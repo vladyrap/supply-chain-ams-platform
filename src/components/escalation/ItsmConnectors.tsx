@@ -8,7 +8,7 @@ export default function ItsmConnectors({ escalation, canConfigure }: { escalatio
 
   return (
     <div className="col" style={{ gap: 14 }}>
-      <div className="card" style={{ background: "rgba(241,194,27,0.07)", borderColor: "rgba(241,194,27,0.30)", color: "#8a6d00", fontSize: 12 }}>
+      <div className="card" style={{ background: "rgba(241,194,27,0.07)", borderColor: "rgba(241,194,27,0.30)", color: "#fde68a", fontSize: 12 }}>
         🔒 <b>Seguridad:</b> los <b>API tokens nunca se almacenan en el frontend</b>. Esta pantalla sólo guarda configuración no-secreta. Las credenciales reales se inyectan al backend con variables de entorno (ver docs/escalation-n2.md).
       </div>
 
@@ -148,7 +148,7 @@ export default function ItsmConnectors({ escalation, canConfigure }: { escalatio
       <div className="card" style={{ opacity: 0.7 }}>
         <div className="row" style={{ justifyContent: "space-between", alignItems: "center", marginBottom: 10 }}>
           <h3 style={{ margin: 0, fontSize: 15 }}>🟩 SAP Cloud ALM (futuro)</h3>
-          <span style={{ fontSize: 11, padding: "2px 8px", borderRadius: 4, fontWeight: 700, background: "rgba(148,163,184,0.15)", color: "#5b6b7d" }}>{sapCloudAlm.mode}</span>
+          <span style={{ fontSize: 11, padding: "2px 8px", borderRadius: 4, fontWeight: 700, background: "rgba(148,163,184,0.15)", color: "#cbd5e1" }}>{sapCloudAlm.mode}</span>
         </div>
         <p style={{ fontSize: 12, color: "var(--text-soft)", margin: 0 }}>
           {sapCloudAlm.note}
@@ -159,7 +159,7 @@ export default function ItsmConnectors({ escalation, canConfigure }: { escalatio
       <div className="card">
         <div className="row" style={{ justifyContent: "space-between", alignItems: "center" }}>
           <h3 style={{ margin: 0, fontSize: 15 }}>✉️ Manual</h3>
-          <span style={{ fontSize: 11, color: "#24a148", fontWeight: 700 }}>siempre disponible</span>
+          <span style={{ fontSize: 11, color: "#86efac", fontWeight: 700 }}>siempre disponible</span>
         </div>
         <p style={{ fontSize: 12, color: "var(--text-soft)", margin: "6px 0 0" }}>
           La escalación manual no envía a ningún sistema externo. Sólo registra el evento, deja el resumen y notifica por email/teams al responsable cuando esos canales estén configurados.

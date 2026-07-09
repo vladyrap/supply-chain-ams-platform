@@ -157,7 +157,7 @@ export default function AmsIntelligenceSummaryCard({ analysis }: Props) {
           {analysis.missingData.length > 0 && (
             <div style={{
               fontSize: 10.5, padding: "2px 8px", borderRadius: 4,
-              background: "rgba(241,194,27,0.10)", color: "#8a6d00",
+              background: "rgba(241,194,27,0.10)", color: "#f1c21b",
               border: "1px solid rgba(241,194,27,0.35)",
             }}>
               📋 {analysis.missingData.length} dato{analysis.missingData.length === 1 ? "" : "s"} faltante{analysis.missingData.length === 1 ? "" : "s"}
@@ -215,7 +215,7 @@ export default function AmsIntelligenceSummaryCard({ analysis }: Props) {
               <div style={{ fontSize: 10, color: "var(--text-dim)", letterSpacing: 1.4, marginBottom: 4 }}>
                 RIESGOS DE CALIDAD
               </div>
-              <ul style={{ margin: 0, paddingLeft: 18, fontSize: 11, color: "#da1e28" }}>
+              <ul style={{ margin: 0, paddingLeft: 18, fontSize: 11, color: "#fca5a5" }}>
                 {analysis.qualityRisks.map((r, i) => (
                   <li key={i}>{r}</li>
                 ))}

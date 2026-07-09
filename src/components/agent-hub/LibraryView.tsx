@@ -326,7 +326,7 @@ export function LibraryView() {
                       style={{ background: "none", border: 0, cursor: "pointer", fontSize: 13, color: "var(--text-dim)" }}>⧉</button>
                     {!a.isVerified && a.createdBy === myId && showArchived && (
                       <button onClick={() => handleReactivate(a)} title="Reactivar agente"
-                        style={{ background: "none", border: 0, cursor: "pointer", fontSize: 12, color: "#24a148", fontWeight: 600 }}>♻ Reactivar</button>
+                        style={{ background: "none", border: 0, cursor: "pointer", fontSize: 12, color: "#42be65", fontWeight: 600 }}>♻ Reactivar</button>
                     )}
                     {!a.isVerified && a.createdBy === myId && !showArchived && (
                       <>
@@ -336,10 +336,10 @@ export function LibraryView() {
                           style={{ background: "none", border: 0, cursor: "pointer", fontSize: 13, color: "var(--text-dim)" }}>✎</button>
                         {a.visibility === "private" ? (
                           <button onClick={() => handlePublish(a)} title="Publicar al equipo"
-                            style={{ background: "none", border: 0, cursor: "pointer", fontSize: 12, color: "#24a148", fontWeight: 600 }}>🚀 Publicar</button>
+                            style={{ background: "none", border: 0, cursor: "pointer", fontSize: 12, color: "#42be65", fontWeight: 600 }}>🚀 Publicar</button>
                         ) : (
                           <button onClick={() => handleUnpublish(a)} title="Volver a borrador privado"
-                            style={{ background: "none", border: 0, cursor: "pointer", fontSize: 12, color: "#8a6d00" }}>↩</button>
+                            style={{ background: "none", border: 0, cursor: "pointer", fontSize: 12, color: "#f1c21b" }}>↩</button>
                         )}
                         <button onClick={() => handleArchive(a)} title="Archivar (reversible)"
                           style={{ background: "none", border: 0, cursor: "pointer", fontSize: 13, color: "var(--text-dim)" }}>🗄</button>

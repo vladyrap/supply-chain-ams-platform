@@ -232,7 +232,7 @@ export function AppsStudioView() {
                   {steps.map((s, i) => (
                     <div key={i} className="card flat" style={{ padding: 12, border: "1px solid var(--border-soft)" }}>
                       <div className="row between" style={{ marginBottom: 8 }}>
-                        <span style={{ fontSize: 12, fontWeight: 600, color: "#7c3aed" }}>
+                        <span style={{ fontSize: 12, fontWeight: 600, color: "#be95ff" }}>
                           {i === 0 ? "▶ Paso 1 (recibe el input del usuario)" : `⤷ Paso ${i + 1} (recibe el output del paso ${i})`}
                         </span>
                         {steps.length > 1 && (

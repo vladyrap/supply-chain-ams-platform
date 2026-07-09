@@ -29,7 +29,7 @@ export default function PlaybookCard({ playbook: p, onView, onEdit, onDuplicate,
         <span className="kanban-tag" style={{ borderColor: `${SEVERITY_COLORS[p.severity]}55`, color: SEVERITY_COLORS[p.severity], background: `${SEVERITY_COLORS[p.severity]}10`, fontWeight: 700 }}>
           {p.severity}
         </span>
-        <span className="kanban-tag" style={{ borderColor: "rgba(69,137,255,0.4)", color: "#0284c7", background: "rgba(69,137,255,0.08)" }}>
+        <span className="kanban-tag" style={{ borderColor: "rgba(69,137,255,0.4)", color: "#67e8f9", background: "rgba(69,137,255,0.08)" }}>
           {p.sapModule}
         </span>
         <span className="kanban-tag" style={{ borderColor: `${STATUS_COLORS[p.status]}55`, color: STATUS_COLORS[p.status], background: `${STATUS_COLORS[p.status]}10`, fontSize: 9.5 }}>

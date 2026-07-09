@@ -90,7 +90,7 @@ export default function AgenticAppRunPage() {
   if (loadError) {
     return (
       <div className="card" style={{ padding: 30, textAlign: "center" }}>
-        <div style={{ color: "#da1e28", marginBottom: 12 }}>{loadError}</div>
+        <div style={{ color: "#fca5a5", marginBottom: 12 }}>{loadError}</div>
         <Link href="/agent-hub?tab=apps" className="btn ghost">← Volver al Studio</Link>
       </div>
     );
@@ -226,7 +226,7 @@ export default function AgenticAppRunPage() {
               marginTop: 8, padding: 16, borderRadius: 10,
               background: "rgba(66,190,101,0.06)", border: "1px solid rgba(66,190,101,0.25)",
             }}>
-              <div style={{ fontSize: 11, letterSpacing: 1.4, color: "#24a148", textTransform: "uppercase", marginBottom: 8 }}>
+              <div style={{ fontSize: 11, letterSpacing: 1.4, color: "#42be65", textTransform: "uppercase", marginBottom: 8 }}>
                 Resultado final
               </div>
               <MarkdownView text={run.finalOutput} />

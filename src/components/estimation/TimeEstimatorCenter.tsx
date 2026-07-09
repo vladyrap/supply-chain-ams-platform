@@ -411,7 +411,7 @@ export default function TimeEstimatorCenter() {
                         </div>
                       )}
                       {p.risks.length > 0 && (
-                        <div style={{ fontSize: 11, color: "#8a6d00", marginTop: 4 }}>
+                        <div style={{ fontSize: 11, color: "#f1c21b", marginTop: 4 }}>
                           ⚠ {p.risks.join("; ")}
                         </div>
                       )}

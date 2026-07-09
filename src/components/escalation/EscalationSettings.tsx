@@ -106,7 +106,7 @@ export default function EscalationSettings({ escalation, canConfigure }: { escal
             Restaurar los datos demo (reglas, responsables, registros, conectores y settings).
           </div>
           <button className="btn ghost"
-            style={{ marginTop: 8, borderColor: "rgba(250,77,86,0.5)", color: "#da1e28" }}
+            style={{ marginTop: 8, borderColor: "rgba(250,77,86,0.5)", color: "#fca5a5" }}
             onClick={() => { if (confirm("¿Restaurar datos demo de escalamiento? Esto sobrescribe lo actual.")) escalation.resetDemoEscalationData(); }}>
             ↻ Restaurar demo
           </button>

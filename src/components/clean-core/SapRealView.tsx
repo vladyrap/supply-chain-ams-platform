@@ -210,7 +210,7 @@ export default function SapRealView() {
                   <div className="row between" style={{ alignItems: "flex-start", gap: 10 }}>
                     <div style={{ minWidth: 0 }}>
                       <div style={{ fontSize: 12.5, fontWeight: 700, fontFamily: "var(--font-mono, monospace)" }}>{f.object_name} <span style={{ color: "var(--text-dim)", fontWeight: 400 }}>· {f.object_type}{f.package ? ` · ${f.package}` : ""}</span></div>
-                      <div style={{ fontSize: 10.5, color: "var(--text-dim)", marginTop: 1 }}>{DIM_LABELS[f.dimension] || f.dimension} · estrategia {f.clean_core_strategy} · {f.effort_hours}h{!f.cloud_ready && <span style={{ color: "#b45309" }}> · ⚠ no cloud-ready</span>}</div>
+                      <div style={{ fontSize: 10.5, color: "var(--text-dim)", marginTop: 1 }}>{DIM_LABELS[f.dimension] || f.dimension} · estrategia {f.clean_core_strategy} · {f.effort_hours}h{!f.cloud_ready && <span style={{ color: "#ff832b" }}> · ⚠ no cloud-ready</span>}</div>
                     </div>
                     <span style={{ fontSize: 9.5, fontWeight: 800, color: sc, border: `1px solid ${sc}`, borderRadius: 4, padding: "1px 7px", textTransform: "uppercase", flexShrink: 0 }}>{SEVERITY_LABELS[f.severity]}</span>
                   </div>
