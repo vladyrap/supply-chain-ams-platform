@@ -1,34 +1,39 @@
 :root {
-  /* Tema CLARO CELESTE + BLANCO — superficies celeste muy claras / blancas,
-     acento celeste (sky), texto azul-grisáceo oscuro. */
-  --bg:           #eaf3fc;
-  --bg-panel:    #ffffff;
-  --bg-card:     #ffffff;
-  --bg-elev:     #e2eef9;
-  --bg-elev-2:   #cfe3f5;
-  --border:      #b6d4ee;
-  --border-soft: #d8e8f7;
-  --text:        #14202b;
-  --text-soft:   #45586b;
-  --text-dim:    #6a7d8e;
-  --accent:      #0ea5e9;
-  --accent-2:    #0284c7;
-  --accent-soft: rgba(14, 165, 233, 0.12);
-  --ok:          #24a148;
-  --warn:        #f1c21b;
-  --error:       #da1e28;
-  --magenta:     #8a3ffc;
-  --teal:        #007d79;
+  /* ======================================================================
+     ROCCO ENTERPRISE DESIGN LANGUAGE (REDL) v1.0 — tema oscuro navy enterprise.
+     Estilo IBM / Azure / SAP Fiori Horizon / Palantir / Datadog.
+     Paleta OFICIAL: toda la UI deriva de estos tokens. No inventar colores.
+     ====================================================================== */
+  --bg:            #0B1F3A;  /* Primary Background: app, sidebar, nav, workspace */
+  --bg-panel:      #0B1F3A;  /* Sidebar / nav / paneles grandes */
+  --bg-card:       #132B4F;  /* Secondary Surface: cards, dialogs, modals, tablas */
+  --bg-elev:       #132B4F;  /* Elevación */
+  --bg-elev-2:     #1B3A66;  /* Elevación 2 (hover de filas, chips) */
+  --border:        #274C77;  /* Borders */
+  --border-soft:   #1F3D63;  /* Borde más sutil */
+  --text:          #FFFFFF;  /* Text Primary */
+  --text-soft:     #C6D6F2;  /* Text Secondary */
+  --text-dim:      #8FA6CC;  /* Text terciario (derivado, más tenue) */
+  --accent:        #0F62FE;  /* Primary Action: IBM Enterprise Blue */
+  --accent-2:      #4589FF;  /* Hover */
+  --accent-3:      #78A9FF;  /* Accent / highlights / métricas */
+  --accent-soft:   rgba(15, 98, 254, 0.18);
+  --light-surface: #EAF4FF;  /* Solo para info boxes / highlights claros */
+  --ok:            #24A148;  /* Success */
+  --warn:          #F1C21B;  /* Warning */
+  --error:         #DA1E28;  /* Error */
+  --magenta:       #78A9FF;  /* remap dentro de paleta (sin colores random) */
+  --teal:          #24A148;  /* remap dentro de paleta */
 
-  /* Radios estilo IBM Carbon: casi rectos (Carbon es cuadrado y crisp) */
-  --radius-sm: 2px;
-  --radius:    4px;
-  --radius-lg: 8px;
+  /* Radios REDL */
+  --radius-sm: 10px;  /* inputs */
+  --radius:    12px;  /* cards, buttons */
+  --radius-lg: 16px;  /* dialogs / modals */
 
-  /* Sombras suaves para tema claro (IBM usa sombras muy sutiles) */
-  --shadow-sm: 0 1px 2px rgba(0,0,0,0.08);
-  --shadow:    0 2px 8px rgba(0,0,0,0.10);
-  --shadow-lg: 0 8px 24px rgba(0,0,0,0.14);
+  /* Sombras muy sutiles (REDL: minimal shadow sobre fondo oscuro) */
+  --shadow-sm: 0 1px 2px rgba(0,0,0,0.28);
+  --shadow:    0 2px 10px rgba(0,0,0,0.35);
+  --shadow-lg: 0 16px 40px rgba(0,0,0,0.50);
 }
 
 * { box-sizing: border-box; }
@@ -51,26 +56,41 @@ a:hover { text-decoration: underline; }
 
 button { font-family: inherit; }
 
-/* ===== Auth público: /reset-password y /forgot-password (card celeste + blanco) ===== */
-.auth-main {
-  min-height: 100vh;
-  display: grid;
-  place-items: center;
-  background: var(--bg);
-  padding: 24px;
+/* ===== REDL base · inputs (44px, borde navy, focus blue glow) ===== */
+input:not([type="checkbox"]):not([type="radio"]):not([type="range"]),
+select,
+textarea {
+  background: var(--bg-card);
+  color: var(--text);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  padding: 0 12px;
+  min-height: 44px;
+  font-family: inherit;
+  font-size: 13.5px;
+  outline: none;
+  transition: border-color .15s ease, box-shadow .15s ease;
 }
+textarea { padding: 10px 12px; min-height: 88px; line-height: 1.5; }
+input::placeholder, textarea::placeholder { color: var(--text-dim); }
+input:focus, select:focus, textarea:focus {
+  border-color: var(--accent);
+  box-shadow: 0 0 0 3px var(--accent-soft);
+}
+
+/* ===== REDL · auth público (reset-password / forgot-password) ===== */
+.auth-main { min-height: 100vh; display: grid; place-items: center; background: var(--bg); padding: 24px; }
 .auth-section { width: 100%; display: grid; place-items: center; }
 .auth-card {
-  width: 100%;
-  max-width: 480px;
+  width: 100%; max-width: 480px;
   background: var(--bg-card);
-  border: 1px solid var(--border-soft);
-  border-radius: 12px;
+  border: 1px solid var(--border);
+  border-radius: var(--radius-lg);
   padding: 32px;
   box-shadow: var(--shadow-lg);
   color: var(--text);
 }
-.auth-card a { color: var(--accent); }
+.auth-card a { color: var(--accent-3); }
 
 /* ============== Layout ============== */
 .app {
@@ -348,7 +368,7 @@ button { font-family: inherit; }
   border: 1px solid var(--feat-color, #4589ff);
   border-left-width: 3px;
   border-radius: 8px;
-  background: linear-gradient(135deg, rgba(240, 242, 248, 0.6), rgba(255, 255, 255, 0.4));
+  background: linear-gradient(135deg, rgba(19, 43, 79, 0.6), rgba(11, 31, 58, 0.4));
   backdrop-filter: blur(10px);
   opacity: 0; transform: translateY(10px);
   transition: opacity 0.5s ease, transform 0.5s ease;
@@ -414,7 +434,7 @@ button { font-family: inherit; }
 .float-field { position: relative; }
 .float-field input {
   width: 100%;
-  background: rgba(240, 242, 248, 0.55);
+  background: rgba(19, 43, 79, 0.55);
   border: 1px solid rgba(69,137,255, 0.18);
   color: #e2e8f0;
   font-size: 14.5px;
@@ -428,7 +448,7 @@ button { font-family: inherit; }
 .float-field input:focus {
   border-color: #4589ff;
   box-shadow: 0 0 0 3px rgba(69,137,255, 0.15), 0 0 18px rgba(69,137,255, 0.15);
-  background: rgba(240, 242, 248, 0.85);
+  background: rgba(19, 43, 79, 0.85);
 }
 .float-field label {
   position: absolute; left: 14px; top: 14px;
@@ -485,7 +505,7 @@ button { font-family: inherit; }
   padding: 14px;
   border: 1px dashed rgba(69,137,255, 0.18);
   border-radius: 8px;
-  background: rgba(240, 242, 248, 0.4);
+  background: rgba(19, 43, 79, 0.4);
 }
 .auth-demo-label {
   font-size: 10.5px; letter-spacing: 1.5px; text-transform: uppercase;
@@ -561,7 +581,7 @@ button { font-family: inherit; }
 .permission-matrix { width: 100%; border-collapse: collapse; font-size: 12.5px; }
 .permission-matrix th {
   position: sticky; top: 0;
-  background: rgba(240, 242, 248, 0.95);
+  background: rgba(19, 43, 79, 0.95);
   text-align: center;
   padding: 10px 8px;
   color: var(--text-soft);
@@ -599,7 +619,7 @@ button { font-family: inherit; }
 /* Modal */
 .admin-modal-overlay {
   position: fixed; inset: 0; z-index: 9500;
-  background: rgba(14, 165, 233, 0.06);
+  background: rgba(0, 0, 0, 0.65);
   backdrop-filter: blur(4px);
   display: grid; place-items: center;
   padding: 20px;
@@ -608,7 +628,7 @@ button { font-family: inherit; }
 @keyframes modalFadeIn { from { opacity: 0; } to { opacity: 1; } }
 .admin-modal {
   width: 100%; max-width: 480px;
-  background: linear-gradient(180deg, rgba(240, 242, 248, 0.97), rgba(255, 255, 255, 0.97));
+  background: linear-gradient(180deg, rgba(19, 43, 79, 0.97), rgba(11, 31, 58, 0.97));
   border: 1px solid rgba(69,137,255, 0.3);
   border-radius: 10px;
   box-shadow: 0 30px 70px rgba(0, 0, 0, 0.65), 0 0 40px rgba(69,137,255, 0.1);
@@ -653,7 +673,7 @@ button { font-family: inherit; }
   gap: 4px;
   align-self: start;
   padding: 6px;
-  background: rgba(240, 242, 248, 0.4);
+  background: rgba(19, 43, 79, 0.4);
   border: 1px solid var(--border-soft);
   border-radius: 10px;
   backdrop-filter: blur(10px);
@@ -857,7 +877,7 @@ button { font-family: inherit; }
 .settings-preview {
   position: sticky; top: 80px;
   align-self: start;
-  background: rgba(240, 242, 248, 0.5);
+  background: rgba(19, 43, 79, 0.5);
   border: 1px solid rgba(255, 255, 255, 0.08);
   border-radius: 10px;
   padding: 14px;
@@ -929,18 +949,18 @@ button { font-family: inherit; }
    ===================================================== */
 .id-card {
   position: relative;
-  /* Tema claro IBM Carbon: superficie blanca con tinte de acento. El texto
-     interno usa var(--text)/--text-soft → oscuro y legible sobre el fondo claro. */
   background:
-    radial-gradient(ellipse at 30% 30%, rgba(var(--accent-rgb), 0.10), transparent 62%),
-    linear-gradient(135deg, #ffffff, #e8f3fd);
-  border: 1px solid rgba(var(--accent-rgb), 0.35);
+    radial-gradient(ellipse at 30% 30%, rgba(var(--accent-rgb), 0.08), transparent 60%),
+    linear-gradient(135deg, rgba(19, 43, 79, 0.92), rgba(11, 31, 58, 0.88));
+  border: 1px solid rgba(var(--accent-rgb), 0.45);
   border-radius: 12px;
   padding: 0;
   overflow: hidden;
   box-shadow:
-    0 2px 10px rgba(0, 0, 0, 0.08),
-    0 0 0 1px rgba(var(--accent-rgb), 0.05);
+    0 14px 40px rgba(0, 0, 0, 0.55),
+    0 0 32px rgba(var(--accent-rgb), 0.10),
+    inset 0 1px 0 rgba(255, 255, 255, 0.05);
+  backdrop-filter: blur(14px) saturate(140%);
 }
 .id-tc {
   position: absolute; width: 22px; height: 22px;
@@ -1067,7 +1087,7 @@ button { font-family: inherit; }
 .id-stat-mini {
   display: flex; justify-content: space-between;
   padding: 4px 8px; font-size: 11px;
-  background: rgba(14, 165, 233, 0.06);
+  background: rgba(255, 255, 255, 0.02);
   border-radius: 4px;
 }
 .id-stat-mini span { color: var(--text-dim); letter-spacing: 1px; }
@@ -1077,7 +1097,7 @@ button { font-family: inherit; }
   display: flex; align-items: flex-end; gap: 1.5px;
   height: 36px;
   padding: 8px 18px;
-  background: rgba(14, 165, 233, 0.06);
+  background: rgba(0, 0, 0, 0.35);
   border-top: 1px solid rgba(var(--accent-rgb), 0.18);
   position: relative; z-index: 2;
 }
@@ -1178,7 +1198,7 @@ button { font-family: inherit; }
   position: relative;
   background:
     radial-gradient(ellipse at 30% 40%, rgba(var(--accent-rgb), 0.10), transparent 60%),
-    linear-gradient(135deg, rgba(240, 242, 248, 0.92), rgba(255, 255, 255, 0.92));
+    linear-gradient(135deg, rgba(19, 43, 79, 0.92), rgba(11, 31, 58, 0.92));
   border: 1px solid rgba(var(--accent-rgb), 0.45);
   border-radius: 12px;
   padding: 18px 22px;
@@ -1207,7 +1227,7 @@ button { font-family: inherit; }
   text-shadow: 0 0 6px var(--accent);
 }
 .voice-eq {
-  background: rgba(14, 165, 233, 0.06);
+  background: rgba(0, 0, 0, 0.25);
   border: 1px solid rgba(var(--accent-rgb), 0.15);
   border-radius: 8px;
   padding: 8px;
@@ -1348,7 +1368,7 @@ button { font-family: inherit; }
 .kbd-detector {
   margin-top: 8px;
   min-height: 130px;
-  background: rgba(14, 165, 233, 0.06);
+  background: rgba(0, 0, 0, 0.35);
   border: 2px dashed rgba(var(--accent-rgb), 0.25);
   border-radius: 8px;
   display: grid; place-items: center;
@@ -1394,7 +1414,7 @@ button { font-family: inherit; }
 .kbd-history {
   display: flex; flex-direction: column; gap: 3px;
   padding: 8px;
-  background: rgba(14, 165, 233, 0.06);
+  background: rgba(0, 0, 0, 0.25);
   border-radius: 4px;
   max-height: 220px; overflow-y: auto;
 }
@@ -1521,16 +1541,16 @@ button { font-family: inherit; }
    ===================================================== */
 .sd-hero {
   position: relative;
-  /* Tema claro IBM Carbon: superficie blanca con tinte de acento sutil. */
   background:
-    radial-gradient(ellipse at 30% 30%, rgba(var(--accent-rgb), 0.10), transparent 62%),
-    linear-gradient(135deg, #ffffff, #e8f3fd);
+    radial-gradient(ellipse at 30% 30%, rgba(var(--accent-rgb), 0.08), transparent 60%),
+    linear-gradient(135deg, rgba(19, 43, 79, 0.92), rgba(11, 31, 58, 0.88));
   border: 1px solid rgba(var(--accent-rgb), 0.30);
   border-radius: 12px;
   padding: 16px 22px;
   overflow: hidden;
   margin-bottom: 16px;
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08), 0 0 0 1px rgba(var(--accent-rgb), 0.04);
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.45), 0 0 24px rgba(var(--accent-rgb), 0.08);
+  backdrop-filter: blur(10px);
 }
 .sd-hero-grid {
   position: absolute; inset: 0; pointer-events: none;
@@ -1543,7 +1563,7 @@ button { font-family: inherit; }
 .sd-status-strip {
   display: inline-flex; align-items: center; gap: 12px;
   padding: 5px 12px;
-  background: rgba(14, 165, 233, 0.06);
+  background: rgba(0, 0, 0, 0.4);
   border: 1px solid rgba(var(--accent-rgb), 0.30);
   border-radius: 16px;
   font-size: 10.5px; letter-spacing: 1.2px;
@@ -1620,7 +1640,7 @@ button { font-family: inherit; }
 @media (max-width: 720px) { .sd-kpi-grid { grid-template-columns: 1fr 1fr; grid-template-rows: auto; } }
 
 .sd-kpi {
-  background: linear-gradient(135deg, rgba(240, 242, 248, 0.65), rgba(255, 255, 255, 0.65));
+  background: linear-gradient(135deg, rgba(19, 43, 79, 0.65), rgba(11, 31, 58, 0.65));
   border: 1px solid rgba(var(--accent-rgb), 0.12);
   border-left: 3px solid var(--accent);
   border-radius: 8px;
@@ -1728,7 +1748,7 @@ button { font-family: inherit; }
 .sd-access {
   display: flex; align-items: center; gap: 12px;
   padding: 14px 14px;
-  background: linear-gradient(135deg, rgba(240, 242, 248, 0.6), rgba(255, 255, 255, 0.6));
+  background: linear-gradient(135deg, rgba(19, 43, 79, 0.6), rgba(11, 31, 58, 0.6));
   border: 1px solid rgba(255, 255, 255, 0.08);
   border-left: 3px solid var(--access-color);
   border-radius: 8px;
@@ -1737,7 +1757,7 @@ button { font-family: inherit; }
   position: relative; overflow: hidden;
 }
 .sd-access:hover {
-  background: linear-gradient(135deg, rgba(240, 242, 248, 0.8), rgba(255, 255, 255, 0.8));
+  background: linear-gradient(135deg, rgba(19, 43, 79, 0.8), rgba(11, 31, 58, 0.8));
   border-color: var(--access-color);
   transform: translateY(-2px);
   box-shadow: 0 8px 20px rgba(0, 0, 0, 0.4), 0 0 16px var(--access-color);
@@ -1769,8 +1789,8 @@ button { font-family: inherit; }
 }
 .kanban-stat {
   text-align: center;
-  background: #ffffff;
-  border: 1px solid rgba(var(--accent-rgb), 0.40);
+  background: rgba(0, 0, 0, 0.3);
+  border: 1px solid var(--accent);
   border-radius: 6px;
   padding: 8px 16px;
   min-width: 64px;
@@ -1779,6 +1799,7 @@ button { font-family: inherit; }
   font-size: 22px; font-weight: 700;
   color: var(--accent); line-height: 1;
   font-variant-numeric: tabular-nums;
+  text-shadow: 0 0 8px var(--accent);
 }
 .kanban-stat-lbl {
   font-size: 9px; letter-spacing: 1.5px;
@@ -1798,7 +1819,7 @@ button { font-family: inherit; }
 }
 
 .kanban-col {
-  background: linear-gradient(180deg, rgba(240, 242, 248, 0.85), rgba(255, 255, 255, 0.85));
+  background: linear-gradient(180deg, rgba(19, 43, 79, 0.85), rgba(11, 31, 58, 0.85));
   border: 1px solid rgba(255, 255, 255, 0.06);
   border-top: 2px solid var(--col-color);
   border-radius: 10px;
@@ -1811,7 +1832,7 @@ button { font-family: inherit; }
 .kanban-col.drag-target {
   box-shadow: 0 0 0 2px var(--col-color), 0 0 30px var(--col-color);
   border-color: var(--col-color);
-  background: linear-gradient(180deg, rgba(240, 242, 248, 0.9), rgba(255, 255, 255, 0.9));
+  background: linear-gradient(180deg, rgba(19, 43, 79, 0.9), rgba(11, 31, 58, 0.9));
 }
 .kanban-col.drag-target::before {
   content: ""; position: absolute; inset: 0;
@@ -1897,7 +1918,7 @@ button { font-family: inherit; }
 
 /* Cards */
 .kanban-card {
-  background: linear-gradient(135deg, rgba(236, 239, 245, 0.85), rgba(240, 242, 248, 0.7));
+  background: linear-gradient(135deg, rgba(19, 43, 79, 0.85), rgba(19, 43, 79, 0.7));
   border: 1px solid rgba(255, 255, 255, 0.06);
   border-left: 3px solid var(--prio-color);
   border-radius: 6px;
@@ -1988,7 +2009,7 @@ button { font-family: inherit; }
 .ticket-filter {
   display: inline-flex; align-items: center; gap: 6px;
   padding: 5px 12px;
-  background: rgba(14, 165, 233, 0.06);
+  background: rgba(0, 0, 0, 0.3);
   border: 1px solid rgba(255, 255, 255, 0.08);
   border-radius: 16px;
   font-size: 11.5px;
@@ -2032,7 +2053,7 @@ button { font-family: inherit; }
 }
 
 .ticket-list-wrap {
-  background: rgba(240, 242, 248, 0.5);
+  background: rgba(19, 43, 79, 0.5);
   border: 1px solid rgba(255, 255, 255, 0.06);
   border-radius: 10px;
   overflow: hidden;
@@ -2042,7 +2063,7 @@ button { font-family: inherit; }
 .ticket-list-head {
   display: flex; align-items: center; gap: 8px;
   padding: 10px 14px;
-  background: rgba(14, 165, 233, 0.06);
+  background: rgba(0, 0, 0, 0.3);
   border-bottom: 1px solid rgba(255, 255, 255, 0.06);
   font-size: 11.5px; color: var(--text-soft);
   letter-spacing: 0.5px;
@@ -2138,7 +2159,7 @@ button { font-family: inherit; }
 
 /* Detail panel */
 .ticket-detail {
-  background: linear-gradient(180deg, rgba(240, 242, 248, 0.6), rgba(255, 255, 255, 0.6));
+  background: linear-gradient(180deg, rgba(19, 43, 79, 0.6), rgba(11, 31, 58, 0.6));
   border: 1px solid rgba(255, 255, 255, 0.06);
   border-radius: 10px;
   padding: 18px;
@@ -2152,7 +2173,7 @@ button { font-family: inherit; }
 }
 .ticket-sla-hero {
   padding: 12px 14px;
-  background: rgba(14, 165, 233, 0.06);
+  background: rgba(0, 0, 0, 0.3);
   border: 1px solid rgba(255, 255, 255, 0.06);
   border-radius: 8px;
 }
@@ -2251,7 +2272,7 @@ button { font-family: inherit; }
 
 /* Messages */
 .conv-messages {
-  background: rgba(14, 165, 233, 0.06);
+  background: rgba(0, 0, 0, 0.25);
   border: 1px solid rgba(255, 255, 255, 0.05);
   border-radius: 8px;
   padding: 14px;
@@ -2345,7 +2366,7 @@ button { font-family: inherit; }
 .kn-tab {
   display: inline-flex; align-items: center; gap: 6px;
   padding: 8px 14px;
-  background: rgba(14, 165, 233, 0.06);
+  background: rgba(0, 0, 0, 0.25);
   border: 1px solid rgba(255, 255, 255, 0.06);
   border-radius: 8px 8px 0 0;
   font-size: 12px; color: var(--text-soft);
@@ -2410,7 +2431,7 @@ button { font-family: inherit; }
   gap: 12px;
 }
 .kn-card {
-  background: linear-gradient(135deg, rgba(236, 239, 245, 0.85), rgba(240, 242, 248, 0.7));
+  background: linear-gradient(135deg, rgba(19, 43, 79, 0.85), rgba(19, 43, 79, 0.7));
   border: 1px solid rgba(255, 255, 255, 0.06);
   border-top: 3px solid var(--type-color);
   border-radius: 10px;
@@ -2458,7 +2479,7 @@ button { font-family: inherit; }
 .kn-card-stats {
   display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 4px;
   margin-top: 6px; padding: 8px;
-  background: rgba(14, 165, 233, 0.06);
+  background: rgba(0, 0, 0, 0.25);
   border-radius: 6px;
 }
 .kn-card-stats > div { text-align: center; display: flex; flex-direction: column; gap: 1px; }
@@ -2490,7 +2511,7 @@ button { font-family: inherit; }
 .rag-chunk-text {
   font-size: 12.5px; line-height: 1.55;
   color: var(--text-soft); white-space: pre-wrap;
-  background: rgba(14, 165, 233, 0.06);
+  background: rgba(0, 0, 0, 0.25);
   padding: 10px 12px; border-radius: 6px;
   font-family: var(--font-mono, monospace);
   max-height: 200px; overflow-y: auto;
@@ -3065,7 +3086,7 @@ html[data-theme="cyberpunk"] .brand .title {
 
 /* Cards de feedback en la lista del Lab */
 .lab-fb-card {
-  background: linear-gradient(180deg, rgba(15, 23, 42, 0.55), rgba(15, 23, 42, 0.30));
+  background: linear-gradient(180deg, rgba(19, 43, 79, 0.55), rgba(19, 43, 79, 0.30));
   border: 1px solid var(--border-soft);
   border-left: 3px solid var(--fb-color, var(--accent));
   border-radius: 8px;
@@ -3091,7 +3112,7 @@ html[data-theme="cyberpunk"] .brand .title {
 .lab-fb-block {
   margin-top: 8px;
   padding: 8px 10px;
-  background: rgba(15, 23, 42, 0.45);
+  background: rgba(19, 43, 79, 0.45);
   border: 1px solid var(--border-soft);
   border-radius: 6px;
 }
@@ -3177,7 +3198,7 @@ html[data-theme="cyberpunk"] .brand .title {
 .tc-metric {
   position: relative;
   padding: 12px 14px;
-  background: linear-gradient(180deg, rgba(15, 23, 42, 0.55), rgba(15, 23, 42, 0.30));
+  background: linear-gradient(180deg, rgba(19, 43, 79, 0.55), rgba(19, 43, 79, 0.30));
   border: 1px solid var(--border-soft);
   border-left: 3px solid var(--tc-acc, var(--accent));
   border-radius: 8px;
@@ -3237,7 +3258,7 @@ html[data-theme="cyberpunk"] .brand .title {
   align-items: center;
   text-align: center;
   padding: 10px 8px 12px;
-  background: rgba(15, 23, 42, 0.45);
+  background: rgba(19, 43, 79, 0.45);
   border: 1px solid var(--border-soft);
   border-radius: 8px;
 }
@@ -3249,7 +3270,7 @@ html[data-theme="cyberpunk"] .brand .title {
   border-radius: 50%;
   display: grid; place-items: center;
   font-size: 18px;
-  background: rgba(15, 23, 42, 0.6);
+  background: rgba(19, 43, 79, 0.6);
   border: 1px solid var(--border-soft);
   margin-bottom: 8px;
 }
@@ -3296,7 +3317,7 @@ html[data-theme="cyberpunk"] .brand .title {
   grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
 }
 .tc-coverage-row {
-  background: rgba(15, 23, 42, 0.4);
+  background: rgba(19, 43, 79, 0.4);
   border: 1px solid var(--border-soft);
   border-radius: 6px;
   padding: 8px 10px;
@@ -3316,7 +3337,7 @@ html[data-theme="cyberpunk"] .brand .title {
 }
 .tc-bar {
   height: 6px;
-  background: rgba(15,23,42,0.7);
+  background: rgba(19, 43, 79,0.7);
   border-radius: 3px;
   overflow: hidden;
 }
@@ -3336,7 +3357,7 @@ html[data-theme="cyberpunk"] .brand .title {
 .tc-template {
   display: flex; flex-direction: column; align-items: center; gap: 6px;
   padding: 12px 8px;
-  background: rgba(15, 23, 42, 0.45);
+  background: rgba(19, 43, 79, 0.45);
   border: 1px solid var(--border-soft);
   border-radius: 8px;
   color: var(--text);
@@ -3355,7 +3376,7 @@ html[data-theme="cyberpunk"] .brand .title {
   display: flex; flex-direction: column; align-items: center; gap: 4px;
   width: 100%;
   padding: 22px 14px;
-  background: rgba(15, 23, 42, 0.40);
+  background: rgba(19, 43, 79, 0.40);
   border: 1.5px dashed var(--border-soft);
   border-radius: 10px;
   color: var(--text);
@@ -3398,7 +3419,7 @@ html[data-theme="cyberpunk"] .brand .title {
   text-transform: uppercase;
   color: var(--text-dim);
   padding: 8px 10px;
-  background: rgba(15,23,42,0.45);
+  background: rgba(19, 43, 79,0.45);
   border-bottom: 1px solid var(--border-soft);
   white-space: nowrap;
 }
@@ -3431,7 +3452,7 @@ html[data-theme="cyberpunk"] .brand .title {
 .tc-iconbtn {
   width: 28px; height: 28px;
   display: inline-grid; place-items: center;
-  background: rgba(15, 23, 42, 0.5);
+  background: rgba(19, 43, 79, 0.5);
   border: 1px solid var(--border-soft);
   border-radius: 6px;
   cursor: pointer;
@@ -3452,7 +3473,7 @@ html[data-theme="cyberpunk"] .brand .title {
   border-radius: 50%;
   font-size: 11px;
   font-weight: 800;
-  background: rgba(15, 23, 42, 0.6);
+  background: rgba(19, 43, 79, 0.6);
   border: 2px solid var(--sc-color, var(--accent));
   color: var(--sc-color, var(--accent));
   box-shadow: 0 0 12px -3px var(--sc-color, var(--accent));
@@ -3473,7 +3494,7 @@ html[data-theme="cyberpunk"] .brand .title {
   max-width: 760px;
   max-height: 90vh;
   display: flex; flex-direction: column;
-  background: linear-gradient(180deg, rgba(15, 23, 42, 0.95), rgba(2, 6, 23, 0.95));
+  background: linear-gradient(180deg, rgba(19, 43, 79, 0.95), rgba(11, 31, 58, 0.95));
   border: 1px solid var(--border-soft);
   border-radius: 12px;
   box-shadow: 0 30px 80px -10px rgba(0, 0, 0, 0.5);
@@ -3494,7 +3515,7 @@ html[data-theme="cyberpunk"] .brand .title {
 .tc-modal-foot {
   display: flex; gap: 8px; padding: 12px 16px;
   border-top: 1px solid var(--border-soft);
-  background: rgba(2, 6, 23, 0.4);
+  background: rgba(11, 31, 58, 0.4);
 }
 
 .tc-meta-grid {
@@ -3514,14 +3535,14 @@ html[data-theme="cyberpunk"] .brand .title {
   font-size: 12px;
   color: var(--text-soft);
   padding: 8px 10px;
-  background: rgba(15,23,42,0.45);
+  background: rgba(19, 43, 79,0.45);
   border-radius: 6px;
 }
 
 /* QA cards */
 .tc-qa-card {
   padding: 10px 12px;
-  background: rgba(15,23,42,0.45);
+  background: rgba(19, 43, 79,0.45);
   border: 1px solid var(--border-soft);
   border-left: 3px solid #a855f7;
   border-radius: 6px;
@@ -3530,7 +3551,7 @@ html[data-theme="cyberpunk"] .brand .title {
 /* Used knowledge cards (simulador) */
 .tc-used-card {
   padding: 8px 10px;
-  background: rgba(15,23,42,0.40);
+  background: rgba(19, 43, 79,0.40);
   border: 1px solid var(--border-soft);
   border-left: 3px solid #4589ff;
   border-radius: 6px;
@@ -3545,7 +3566,7 @@ html[data-theme="cyberpunk"] .brand .title {
 }
 .tc-compare-col {
   padding: 10px 12px;
-  background: rgba(15,23,42,0.45);
+  background: rgba(19, 43, 79,0.45);
   border: 1px solid var(--border-soft);
   border-radius: 6px;
   font-size: 12.5px;
@@ -3560,7 +3581,7 @@ html[data-theme="cyberpunk"] .brand .title {
 .tc-setting {
   display: flex; justify-content: space-between; align-items: center;
   padding: 10px 12px;
-  background: rgba(15,23,42,0.40);
+  background: rgba(19, 43, 79,0.40);
   border: 1px solid var(--border-soft);
   border-radius: 8px;
   gap: 14px;
@@ -3622,7 +3643,7 @@ html[data-theme="cyberpunk"] .brand .title {
 
 /* Glassmorphism card extra */
 .glass-card {
-  background: linear-gradient(135deg, rgba(15,23,42,0.55) 0%, rgba(15,23,42,0.40) 100%);
+  background: linear-gradient(135deg, rgba(19, 43, 79,0.55) 0%, rgba(19, 43, 79,0.40) 100%);
   backdrop-filter: blur(14px);
   -webkit-backdrop-filter: blur(14px);
   border: 1px solid rgba(255,255,255,0.07);
@@ -3632,7 +3653,7 @@ html[data-theme="cyberpunk"] .brand .title {
 .glass-card:hover {
   transform: translateY(-2px);
   border-color: rgba(99,102,241,0.35);
-  box-shadow: 0 8px 28px rgba(15,23,42,0.45), 0 0 0 1px rgba(99,102,241,0.10) inset;
+  box-shadow: 0 8px 28px rgba(19, 43, 79,0.45), 0 0 0 1px rgba(99,102,241,0.10) inset;
 }
 
 /* Hero gradient para títulos de módulos enterprise */

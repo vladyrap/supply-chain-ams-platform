@@ -11,7 +11,7 @@ export type AccentColor = "cyan" | "violet" | "amber" | "green" | "rose";
 // Mapeo de chip de color → triplete RGB para CSS vars (--accent + glow color).
 // Estos se aplican como variables CSS al :root para que toda la plataforma respete el accent.
 export const ACCENT_COLORS: Record<AccentColor, { name: string; hex: string; rgb: string; soft: string }> = {
-  cyan:   { name: "Celeste", hex: "#0ea5e9", rgb: "14,165,233", soft: "rgba(14,165,233, 0.14)" },
+  cyan:   { name: "IBM Blue", hex: "#0F62FE", rgb: "15,98,254",  soft: "rgba(15,98,254, 0.16)" },
   violet: { name: "Violeta", hex: "#a855f7", rgb: "168, 85, 247", soft: "rgba(168, 85, 247, 0.16)" },
   amber:  { name: "Ámbar",   hex: "#f1c21b", rgb: "241,194,27", soft: "rgba(241,194,27, 0.16)" },
   green:  { name: "Verde",   hex: "#10b981", rgb: "16, 185, 129", soft: "rgba(16, 185, 129, 0.16)" },

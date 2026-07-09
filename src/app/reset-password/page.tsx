@@ -18,7 +18,7 @@ import { apiGet, apiPost } from "@/services/_http";
 const inputStyle: React.CSSProperties = {
   width: "100%",
   padding: 12,
-  background: "#ffffff",
+  background: "var(--bg-card)",
   border: "1px solid var(--border)",
   borderRadius: 8,
   color: "var(--text)",
