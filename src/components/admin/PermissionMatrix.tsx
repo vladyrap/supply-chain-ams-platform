@@ -61,7 +61,9 @@ export default function PermissionMatrix({ admin }: Props) {
           </thead>
           <tbody>
             {ALL_SCREENS.map((s) => {
-              const row = role.permissions[s];
+              // Guardia: si el rol no tiene la screen (datos incompletos), tratar
+              // como sin permisos en vez de crashear al leer row["view"].
+              const row = role.permissions[s] ?? ({} as Record<PermissionAction, boolean>);
               const activeCount = ALL_ACTIONS.filter((a) => row[a]).length;
               return (
                 <tr key={s}>

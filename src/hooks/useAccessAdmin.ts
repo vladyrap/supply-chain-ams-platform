@@ -133,9 +133,15 @@ export function useAccessAdmin(): UseAccessAdmin {
     (async () => {
       try {
         const snap = await rbacApi.getSnapshot();
-        setRoles(snap.roles);
+        // FIX crash /admin: los roles del backend pueden venir sin screens
+        // nuevas (p.ej. si el backend no conoce una screen agregada en el
+        // frontend). Migrar SIEMPRE antes de setear, igual que en el path de
+        // localStorage — así `role.permissions[screen]` nunca es undefined y
+        // PermissionMatrix/AccessPreview no explotan al leer `.view`.
+        const migrated = migrateRolesAddingMissingScreens(snap.roles);
+        setRoles(migrated);
         setUsers(snap.users);
-        persistRoles(storageRef.current, snap.roles);
+        persistRoles(storageRef.current, migrated);
         persistUsers(storageRef.current, snap.users);
       } catch (err) {
         log.debug("rbac backend offline:", (err as Error)?.message);
@@ -455,10 +461,11 @@ export function useAccessAdmin(): UseAccessAdmin {
     (async () => {
       try {
         const snap = await rbacApi.resetDemo();
-        setRoles(snap.roles);
+        const migrated = migrateRolesAddingMissingScreens(snap.roles);
+        setRoles(migrated);
         setUsers(snap.users);
         setCurrentUId(null);
-        persistRoles(storageRef.current, snap.roles);
+        persistRoles(storageRef.current, migrated);
         persistUsers(storageRef.current, snap.users);
         persistCurrent(storageRef.current, null);
         return;
