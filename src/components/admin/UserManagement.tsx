@@ -121,10 +121,11 @@ export default function UserManagement({ admin }: Props) {
             border: `1px solid ${inviteMsg.startsWith("✓") ? "rgba(66,190,101, 0.4)"
                               : inviteMsg.startsWith("✗") ? "rgba(250,77,86, 0.4)"
                               : "rgba(69,137,255, 0.4)"}`,
-            color: inviteMsg.startsWith("✓") ? "#86efac"
-                 : inviteMsg.startsWith("✗") ? "#fca5a5"
-                 : "#67e8f9",
+            color: inviteMsg.startsWith("✓") ? "var(--ok)"
+                 : inviteMsg.startsWith("✗") ? "var(--error)"
+                 : "var(--accent-2)",
             fontSize: 13,
+            fontWeight: 500,
           }}
         >
           {inviteMsg}
@@ -238,7 +239,7 @@ export default function UserManagement({ admin }: Props) {
                       </button>
                       <button className="btn ghost" style={{ padding: "3px 8px", fontSize: 11 }}
                         onClick={() => handleResetLink(u)}
-                        title="Generar link de acceso (para que cree/resetee su clave)">🔗</button>
+                        title="Reenviar acceso · genera el link (y email) para que cree/resetee su clave">🔗</button>
                       <button className="btn ghost" style={{ padding: "3px 8px", fontSize: 11 }}
                         onClick={() => { setEditing(u); setShowModal(true); }}>✎</button>
                       <button className="btn ghost" style={{ padding: "3px 8px", fontSize: 11, color: "#fa4d56" }}
