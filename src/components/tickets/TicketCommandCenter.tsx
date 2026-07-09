@@ -89,8 +89,10 @@ import {
   Clipboard, ChevronDown, ChevronRight, FileText, Timer, Bot, Microscope,
   BookOpen, Target, Book, AlertTriangle, ArrowUpRight, FlaskConical, Award,
   Brain, Mail, Check, RefreshCw, Pencil, Lock, Camera, MessageSquare, Hand,
-  HelpCircle, BarChart3,
+  HelpCircle, BarChart3, LayoutDashboard, History,
 } from "lucide-react";
+// Case Timeline (F1)
+import CaseTimeline from "./CaseTimeline";
 
 // --------------------------------------------------------------------
 // Sección colapsable
@@ -215,6 +217,8 @@ export default function TicketCommandCenter({ ticket, onTicketUpdated }: Props) 
   // Si ticket.intelligence ya está enriched con hash actual → no re-ejecuta.
   // Si pending o hash cambió → ejecuta pipeline + persiste (excepto jira).
   const aie = useAutoEnrichment(ticket, { actor, autoTrigger: true, callGeminiAgent: true });
+  // Case Timeline (F1) — tab shell: "command" = secciones existentes · "timeline" = Case Timeline
+  const [tccTab, setTccTab] = useState<"command" | "timeline">("command");
   const cachedAnalysis = aie.intelligence?.analysis ?? null;
   const isEnriching = aie.status === "enriching";
   const isEnrichmentFailed = aie.status === "enrichment_failed";
@@ -1065,6 +1069,37 @@ export default function TicketCommandCenter({ ticket, onTicketUpdated }: Props) 
       />
 
       {/* Sección 1: Resumen / descripción */}
+      {/* Case Timeline (F1) — tab shell: Centro de Comando · Case Timeline */}
+      <div className="ct-tabbar" role="tablist" aria-label="Vistas del caso">
+        <button
+          type="button"
+          role="tab"
+          aria-selected={tccTab === "command"}
+          className={`ct-tab${tccTab === "command" ? " on" : ""}`}
+          onClick={() => setTccTab("command")}
+        >
+          <LayoutDashboard size={15} /> Centro de Comando
+        </button>
+        <button
+          type="button"
+          role="tab"
+          aria-selected={tccTab === "timeline"}
+          className={`ct-tab${tccTab === "timeline" ? " on" : ""}`}
+          onClick={() => setTccTab("timeline")}
+        >
+          <History size={15} /> Case Timeline
+        </button>
+      </div>
+
+      {tccTab === "timeline" && (
+        <CaseTimeline
+          ticketKey={ticket.key}
+          refreshKey={aie.intelligence?.analysisVersion ?? 0}
+        />
+      )}
+
+      {tccTab === "command" && (
+        <>
       <Section id="section-summary" title="RESUMEN" icon={<FileText size={16} />} accent="#4589ff">
         <div className="msg user"><div className="body" style={{ whiteSpace: "pre-wrap" }}>{ticket.description}</div></div>
       </Section>
@@ -1675,6 +1710,8 @@ export default function TicketCommandCenter({ ticket, onTicketUpdated }: Props) 
             ))}
           </div>
         </Section>
+      )}
+        </>
       )}
 
       {/* Modal generador de respuestas */}

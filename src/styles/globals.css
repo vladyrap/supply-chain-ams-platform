@@ -3770,3 +3770,37 @@ html[data-theme="cyberpunk"] .brand .title {
   border-radius: 6px;
 }
 
+/* Case Timeline (F1) — tab shell del Ticket Command Center */
+.ct-tabbar {
+  display: flex;
+  gap: 4px;
+  padding: 4px;
+  border: 1px solid var(--border-soft);
+  border-radius: 12px;
+  background: var(--bg-elev);
+}
+.ct-tab {
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  padding: 8px 14px;
+  border: 1px solid transparent;
+  border-radius: 9px;
+  background: transparent;
+  color: var(--text-dim);
+  font-size: 13px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: background 0.12s ease, color 0.12s ease, border-color 0.12s ease;
+}
+.ct-tab:hover { color: var(--text-soft); }
+.ct-tab.on {
+  color: var(--text);
+  background: var(--accent-soft);
+  border-color: rgba(69,137,255,0.35);
+}
+.ct-tab:focus-visible {
+  outline: none;
+  box-shadow: 0 0 0 3px var(--accent-soft);
+}
+

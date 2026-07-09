@@ -182,6 +182,47 @@ export async function getIntelligenceHistory(key: string) {
   );
 }
 
+// =============================================================================
+// Case Timeline (F0) — read-model unificado del caso
+// =============================================================================
+
+/** Ítem normalizado del timeline del caso (evento o snapshot de versión). */
+export interface CaseTimelineItem {
+  id: string;
+  kind: "event" | "version";
+  eventType: string;
+  title: string;
+  description: string;
+  actor: string | null;
+  actorRole: string | null;
+  source: string;
+  severity: string;
+  category: string;
+  version: number | null;
+  at: string; // ISO
+  metadata?: Record<string, unknown>;
+}
+
+export interface CaseTimelineResponse {
+  success: true;
+  ticketKey: string;
+  items: CaseTimelineItem[];
+  eventCount: number;
+  versionCount: number;
+}
+
+/**
+ * GET /api/tickets/:key/timeline — feed cronológico unificado (más reciente
+ * primero) que fusiona audit_events + snapshots de análisis. Read-only,
+ * backend-authoritative, con secretos/PII redactados en el backend.
+ */
+export async function getCaseTimeline(key: string, limit?: number) {
+  const qs = limit ? `?limit=${encodeURIComponent(String(limit))}` : "";
+  return call<CaseTimelineResponse | { success: false; error: string }>(
+    `/api/tickets/${encodeURIComponent(key)}/timeline${qs}`,
+  );
+}
+
 /** Campos editables del ticket via PATCH /api/tickets/:key. */
 export interface UpdateTicketInput {
   title?: string;

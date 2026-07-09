@@ -80,7 +80,26 @@ export type TicketAuditEventType =
   | "GEMINI_CALL_STARTED"
   | "GEMINI_CALL_COMPLETED"
   | "GEMINI_CALL_FAILED"
-  | "GEMINI_FALLBACK_USED";
+  | "GEMINI_FALLBACK_USED"
+  // Case Timeline & Knowledge Evolution (F0) — evolución del caso
+  | "KNOWLEDGE_SNAPSHOT"        // marcador de versión de análisis (read-model)
+  | "SAP_NOTE_LINKED"
+  | "ABAP_UPLOADED"
+  | "ATTACHMENT_ADDED"
+  | "EVIDENCE_UPLOADED"
+  | "FINDING_ADDED"
+  | "FINDING_REMOVED"
+  | "SEVERITY_CHANGED"
+  | "PRIORITY_CHANGED"
+  | "HYPOTHESIS_CHANGED"
+  | "ROOT_CAUSE_CHANGED"
+  | "RECOMMENDATION_UPDATED"
+  | "KNOWLEDGE_UPDATED"
+  | "FUNCTIONAL_CONTEXT_ADDED"
+  | "TECHNICAL_CONTEXT_ADDED"
+  | "CASE_REOPENED"
+  | "CASE_CLOSED"
+  | "MANUAL_REVIEW";
 
 export interface TicketAuditEvent {
   id: string;
@@ -171,6 +190,25 @@ export const EVENT_LABELS: Record<TicketAuditEventType, string> = {
   GEMINI_CALL_COMPLETED:               "Gemini · llamada completada",
   GEMINI_CALL_FAILED:                  "Gemini · llamada falló",
   GEMINI_FALLBACK_USED:                "Gemini · fallback determinístico",
+  // Case Timeline (F0)
+  KNOWLEDGE_SNAPSHOT:                  "Snapshot de análisis",
+  SAP_NOTE_LINKED:                     "SAP Note vinculada",
+  ABAP_UPLOADED:                       "Código ABAP agregado",
+  ATTACHMENT_ADDED:                    "Adjunto agregado",
+  EVIDENCE_UPLOADED:                   "Evidencia cargada",
+  FINDING_ADDED:                       "Hallazgo agregado",
+  FINDING_REMOVED:                     "Hallazgo eliminado",
+  SEVERITY_CHANGED:                    "Severidad cambiada",
+  PRIORITY_CHANGED:                    "Prioridad cambiada",
+  HYPOTHESIS_CHANGED:                  "Hipótesis actualizada",
+  ROOT_CAUSE_CHANGED:                  "Causa raíz actualizada",
+  RECOMMENDATION_UPDATED:              "Recomendación actualizada",
+  KNOWLEDGE_UPDATED:                   "Conocimiento actualizado",
+  FUNCTIONAL_CONTEXT_ADDED:            "Contexto funcional agregado",
+  TECHNICAL_CONTEXT_ADDED:             "Contexto técnico agregado",
+  CASE_REOPENED:                       "Caso reabierto",
+  CASE_CLOSED:                         "Caso cerrado",
+  MANUAL_REVIEW:                       "Revisión manual",
 };
 
 export const EVENT_ICONS: Record<TicketAuditEventType, string> = {
@@ -243,6 +281,25 @@ export const EVENT_ICONS: Record<TicketAuditEventType, string> = {
   GEMINI_CALL_COMPLETED:               "✓",
   GEMINI_CALL_FAILED:                  "✕",
   GEMINI_FALLBACK_USED:                "⤺",
+  // Case Timeline (F0) — emoji fallback; la CaseTimeline usa iconos Lucide (F1)
+  KNOWLEDGE_SNAPSHOT:                  "🧠",
+  SAP_NOTE_LINKED:                     "🔗",
+  ABAP_UPLOADED:                       "📘",
+  ATTACHMENT_ADDED:                    "📎",
+  EVIDENCE_UPLOADED:                   "📥",
+  FINDING_ADDED:                       "➕",
+  FINDING_REMOVED:                     "➖",
+  SEVERITY_CHANGED:                    "⚠",
+  PRIORITY_CHANGED:                    "🔺",
+  HYPOTHESIS_CHANGED:                  "💡",
+  ROOT_CAUSE_CHANGED:                  "🎯",
+  RECOMMENDATION_UPDATED:              "📌",
+  KNOWLEDGE_UPDATED:                   "📚",
+  FUNCTIONAL_CONTEXT_ADDED:            "🗂",
+  TECHNICAL_CONTEXT_ADDED:             "🛠",
+  CASE_REOPENED:                       "🔓",
+  CASE_CLOSED:                         "🔒",
+  MANUAL_REVIEW:                       "🔍",
 };
 
 export const EVENT_COLORS: Record<TicketAuditEventType, string> = {
@@ -315,4 +372,23 @@ export const EVENT_COLORS: Record<TicketAuditEventType, string> = {
   GEMINI_CALL_COMPLETED:               "#10b981",
   GEMINI_CALL_FAILED:                  "#fa4d56",
   GEMINI_FALLBACK_USED:                "#f59e0b",
+  // Case Timeline (F0)
+  KNOWLEDGE_SNAPSHOT:                  "#8a3ffc",
+  SAP_NOTE_LINKED:                     "#10b981",
+  ABAP_UPLOADED:                       "#4589ff",
+  ATTACHMENT_ADDED:                    "#4589ff",
+  EVIDENCE_UPLOADED:                   "#f1c21b",
+  FINDING_ADDED:                       "#10b981",
+  FINDING_REMOVED:                     "#fa4d56",
+  SEVERITY_CHANGED:                    "#f59e0b",
+  PRIORITY_CHANGED:                    "#f59e0b",
+  HYPOTHESIS_CHANGED:                  "#a855f7",
+  ROOT_CAUSE_CHANGED:                  "#a855f7",
+  RECOMMENDATION_UPDATED:              "#4589ff",
+  KNOWLEDGE_UPDATED:                   "#4589ff",
+  FUNCTIONAL_CONTEXT_ADDED:            "#4589ff",
+  TECHNICAL_CONTEXT_ADDED:             "#4589ff",
+  CASE_REOPENED:                       "#f1c21b",
+  CASE_CLOSED:                         "#10b981",
+  MANUAL_REVIEW:                       "#64748b",
 };
