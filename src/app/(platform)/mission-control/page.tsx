@@ -1,5 +1,7 @@
 "use client";
 
+import ClientOnly from "@/components/common/ClientOnly";
+
 import { useEffect, useState, useRef } from "react";
 import Link from "next/link";
 import { fetchAdvanced, fetchNotifications, type DashboardAdvanced, type NotificationItem } from "@/services/dashboard.api";
@@ -133,6 +135,14 @@ const NOTIF_ICON: Record<string, string> = {
 };
 
 export default function MissionControlPage() {
+  return (
+    <ClientOnly fallback={<div style={{ padding: 40, textAlign: "center", color: "#64748b", fontSize: 13 }}>Cargando visualizacion...</div>}>
+      <MissionControlPageInner />
+    </ClientOnly>
+  );
+}
+
+function MissionControlPageInner() {
   const [adv, setAdv] = useState<DashboardAdvanced | null>(null);
   const [feed, setFeed] = useState<NotificationItem[]>([]);
   const [error, setError] = useState<string | null>(null);

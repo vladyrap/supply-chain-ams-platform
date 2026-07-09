@@ -1,5 +1,7 @@
 "use client";
 
+import ClientOnly from "@/components/common/ClientOnly";
+
 import { useEffect, useMemo, useState } from "react";
 import { fetchAdvanced, fetchExecutive, fetchUsage, fetchNotifications,
   type DashboardAdvanced, type DashboardExecutive, type UsageSummary, type NotificationItem } from "@/services/dashboard.api";
@@ -49,6 +51,14 @@ function StatLine({ label, value, accent }: { label: string; value: string | num
 }
 
 export default function HudPage() {
+  return (
+    <ClientOnly fallback={<div style={{ padding: 40, textAlign: "center", color: "#64748b", fontSize: 13 }}>Cargando visualizacion...</div>}>
+      <HudPageInner />
+    </ClientOnly>
+  );
+}
+
+function HudPageInner() {
   const [adv, setAdv] = useState<DashboardAdvanced | null>(null);
   const [exec, setExec] = useState<DashboardExecutive | null>(null);
   const [usage, setUsage] = useState<UsageSummary | null>(null);

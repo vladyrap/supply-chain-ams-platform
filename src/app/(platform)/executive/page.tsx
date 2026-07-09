@@ -1,5 +1,7 @@
 "use client";
 
+import ClientOnly from "@/components/common/ClientOnly";
+
 import { useEffect, useState, useCallback } from "react";
 import Badge from "@/components/ui/Badge";
 import KPI from "@/components/ui/KPI";
@@ -266,8 +268,10 @@ function ExecutivePageInner() {
 
 export default function ExecutivePage() {
   return (
-    <RequirePermission screen="reportes" action="view">
-      <ExecutivePageInner />
-    </RequirePermission>
+    <ClientOnly fallback={<div style={{ padding: 40, textAlign: "center", color: "#64748b", fontSize: 13 }}>Cargando visualizacion...</div>}>
+      <RequirePermission screen="reportes" action="view">
+        <ExecutivePageInner />
+      </RequirePermission>
+    </ClientOnly>
   );
 }

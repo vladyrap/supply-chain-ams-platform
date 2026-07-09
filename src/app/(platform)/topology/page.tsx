@@ -1,5 +1,7 @@
 "use client";
 
+import ClientOnly from "@/components/common/ClientOnly";
+
 import { useEffect, useRef, useState } from "react";
 import { fetchNotifications, type NotificationItem } from "@/services/dashboard.api";
 
@@ -99,6 +101,14 @@ interface Pulse {
 const nodeById = new Map(NODES.map((n) => [n.id, n]));
 
 export default function TopologyPage() {
+  return (
+    <ClientOnly fallback={<div style={{ padding: 40, textAlign: "center", color: "#64748b", fontSize: 13 }}>Cargando visualizacion...</div>}>
+      <TopologyPageInner />
+    </ClientOnly>
+  );
+}
+
+function TopologyPageInner() {
   const [events, setEvents] = useState<NotificationItem[]>([]);
   const [pulses, setPulses] = useState<Pulse[]>([]);
   const [activeNodes, setActiveNodes] = useState<Set<string>>(new Set());

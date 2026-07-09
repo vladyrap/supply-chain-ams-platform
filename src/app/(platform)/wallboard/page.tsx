@@ -1,5 +1,7 @@
 "use client";
 
+import ClientOnly from "@/components/common/ClientOnly";
+
 import { useEffect, useRef, useState } from "react";
 import { useEventSounds } from "@/hooks/useEventSounds";
 
@@ -11,6 +13,14 @@ const QUADS = [
 ];
 
 export default function WallboardPage() {
+  return (
+    <ClientOnly fallback={<div style={{ padding: 40, textAlign: "center", color: "#64748b", fontSize: 13 }}>Cargando visualizacion...</div>}>
+      <WallboardPageInner />
+    </ClientOnly>
+  );
+}
+
+function WallboardPageInner() {
   const [focused, setFocused] = useState<string | null>(null);
   const [autoFocus, setAutoFocus] = useState(false);
   const [now, setNow] = useState(new Date());

@@ -1,5 +1,7 @@
 "use client";
 
+import ClientOnly from "@/components/common/ClientOnly";
+
 import { useEffect, useRef, useState } from "react";
 import { fetchAdvanced, fetchExecutive, fetchUsage, fetchNotifications,
   type DashboardAdvanced, type DashboardExecutive, type UsageSummary, type NotificationItem } from "@/services/dashboard.api";
@@ -74,6 +76,14 @@ function Sparkline({ data, color }: { data: number[]; color: string }) {
 }
 
 export default function TerminalPage() {
+  return (
+    <ClientOnly fallback={<div style={{ padding: 40, textAlign: "center", color: "#64748b", fontSize: 13 }}>Cargando visualizacion...</div>}>
+      <TerminalPageInner />
+    </ClientOnly>
+  );
+}
+
+function TerminalPageInner() {
   const [adv, setAdv] = useState<DashboardAdvanced | null>(null);
   const [exec, setExec] = useState<DashboardExecutive | null>(null);
   const [usage, setUsage] = useState<UsageSummary | null>(null);

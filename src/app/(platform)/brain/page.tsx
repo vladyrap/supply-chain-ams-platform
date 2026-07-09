@@ -1,5 +1,7 @@
 "use client";
 
+import ClientOnly from "@/components/common/ClientOnly";
+
 import { useEffect, useMemo, useRef, useState } from "react";
 import { fetchAdvanced, fetchUsage, fetchNotifications, fetchExecutive,
   type DashboardAdvanced, type UsageSummary, type NotificationItem, type DashboardExecutive } from "@/services/dashboard.api";
@@ -121,6 +123,14 @@ function pathForEvent(kind: NotificationItem["kind"] | string): string[] {
 }
 
 export default function BrainPage() {
+  return (
+    <ClientOnly fallback={<div style={{ padding: 40, textAlign: "center", color: "#64748b", fontSize: 13 }}>Cargando visualizacion...</div>}>
+      <BrainPageInner />
+    </ClientOnly>
+  );
+}
+
+function BrainPageInner() {
   const [adv, setAdv] = useState<DashboardAdvanced | null>(null);
   const [usage, setUsage] = useState<UsageSummary | null>(null);
   const [exec, setExec] = useState<DashboardExecutive | null>(null);
@@ -256,7 +266,7 @@ export default function BrainPage() {
       <div style={{ display: "grid", gridTemplateColumns: "1fr 280px", gap: 10 }}>
         {/* Brain canvas */}
         <div className="brain-frame">
-          <svg viewBox="0 0 1100 600" width="100%" height="auto" preserveAspectRatio="xMidYMid meet">
+          <svg viewBox="0 0 1100 600" preserveAspectRatio="xMidYMid meet" style={{ width: "100%", height: "auto", display: "block" }}>
             <defs>
               <radialGradient id="brain-core">
                 <stop offset="0%"  stopColor="rgba(168,85,247,0.45)" />

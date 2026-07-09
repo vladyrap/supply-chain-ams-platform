@@ -1,5 +1,7 @@
 "use client";
 
+import ClientOnly from "@/components/common/ClientOnly";
+
 import { useEffect, useMemo, useRef, useState } from "react";
 import * as THREE from "three";
 import { fetchExecutive, fetchAdvanced, fetchUsage, fetchNotifications,
@@ -89,6 +91,14 @@ const EVENT_COLOR: Record<string, number> = {
 const HQ = latLngToVec3(0, -30, GLOBE_RADIUS + 0.05);
 
 export default function WarRoomPage() {
+  return (
+    <ClientOnly fallback={<div style={{ padding: 40, textAlign: "center", color: "#64748b", fontSize: 13 }}>Cargando visualizacion...</div>}>
+      <WarRoomPageInner />
+    </ClientOnly>
+  );
+}
+
+function WarRoomPageInner() {
   const canvasRef = useRef<HTMLDivElement | null>(null);
   const sceneRef = useRef<{ renderer?: THREE.WebGLRenderer; scene?: THREE.Scene; camera?: THREE.PerspectiveCamera; globe?: THREE.Group; clientGroup?: THREE.Group; arcGroup?: THREE.Group; arcs: Arc3D[] }>({ arcs: [] });
   const [exec, setExec] = useState<DashboardExecutive | null>(null);

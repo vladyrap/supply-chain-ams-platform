@@ -1,5 +1,7 @@
 "use client";
 
+import ClientOnly from "@/components/common/ClientOnly";
+
 import { useEffect, useMemo, useState } from "react";
 import { fetchAdvanced, fetchExecutive, fetchUsage,
   type DashboardAdvanced, type DashboardExecutive, type UsageSummary } from "@/services/dashboard.api";
@@ -62,6 +64,14 @@ function nextDays(n: number): string[] {
 }
 
 export default function ForecastPage() {
+  return (
+    <ClientOnly fallback={<div style={{ padding: 40, textAlign: "center", color: "#64748b", fontSize: 13 }}>Cargando visualizacion...</div>}>
+      <ForecastPageInner />
+    </ClientOnly>
+  );
+}
+
+function ForecastPageInner() {
   const [adv, setAdv] = useState<DashboardAdvanced | null>(null);
   const [exec, setExec] = useState<DashboardExecutive | null>(null);
   const [usage, setUsage] = useState<UsageSummary | null>(null);

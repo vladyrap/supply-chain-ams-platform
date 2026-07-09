@@ -1,5 +1,7 @@
 "use client";
 
+import ClientOnly from "@/components/common/ClientOnly";
+
 import { useEffect, useMemo, useRef, useState } from "react";
 import { fetchAdvanced, fetchExecutive, fetchUsage,
   type DashboardAdvanced, type DashboardExecutive, type UsageSummary } from "@/services/dashboard.api";
@@ -71,6 +73,14 @@ function Waveform({ data, color }: { data: number[]; color: string }) {
 }
 
 export default function LaunchpadPage() {
+  return (
+    <ClientOnly fallback={<div style={{ padding: 40, textAlign: "center", color: "#64748b", fontSize: 13 }}>Cargando visualizacion...</div>}>
+      <LaunchpadPageInner />
+    </ClientOnly>
+  );
+}
+
+function LaunchpadPageInner() {
   const [adv, setAdv] = useState<DashboardAdvanced | null>(null);
   const [exec, setExec] = useState<DashboardExecutive | null>(null);
   const [usage, setUsage] = useState<UsageSummary | null>(null);
