@@ -25,6 +25,7 @@ import {
 } from "@/lib/modules";
 import { usePermissions } from "@/hooks/usePermissions";
 import type { ModuleDef } from "@/types";
+import { ModuleIcon } from "@/lib/module-icons";
 import { useSidebarPrefs } from "@/hooks/useSidebarPrefs";
 import { useSidebarBadges, badgeForModule } from "@/hooks/useSidebarBadges";
 import { useTenant } from "@/context/TenantContext";
@@ -248,7 +249,7 @@ function NavLink({ m, active, isFavorite, onToggleFavorite, badge }: {
       className={`nav-item ${active ? "active" : ""}`}
       aria-current={active ? "page" : undefined}
       style={{ position: "relative" }}>
-      <span className="ic">{m.icon}</span>
+      <span className="ic" style={{ display: "inline-flex", alignItems: "center", justifyContent: "center" }}><ModuleIcon id={m.id} /></span>
       <span className="label" style={{ flex: 1, minWidth: 0, overflow: "hidden", textOverflow: "ellipsis" }}>{m.label}</span>
       {badge > 0 && (
         <span style={{
