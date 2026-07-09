@@ -14,7 +14,8 @@ import { getCaseTimeline, type CaseTimelineItem } from "@/services/tickets.api";
 import { EVENT_LABELS, EVENT_COLORS } from "@/types/audit";
 import { TimelineIcon } from "@/lib/timeline-icons";
 import { SkeletonCard } from "@/components/common/Skeleton";
-import { Search, RefreshCw, Inbox, AlertCircle, Activity, GitBranch } from "lucide-react";
+import { Search, RefreshCw, Inbox, AlertCircle, Activity, GitBranch, GitCompare } from "lucide-react";
+import CompareVersions from "./CompareVersions";
 
 interface Props {
   ticketKey: string;
@@ -53,6 +54,7 @@ export default function CaseTimeline({ ticketKey, refreshKey }: Props) {
   const [error, setError] = useState<string | null>(null);
   const [query, setQuery] = useState("");
   const [kind, setKind] = useState<KindFilter>("all");
+  const [mode, setMode] = useState<"timeline" | "compare">("timeline");
 
   const load = useCallback(async () => {
     setLoading(true);
@@ -89,6 +91,10 @@ export default function CaseTimeline({ ticketKey, refreshKey }: Props) {
       );
     });
   }, [items, query, kind]);
+
+  if (mode === "compare") {
+    return <CompareVersions ticketKey={ticketKey} onBack={() => setMode("timeline")} />;
+  }
 
   const chip = (v: KindFilter, label: string) => (
     <button
@@ -130,6 +136,16 @@ export default function CaseTimeline({ ticketKey, refreshKey }: Props) {
           {chip("all", "Todo")}
           {chip("event", "Eventos")}
           {chip("version", "Versiones")}
+          <button
+            type="button"
+            className="btn"
+            onClick={() => setMode("compare")}
+            disabled={counts.versions < 2}
+            title={counts.versions < 2 ? "Se necesitan 2 o más versiones" : "Comparar versiones"}
+            style={{ padding: "6px 11px", fontSize: 12 }}
+          >
+            <GitCompare size={14} /> Comparar
+          </button>
           <button
             type="button"
             className="btn ghost"
