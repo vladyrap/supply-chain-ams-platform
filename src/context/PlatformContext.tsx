@@ -81,11 +81,12 @@ const DEFAULTS: PersistedState = {
   theme: "default",
   fxEnabled: false,
   accentColor: "cyan",
-  auroraIntensity: 65,
-  parallaxEnabled: true,
-  glassmorphismEnabled: true,
-  soundsEnabled: true,
-  splashEnabled: true,
+  // REDL: minimal, sin efectos flashy (aurora/parallax/glassmorphism/splash/confetti).
+  auroraIntensity: 0,
+  parallaxEnabled: false,
+  glassmorphismEnabled: false,
+  soundsEnabled: false,
+  splashEnabled: false,
   voiceRate: 1.0,
   voicePitch: 1.0,
   voiceUri: "",
@@ -99,14 +100,14 @@ function loadFromStorage(): PersistedState {
       // Migración suave: si existe la clave v2 vieja, importamos sus campos
       const old = window.localStorage.getItem("ams-platform-state-v2");
       if (old) {
-        return { ...DEFAULTS, ...(JSON.parse(old) as Partial<PersistedState>), theme: "default" };
+        return { ...DEFAULTS, ...(JSON.parse(old) as Partial<PersistedState>), theme: "default", auroraIntensity: 0, parallaxEnabled: false, glassmorphismEnabled: false, splashEnabled: false, fxEnabled: false };
       }
       return DEFAULTS;
     }
     // theme: "default" forzado — la plataforma queda SIEMPRE en tema claro IBM
     // Carbon (blanco), aunque el usuario tuviera "cyberpunk" persistido de una
     // sesión previa. El toggle de tema se removió del Header.
-    return { ...DEFAULTS, ...(JSON.parse(raw) as Partial<PersistedState>), theme: "default" };
+    return { ...DEFAULTS, ...(JSON.parse(raw) as Partial<PersistedState>), theme: "default", auroraIntensity: 0, parallaxEnabled: false, glassmorphismEnabled: false, splashEnabled: false, fxEnabled: false };
   } catch {
     return DEFAULTS;
   }

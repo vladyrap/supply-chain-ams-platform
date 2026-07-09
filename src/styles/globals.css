@@ -122,7 +122,7 @@ input:focus, select:focus, textarea:focus {
 .sidebar .brand .logo {
   width: 32px; height: 32px;
   display: grid; place-items: center;
-  background: linear-gradient(135deg, var(--accent), var(--magenta));
+  background: var(--accent);
   border-radius: 9px;
   color: white; font-weight: 700;
   font-size: 14px;
@@ -169,7 +169,7 @@ input:focus, select:focus, textarea:focus {
   gap: 14px;
   padding: 12px 22px;
   background: rgba(255,255,255,0.90);
-  backdrop-filter: blur(8px);
+
   border-bottom: 1px solid var(--border-soft);
   position: sticky;
   top: 0;
@@ -273,7 +273,7 @@ input:focus, select:focus, textarea:focus {
 .card.flat {
   /* opt-out del parallax cuando es contraproducente (ej. canvas adentro) */
   transform: none !important;
-  backdrop-filter: none;
+
 }
 
 /* =====================================================
@@ -368,8 +368,8 @@ input:focus, select:focus, textarea:focus {
   border: 1px solid var(--feat-color, #4589ff);
   border-left-width: 3px;
   border-radius: 8px;
-  background: linear-gradient(135deg, rgba(19, 43, 79, 0.6), rgba(11, 31, 58, 0.4));
-  backdrop-filter: blur(10px);
+  background: var(--bg-card);
+
   opacity: 0; transform: translateY(10px);
   transition: opacity 0.5s ease, transform 0.5s ease;
   pointer-events: none;
@@ -400,7 +400,7 @@ input:focus, select:focus, textarea:focus {
   border: 0; cursor: pointer; padding: 0;
   transition: background 0.25s ease;
 }
-.auth-dot.active { background: linear-gradient(90deg, #4589ff, #a855f7); }
+.auth-dot.active { background: var(--accent); }
 .auth-dot:hover { background: rgba(255, 255, 255, 0.2); }
 
 .auth-stats {
@@ -442,7 +442,7 @@ input:focus, select:focus, textarea:focus {
   border-radius: 8px;
   outline: none;
   transition: border-color 0.18s, box-shadow 0.18s, background 0.18s;
-  backdrop-filter: blur(6px);
+
 }
 .float-field input:hover { border-color: rgba(69,137,255, 0.35); }
 .float-field input:focus {
@@ -474,7 +474,7 @@ input:focus, select:focus, textarea:focus {
 .auth-submit {
   display: inline-flex; align-items: center; justify-content: center;
   gap: 6px;
-  background: linear-gradient(135deg, #06b6d4, #a855f7);
+  background: var(--accent);
   border: 0;
   color: white;
   font-weight: 700; font-size: 14px; letter-spacing: 0.5px;
@@ -607,7 +607,7 @@ input:focus, select:focus, textarea:focus {
 }
 .perm-cell:hover span { border-color: #4589ff; }
 .perm-cell input:checked + span {
-  background: linear-gradient(135deg, #06b6d4, #a855f7);
+  background: var(--accent);
   border-color: #4589ff;
   box-shadow: 0 0 8px rgba(69,137,255, 0.5);
 }
@@ -620,7 +620,7 @@ input:focus, select:focus, textarea:focus {
 .admin-modal-overlay {
   position: fixed; inset: 0; z-index: 9500;
   background: rgba(0, 0, 0, 0.65);
-  backdrop-filter: blur(4px);
+
   display: grid; place-items: center;
   padding: 20px;
   animation: modalFadeIn .15s ease-out;
@@ -628,7 +628,7 @@ input:focus, select:focus, textarea:focus {
 @keyframes modalFadeIn { from { opacity: 0; } to { opacity: 1; } }
 .admin-modal {
   width: 100%; max-width: 480px;
-  background: linear-gradient(180deg, rgba(19, 43, 79, 0.97), rgba(11, 31, 58, 0.97));
+  background: var(--bg-card);
   border: 1px solid rgba(69,137,255, 0.3);
   border-radius: 10px;
   box-shadow: 0 30px 70px rgba(0, 0, 0, 0.65), 0 0 40px rgba(69,137,255, 0.1);
@@ -676,7 +676,7 @@ input:focus, select:focus, textarea:focus {
   background: rgba(19, 43, 79, 0.4);
   border: 1px solid var(--border-soft);
   border-radius: 10px;
-  backdrop-filter: blur(10px);
+
   height: fit-content;
 }
 .settings-tab {
@@ -772,7 +772,7 @@ input:focus, select:focus, textarea:focus {
 .settings-slider::-webkit-slider-thumb {
   -webkit-appearance: none; appearance: none;
   width: 18px; height: 18px; border-radius: 50%;
-  background: linear-gradient(135deg, var(--accent), #a855f7);
+  background: var(--accent);
   border: 0;
   margin-top: -7px;
   box-shadow: 0 0 12px var(--accent), 0 2px 6px rgba(0, 0, 0, 0.4);
@@ -785,7 +785,7 @@ input:focus, select:focus, textarea:focus {
 }
 .settings-slider::-moz-range-thumb {
   width: 18px; height: 18px; border-radius: 50%;
-  background: linear-gradient(135deg, var(--accent), #a855f7);
+  background: var(--accent);
   border: 0;
   box-shadow: 0 0 12px var(--accent), 0 2px 6px rgba(0, 0, 0, 0.4);
   cursor: grab;
@@ -840,7 +840,7 @@ input:focus, select:focus, textarea:focus {
   position: relative;
   width: 84px; height: 84px;
   border-radius: 50%;
-  background: linear-gradient(135deg, var(--accent), #a855f7);
+  background: var(--accent);
   display: grid; place-items: center;
   font-size: 30px; font-weight: 700; color: white;
   letter-spacing: -1px;
@@ -881,7 +881,7 @@ input:focus, select:focus, textarea:focus {
   border: 1px solid rgba(255, 255, 255, 0.08);
   border-radius: 10px;
   padding: 14px;
-  backdrop-filter: blur(8px);
+
 }
 .settings-preview-head {
   font-size: 10.5px; letter-spacing: 1.5px; text-transform: uppercase;
@@ -935,8 +935,8 @@ input:focus, select:focus, textarea:focus {
 
 /* Glassmorphism toggle a nivel root */
 :root[data-glassmorphism="off"] .card {
-  backdrop-filter: none;
-  -webkit-backdrop-filter: none;
+
+
   background: var(--bg-card);
 }
 :root[data-parallax="off"] .card {
@@ -951,7 +951,7 @@ input:focus, select:focus, textarea:focus {
   position: relative;
   background:
     radial-gradient(ellipse at 30% 30%, rgba(var(--accent-rgb), 0.08), transparent 60%),
-    linear-gradient(135deg, rgba(19, 43, 79, 0.92), rgba(11, 31, 58, 0.88));
+    var(--bg-card);
   border: 1px solid rgba(var(--accent-rgb), 0.45);
   border-radius: 12px;
   padding: 0;
@@ -960,7 +960,7 @@ input:focus, select:focus, textarea:focus {
     0 14px 40px rgba(0, 0, 0, 0.55),
     0 0 32px rgba(var(--accent-rgb), 0.10),
     inset 0 1px 0 rgba(255, 255, 255, 0.05);
-  backdrop-filter: blur(14px) saturate(140%);
+
 }
 .id-tc {
   position: absolute; width: 22px; height: 22px;
@@ -1020,7 +1020,7 @@ input:focus, select:focus, textarea:focus {
 .id-name {
   margin: 0; font-size: 28px; font-weight: 800;
   letter-spacing: -0.5px; color: var(--text);
-  background: linear-gradient(110deg, var(--text) 60%, var(--accent));
+  background: var(--accent);
   -webkit-background-clip: text; background-clip: text;
   -webkit-text-fill-color: transparent; color: transparent;
 }
@@ -1198,7 +1198,7 @@ input:focus, select:focus, textarea:focus {
   position: relative;
   background:
     radial-gradient(ellipse at 30% 40%, rgba(var(--accent-rgb), 0.10), transparent 60%),
-    linear-gradient(135deg, rgba(19, 43, 79, 0.92), rgba(11, 31, 58, 0.92));
+    var(--bg-card);
   border: 1px solid rgba(var(--accent-rgb), 0.45);
   border-radius: 12px;
   padding: 18px 22px;
@@ -1244,7 +1244,7 @@ input:focus, select:focus, textarea:focus {
 }
 .voice-play-btn {
   display: inline-flex; align-items: center; gap: 8px;
-  background: linear-gradient(135deg, var(--accent), #a855f7);
+  background: var(--accent);
   border: 0;
   color: white;
   font-weight: 700; font-size: 13px; letter-spacing: 2px;
@@ -1399,7 +1399,7 @@ input:focus, select:focus, textarea:focus {
   100% { transform: scale(1); }
 }
 .kbd-pressed {
-  background: linear-gradient(180deg, var(--accent), rgba(var(--accent-rgb), 0.4)) !important;
+  background: var(--accent) !important;
   border-color: var(--accent) !important;
   color: white !important;
   font-size: 16px !important;
@@ -1543,14 +1543,14 @@ input:focus, select:focus, textarea:focus {
   position: relative;
   background:
     radial-gradient(ellipse at 30% 30%, rgba(var(--accent-rgb), 0.08), transparent 60%),
-    linear-gradient(135deg, rgba(19, 43, 79, 0.92), rgba(11, 31, 58, 0.88));
+    var(--bg-card);
   border: 1px solid rgba(var(--accent-rgb), 0.30);
   border-radius: 12px;
   padding: 16px 22px;
   overflow: hidden;
   margin-bottom: 16px;
   box-shadow: 0 10px 30px rgba(0, 0, 0, 0.45), 0 0 24px rgba(var(--accent-rgb), 0.08);
-  backdrop-filter: blur(10px);
+
 }
 .sd-hero-grid {
   position: absolute; inset: 0; pointer-events: none;
@@ -1640,7 +1640,7 @@ input:focus, select:focus, textarea:focus {
 @media (max-width: 720px) { .sd-kpi-grid { grid-template-columns: 1fr 1fr; grid-template-rows: auto; } }
 
 .sd-kpi {
-  background: linear-gradient(135deg, rgba(19, 43, 79, 0.65), rgba(11, 31, 58, 0.65));
+  background: var(--bg-card);
   border: 1px solid rgba(var(--accent-rgb), 0.12);
   border-left: 3px solid var(--accent);
   border-radius: 8px;
@@ -1748,7 +1748,7 @@ input:focus, select:focus, textarea:focus {
 .sd-access {
   display: flex; align-items: center; gap: 12px;
   padding: 14px 14px;
-  background: linear-gradient(135deg, rgba(19, 43, 79, 0.6), rgba(11, 31, 58, 0.6));
+  background: var(--bg-card);
   border: 1px solid rgba(255, 255, 255, 0.08);
   border-left: 3px solid var(--access-color);
   border-radius: 8px;
@@ -1757,7 +1757,7 @@ input:focus, select:focus, textarea:focus {
   position: relative; overflow: hidden;
 }
 .sd-access:hover {
-  background: linear-gradient(135deg, rgba(19, 43, 79, 0.8), rgba(11, 31, 58, 0.8));
+  background: var(--bg-card);
   border-color: var(--access-color);
   transform: translateY(-2px);
   box-shadow: 0 8px 20px rgba(0, 0, 0, 0.4), 0 0 16px var(--access-color);
@@ -1819,7 +1819,7 @@ input:focus, select:focus, textarea:focus {
 }
 
 .kanban-col {
-  background: linear-gradient(180deg, rgba(19, 43, 79, 0.85), rgba(11, 31, 58, 0.85));
+  background: var(--bg-card);
   border: 1px solid rgba(255, 255, 255, 0.06);
   border-top: 2px solid var(--col-color);
   border-radius: 10px;
@@ -1827,12 +1827,12 @@ input:focus, select:focus, textarea:focus {
   min-height: 280px;
   transition: box-shadow .25s, transform .15s, border-color .2s;
   position: relative;
-  backdrop-filter: blur(8px);
+
 }
 .kanban-col.drag-target {
   box-shadow: 0 0 0 2px var(--col-color), 0 0 30px var(--col-color);
   border-color: var(--col-color);
-  background: linear-gradient(180deg, rgba(19, 43, 79, 0.9), rgba(11, 31, 58, 0.9));
+  background: var(--bg-card);
 }
 .kanban-col.drag-target::before {
   content: ""; position: absolute; inset: 0;
@@ -1918,7 +1918,7 @@ input:focus, select:focus, textarea:focus {
 
 /* Cards */
 .kanban-card {
-  background: linear-gradient(135deg, rgba(19, 43, 79, 0.85), rgba(19, 43, 79, 0.7));
+  background: var(--bg-card);
   border: 1px solid rgba(255, 255, 255, 0.06);
   border-left: 3px solid var(--prio-color);
   border-radius: 6px;
@@ -2159,12 +2159,12 @@ input:focus, select:focus, textarea:focus {
 
 /* Detail panel */
 .ticket-detail {
-  background: linear-gradient(180deg, rgba(19, 43, 79, 0.6), rgba(11, 31, 58, 0.6));
+  background: var(--bg-card);
   border: 1px solid rgba(255, 255, 255, 0.06);
   border-radius: 10px;
   padding: 18px;
   max-height: 78vh; overflow-y: auto;
-  backdrop-filter: blur(8px);
+
 }
 .ticket-detail-head {
   display: flex; align-items: flex-start; gap: 14px;
@@ -2321,7 +2321,7 @@ input:focus, select:focus, textarea:focus {
   to   { opacity: 1; transform: translateY(0); }
 }
 .conv-msg-bubble.user {
-  background: linear-gradient(135deg, var(--accent), #06b6d4);
+  background: var(--accent);
   color: white;
   border-bottom-right-radius: 4px;
   box-shadow: 0 2px 8px rgba(var(--accent-rgb), 0.25);
@@ -2431,7 +2431,7 @@ input:focus, select:focus, textarea:focus {
   gap: 12px;
 }
 .kn-card {
-  background: linear-gradient(135deg, rgba(19, 43, 79, 0.85), rgba(19, 43, 79, 0.7));
+  background: var(--bg-card);
   border: 1px solid rgba(255, 255, 255, 0.06);
   border-top: 3px solid var(--type-color);
   border-radius: 10px;
@@ -2654,33 +2654,41 @@ input:focus, select:focus, textarea:focus {
 }
 
 .btn {
+  /* REDL: radio 12, borde navy, transición 200ms ease-in-out */
   display: inline-flex;
   align-items: center;
   gap: 7px;
   background: var(--bg-elev);
   border: 1px solid var(--border);
   color: var(--text);
-  padding: 8px 14px;
-  border-radius: var(--radius-sm);
+  padding: 9px 16px;
+  border-radius: var(--radius);
   font-size: 13px;
+  font-weight: 500;
   cursor: pointer;
-  transition: background 0.12s, border-color 0.12s;
+  transition: background 0.2s ease-in-out, border-color 0.2s ease-in-out;
 }
 .btn:hover:not(:disabled) { background: var(--bg-elev-2); border-color: var(--accent); }
 .btn:disabled { opacity: 0.55; cursor: not-allowed; }
 
 .btn.primary {
-  /* Botón primario IBM: azul IBM sólido #0f62fe, rectangular */
-  background: var(--accent-2);
-  border-color: var(--accent-2);
-  color: white;
+  /* REDL Primary Action: IBM Blue #0F62FE sólido, hover #4589FF, texto blanco */
+  background: var(--accent);
+  border-color: var(--accent);
+  color: #ffffff;
   font-weight: 600;
+  box-shadow: var(--shadow-sm);
 }
-.btn.primary:hover:not(:disabled) { background: var(--accent); border-color: var(--accent); }
+.btn.primary:hover:not(:disabled) { background: var(--accent-2); border-color: var(--accent-2); }
 
+/* REDL Secondary: transparente + borde accent-3 */
 .btn.ghost { background: transparent; }
-.btn.danger { border-color: rgba(240,107,107,0.4); color: var(--error); background: rgba(240,107,107,0.08); }
-.btn.danger:hover:not(:disabled) { background: rgba(240,107,107,0.18); }
+.btn.secondary { background: transparent; border-color: var(--accent-3); color: var(--accent-3); }
+.btn.secondary:hover:not(:disabled) { background: var(--accent-soft); }
+
+/* REDL Danger: #DA1E28 */
+.btn.danger { border-color: var(--error); color: var(--error); background: rgba(218,30,40,0.10); }
+.btn.danger:hover:not(:disabled) { background: var(--error); color: #ffffff; border-color: var(--error); }
 
 .btn-icon { padding: 8px 10px; }
 
@@ -2935,7 +2943,7 @@ html[data-theme="cyberpunk"] body {
 
 html[data-theme="cyberpunk"] .card {
   background: rgba(10, 2, 32, 0.6);
-  backdrop-filter: blur(8px);
+
   border: 1px solid rgba(0, 255, 225, 0.25);
   box-shadow:
     0 0 20px rgba(0, 255, 225, 0.06) inset,
@@ -2951,7 +2959,7 @@ html[data-theme="cyberpunk"] .card:hover {
 html[data-theme="cyberpunk"] .sidebar,
 html[data-theme="cyberpunk"] .header {
   background: rgba(10, 2, 32, 0.85);
-  backdrop-filter: blur(10px);
+
   border-color: rgba(0, 255, 225, 0.2);
 }
 
@@ -3484,7 +3492,7 @@ html[data-theme="cyberpunk"] .brand .title {
 .tc-modal-back {
   position: fixed; inset: 0;
   background: rgba(0, 0, 0, 0.55);
-  backdrop-filter: blur(6px);
+
   display: grid; place-items: center;
   z-index: 9000;
   padding: 20px;
@@ -3494,7 +3502,7 @@ html[data-theme="cyberpunk"] .brand .title {
   max-width: 760px;
   max-height: 90vh;
   display: flex; flex-direction: column;
-  background: linear-gradient(180deg, rgba(19, 43, 79, 0.95), rgba(11, 31, 58, 0.95));
+  background: var(--bg-card);
   border: 1px solid var(--border-soft);
   border-radius: 12px;
   box-shadow: 0 30px 80px -10px rgba(0, 0, 0, 0.5);
@@ -3644,8 +3652,8 @@ html[data-theme="cyberpunk"] .brand .title {
 /* Glassmorphism card extra */
 .glass-card {
   background: linear-gradient(135deg, rgba(19, 43, 79,0.55) 0%, rgba(19, 43, 79,0.40) 100%);
-  backdrop-filter: blur(14px);
-  -webkit-backdrop-filter: blur(14px);
+
+
   border: 1px solid rgba(255,255,255,0.07);
   border-radius: 12px;
   transition: transform 0.18s ease, border-color 0.18s ease, box-shadow 0.18s ease;
