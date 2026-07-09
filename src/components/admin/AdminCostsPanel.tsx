@@ -514,7 +514,7 @@ function SourcesTable({ sources }: { sources: UsageSummaryResponse["topSources"]
   if (!sources.length) return null;
   return (
     <div className="card" style={{ padding: 14 }}>
-      <div style={{ fontSize: 10, letterSpacing: 1.4, color: "var(--text-dim)", marginBottom: 8 }}>🎯 TOP SOURCES · 30D</div>
+      <div style={{ fontSize: 10, letterSpacing: 1.4, color: "var(--text-dim)", marginBottom: 8 }}><Target size={14} /> TOP SOURCES · 30D</div>
       <table style={{ width: "100%", fontSize: 12, borderCollapse: "collapse" }}>
         <thead>
           <tr style={{ borderBottom: "1px solid var(--border-soft)", textAlign: "left" }}>
@@ -608,8 +608,8 @@ export default function AdminCostsPanel() {
   if (error && !data) {
     return (
       <div style={{ padding: 14 }}>
-        <div className="alert error" style={{ padding: 14, fontSize: 12 }}>⚠ No se pudo cargar: {error}</div>
-        <button className="btn primary" onClick={() => { void refresh(); }} style={{ marginTop: 10 }}>🔁 Reintentar</button>
+        <div className="alert error" style={{ padding: 14, fontSize: 12 }}><AlertTriangle size={14} /> No se pudo cargar: {error}</div>
+        <button className="btn primary" onClick={() => { void refresh(); }} style={{ marginTop: 10 }}><RefreshCw size={14} /> Reintentar</button>
       </div>
     );
   }
@@ -625,7 +625,7 @@ export default function AdminCostsPanel() {
       <div className="row between" style={{ alignItems: "flex-start", flexWrap: "wrap", gap: 8 }}>
         <div>
           <h1 style={{ fontSize: 22, fontWeight: 700, marginBottom: 4 }}>
-            💰 Costos del Agente AMS
+            <DollarSign size={18} /> Costos del Agente AMS
             <span style={{
               marginLeft: 8, fontSize: 11, padding: "3px 8px", borderRadius: 12,
               background: recent ? "rgba(16,185,129,0.2)" : "rgba(100,116,139,0.2)",
@@ -645,8 +645,8 @@ export default function AdminCostsPanel() {
           </p>
         </div>
         <div className="row" style={{ gap: 6 }}>
-          <button className="btn ghost sm" onClick={() => { void refresh(); }} style={{ fontSize: 11 }}>🔁 Refresh</button>
-          <button className="btn ghost sm" onClick={handleExport} style={{ fontSize: 11 }}>📥 CSV</button>
+          <button className="btn ghost sm" onClick={() => { void refresh(); }} style={{ fontSize: 11 }}><RefreshCw size={14} /> Refresh</button>
+          <button className="btn ghost sm" onClick={handleExport} style={{ fontSize: 11 }}><Download size={14} /> CSV</button>
         </div>
       </div>
 

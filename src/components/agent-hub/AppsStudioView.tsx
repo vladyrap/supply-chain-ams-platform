@@ -17,6 +17,7 @@ import {
   listAgents, createApp, listApps, deleteApp, duplicateApp,
   type CustomAgent, type AgenticApp, type AppStep,
 } from "@/services/custom-agents.api";
+import { FlaskConical, ArrowRight, Play, Trash2, Copy, X, CornerDownRight, Plus } from "lucide-react";
 
 const APP_ICONS = ["⚙️", "🚀", "🧩", "🔄", "🎯", "🛰️", "🗓️", "📈"];
 const MAX_STEPS = 4;
@@ -107,7 +108,7 @@ export function AppsStudioView() {
         background: "linear-gradient(135deg, rgba(0,29,108,0.9), rgba(0,67,206,0.75))",
         border: "1px solid rgba(69,137,255,0.35)",
       }}>
-        <h1 style={{ margin: 0, fontSize: 30 }}>🧪 Agent Studio</h1>
+        <h1 style={{ margin: 0, fontSize: 30 }}><FlaskConical size={22} /> Agent Studio</h1>
         <p style={{ margin: "8px 0 0", color: "rgba(255,255,255,0.75)", fontSize: 14, maxWidth: 720 }}>
           Diseñá, construí y publicá agentes inteligentes y apps que los orquestan.
           Creá para vos y para todo el equipo.
@@ -126,7 +127,7 @@ export function AppsStudioView() {
           </div>
           <button className="btn primary" onClick={() => router.push("/agent-hub?tab=builder")}
             style={{ borderRadius: 0, padding: "14px 20px", justifyContent: "space-between", display: "flex", width: "100%" }}>
-            <span>Abrir Agent Builder</span><span>→</span>
+            <span>Abrir Agent Builder</span><span><ArrowRight size={16} /></span>
           </button>
         </div>
 
@@ -140,7 +141,7 @@ export function AppsStudioView() {
           </div>
           <button className="btn primary" onClick={() => setAppModal(true)}
             style={{ borderRadius: 0, padding: "14px 20px", justifyContent: "space-between", display: "flex", width: "100%", background: "linear-gradient(135deg, #7c3aed, #be95ff)" }}>
-            <span>Comenzar</span><span>→</span>
+            <span>Comenzar</span><span><ArrowRight size={16} /></span>
           </button>
         </div>
       </div>
@@ -166,7 +167,7 @@ export function AppsStudioView() {
                   <div style={{ fontWeight: 600, fontSize: 14.5 }}>{app.name}</div>
                   <div className="row" style={{ gap: 6, marginTop: 3 }}>
                     <Badge variant="muted">{app.steps.length} paso{app.steps.length > 1 ? "s" : ""}</Badge>
-                    <span style={{ fontSize: 11, color: "var(--text-dim)" }}>▶ {app.runCount} runs</span>
+                    <span style={{ fontSize: 11, color: "var(--text-dim)" }}><Play size={14} /> {app.runCount} runs</span>
                   </div>
                 </div>
               </div>
@@ -176,12 +177,12 @@ export function AppsStudioView() {
               <div className="row between" style={{ borderTop: "1px solid var(--border-soft)", paddingTop: 10 }}>
                 <div className="row" style={{ gap: 8 }}>
                   <button onClick={() => handleDeleteApp(app)} title="Eliminar"
-                    style={{ background: "none", border: 0, cursor: "pointer", fontSize: 13, color: "#fa4d56" }}>🗑</button>
+                    style={{ background: "none", border: 0, cursor: "pointer", fontSize: 13, color: "#fa4d56" }}><Trash2 size={14} /></button>
                   <button onClick={() => handleDuplicateApp(app)} title="Duplicar como plantilla"
-                    style={{ background: "none", border: 0, cursor: "pointer", fontSize: 13, color: "var(--text-dim)" }}>⧉</button>
+                    style={{ background: "none", border: 0, cursor: "pointer", fontSize: 13, color: "var(--text-dim)" }}><Copy size={14} /></button>
                 </div>
                 <button className="btn sm primary" onClick={() => router.push(`/agentic-apps/${app.id}`)}>
-                  ▶ Ejecutar
+                  <Play size={14} /> Ejecutar
                 </button>
               </div>
             </div>
@@ -198,7 +199,7 @@ export function AppsStudioView() {
             <div className="row between" style={{ marginBottom: 4 }}>
               <h2 style={{ margin: 0, fontSize: 20 }}>Crear App Agéntica</h2>
               <button onClick={() => setAppModal(false)} disabled={appBusy}
-                style={{ background: "none", border: 0, color: "var(--text-dim)", fontSize: 22, cursor: "pointer" }}>×</button>
+                style={{ background: "none", border: 0, color: "var(--text-dim)", fontSize: 22, cursor: "pointer" }}><X size={20} /></button>
             </div>
             <p style={{ margin: "0 0 18px", fontSize: 12.5, color: "var(--text-soft)" }}>
               Encadená agentes: el input del usuario entra al paso 1, y el output de cada paso alimenta al siguiente.
@@ -233,7 +234,7 @@ export function AppsStudioView() {
                     <div key={i} className="card flat" style={{ padding: 12, border: "1px solid var(--border-soft)" }}>
                       <div className="row between" style={{ marginBottom: 8 }}>
                         <span style={{ fontSize: 12, fontWeight: 600, color: "#be95ff" }}>
-                          {i === 0 ? "▶ Paso 1 (recibe el input del usuario)" : `⤷ Paso ${i + 1} (recibe el output del paso ${i})`}
+                          {i === 0 ? <><Play size={14} /> Paso 1 (recibe el input del usuario)</> : <><CornerDownRight size={14} /> Paso {i + 1} (recibe el output del paso {i})</>}
                         </span>
                         {steps.length > 1 && (
                           <button type="button" onClick={() => removeStep(i)}
@@ -258,7 +259,7 @@ export function AppsStudioView() {
                 </div>
                 {steps.length < MAX_STEPS && (
                   <button type="button" className="btn ghost" onClick={addStep} style={{ marginTop: 10, fontSize: 12.5 }}>
-                    ＋ Agregar paso
+<Plus size={14} /> Agregar paso
                   </button>
                 )}
               </div>
@@ -267,7 +268,7 @@ export function AppsStudioView() {
               <div className="row" style={{ gap: 8, marginTop: 6 }}>
                 <button type="button" className="btn ghost" onClick={() => setAppModal(false)} disabled={appBusy}>Cancelar</button>
                 <button type="submit" className="btn primary" disabled={appBusy} style={{ marginLeft: "auto" }}>
-                  {appBusy ? "Creando…" : "Crear app →"}
+                  {appBusy ? "Creando…" : <>Crear app <ArrowRight size={14} /></>}
                 </button>
               </div>
             </form>

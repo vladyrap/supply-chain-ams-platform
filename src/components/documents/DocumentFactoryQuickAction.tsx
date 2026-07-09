@@ -20,6 +20,7 @@ import {
 } from "@/types/ams-modules";
 import MarkdownView from "@/components/agent/MarkdownView";
 import ModalPortal from "@/components/ui/ModalPortal";
+import { Check, FileText, X, Zap } from "lucide-react";
 
 interface Props {
   /** Key del ticket (se persiste como sourceId). */
@@ -97,16 +98,16 @@ export default function DocumentFactoryQuickAction({
           ? { padding: "3px 9px", fontSize: 11 }
           : { background: "linear-gradient(135deg, #a855f7, #7c3aed)", borderColor: "#a855f7" }}
       >
-        📄 {variant === "compact" ? "doc" : "Generar documento"}
+        <FileText size={16} /> {variant === "compact" ? "doc" : "Generar documento"}
       </button>
 
       <ModalPortal open={open} onClose={close} maxWidth={720} contentClassName="card">
         <div>
             <div className="row between" style={{ alignItems: "center" }}>
               <div className="ticket-section-head" style={{ marginBottom: 0 }}>
-                📄 GENERAR DOCUMENTO · ticket {sourceId}
+                <FileText size={16} /> GENERAR DOCUMENTO · ticket {sourceId}
               </div>
-              <button className="btn ghost" onClick={close} style={{ padding: "4px 10px" }}>✕</button>
+              <button className="btn ghost" onClick={close} style={{ padding: "4px 10px" }}><X size={14} /></button>
             </div>
 
             <label className="tc-field" style={{ marginTop: 10 }}>
@@ -155,13 +156,13 @@ export default function DocumentFactoryQuickAction({
 
             <div className="row" style={{ gap: 8, marginTop: 12, justifyContent: "flex-end" }}>
               <button className="btn ghost" onClick={close}>cerrar</button>
-              <button className="btn primary" onClick={generate}>⚡ Generar y asociar al ticket</button>
+              <button className="btn primary" onClick={generate}><Zap size={16} /> Generar y asociar al ticket</button>
             </div>
 
             {preview && (
               <div className="lab-fb-block" style={{ marginTop: 12, borderLeft: "3px solid #10b981" }}>
                 <div style={{ fontWeight: 600, fontSize: 12, color: "#10b981", marginBottom: 6 }}>
-                  ✓ {preview.title}
+                  <Check size={14} /> {preview.title}
                 </div>
                 <div style={{ padding: 10, background: "rgba(15,23,42,0.5)", borderRadius: 4,
                               maxHeight: 240, overflowY: "auto" }}>

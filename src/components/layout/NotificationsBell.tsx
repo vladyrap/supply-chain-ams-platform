@@ -4,6 +4,7 @@ import { useEffect, useRef, useState, useCallback } from "react";
 import { useRouter } from "next/navigation";
 import { fetchNotifications, type NotificationItem } from "@/services/dashboard.api";
 import Badge from "@/components/ui/Badge";
+import { Bell } from "lucide-react";
 
 const LAST_READ_KEY = "ams-notif-last-read-v1";
 const POLL_INTERVAL_MS = 10000;

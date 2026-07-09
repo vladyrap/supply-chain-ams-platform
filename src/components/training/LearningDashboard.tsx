@@ -21,7 +21,7 @@ import {
   Zap, Hourglass, Check, X, Sprout, Wand2, BookOpen, MessageSquare, Construction,
   Target, FlaskConical, ChevronUp, ChevronDown, ChevronRight, BarChart3, AlertTriangle,
   AlarmClock, Siren, TrendingUp, TrendingDown, Dna, Microscope, ThumbsDown, Search,
-  StickyNote, Inbox, Eye, Ticket, Bot, FileText, Timer,
+  StickyNote, Inbox, Eye, Ticket, Bot, FileText, Timer, GitCompare,
 } from "lucide-react";
 
 interface Props { ctx: UseAgentTraining }
@@ -500,7 +500,7 @@ export default function LearningDashboard({ ctx }: Props) {
       {/* ============================================================== */}
       <div className="card" style={{ borderLeft: "3px solid #10b981" }}>
         <div className="ticket-section-head">
-          <span style={{ color: "#10b981" }}>⏰</span> CRON · AUTO-PULIDO AUTOMÁTICO
+          <span style={{ color: "#10b981" }}><AlarmClock size={16} /></span> CRON · AUTO-PULIDO AUTOMÁTICO
         </div>
         <p className="settings-section-desc">
           Activá el cron para que el ciclo completo de self-training corra automáticamente cada N horas.
@@ -511,7 +511,7 @@ export default function LearningDashboard({ ctx }: Props) {
             <label style={{ display: "flex", alignItems: "center", gap: 6, fontSize: 13 }}>
               <input type="checkbox" checked={cron.enabled} disabled={cronSaving}
                 onChange={(e) => updateCron({ enabled: e.target.checked })} />
-              <b>{cron.enabled ? "✓ Activo" : "Inactivo"}</b>
+              <b>{cron.enabled ? <><Check size={14} /> Activo</> : "Inactivo"}</b>
             </label>
             <label style={{ display: "flex", alignItems: "center", gap: 6, fontSize: 12 }}>
               <span>Cada</span>
@@ -545,7 +545,7 @@ export default function LearningDashboard({ ctx }: Props) {
         }}>
           <div className="ticket-section-head">
             <span style={{ color: timeline.drift.driftDetected ? "#fa4d56" : "#06b6d4" }}>
-              {timeline.drift.driftDetected ? "🚨" : "📈"}
+              {timeline.drift.driftDetected ? <Siren size={16} /> : <TrendingUp size={16} />}
             </span> CURVA DE APRENDIZAJE · {timeline.days} días
           </div>
           <p className="settings-section-desc" style={{
@@ -587,7 +587,7 @@ export default function LearningDashboard({ ctx }: Props) {
       {/* ============================================================== */}
       <div className="card" style={{ borderLeft: "3px solid #f43f5e" }}>
         <div className="ticket-section-head">
-          <span style={{ color: "#ff8389" }}>🧬</span> EMBEDDINGS SEMÁNTICOS · few-shot inteligente
+          <span style={{ color: "#ff8389" }}><Dna size={16} /></span> EMBEDDINGS SEMÁNTICOS · few-shot inteligente
         </div>
         <p className="settings-section-desc">
           Reemplaza el match léxico por embeddings reales de Gemini. El agente encuentra Q&amp;A relevantes
@@ -597,12 +597,12 @@ export default function LearningDashboard({ ctx }: Props) {
         <div className="row" style={{ gap: 10, flexWrap: "wrap" }}>
           <button className="btn primary" onClick={backfillEmb} disabled={embedLoading}
             style={{ background: "linear-gradient(135deg, #f43f5e, #e11d48)", borderColor: "#f43f5e" }}>
-            {embedLoading ? <><span className="spinner" /> generando embeddings…</> : "🧬 Backfill embeddings (200 items)"}
+            {embedLoading ? <><span className="spinner" /> generando embeddings…</> : <><Dna size={16} /> Backfill embeddings (200 items)</>}
           </button>
         </div>
         {embedResult && (
           <div className="alert ok" style={{ marginTop: 10, fontSize: 12.5 }}>
-            ✓ Backfill OK: <b>{embedResult.qasEmbedded}</b> Q&amp;A embedded · <b>{embedResult.itemsEmbedded}</b> items embedded.
+            <Check size={14} /> Backfill OK: <b>{embedResult.qasEmbedded}</b> Q&amp;A embedded · <b>{embedResult.itemsEmbedded}</b> items embedded.
           </div>
         )}
       </div>
@@ -612,20 +612,20 @@ export default function LearningDashboard({ ctx }: Props) {
       {/* ============================================================== */}
       <div className="card" style={{ borderLeft: "3px solid #f59e0b" }}>
         <div className="ticket-section-head">
-          <span style={{ color: "#f1c21b" }}>🔬</span> DETECTAR PATRONES DE FEEDBACK NEGATIVO
+          <span style={{ color: "#f1c21b" }}><Microscope size={16} /></span> DETECTAR PATRONES DE FEEDBACK NEGATIVO
         </div>
         <p className="settings-section-desc">
-          Cluster por embeddings de razones de feedback 👎 recurrentes. Cada cluster ≥ 3 genera una
+          Cluster por embeddings de razones de feedback <ThumbsDown size={14} /> recurrentes. Cada cluster ≥ 3 genera una
           KnowledgeGap automática con sugerencia de cómo curar el contenido.
         </p>
         <button className="btn primary" onClick={detectPatterns} disabled={patternsLoading}
           style={{ background: "linear-gradient(135deg, #f59e0b, #d97706)", borderColor: "#f59e0b" }}>
-          {patternsLoading ? <><span className="spinner" /> clusterizando…</> : "🔬 Buscar patrones (14 días)"}
+          {patternsLoading ? <><span className="spinner" /> clusterizando…</> : <><Microscope size={16} /> Buscar patrones (14 días)</>}
         </button>
         {patternsReport && (
           <div className="col" style={{ gap: 8, marginTop: 10 }}>
             <div className="alert ok" style={{ fontSize: 12.5 }}>
-              ✓ <b>{patternsReport.totalNegatives}</b> feedbacks analizados ·
+              <Check size={14} /> <b>{patternsReport.totalNegatives}</b> feedbacks analizados ·
               <b> {patternsReport.clustersFound}</b> clusters detectados ·
               <b> {patternsReport.gapsCreated}</b> brechas nuevas creadas
             </div>
@@ -640,7 +640,7 @@ export default function LearningDashboard({ ctx }: Props) {
                         {c.count} casos
                       </b>
                       {" · fuentes: " + c.sources.join(", ")}
-                      {c.gapCreated && <span style={{ marginLeft: 6, color: "#10b981" }}>✓ brecha creada</span>}
+                      {c.gapCreated && <span style={{ marginLeft: 6, color: "#10b981" }}><Check size={14} /> brecha creada</span>}
                     </div>
                     <div style={{ fontSize: 11.5, color: "var(--text-soft)", fontStyle: "italic" }}>
                       "{c.representativeReason.slice(0, 200)}"
@@ -664,7 +664,7 @@ export default function LearningDashboard({ ctx }: Props) {
         }}>
           <div className="ticket-section-head">
             <span style={{ color: hallucination.avgRisk7d >= 50 ? "#fa4d56" : hallucination.avgRisk7d >= 25 ? "#f1c21b" : "#10b981" }}>
-              {hallucination.avgRisk7d >= 50 ? "🚨" : hallucination.avgRisk7d >= 25 ? "⚠" : "✓"}
+              {hallucination.avgRisk7d >= 50 ? <Siren size={16} /> : hallucination.avgRisk7d >= 25 ? <AlertTriangle size={16} /> : <Check size={16} />}
             </span> HALLUCINATION DETECTOR · transacciones SAP fuera del corpus
           </div>
           <p className="settings-section-desc">
@@ -673,17 +673,17 @@ export default function LearningDashboard({ ctx }: Props) {
           </p>
           <div className="tc-metric-grid" style={{ gridTemplateColumns: "repeat(auto-fit, minmax(150px, 1fr))" }}>
             <div className="tc-metric" style={{ ["--tc-acc" as never]: "#fa4d56" }}>
-              <div className="tc-metric-head"><span className="tc-metric-icon">🎯</span><span className="tc-metric-label">Risk score 7d</span></div>
+              <div className="tc-metric-head"><span className="tc-metric-icon"><Target size={16} /></span><span className="tc-metric-label">Risk score 7d</span></div>
               <div className="tc-metric-value">{hallucination.avgRisk7d}</div>
               <div className="tc-metric-foot">{hallucination.last7d} respuestas con flags</div>
             </div>
             <div className="tc-metric" style={{ ["--tc-acc" as never]: "#f1c21b" }}>
-              <div className="tc-metric-head"><span className="tc-metric-icon">🔍</span><span className="tc-metric-label">Total logueadas</span></div>
+              <div className="tc-metric-head"><span className="tc-metric-icon"><Search size={16} /></span><span className="tc-metric-label">Total logueadas</span></div>
               <div className="tc-metric-value">{hallucination.totalLogged}</div>
               <div className="tc-metric-foot">histórico completo</div>
             </div>
             <div className="tc-metric" style={{ ["--tc-acc" as never]: "#c084fc" }}>
-              <div className="tc-metric-head"><span className="tc-metric-icon">⚡</span><span className="tc-metric-label">Top sospechosas</span></div>
+              <div className="tc-metric-head"><span className="tc-metric-icon"><Zap size={16} /></span><span className="tc-metric-label">Top sospechosas</span></div>
               <div className="tc-metric-value">{hallucination.topSuspicious.length}</div>
               <div className="tc-metric-foot">distintas TX flageadas</div>
             </div>
@@ -714,7 +714,7 @@ export default function LearningDashboard({ ctx }: Props) {
       {/* ============================================================== */}
       <div className="card" style={{ borderLeft: "3px solid #06b6d4" }}>
         <div className="ticket-section-head">
-          <span style={{ color: "#4589ff" }}>🎯</span> ACTIVE LEARNING · Q&amp;A borderline (score 40-69)
+          <span style={{ color: "#4589ff" }}><Target size={16} /></span> ACTIVE LEARNING · Q&amp;A borderline (score 40-69)
         </div>
         <p className="settings-section-desc">
           Las Q&amp;A más valiosas para que el humano revise: las que el agente ni acierta ni falla claramente.
@@ -722,7 +722,7 @@ export default function LearningDashboard({ ctx }: Props) {
         </p>
         <button className="btn primary" onClick={loadBorderline} disabled={borderlineLoading}
           style={{ background: "linear-gradient(135deg, #06b6d4, #0891b2)", borderColor: "#06b6d4" }}>
-          {borderlineLoading ? <><span className="spinner" /> buscando…</> : "🎯 Buscar Q&A borderline ahora"}
+          {borderlineLoading ? <><span className="spinner" /> buscando…</> : <><Target size={16} /> Buscar Q&A borderline ahora</>}
         </button>
 
         {borderline.length > 0 && (
@@ -757,7 +757,7 @@ export default function LearningDashboard({ ctx }: Props) {
                   </div>
                   {q.latestNotes && (
                     <div style={{ fontSize: 11, color: "var(--text-soft)", fontStyle: "italic" }}>
-                      📝 {q.latestNotes.slice(0, 200)}
+                      <StickyNote size={14} /> {q.latestNotes.slice(0, 200)}
                     </div>
                   )}
                 </div>
@@ -770,7 +770,7 @@ export default function LearningDashboard({ ctx }: Props) {
       {/* Historial */}
       <div className="card">
         <div className="ticket-section-head">
-          <span style={{ color: "var(--accent)" }}>📜</span> HISTORIAL DE EVALUACIONES
+          <span style={{ color: "var(--accent)" }}><FileText size={16} /></span> HISTORIAL DE EVALUACIONES
         </div>
         {loading && runs.length === 0 && (
           <div style={{ padding: 20, color: "var(--text-soft)", fontSize: 12.5 }}>
@@ -779,7 +779,7 @@ export default function LearningDashboard({ ctx }: Props) {
         )}
         {!loading && runs.length === 0 && (
           <div className="ticket-empty" style={{ padding: 30 }}>
-            <div style={{ fontSize: 36, marginBottom: 6 }}>📭</div>
+            <div style={{ fontSize: 36, marginBottom: 6 }}><Inbox size={30} /></div>
             <div style={{ fontSize: 13 }}>Aún no se corrió ninguna evaluación.</div>
           </div>
         )}
@@ -815,7 +815,7 @@ export default function LearningDashboard({ ctx }: Props) {
                       }}>{r.avg_score}</div>
                     </td>
                     <td>
-                      <button className="tc-iconbtn" onClick={() => loadDetail(r.id)}>👁</button>
+                      <button className="tc-iconbtn" onClick={() => loadDetail(r.id)}><Eye size={14} /></button>
                     </td>
                   </tr>
                 ))}
@@ -830,7 +830,7 @@ export default function LearningDashboard({ ctx }: Props) {
       {/* ============================================================== */}
       <div className="card" style={{ borderLeft: "3px solid #f1c21b" }}>
         <div className="ticket-section-head">
-          <span style={{ color: "#f1c21b" }}>🎫</span> TICKETS RESUELTOS → Q&amp;A PROPUESTAS
+          <span style={{ color: "#f1c21b" }}><Ticket size={16} /></span> TICKETS RESUELTOS → Q&amp;A PROPUESTAS
         </div>
         <p className="settings-section-desc">
           Tomamos tickets cerrados sin Q&amp;A. Gemini lee la conversación, crea un knowledge item base
@@ -845,12 +845,12 @@ export default function LearningDashboard({ ctx }: Props) {
           </label>
           <button className="btn primary" onClick={runTicketsToQa} disabled={ticketsRunning}
             style={{ background: "linear-gradient(135deg, #f1c21b, #f59e0b)", borderColor: "#f1c21b", marginLeft: "auto" }}>
-            {ticketsRunning ? <><span className="spinner" /> Gemini proponiendo…</> : "🤖 Generar Q&A desde tickets"}
+            {ticketsRunning ? <><span className="spinner" /> Gemini proponiendo…</> : <><Bot size={16} /> Generar Q&A desde tickets</>}
           </button>
         </div>
         {ticketsReport && (
           <div className="alert ok" style={{ marginTop: 10, fontSize: 12.5 }}>
-            ✓ Procesados <b>{ticketsReport.ticketsScanned}</b> tickets ·
+            <Check size={14} /> Procesados <b>{ticketsReport.ticketsScanned}</b> tickets ·
             <b> {ticketsReport.itemsCreated}</b> items DRAFT creados ·
             <b> {ticketsReport.qasProposed}</b> Q&amp;A propuestas (pending de aprobación) ·
             <b> {ticketsReport.skipped}</b> saltados.
@@ -870,8 +870,8 @@ export default function LearningDashboard({ ctx }: Props) {
       {/* ============================================================== */}
       <div className="card" style={{ borderLeft: "3px solid #4589ff" }}>
         <div className="ticket-section-head" style={{ cursor: "pointer" }} onClick={() => setShowAb(!showAb)}>
-          <span style={{ color: "#67e8f9" }}>🆎</span> A/B TEST · COMPARAR PROMPT CANDIDATO VS ACTIVO
-          <span style={{ marginLeft: "auto", fontSize: 11, color: "var(--text-dim)" }}>{showAb ? "▼" : "▶"}</span>
+          <span style={{ color: "#67e8f9" }}><GitCompare size={16} /></span> A/B TEST · COMPARAR PROMPT CANDIDATO VS ACTIVO
+          <span style={{ marginLeft: "auto", fontSize: 11, color: "var(--text-dim)" }}>{showAb ? <ChevronDown size={14} /> : <ChevronRight size={14} />}</span>
         </div>
         {showAb && (
           <div className="col" style={{ gap: 10 }}>
@@ -910,7 +910,7 @@ export default function LearningDashboard({ ctx }: Props) {
                 style={{ background: "linear-gradient(135deg, #4589ff, #06b6d4)", borderColor: "#4589ff" }}>
                 {autoRunning
                   ? <><span className="spinner" /> auto-promote…</>
-                  : autoApply ? "✓ Comparar + adoptar si gana" : "📊 Solo evaluar promoción"}
+                  : autoApply ? <><Check size={16} /> Comparar + adoptar si gana</> : <><BarChart3 size={16} /> Solo evaluar promoción</>}
               </button>
             </div>
 
@@ -940,8 +940,8 @@ export default function LearningDashboard({ ctx }: Props) {
                   </div>
                 </div>
                 <div className="row" style={{ gap: 8, fontSize: 11, color: "var(--text-soft)", marginTop: 8 }}>
-                  <span>📈 {abReport.improvedQas.length} mejoraron</span>
-                  <span>📉 {abReport.degradedQas.length} empeoraron</span>
+                  <span><TrendingUp size={14} /> {abReport.improvedQas.length} mejoraron</span>
+                  <span><TrendingDown size={14} /> {abReport.degradedQas.length} empeoraron</span>
                   <span>= {abReport.unchangedQas.length} sin cambio</span>
                 </div>
               </div>
@@ -955,7 +955,7 @@ export default function LearningDashboard({ ctx }: Props) {
       {/* ============================================================== */}
       <div className="card" style={{ borderLeft: "3px solid #a855f7" }}>
         <div className="ticket-section-head">
-          <span style={{ color: "#c084fc" }}>🔍</span> COMPARAR DOS EVAL RUNS
+          <span style={{ color: "#c084fc" }}><Search size={16} /></span> COMPARAR DOS EVAL RUNS
         </div>
         <p className="settings-section-desc">
           Elegí 2 runs del historial → te mostramos qué Q&amp;A mejoraron, cuáles empeoraron y cuáles quedaron igual.
@@ -979,7 +979,7 @@ export default function LearningDashboard({ ctx }: Props) {
             ))}
           </select>
           <button className="btn ghost" onClick={loadDiff} disabled={!diffA || !diffB || diffA === diffB || diffLoading}>
-            {diffLoading ? <><span className="spinner" /> comparando…</> : "🔍 Comparar"}
+            {diffLoading ? <><span className="spinner" /> comparando…</> : <><Search size={16} /> Comparar</>}
           </button>
         </div>
 
@@ -990,8 +990,8 @@ export default function LearningDashboard({ ctx }: Props) {
                 {diffReport.scoreDelta > 0 ? "+" : ""}{diffReport.scoreDelta} pts
               </b></span>
               <span>Pass delta: <b>{diffReport.passDelta > 0 ? "+" : ""}{diffReport.passDelta}</b></span>
-              <span>📈 <b style={{ color: "#10b981" }}>{diffReport.improved.length}</b> mejoraron</span>
-              <span>📉 <b style={{ color: "#fa4d56" }}>{diffReport.degraded.length}</b> empeoraron</span>
+              <span><TrendingUp size={14} /> <b style={{ color: "#10b981" }}>{diffReport.improved.length}</b> mejoraron</span>
+              <span><TrendingDown size={14} /> <b style={{ color: "#fa4d56" }}>{diffReport.degraded.length}</b> empeoraron</span>
               <span>= <b>{diffReport.unchanged.length}</b> sin cambio</span>
             </div>
 
@@ -1040,7 +1040,7 @@ export default function LearningDashboard({ ctx }: Props) {
                   </span>
                 </div>
               </div>
-              <button onClick={() => setDetail(null)} className="btn ghost" style={{ padding: "4px 10px" }}>✕</button>
+              <button onClick={() => setDetail(null)} className="btn ghost" style={{ padding: "4px 10px" }}><X size={16} /></button>
             </div>
             <div className="tc-modal-body">
               {detailLoading && <div style={{ padding: 20, textAlign: "center" }}><span className="spinner" /> cargando…</div>}
@@ -1056,7 +1056,7 @@ export default function LearningDashboard({ ctx }: Props) {
                       {VERDICT_LABELS[r.verdict]} · {r.score}/100
                     </span>
                     <span style={{ marginLeft: "auto", fontSize: 10.5, color: "var(--text-dim)" }}>
-                      ⏱ {r.latencyMs} ms
+                      <Timer size={14} /> {r.latencyMs} ms
                     </span>
                   </div>
                   <div className="lab-fb-block">

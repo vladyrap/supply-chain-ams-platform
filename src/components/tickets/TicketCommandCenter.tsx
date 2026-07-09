@@ -85,6 +85,12 @@ import IntelligenceHistorySection from "./IntelligenceHistorySection";
 import EditTicketModal from "./EditTicketModal";
 import PostEditReanalyzeModal from "./PostEditReanalyzeModal";
 import type { CriticalChangeReport } from "@/intelligence/critical-fields-detector";
+import {
+  Clipboard, ChevronDown, ChevronRight, FileText, Timer, Bot, Microscope,
+  BookOpen, Target, Book, AlertTriangle, ArrowUpRight, FlaskConical, Award,
+  Brain, Mail, Check, RefreshCw, Pencil, Lock, Camera, MessageSquare, Hand,
+  HelpCircle, BarChart3,
+} from "lucide-react";
 
 // --------------------------------------------------------------------
 // Sección colapsable
@@ -93,7 +99,7 @@ function Section({
   title, icon, accent, defaultOpen = true, count, children, id,
 }: {
   title: string;
-  icon: string;
+  icon: React.ReactNode;
   accent?: string;
   defaultOpen?: boolean;
   count?: number;
@@ -118,7 +124,7 @@ function Section({
               <span style={{ marginLeft: 8, fontSize: 10.5, color: "var(--text-dim)" }}>· {count}</span>
             )}
           </div>
-          <span style={{ fontSize: 14, color: "var(--text-dim)" }}>{open ? "▼" : "▶"}</span>
+          <span style={{ fontSize: 14, color: "var(--text-dim)" }}>{open ? <ChevronDown size={14} /> : <ChevronRight size={14} />}</span>
         </div>
       </button>
       {open && <div style={{ marginTop: 10 }}>{children}</div>}
@@ -133,7 +139,7 @@ function AgentMetadataPanel({ meta }: { meta?: AgentResponseMetadata | null }) {
   if (!meta) return null;
   return (
     <div className="lab-fb-block" style={{ borderLeft: "3px solid #10b981", marginTop: 8, fontSize: 11.5 }}>
-      <div style={{ fontWeight: 600, color: "#10b981", marginBottom: 4 }}>📋 Trazabilidad</div>
+      <div style={{ fontWeight: 600, color: "#10b981", marginBottom: 4 }}><Clipboard size={14} /> Trazabilidad</div>
       <div style={{ color: "var(--text-soft)", display: "grid", gridTemplateColumns: "1fr 1fr", gap: 6 }}>
         <div><strong>Agente:</strong> {meta.agentVersion ?? "—"}</div>
         <div><strong>Knowledge:</strong> {meta.kbVersion ?? "—"}</div>
@@ -900,7 +906,7 @@ export default function TicketCommandCenter({ ticket, onTicketUpdated }: Props) 
               {ticket.sapModule && <Badge variant="muted">{ticket.sapModule}</Badge>}
               {ticket.environment && <Badge variant="muted">{ticket.environment}</Badge>}
               {ticket.assignee && <Badge variant="muted">@{ticket.assignee}</Badge>}
-              {ticket.url && <a className="badge info" href={ticket.url} target="_blank" rel="noopener noreferrer">↗ Jira</a>}
+              {ticket.url && <a className="badge info" href={ticket.url} target="_blank" rel="noopener noreferrer"><ArrowUpRight size={14} /> Jira</a>}
               {/* AIE v0.10 — Badge de enrichment */}
               <TicketEnrichmentBadge
                 intelligence={aie.intelligence}
@@ -944,7 +950,7 @@ export default function TicketCommandCenter({ ticket, onTicketUpdated }: Props) 
                   fontWeight: 600,
                 }}
               >
-                ✓ Cerrar y registrar horas
+                <Check size={14} /> Cerrar y registrar horas
               </button>
             )}
             {(ticket.status.toLowerCase().includes("resol") ||
@@ -955,7 +961,7 @@ export default function TicketCommandCenter({ ticket, onTicketUpdated }: Props) 
                 background: "rgba(16,185,129,0.12)", border: "1px solid #10b98155",
                 fontSize: 10.5, color: "#10b981",
               }}>
-                ✓ Cerrado · {ticket.estimatedResolution.actualHours}h reales
+                <Check size={14} /> Cerrado · {ticket.estimatedResolution.actualHours}h reales
                 {ticket.estimatedResolution.variancePct != null && (
                   <span style={{ marginLeft: 4, opacity: 0.85 }}>
                     ({ticket.estimatedResolution.variancePct > 0 ? "+" : ""}{ticket.estimatedResolution.variancePct}%)
@@ -983,7 +989,7 @@ export default function TicketCommandCenter({ ticket, onTicketUpdated }: Props) 
       {/* AIE v0.10 — Banner enriching */}
       {isEnriching && (
         <div className="alert info" style={{ fontSize: 12, display: "flex", alignItems: "center", gap: 8 }}>
-          <span className="spinner" /> 🤖 Agente AMS está enriqueciendo el ticket…
+          <span className="spinner" /> <Bot size={14} /> Agente AMS está enriqueciendo el ticket…
         </div>
       )}
 
@@ -992,7 +998,7 @@ export default function TicketCommandCenter({ ticket, onTicketUpdated }: Props) 
         <div className="alert error" style={{ fontSize: 12 }}>
           <div className="row between" style={{ alignItems: "center", gap: 8 }}>
             <div>
-              ⚠ Enriquecimiento falló: {aie.error || aie.intelligence?.error || "error desconocido"}
+              <AlertTriangle size={14} /> Enriquecimiento falló: {aie.error || aie.intelligence?.error || "error desconocido"}
             </div>
             <ReanalyzeButton
               intelligence={aie.intelligence}
@@ -1059,12 +1065,12 @@ export default function TicketCommandCenter({ ticket, onTicketUpdated }: Props) 
       />
 
       {/* Sección 1: Resumen / descripción */}
-      <Section id="section-summary" title="RESUMEN" icon="📝" accent="#4589ff">
+      <Section id="section-summary" title="RESUMEN" icon={<FileText size={16} />} accent="#4589ff">
         <div className="msg user"><div className="body" style={{ whiteSpace: "pre-wrap" }}>{ticket.description}</div></div>
       </Section>
 
       {/* Sección 2: Estimación + Explicabilidad */}
-      <Section title="ESTIMACIÓN DE RESOLUCIÓN" icon="⏱" accent="#a855f7" count={ticket.estimatedResolution?.phaseBreakdown.length}>
+      <Section title="ESTIMACIÓN DE RESOLUCIÓN" icon={<Timer size={16} />} accent="#a855f7" count={ticket.estimatedResolution?.phaseBreakdown.length}>
         <div className="col" style={{ gap: 10 }}>
           <TicketEstimateDetail
             estimate={ticket.estimatedResolution}
@@ -1090,7 +1096,7 @@ export default function TicketCommandCenter({ ticket, onTicketUpdated }: Props) 
               style={{ fontSize: 12, padding: "5px 10px" }}
               title="Motor contextual v2 — análisis semántico + casos históricos + escenarios"
             >
-              {contextualOpen ? "▼" : "▶"} 🧠 Análisis contextual v2
+              {contextualOpen ? <ChevronDown size={14} /> : <ChevronRight size={14} />} <Brain size={14} /> Análisis contextual v2
             </button>
             {contextualOpen && (
               <button
@@ -1098,7 +1104,7 @@ export default function TicketCommandCenter({ ticket, onTicketUpdated }: Props) 
                 onClick={() => setContextualRefresh((k) => k + 1)}
                 style={{ fontSize: 11, padding: "5px 10px" }}
               >
-                ↻ recalcular
+                <RefreshCw size={14} /> recalcular
               </button>
             )}
           </div>
@@ -1133,7 +1139,7 @@ export default function TicketCommandCenter({ ticket, onTicketUpdated }: Props) 
       </Section>
 
       {/* Sección 3-4: Clasificación + diagnóstico — TCC v0.12 con 4 estados */}
-      <Section id="section-classification" title="CLASIFICACIÓN AMS · DIAGNÓSTICO" icon="🤖" accent="#10b981">
+      <Section id="section-classification" title="CLASIFICACIÓN AMS · DIAGNÓSTICO" icon={<Bot size={16} />} accent="#10b981">
         {(() => {
           const status = aie.intelligence?.status;
           const sa = aie.intelligence?.specialistAnalysis;
@@ -1146,7 +1152,7 @@ export default function TicketCommandCenter({ ticket, onTicketUpdated }: Props) 
           if (isEnriching) {
             return (
               <div className="alert info" style={{ fontSize: 12, display: "flex", alignItems: "center", gap: 8 }}>
-                <span className="spinner" /> 🤖 Agente AMS está analizando este ticket…
+                <span className="spinner" /> <Bot size={14} /> Agente AMS está analizando este ticket…
               </div>
             );
           }
@@ -1156,7 +1162,7 @@ export default function TicketCommandCenter({ ticket, onTicketUpdated }: Props) 
             return (
               <div className="alert error" style={{ fontSize: 12 }}>
                 <div className="row between" style={{ alignItems: "center", gap: 8, flexWrap: "wrap" }}>
-                  <div>⚠ No se pudo completar el análisis automático: {aie.error || aie.intelligence?.error || "error desconocido"}</div>
+                  <div><AlertTriangle size={14} /> No se pudo completar el análisis automático: {aie.error || aie.intelligence?.error || "error desconocido"}</div>
                   <div className="row" style={{ gap: 6 }}>
                     <ReanalyzeButton
                       intelligence={aie.intelligence}
@@ -1165,7 +1171,7 @@ export default function TicketCommandCenter({ ticket, onTicketUpdated }: Props) 
                       variant="compact"
                     />
                     <button className="btn ghost sm" onClick={() => setEditOpen(true)} style={{ fontSize: 11 }}>
-                      ✎ Editar datos del ticket
+                      <Pencil size={14} /> Editar datos del ticket
                     </button>
                   </div>
                 </div>
@@ -1185,7 +1191,7 @@ export default function TicketCommandCenter({ ticket, onTicketUpdated }: Props) 
                     variant="full"
                   />
                   <button className="btn ghost sm" onClick={() => setEditOpen(true)} style={{ fontSize: 11 }}>
-                    ✎ Editar datos del ticket
+                    <Pencil size={14} /> Editar datos del ticket
                   </button>
                   {sa && (
                     <span style={{ fontSize: 11, color: "var(--text-soft)" }}>
@@ -1247,7 +1253,7 @@ export default function TicketCommandCenter({ ticket, onTicketUpdated }: Props) 
                   🤖 Analizar con Agente AMS
                 </button>
                 <button className="btn ghost sm" onClick={() => setEditOpen(true)} style={{ fontSize: 11 }}>
-                  ✎ Editar datos del ticket
+                  <Pencil size={14} /> Editar datos del ticket
                 </button>
                 <button className="btn ghost sm" onClick={handleClassify} disabled={classifying} style={{ fontSize: 11 }}>
                   {classifying ? <><span className="spinner" /> Clasificando…</> : "(legacy) Solo Gemini directo"}
@@ -1266,7 +1272,7 @@ export default function TicketCommandCenter({ ticket, onTicketUpdated }: Props) 
 
       {/* Sección 4.5: Análisis visual usado */}
       {ticket.visualEvidenceNotes && ticket.visualEvidenceNotes.length > 0 && (
-        <Section id="section-visual" title="ANÁLISIS VISUAL USADO" icon="🔬" accent="#4589ff" count={ticket.visualEvidenceNotes.length}>
+        <Section id="section-visual" title="ANÁLISIS VISUAL USADO" icon={<Microscope size={16} />} accent="#4589ff" count={ticket.visualEvidenceNotes.length}>
           <div className="alert info" style={{ fontSize: 11, marginBottom: 8 }}>
             🔒 Las imágenes <strong>no fueron guardadas</strong>. Solo se conservó el resumen textual del análisis para auditar cómo se estimó este ticket.
           </div>
@@ -1320,7 +1326,7 @@ export default function TicketCommandCenter({ ticket, onTicketUpdated }: Props) 
       )}
 
       {/* Sección 5: Conocimiento relacionado */}
-      <Section title="CONOCIMIENTO RELACIONADO" icon="📚" accent="#4589ff" count={ticketKnowledge.length} defaultOpen={ticketKnowledge.length > 0}>
+      <Section title="CONOCIMIENTO RELACIONADO" icon={<BookOpen size={16} />} accent="#4589ff" count={ticketKnowledge.length} defaultOpen={ticketKnowledge.length > 0}>
         {ticketKnowledge.length === 0 ? (
           <div style={{ fontSize: 12, color: "var(--text-dim)" }}>Sin matches en KB para módulo {ticket.sapModule || "—"}.</div>
         ) : (
@@ -1335,7 +1341,7 @@ export default function TicketCommandCenter({ ticket, onTicketUpdated }: Props) 
       </Section>
 
       {/* Sección 6: Scope items */}
-      <Section title="SCOPE ITEMS SAP RELACIONADOS" icon="🎯" accent="#4589ff" count={scopeItems.length} defaultOpen={scopeItems.length > 0}>
+      <Section title="SCOPE ITEMS SAP RELACIONADOS" icon={<Target size={16} />} accent="#4589ff" count={scopeItems.length} defaultOpen={scopeItems.length > 0}>
         {scopeItems.length === 0 ? (
           <div style={{ fontSize: 12, color: "var(--text-dim)" }}>Sin scope items aplicables a este ticket.</div>
         ) : (
@@ -1359,7 +1365,7 @@ export default function TicketCommandCenter({ ticket, onTicketUpdated }: Props) 
       </Section>
 
       {/* Sección 7 — Playbook · ORQUESTADOR (no listado) */}
-      <Section title="PLAYBOOK AMS" icon="📕" accent="#a855f7" count={ticketPlaybooks.length} defaultOpen>
+      <Section title="PLAYBOOK AMS" icon={<Book size={16} />} accent="#a855f7" count={ticketPlaybooks.length} defaultOpen>
         <div className="row" style={{ gap: 8, alignItems: "center", flexWrap: "wrap" }}>
           <PlaybookQuickAction
             ticketKey={ticket.key}
@@ -1377,7 +1383,7 @@ export default function TicketCommandCenter({ ticket, onTicketUpdated }: Props) 
       </Section>
 
       {/* Sección 8 — Escalamiento N2 · ORQUESTADOR + INTELLIGENCE */}
-      <Section title="ESCALAMIENTO N2" icon="🚨" accent="#fa4d56" count={ticketEscalations.length}>
+      <Section title="ESCALAMIENTO N2" icon={<AlertTriangle size={16} />} accent="#fa4d56" count={ticketEscalations.length}>
         <div className="col" style={{ gap: 10 }}>
           <div className="row" style={{ gap: 8, alignItems: "center", flexWrap: "wrap" }}>
             <EscalationQuickAction
@@ -1439,7 +1445,7 @@ export default function TicketCommandCenter({ ticket, onTicketUpdated }: Props) 
       </Section>
 
       {/* Sección 9 — Jira / ServiceNow (read-only por ahora) */}
-      <Section title="JIRA / SERVICENOW" icon="↗" accent="#4589ff" defaultOpen={false}>
+      <Section title="JIRA / SERVICENOW" icon={<ArrowUpRight size={16} />} accent="#4589ff" defaultOpen={false}>
         <div style={{ fontSize: 12, color: "var(--text-soft)" }}>
           {ticket.source === "jira"
             ? <>Este ticket viene de Jira (key {ticket.key}). {ticket.url && <a href={ticket.url} target="_blank" rel="noopener noreferrer">↗ Abrir en Jira</a>}</>
@@ -1448,7 +1454,7 @@ export default function TicketCommandCenter({ ticket, onTicketUpdated }: Props) 
       </Section>
 
       {/* Sección 10 — Documentos · ORQUESTADOR (lista + crear nuevo) */}
-      <Section title="DOCUMENTOS DEL TICKET" icon="📄" accent="#a855f7" count={ticketDocs.length} defaultOpen>
+      <Section title="DOCUMENTOS DEL TICKET" icon={<FileText size={16} />} accent="#a855f7" count={ticketDocs.length} defaultOpen>
         <div className="row" style={{ gap: 8, alignItems: "center", flexWrap: "wrap" }}>
           <DocumentFactoryQuickAction
             sourceId={ticket.key}
@@ -1476,7 +1482,7 @@ export default function TicketCommandCenter({ ticket, onTicketUpdated }: Props) 
       </Section>
 
       {/* Sección 11 — Testing · ORQUESTADOR */}
-      <Section title="TESTING INTELLIGENCE" icon="🧪" accent="#4589ff" count={ticketTests.length}>
+      <Section title="TESTING INTELLIGENCE" icon={<FlaskConical size={16} />} accent="#4589ff" count={ticketTests.length}>
         <div className="row" style={{ gap: 8, alignItems: "center", flexWrap: "wrap" }}>
           <TestingQuickAction
             ticketKey={ticket.key}
@@ -1503,7 +1509,7 @@ export default function TicketCommandCenter({ ticket, onTicketUpdated }: Props) 
           La <ul> sin tope previa renderizaba 1000 filas cuando el demo seed
           se ejecutaba varias veces. Reemplazada por QualityEvaluationsCard:
           resumen + últimas 3 (o 20 al expandir) + scroll interno + cap 20. */}
-      <Section title="QUALITY EVALUATOR" icon="🏅" accent="#f1c21b" count={ticketEvaluations.length}>
+      <Section title="QUALITY EVALUATOR" icon={<Award size={16} />} accent="#f1c21b" count={ticketEvaluations.length}>
         <div className="row" style={{ gap: 8, alignItems: "center", flexWrap: "wrap" }}>
           <QualityQuickAction incident={incidentLike} variant="full" />
           {ticketEvaluations.length > 0 && (
@@ -1524,7 +1530,7 @@ export default function TicketCommandCenter({ ticket, onTicketUpdated }: Props) 
       </Section>
 
       {/* Sección 13 — Convertir en conocimiento · ORQUESTADOR */}
-      <Section title="CONVERTIR EN CONOCIMIENTO" icon="🧠" accent="#10b981">
+      <Section title="CONVERTIR EN CONOCIMIENTO" icon={<Brain size={16} />} accent="#10b981">
         <div className="row" style={{ gap: 8, alignItems: "center", flexWrap: "wrap" }}>
           <KnowledgeQuickActions incident={incidentLike} variant="full" />
           <span style={{ fontSize: 11.5, color: "var(--text-soft)" }}>
@@ -1536,7 +1542,7 @@ export default function TicketCommandCenter({ ticket, onTicketUpdated }: Props) 
       {/* TCC v0.12 — Histórico de versiones del análisis */}
       <Section
         title="HISTÓRICO DE ANÁLISIS"
-        icon="📜"
+        icon={<FileText size={16} />}
         accent="#64748b"
         defaultOpen={false}
         count={aie.intelligence?.analysisVersion ?? 0}
@@ -1548,7 +1554,7 @@ export default function TicketCommandCenter({ ticket, onTicketUpdated }: Props) 
       </Section>
 
       {/* Sección 14: Auditoría */}
-      <Section title="AUDITORÍA · TIMELINE" icon="📜" accent="#64748b" count={ticketAuditEvents.length}>
+      <Section title="AUDITORÍA · TIMELINE" icon={<FileText size={16} />} accent="#64748b" count={ticketAuditEvents.length}>
         <TicketAuditTimeline events={ticketAuditEvents} compact />
       </Section>
 
@@ -1556,7 +1562,7 @@ export default function TicketCommandCenter({ ticket, onTicketUpdated }: Props) 
       <Section
         id="section-customer-response"
         title="RESPUESTA AL CLIENTE"
-        icon="✉"
+        icon={<Mail size={16} />}
         accent="#f59e0b"
         count={ticketResponses.length}
         defaultOpen={ticketResponses.length === 0}
@@ -1622,7 +1628,7 @@ export default function TicketCommandCenter({ ticket, onTicketUpdated }: Props) 
         <Section
           id="section-kb-curation"
           title="KB AUTO-CURATION · CANDIDATOS"
-          icon="🧠"
+          icon={<Brain size={16} />}
           accent="#a855f7"
           count={ticketCurations.length}
           defaultOpen

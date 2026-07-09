@@ -86,7 +86,7 @@ export default function QualityEvaluatorCenter() {
               placeholder="Buscar incidente sin evaluar..." style={{ flex: 1 }} />
           </div>
           {filteredPending.length === 0 ? (
-            <div className="ticket-empty"><div style={{ fontSize: 36 }}>🎉</div>
+            <div className="ticket-empty"><div style={{ fontSize: 36 }}><PartyPopper size={36} /></div>
               <div>Sin incidentes pendientes de evaluación.</div></div>
           ) : (
             filteredPending.slice(0, 30).map((inc) => (
@@ -106,7 +106,7 @@ export default function QualityEvaluatorCenter() {
                 <div className="row" style={{ gap: 6, flexWrap: "wrap", marginTop: 6 }}>
                   <button className="btn primary" onClick={() => setEvaluating(inc)}
                     style={{ background: "linear-gradient(135deg, #f1c21b, #d97706)", borderColor: "#f1c21b", fontSize: 12, padding: "5px 12px" }}>
-                    🏅 Evaluar
+                    <Award size={16} /> Evaluar
                   </button>
                   <KnowledgeQuickActions incident={inc} variant="compact" />
                 </div>
@@ -119,7 +119,7 @@ export default function QualityEvaluatorCenter() {
       {tab === "all" && (
         <div className="col" style={{ gap: 8 }}>
           {hook.evaluations.length === 0 ? (
-            <div className="ticket-empty"><div style={{ fontSize: 36 }}>📋</div>
+            <div className="ticket-empty"><div style={{ fontSize: 36 }}><Clipboard size={36} /></div>
               <div>Aún no se realizó ninguna evaluación.</div></div>
           ) : (
             hook.evaluations.map((e) => {
@@ -142,7 +142,7 @@ export default function QualityEvaluatorCenter() {
                         </div>
                       )}
                     </div>
-                    <button className="tc-iconbtn" onClick={() => hook.deleteEvaluation(e.id)} style={{ color: "#fa4d56" }}>🗑</button>
+                    <button className="tc-iconbtn" onClick={() => hook.deleteEvaluation(e.id)} style={{ color: "#fa4d56" }}><Trash2 size={16} /></button>
                   </div>
                 </div>
               );
@@ -154,7 +154,7 @@ export default function QualityEvaluatorCenter() {
             const url = URL.createObjectURL(blob);
             const a = document.createElement("a"); a.href = url; a.download = "quality_evaluations.csv"; a.click();
             URL.revokeObjectURL(url);
-          }} style={{ marginTop: 10 }}>↓ Exportar CSV</button>
+          }} style={{ marginTop: 10 }}><Download size={16} /> Exportar CSV</button>
         </div>
       )}
 

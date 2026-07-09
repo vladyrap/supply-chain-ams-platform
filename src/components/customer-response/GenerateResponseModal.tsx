@@ -26,6 +26,10 @@ import {
   RESPONSE_TYPE_LABELS, RESPONSE_TYPE_ICONS,
   AUDIENCE_LABELS, TONE_LABELS,
 } from "@/types/customer-response";
+import {
+  BarChart3, Book, Check, ChevronRight, Mail, Package, Save, Siren, Tag,
+  Target, TrafficCone, User, X,
+} from "lucide-react";
 
 interface Props {
   context: CustomerResponseContext;

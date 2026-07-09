@@ -1,14 +1,19 @@
 "use client";
 
+import type { ReactNode } from "react";
 import type { QualityMetrics } from "@/hooks/useQualityEvaluator";
 import type { AgentEvaluation } from "@/types/ams-modules";
+import {
+  BarChart3, Target, Gem, Sparkles, Clipboard, AlertTriangle,
+  AlertOctagon, User, GraduationCap, Upload, TrendingDown, ScrollText, Star,
+} from "lucide-react";
 
 interface Props {
   metrics: QualityMetrics;
   evaluations: AgentEvaluation[];
 }
 
-function ScoreCard({ label, score, max = 5, color = "#4589ff", icon = "" }: { label: string; score: number; max?: number; color?: string; icon?: string }) {
+function ScoreCard({ label, score, max = 5, color = "#4589ff", icon = null }: { label: string; score: number; max?: number; color?: string; icon?: ReactNode }) {
   const pct = Math.round((score / max) * 100);
   return (
     <div className="tc-metric" style={{ ["--tc-acc" as never]: color }}>
@@ -29,7 +34,7 @@ export default function QualityDashboard({ metrics, evaluations }: Props) {
   if (metrics.count === 0) {
     return (
       <div className="ticket-empty" style={{ padding: 40 }}>
-        <div style={{ fontSize: 44, marginBottom: 8 }}>📊</div>
+        <div style={{ fontSize: 44, marginBottom: 8 }}><BarChart3 size={40} /></div>
         <div style={{ fontSize: 13.5, color: "var(--text-soft)" }}>
           Aún no hay evaluaciones. Activá la tab "Por evaluar" para arrancar.
         </div>
@@ -42,28 +47,28 @@ export default function QualityDashboard({ metrics, evaluations }: Props) {
   return (
     <div className="col" style={{ gap: 14 }}>
       <div className="tc-metric-grid">
-        <ScoreCard label="Precisión promedio"     score={metrics.avgAccuracy}     color="#4589ff" icon="🎯" />
-        <ScoreCard label="Utilidad promedio"      score={metrics.avgUsefulness}   color="#10b981" icon="💎" />
-        <ScoreCard label="Claridad promedio"      score={metrics.avgClarity}      color="#a855f7" icon="✨" />
-        <ScoreCard label="Completitud promedio"   score={metrics.avgCompleteness} color="#f1c21b" icon="📋" />
+        <ScoreCard label="Precisión promedio"     score={metrics.avgAccuracy}     color="#4589ff" icon={<Target size={16} />} />
+        <ScoreCard label="Utilidad promedio"      score={metrics.avgUsefulness}   color="#10b981" icon={<Gem size={16} />} />
+        <ScoreCard label="Claridad promedio"      score={metrics.avgClarity}      color="#a855f7" icon={<Sparkles size={16} />} />
+        <ScoreCard label="Completitud promedio"   score={metrics.avgCompleteness} color="#f1c21b" icon={<Clipboard size={16} />} />
       </div>
 
       <div className="row" style={{ gap: 14, flexWrap: "wrap" }}>
         <div className="card" style={{ flex: 1, minWidth: 280 }}>
           <div className="ticket-section-head">
-            <span style={{ color: "#fa4d56" }}>⚠</span> RIESGOS Y FLAGS
+            <span style={{ color: "#fa4d56" }}><AlertTriangle size={16} /></span> RIESGOS Y FLAGS
           </div>
           <div className="col" style={{ gap: 8 }}>
-            <FlagRow label="🚨 Riesgo alto de alucinación" pct={metrics.pctHighRisk} color="#fa4d56" />
-            <FlagRow label="👤 Necesitan revisión humana" pct={metrics.pctNeedsReview} color="#f1c21b" />
-            <FlagRow label="🎓 Convertibles en conocimiento" pct={metrics.pctCanBecomeKnowledge} color="#10b981" />
-            <FlagRow label="📤 Requieren escalamiento" pct={metrics.pctRequiresEscalation} color="#a855f7" />
+            <FlagRow label={<><AlertOctagon size={16} /> Riesgo alto de alucinación</>} pct={metrics.pctHighRisk} color="#fa4d56" />
+            <FlagRow label={<><User size={16} /> Necesitan revisión humana</>} pct={metrics.pctNeedsReview} color="#f1c21b" />
+            <FlagRow label={<><GraduationCap size={16} /> Convertibles en conocimiento</>} pct={metrics.pctCanBecomeKnowledge} color="#10b981" />
+            <FlagRow label={<><Upload size={16} /> Requieren escalamiento</>} pct={metrics.pctRequiresEscalation} color="#a855f7" />
           </div>
         </div>
 
         <div className="card" style={{ flex: 1, minWidth: 280 }}>
           <div className="ticket-section-head">
-            <span style={{ color: "var(--accent)" }}>📉</span> TOP MÓDULOS CON BAJA CALIDAD
+            <span style={{ color: "var(--accent)" }}><TrendingDown size={16} /></span> TOP MÓDULOS CON BAJA CALIDAD
           </div>
           {metrics.topModulesLowQuality.length === 0 ? (
             <div style={{ fontSize: 12.5, color: "var(--text-dim)" }}>Sin datos suficientes aún.</div>
@@ -87,7 +92,7 @@ export default function QualityDashboard({ metrics, evaluations }: Props) {
 
       <div className="card">
         <div className="ticket-section-head">
-          <span style={{ color: "var(--accent)" }}>📜</span> EVALUACIONES RECIENTES
+          <span style={{ color: "var(--accent)" }}><ScrollText size={16} /></span> EVALUACIONES RECIENTES
         </div>
         <div className="col" style={{ gap: 6 }}>
           {recent.map((e) => {
@@ -100,7 +105,7 @@ export default function QualityDashboard({ metrics, evaluations }: Props) {
                   <span style={{ color: "var(--text-dim)" }}>{new Date(e.createdAt).toLocaleString("es-CL").slice(0, 16)}</span>
                 </div>
                 <span className="tc-pill" style={{ background: `${color}20`, border: `1px solid ${color}66`, color }}>
-                  ★ {ov.toFixed(1)}
+                  <Star size={14} /> {ov.toFixed(1)}
                 </span>
               </div>
             );
@@ -111,7 +116,7 @@ export default function QualityDashboard({ metrics, evaluations }: Props) {
   );
 }
 
-function FlagRow({ label, pct, color }: { label: string; pct: number; color: string }) {
+function FlagRow({ label, pct, color }: { label: ReactNode; pct: number; color: string }) {
   return (
     <div>
       <div className="row between" style={{ fontSize: 12, marginBottom: 3 }}>

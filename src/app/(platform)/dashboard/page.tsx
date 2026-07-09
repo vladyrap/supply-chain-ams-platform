@@ -27,6 +27,7 @@ import { listTickets, type Ticket } from "@/services/tickets.api";
 import { calculateBusinessValue } from "@/utils/business-value-engine";
 import AgentReadinessCenter from "@/components/readiness/AgentReadinessCenter";
 import RequirePermission from "@/components/admin/RequirePermission";
+import { Bot, ChevronRight, FileText, Phone, RefreshCw } from "lucide-react";
 
 const MODULE_COLORS: Record<string, string> = {
   MM: "#4589ff", SD: "#c780f0", PP: "#4dd0c5", WM: "#f0b66c",

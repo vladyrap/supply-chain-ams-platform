@@ -3,6 +3,7 @@
 import { useMemo } from "react";
 import type { Ticket } from "@/services/tickets.api";
 import { computeCalibrationSnapshot } from "@/lib/estimation/engine";
+import { Check } from "lucide-react";
 
 interface Props {
   tickets: Ticket[];
@@ -102,7 +103,7 @@ export default function EstimationCalibrationTile({ tickets }: Props) {
                 letterSpacing: 0.5,
               }}
             >
-              {recommendedMode === "CALIBRATED" ? "✓ LISTO PARA CALIBRADO" : "MODO BOOTSTRAP"}
+              {recommendedMode === "CALIBRATED" ? <><Check size={14} /> LISTO PARA CALIBRADO</> : "MODO BOOTSTRAP"}
             </span>
             {Math.abs(suggestedAdjustmentFactor - 1) > 0.1 && (
               <span

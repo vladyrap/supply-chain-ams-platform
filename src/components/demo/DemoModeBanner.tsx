@@ -5,6 +5,7 @@ import Link from "next/link";
 import { useDemoMode } from "@/hooks/useDemoMode";
 import DemoScenarioSelector from "./DemoScenarioSelector";
 import DemoGuidedTour from "./DemoGuidedTour";
+import { ArrowRight, Clapperboard, Map, Play, X } from "lucide-react";
 
 export default function DemoModeBanner() {
   const demo = useDemoMode();

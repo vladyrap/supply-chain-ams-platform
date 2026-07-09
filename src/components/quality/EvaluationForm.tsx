@@ -6,6 +6,7 @@ import type { AgentEvaluation, HallucinationRiskLevel, TechnicalLevelFit } from 
 import { FIT_LABELS, RISK_COLORS } from "@/types/ams-modules";
 import KnowledgeQuickActions from "@/components/knowledge/KnowledgeQuickActions";
 import TcModalShell from "@/components/ui/TcModalShell";
+import { Star, X, ChevronRight, User, GraduationCap, CheckCircle2, Upload, Award } from "lucide-react";
 
 interface Props {
   incident: IncidentSummary | IncidentDetail;
@@ -27,7 +28,7 @@ function Stars({ value, onChange }: { value: number; onChange: (v: number) => vo
             fontSize: 20, transition: "transform 0.1s ease",
             transform: n === value ? "scale(1.15)" : "scale(1)",
           }}>
-          {n <= value ? "★" : "☆"}
+          {n <= value ? <Star size={18} fill="currentColor" /> : <Star size={18} />}
         </button>
       ))}
       <span style={{ fontSize: 11, color: "var(--text-dim)", marginLeft: 6, alignSelf: "center" }}>
@@ -85,18 +86,18 @@ export default function EvaluationForm({ incident, onClose, onSaved }: Props) {
           <div className="tc-score-circle" style={{ ["--sc-color" as never]: overallColor }}>
             {overall.toFixed(1)}
           </div>
-          <button onClick={onClose} className="btn ghost" style={{ padding: "4px 10px" }}>✕</button>
+          <button onClick={onClose} className="btn ghost" style={{ padding: "4px 10px" }}><X size={16} /></button>
         </div>
 
         <div className="tc-modal-body">
           <div className="lab-fb-block">
-            <div className="lab-fb-block-head">▸ MENSAJE DEL USUARIO</div>
+            <div className="lab-fb-block-head"><ChevronRight size={14} /> MENSAJE DEL USUARIO</div>
             <div style={{ fontSize: 12.5 }}>{incident.message.slice(0, 400)}</div>
           </div>
 
           {incident.response && (
             <div className="lab-fb-block" style={{ borderLeft: "3px solid #a855f7" }}>
-              <div className="lab-fb-block-head">▸ RESPUESTA DEL AGENTE</div>
+              <div className="lab-fb-block-head"><ChevronRight size={14} /> RESPUESTA DEL AGENTE</div>
               <div style={{ fontSize: 12, whiteSpace: "pre-wrap", maxHeight: 200, overflow: "auto" }}>
                 {incident.response}
               </div>
@@ -104,7 +105,7 @@ export default function EvaluationForm({ incident, onClose, onSaved }: Props) {
           )}
 
           <div className="lab-fb-block">
-            <div className="lab-fb-block-head">▸ SCORES (1-5)</div>
+            <div className="lab-fb-block-head"><ChevronRight size={14} /> SCORES (1-5)</div>
             <div className="col" style={{ gap: 10 }}>
               <label className="row between" style={{ alignItems: "center" }}>
                 <span>Precisión · ¿la información es correcta?</span>
@@ -127,7 +128,7 @@ export default function EvaluationForm({ incident, onClose, onSaved }: Props) {
 
           <div className="row" style={{ gap: 10, flexWrap: "wrap" }}>
             <div className="lab-fb-block" style={{ flex: 1, minWidth: 240 }}>
-              <div className="lab-fb-block-head">▸ RIESGO DE ALUCINACIÓN</div>
+              <div className="lab-fb-block-head"><ChevronRight size={14} /> RIESGO DE ALUCINACIÓN</div>
               <div className="row" style={{ gap: 6, flexWrap: "wrap" }}>
                 {RISK_OPTIONS.map((r) => (
                   <button key={r} onClick={() => setRisk(r)}
@@ -139,7 +140,7 @@ export default function EvaluationForm({ incident, onClose, onSaved }: Props) {
               </div>
             </div>
             <div className="lab-fb-block" style={{ flex: 1, minWidth: 240 }}>
-              <div className="lab-fb-block-head">▸ NIVEL TÉCNICO</div>
+              <div className="lab-fb-block-head"><ChevronRight size={14} /> NIVEL TÉCNICO</div>
               <div className="row" style={{ gap: 6, flexWrap: "wrap" }}>
                 {FIT_OPTIONS.map((f) => (
                   <button key={f} onClick={() => setFit(f)}
@@ -153,23 +154,23 @@ export default function EvaluationForm({ incident, onClose, onSaved }: Props) {
           </div>
 
           <div className="lab-fb-block">
-            <div className="lab-fb-block-head">▸ FLAGS</div>
+            <div className="lab-fb-block-head"><ChevronRight size={14} /> FLAGS</div>
             <div className="col" style={{ gap: 6 }}>
               <label className="row" style={{ gap: 8, alignItems: "center", fontSize: 12.5 }}>
                 <input type="checkbox" checked={needsHumanReview} onChange={(e) => setNeedsHumanReview(e.target.checked)} />
-                <span>👤 Necesita revisión humana</span>
+                <span><User size={16} /> Necesita revisión humana</span>
               </label>
               <label className="row" style={{ gap: 8, alignItems: "center", fontSize: 12.5 }}>
                 <input type="checkbox" checked={canBecomeKnowledge} onChange={(e) => setCanBecomeKnowledge(e.target.checked)} />
-                <span>🎓 Puede convertirse en conocimiento</span>
+                <span><GraduationCap size={16} /> Puede convertirse en conocimiento</span>
               </label>
               <label className="row" style={{ gap: 8, alignItems: "center", fontSize: 12.5 }}>
                 <input type="checkbox" checked={wasUsefulForClient} onChange={(e) => setWasUsefulForClient(e.target.checked)} />
-                <span>✅ Fue útil para el cliente</span>
+                <span><CheckCircle2 size={16} /> Fue útil para el cliente</span>
               </label>
               <label className="row" style={{ gap: 8, alignItems: "center", fontSize: 12.5 }}>
                 <input type="checkbox" checked={requiresEscalation} onChange={(e) => setRequiresEscalation(e.target.checked)} />
-                <span>📤 Requiere escalamiento</span>
+                <span><Upload size={16} /> Requiere escalamiento</span>
               </label>
             </div>
           </div>
@@ -198,7 +199,7 @@ export default function EvaluationForm({ incident, onClose, onSaved }: Props) {
             <KnowledgeQuickActions incident={incident} variant="compact" />
           )}
           <button className="btn primary" onClick={save} style={{ marginLeft: "auto", background: "linear-gradient(135deg, #f1c21b, #d97706)", borderColor: "#f1c21b" }}>
-            🏅 Guardar evaluación
+            <Award size={16} /> Guardar evaluación
           </button>
         </div>
       </div>

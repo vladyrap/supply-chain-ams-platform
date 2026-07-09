@@ -3,6 +3,7 @@
 import { useState } from "react";
 import type { UseAgentTraining } from "@/hooks/useAgentTraining";
 import { SAP_MODULES } from "@/types/training";
+import { Settings, Layers, Check, AlertTriangle, RefreshCw } from "lucide-react";
 
 interface Props { ctx: UseAgentTraining }
 
@@ -29,7 +30,7 @@ export default function TrainingSettingsPanel({ ctx }: Props) {
 
       <div className="card">
         <div className="ticket-section-head">
-          <span style={{ color: "var(--accent)" }}>⚙</span> POLÍTICAS DE PUBLICACIÓN
+          <span style={{ color: "var(--accent)" }}><Settings size={16} /></span> POLÍTICAS DE PUBLICACIÓN
         </div>
         <div className="col" style={{ gap: 12 }}>
           <label className="tc-setting">
@@ -86,7 +87,7 @@ export default function TrainingSettingsPanel({ ctx }: Props) {
 
       <div className="card">
         <div className="ticket-section-head">
-          <span style={{ color: "var(--accent)" }}>🗂</span> MÓDULOS ACTIVOS
+          <span style={{ color: "var(--accent)" }}><Layers size={16} /></span> MÓDULOS ACTIVOS
         </div>
         <p className="settings-section-desc">El agente solo usará conocimiento de los módulos seleccionados.</p>
         <div className="row" style={{ gap: 6, flexWrap: "wrap" }}>
@@ -96,7 +97,7 @@ export default function TrainingSettingsPanel({ ctx }: Props) {
               <button key={m} onClick={() => toggleModule(m)}
                 className={`ticket-filter ${active ? "active" : ""}`}
                 style={{ ["--filt-color" as never]: active ? "#10b981" : "#64748b" }}>
-                {active ? "✓ " : ""}{m}
+                {active ? <><Check size={14} />{" "}</> : ""}{m}
               </button>
             );
           })}
@@ -133,7 +134,7 @@ export default function TrainingSettingsPanel({ ctx }: Props) {
 
       <div className="card" style={{ borderLeft: "3px solid #fa4d56" }}>
         <div className="ticket-section-head">
-          <span style={{ color: "#fa4d56" }}>⚠</span> ZONA DE RIESGO
+          <span style={{ color: "#fa4d56" }}><AlertTriangle size={16} /></span> ZONA DE RIESGO
         </div>
         <p className="settings-section-desc">
           Reset de datos demo: borra los <b>ítems</b>, Q&A, versiones, brechas y settings del entrenamiento.
@@ -141,7 +142,7 @@ export default function TrainingSettingsPanel({ ctx }: Props) {
         </p>
         {!confirmReset ? (
           <button className="btn ghost" onClick={() => setConfirmReset(true)} style={{ borderColor: "#fa4d56", color: "#fca5a5" }}>
-            ♻ Restaurar datos demo
+            <RefreshCw size={16} /> Restaurar datos demo
           </button>
         ) : (
           <div className="row" style={{ gap: 8 }}>
@@ -151,7 +152,7 @@ export default function TrainingSettingsPanel({ ctx }: Props) {
                 setConfirmReset(false);
                 showToast("Demo de entrenamiento restaurada.");
               }}>
-              ✓ Sí, restaurar
+              <Check size={16} /> Sí, restaurar
             </button>
             <button className="btn ghost" onClick={() => setConfirmReset(false)}>cancelar</button>
           </div>

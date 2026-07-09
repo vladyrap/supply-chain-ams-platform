@@ -16,6 +16,10 @@
 import { useEffect, useMemo, useState, useCallback } from "react";
 import { fetchAdminUsageSummary, type UsageSummaryResponse } from "@/services/admin-usage.api";
 import { calculateBusinessValue, type BusinessValueInput } from "@/utils/business-value-engine";
+import {
+  AlertTriangle, TrendingUp, Gem, Scale, SlidersHorizontal,
+  RefreshCw, Clipboard, Timer, DollarSign, Zap,
+} from "lucide-react";
 
 const fmtUSD = (n: number) => `$${n.toLocaleString("en-US", { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
 const fmtCLP = (n: number) => `CLP ${Math.round(n).toLocaleString("es-CL")}`;
@@ -132,7 +136,7 @@ export default function AdminRoiPanel() {
   if (error && !costs) {
     return (
       <div className="alert error" style={{ padding: 14, margin: 14 }}>
-        ⚠ No se pudo cargar costos: {error}
+        <AlertTriangle size={14} /> No se pudo cargar costos: {error}
       </div>
     );
   }
@@ -153,7 +157,7 @@ export default function AdminRoiPanel() {
     <div style={{ display: "flex", flexDirection: "column", gap: 14, padding: 14 }}>
       <div>
         <h1 style={{ fontSize: 22, fontWeight: 700, marginBottom: 4 }}>
-          📈 ROI del Agente AMS
+          <TrendingUp size={18} /> ROI del Agente AMS
           <span style={{
             marginLeft: 8, fontSize: 11, padding: "3px 8px", borderRadius: 12,
             background: "rgba(168,85,247,0.2)", color: "#a855f7",
@@ -173,7 +177,7 @@ export default function AdminRoiPanel() {
         <div className="row between" style={{ alignItems: "flex-start", flexWrap: "wrap", gap: 14 }}>
           <div>
             <div style={{ fontSize: 10, letterSpacing: 1.4, color: "var(--text-dim)", marginBottom: 4 }}>
-              💎 ROI DEL AGENTE · ESTE MES
+              <Gem size={14} /> ROI DEL AGENTE · ESTE MES
             </div>
             <div style={{ fontSize: 48, fontWeight: 700, color: roiColor, lineHeight: 1 }}>
               {fmtRoi(roi.roiAvgX)}
@@ -204,7 +208,7 @@ export default function AdminRoiPanel() {
       {/* Comparativa Costo vs Valor */}
       <div className="card" style={{ padding: 14 }}>
         <div style={{ fontSize: 10, letterSpacing: 1.4, color: "var(--text-dim)", marginBottom: 10 }}>
-          ⚖️ COSTO vs VALOR · ESTE MES (USD)
+          <Scale size={14} /> COSTO vs VALOR · ESTE MES (USD)
         </div>
         <div style={{ display: "flex", height: 80, gap: 14, alignItems: "flex-end" }}>
           <div style={{ flex: 1, textAlign: "center" }}>
@@ -238,14 +242,14 @@ export default function AdminRoiPanel() {
         <div className="row between" style={{ marginBottom: 10, alignItems: "center" }}>
           <div>
             <div style={{ fontSize: 10, letterSpacing: 1.4, color: "var(--text-dim)" }}>
-              🎛️ CONFIGURADOR · ESTIMÁ EL VOLUMEN MENSUAL
+              <SlidersHorizontal size={14} /> CONFIGURADOR · ESTIMÁ EL VOLUMEN MENSUAL
             </div>
             <div style={{ fontSize: 11, color: "var(--text-soft)", marginTop: 2 }}>
               Ajustá cuántos casos resuelve tu agente al mes — el ROI se recalcula al instante.
             </div>
           </div>
           <button className="btn ghost sm" onClick={() => setInputs(DEFAULT_INPUTS)} style={{ fontSize: 11 }}>
-            🔁 Reset
+            <RefreshCw size={14} /> Reset
           </button>
         </div>
         <div style={{ display: "flex", gap: 10, flexWrap: "wrap" }}>
@@ -271,7 +275,7 @@ export default function AdminRoiPanel() {
       {/* Breakdown */}
       <div className="card" style={{ padding: 14 }}>
         <div style={{ fontSize: 10, letterSpacing: 1.4, color: "var(--text-dim)", marginBottom: 8 }}>
-          📋 DESGLOSE POR CATEGORÍA
+          <Clipboard size={14} /> DESGLOSE POR CATEGORÍA
         </div>
         <table style={{ width: "100%", fontSize: 12, borderCollapse: "collapse" }}>
           <thead>
@@ -311,21 +315,21 @@ export default function AdminRoiPanel() {
       {/* 3 KPIs auxiliares */}
       <div style={{ display: "flex", gap: 10, flexWrap: "wrap" }}>
         <div className="card" style={{ padding: 14, flex: "1 1 240px", borderLeft: "4px solid #4589ff" }}>
-          <div style={{ fontSize: 10, letterSpacing: 1.4, color: "var(--text-dim)" }}>⏱️ HORAS HUMANAS AHORRADAS</div>
+          <div style={{ fontSize: 10, letterSpacing: 1.4, color: "var(--text-dim)" }}><Timer size={14} /> HORAS HUMANAS AHORRADAS</div>
           <div style={{ fontSize: 24, fontWeight: 700, color: "#4589ff" }}>
             {valueCalc.hoursSaved.min}–{valueCalc.hoursSaved.max}h
           </div>
           <div style={{ fontSize: 11, color: "var(--text-dim)" }}>Por mes (estimación)</div>
         </div>
         <div className="card" style={{ padding: 14, flex: "1 1 240px", borderLeft: "4px solid #10b981" }}>
-          <div style={{ fontSize: 10, letterSpacing: 1.4, color: "var(--text-dim)" }}>💰 EFICIENCIA</div>
+          <div style={{ fontSize: 10, letterSpacing: 1.4, color: "var(--text-dim)" }}><DollarSign size={14} /> EFICIENCIA</div>
           <div style={{ fontSize: 24, fontWeight: 700, color: "#10b981" }}>
             {roi.roiAvgX == null ? "—" : `$${fmtRoiBare(roi.roiAvgX)} valor / $1 costo`}
           </div>
           <div style={{ fontSize: 11, color: "var(--text-dim)" }}>USD generado por USD invertido</div>
         </div>
         <div className="card" style={{ padding: 14, flex: "1 1 240px", borderLeft: "4px solid #a855f7" }}>
-          <div style={{ fontSize: 10, letterSpacing: 1.4, color: "var(--text-dim)" }}>⚡ PAYBACK</div>
+          <div style={{ fontSize: 10, letterSpacing: 1.4, color: "var(--text-dim)" }}><Zap size={14} /> PAYBACK</div>
           <div style={{ fontSize: 24, fontWeight: 700, color: "#a855f7" }}>
             {roi.paybackDays == null ? "—" : `${roi.paybackDays.toFixed(1)} días`}
           </div>

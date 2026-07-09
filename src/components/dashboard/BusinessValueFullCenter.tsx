@@ -11,6 +11,7 @@ import { useEscalation } from "@/hooks/useEscalation";
 import { useTestingIntelligence } from "@/hooks/useTestingIntelligence";
 import { useAgentTraining } from "@/hooks/useAgentTraining";
 import { calculateBusinessValue } from "@/utils/business-value-engine";
+import { BarChart3, Gem, Settings } from "lucide-react";
 
 export default function BusinessValueFullCenter() {
   const df = useDocumentFactory();
@@ -50,7 +51,7 @@ export default function BusinessValueFullCenter() {
         <div className="row between" style={{ flexWrap: "wrap", gap: 14, alignItems: "center", position: "relative", zIndex: 2 }}>
           <div>
             <div style={{ fontSize: 11, letterSpacing: 3, color: "var(--text-dim)" }}>BUSINESS · VALUE · DASHBOARD</div>
-            <h1 style={{ margin: "2px 0 0", fontSize: 24 }}>💎 Valor económico generado</h1>
+            <h1 style={{ margin: "2px 0 0", fontSize: 24 }}><Gem size={18} /> Valor económico generado</h1>
             <p style={{ margin: "4px 0 0", color: "var(--text-soft)", fontSize: 12.5 }}>
               Convierte la actividad operativa de la plataforma en horas ahorradas y USD evitados al cliente.
             </p>
@@ -74,7 +75,7 @@ export default function BusinessValueFullCenter() {
 
       {/* Configuración */}
       <div className="card" style={{ marginBottom: 14 }}>
-        <div className="ticket-section-head">⚙ CONFIGURACIÓN</div>
+        <div className="ticket-section-head"><Settings size={16} /> CONFIGURACIÓN</div>
         <label className="tc-field" style={{ maxWidth: 280 }}>
           <span>Costo hora consultor (USD)</span>
           <input type="number" min={10} max={500} value={hourly}
@@ -87,7 +88,7 @@ export default function BusinessValueFullCenter() {
 
       {/* Breakdown */}
       <div className="card">
-        <div className="ticket-section-head">📊 BREAKDOWN POR ACTIVIDAD</div>
+        <div className="ticket-section-head"><BarChart3 size={16} /> BREAKDOWN POR ACTIVIDAD</div>
         <table style={{ width: "100%", fontSize: 12.5 }}>
           <thead>
             <tr style={{ color: "var(--text-dim)", textAlign: "left" }}>

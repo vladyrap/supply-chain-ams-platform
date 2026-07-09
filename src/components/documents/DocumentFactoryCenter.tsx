@@ -8,6 +8,7 @@ import {
 } from "@/types/ams-modules";
 import { TEMPLATES } from "@/lib/documents/templates";
 import MarkdownView from "@/components/agent/MarkdownView";
+import { ArrowDown, Check, Clipboard, Eye, Factory, FileText, FolderOpen, Link2, RefreshCw, Trash2, Zap } from "lucide-react";
 
 const SOURCE_LABELS: Record<DocumentSourceType, string> = {
   incident: "📋 Incidente",
@@ -89,7 +90,7 @@ export default function DocumentFactoryCenter() {
         <div className="row between" style={{ flexWrap: "wrap", gap: 14, alignItems: "center", position: "relative", zIndex: 2 }}>
           <div>
             <div style={{ fontSize: 11, letterSpacing: 3, color: "var(--text-dim)" }}>DOCUMENT · FACTORY · AMS</div>
-            <h1 style={{ margin: "2px 0 0", fontSize: 24 }}>🏭 Document Factory</h1>
+            <h1 style={{ margin: "2px 0 0", fontSize: 24 }}><Factory size={18} /> Document Factory</h1>
             <p style={{ margin: "4px 0 0", color: "var(--text-soft)", fontSize: 12.5 }}>
               Generá documentos AMS estandarizados desde plantillas curadas: RCA, minutas, specs, manuales y más.
             </p>
@@ -116,7 +117,7 @@ export default function DocumentFactoryCenter() {
         <div className="col" style={{ gap: 14 }}>
           <div className="card">
             <div className="ticket-section-head">
-              <span style={{ color: "var(--accent)" }}>📂</span> TIPO DE DOCUMENTO
+              <span style={{ color: "var(--accent)" }}><FolderOpen size={16} /></span> TIPO DE DOCUMENTO
             </div>
             <div className="col" style={{ gap: 4, maxHeight: 400, overflowY: "auto" }}>
               {(Object.keys(TEMPLATES) as DocumentType[]).map((t) => (
@@ -135,7 +136,7 @@ export default function DocumentFactoryCenter() {
 
           <div className="card">
             <div className="ticket-section-head">
-              <span style={{ color: "var(--accent)" }}>🔗</span> FUENTE
+              <span style={{ color: "var(--accent)" }}><Link2 size={16} /></span> FUENTE
             </div>
             <label className="tc-field">
               <span>Tipo de fuente</span>
@@ -183,9 +184,9 @@ export default function DocumentFactoryCenter() {
               ))}
             </div>
             <div className="row" style={{ gap: 8, marginTop: 12 }}>
-              <button className="btn ghost" onClick={reset}>↻ limpiar</button>
+              <button className="btn ghost" onClick={reset}><RefreshCw size={16} /> limpiar</button>
               <button className="btn primary" onClick={generate} style={{ marginLeft: "auto" }}>
-                ⚡ Generar documento
+                <Zap size={16} /> Generar documento
               </button>
             </div>
           </div>
@@ -194,11 +195,11 @@ export default function DocumentFactoryCenter() {
             <div className="card" style={{ borderLeft: "3px solid #10b981" }}>
               <div className="row between" style={{ alignItems: "center" }}>
                 <div className="ticket-section-head" style={{ marginBottom: 0 }}>
-                  <span style={{ color: "#10b981" }}>✓</span> PREVIEW · {preview.title}
+                  <span style={{ color: "#10b981" }}><Check size={16} /></span> PREVIEW · {preview.title}
                 </div>
                 <div className="row" style={{ gap: 6 }}>
-                  <button className="btn ghost" onClick={() => handleCopy(preview.id)} style={{ padding: "4px 10px", fontSize: 11 }}>📋 Copiar</button>
-                  <button className="btn ghost" onClick={() => hook.exportMarkdown(preview.id)} style={{ padding: "4px 10px", fontSize: 11 }}>↓ Markdown</button>
+                  <button className="btn ghost" onClick={() => handleCopy(preview.id)} style={{ padding: "4px 10px", fontSize: 11 }}><Clipboard size={14} /> Copiar</button>
+                  <button className="btn ghost" onClick={() => hook.exportMarkdown(preview.id)} style={{ padding: "4px 10px", fontSize: 11 }}><ArrowDown size={14} /> Markdown</button>
                 </div>
               </div>
               {copyMsg && <div className="alert ok" style={{ marginTop: 8, fontSize: 12 }}>{copyMsg}</div>}
@@ -212,7 +213,7 @@ export default function DocumentFactoryCenter() {
           <div className="card">
             <div className="row between" style={{ alignItems: "center", flexWrap: "wrap", gap: 8 }}>
               <div className="ticket-section-head" style={{ marginBottom: 0 }}>
-                <span style={{ color: "var(--accent)" }}>📜</span> HISTORIAL · {filtered.length}
+                <span style={{ color: "var(--accent)" }}><FileText size={16} /></span> HISTORIAL · {filtered.length}
               </div>
               <div className="row" style={{ gap: 8 }}>
                 <select value={filterType} onChange={(e) => setFilterType(e.target.value as never)}>
@@ -242,10 +243,10 @@ export default function DocumentFactoryCenter() {
                         </div>
                       </div>
                       <div className="row" style={{ gap: 4 }}>
-                        <button className="tc-iconbtn" onClick={() => setPreview(d)} title="Ver">👁</button>
-                        <button className="tc-iconbtn" onClick={() => handleCopy(d.id)} title="Copiar">📋</button>
-                        <button className="tc-iconbtn" onClick={() => hook.exportMarkdown(d.id)} title="Exportar">↓</button>
-                        <button className="tc-iconbtn" onClick={() => { if (confirm("¿Eliminar?")) hook.deleteDocument(d.id); }} title="Eliminar" style={{ color: "#fa4d56" }}>🗑</button>
+                        <button className="tc-iconbtn" onClick={() => setPreview(d)} title="Ver"><Eye size={14} /></button>
+                        <button className="tc-iconbtn" onClick={() => handleCopy(d.id)} title="Copiar"><Clipboard size={14} /></button>
+                        <button className="tc-iconbtn" onClick={() => hook.exportMarkdown(d.id)} title="Exportar"><ArrowDown size={14} /></button>
+                        <button className="tc-iconbtn" onClick={() => { if (confirm("¿Eliminar?")) hook.deleteDocument(d.id); }} title="Eliminar" style={{ color: "#fa4d56" }}><Trash2 size={14} /></button>
                       </div>
                     </div>
                   </div>

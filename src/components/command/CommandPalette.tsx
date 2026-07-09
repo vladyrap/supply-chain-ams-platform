@@ -14,6 +14,7 @@ import { supportApi } from "@/services/support.api";
 import { semanticSearch, type SearchSourceType } from "@/services/search.api";
 import { listTickets as listAmsTickets } from "@/services/tickets.api";
 import { listScopeItems } from "@/services/scope-items.api";
+import { ArrowDown, ArrowUp, CornerDownLeft } from "lucide-react";
 
 interface Props {
   onClose: () => void;

@@ -14,6 +14,7 @@ import { useTenant } from "@/context/TenantContext";
 import { usePermissions } from "@/hooks/usePermissions";
 import { SEVERITY_LABELS, SEVERITY_COLORS, STATUS_LABELS } from "@/lib/clean-core/engine";
 import * as sap from "@/services/clean-core-sap.api";
+import { AlertTriangle, ArrowDown, ArrowUp, Check, ChevronRight, Paperclip, Plug, Plus } from "lucide-react";
 
 const DIM_LABELS: Record<string, string> = {
   custom_code: "Código Custom", extensibility: "Extensibilidad", integration: "Integración",
@@ -94,7 +95,7 @@ export default function SapRealView() {
   if (!configured) {
     return (
       <div className="card" style={{ display: "flex", flexDirection: "column", gap: 8 }}>
-        <div style={{ fontSize: 14, fontWeight: 700 }}>🔌 Conector SAP no configurado</div>
+        <div style={{ fontSize: 14, fontWeight: 700 }}><Plug size={16} /> Conector SAP no configurado</div>
         <div style={{ fontSize: 12.5, color: "var(--text-soft)", lineHeight: 1.5 }}>
           Para conectar con un SAP real, desplegá el microservicio <b>SAP Clean Core Connector</b>
           {" "}y seteá <code>NEXT_PUBLIC_SAP_CONNECTOR_URL</code> (ej. <code>http://localhost:8600</code>).
@@ -110,7 +111,7 @@ export default function SapRealView() {
     <div style={{ display: "flex", flexDirection: "column", gap: 14 }}>
       {msg && (
         <div className="card" style={{ borderLeft: `3px solid ${msg.kind === "ok" ? "var(--ok)" : "var(--error)"}`, fontSize: 12.5, color: msg.kind === "ok" ? "var(--ok)" : "var(--error)" }}>
-          {msg.kind === "ok" ? "✓ " : "⚠ "}{msg.text}
+          {msg.kind === "ok" ? <><Check size={14} /> </> : <><AlertTriangle size={14} /> </>}{msg.text}
         </div>
       )}
 
@@ -126,7 +127,7 @@ export default function SapRealView() {
             {systemId && (
               <>
                 <button onClick={() => fileRef.current?.click()} className="btn primary" disabled={busy} style={{ fontSize: 12 }}>
-                  {busy ? <><span className="spinner" /> Procesando…</> : "⬆ Subir extracción (.json)"}
+                  {busy ? <><span className="spinner" /> Procesando…</> : <><ArrowUp size={14} /> Subir extracción (.json)</>}
                 </button>
                 <input ref={fileRef} type="file" accept=".json,application/json" onChange={onUpload} style={{ display: "none" }} />
               </>
@@ -136,7 +137,7 @@ export default function SapRealView() {
 
         {/* Alta rápida (offline) */}
         <details>
-          <summary style={{ fontSize: 12, color: "var(--text-soft)", cursor: "pointer" }}>➕ Registrar sistema (offline, sin credenciales)</summary>
+          <summary style={{ fontSize: 12, color: "var(--text-soft)", cursor: "pointer" }}><Plus size={14} /> Registrar sistema (offline, sin credenciales)</summary>
           <div style={{ display: "flex", gap: 8, flexWrap: "wrap", alignItems: "center", marginTop: 8 }}>
             <input placeholder="Nombre (ej. Producción S/4)" value={reg.name} onChange={(e) => setReg({ ...reg, name: e.target.value })} style={inpStyle} />
             <input placeholder="SID (ej. S4P)" value={reg.sid} onChange={(e) => setReg({ ...reg, sid: e.target.value.toUpperCase().slice(0, 8) })} style={{ ...inpStyle, maxWidth: 110 }} />
@@ -152,7 +153,7 @@ export default function SapRealView() {
       {/* Historial de assessments */}
       {systemId && assessments.length > 0 && (
         <div className="card" style={{ display: "flex", flexDirection: "column", gap: 6 }}>
-          <div style={{ fontSize: 11, letterSpacing: 2, color: "var(--text-dim)", fontFamily: "var(--font-mono, monospace)" }}>▸ ASSESSMENTS · {assessments.length}</div>
+          <div style={{ fontSize: 11, letterSpacing: 2, color: "var(--text-dim)", fontFamily: "var(--font-mono, monospace)" }}><ChevronRight size={14} /> ASSESSMENTS · {assessments.length}</div>
           {assessments.map((a) => (
             <button key={a.id} onClick={() => setAssessmentId(a.id)}
               className={a.id === assessmentId ? "btn primary" : "btn ghost"}
@@ -177,7 +178,7 @@ export default function SapRealView() {
             <Kpi label="Objetos" value={assessment.objects_scanned} />
             <div style={{ display: "flex", gap: 6, flexWrap: "wrap", marginLeft: "auto" }}>
               {(["json", "csv", "xlsx", "recommendations", "pdf"] as const).map((k) => (
-                <a key={k} href={sap.downloadUrl(assessment.id, k)} className="btn ghost" style={{ fontSize: 11 }} target="_blank" rel="noreferrer">⬇ {k === "recommendations" ? "recom." : k.toUpperCase()}</a>
+                <a key={k} href={sap.downloadUrl(assessment.id, k)} className="btn ghost" style={{ fontSize: 11 }} target="_blank" rel="noreferrer"><ArrowDown size={14} /> {k === "recommendations" ? "recom." : k.toUpperCase()}</a>
               ))}
             </div>
           </div>
@@ -210,12 +211,12 @@ export default function SapRealView() {
                   <div className="row between" style={{ alignItems: "flex-start", gap: 10 }}>
                     <div style={{ minWidth: 0 }}>
                       <div style={{ fontSize: 12.5, fontWeight: 700, fontFamily: "var(--font-mono, monospace)" }}>{f.object_name} <span style={{ color: "var(--text-dim)", fontWeight: 400 }}>· {f.object_type}{f.package ? ` · ${f.package}` : ""}</span></div>
-                      <div style={{ fontSize: 10.5, color: "var(--text-dim)", marginTop: 1 }}>{DIM_LABELS[f.dimension] || f.dimension} · estrategia {f.clean_core_strategy} · {f.effort_hours}h{!f.cloud_ready && <span style={{ color: "#ff832b" }}> · ⚠ no cloud-ready</span>}</div>
+                      <div style={{ fontSize: 10.5, color: "var(--text-dim)", marginTop: 1 }}>{DIM_LABELS[f.dimension] || f.dimension} · estrategia {f.clean_core_strategy} · {f.effort_hours}h{!f.cloud_ready && <span style={{ color: "#ff832b" }}> · <AlertTriangle size={14} /> no cloud-ready</span>}</div>
                     </div>
                     <span style={{ fontSize: 9.5, fontWeight: 800, color: sc, border: `1px solid ${sc}`, borderRadius: 4, padding: "1px 7px", textTransform: "uppercase", flexShrink: 0 }}>{SEVERITY_LABELS[f.severity]}</span>
                   </div>
                   <div style={{ fontSize: 12, color: "var(--text-soft)", lineHeight: 1.4 }}>{f.evidence}</div>
-                  <div style={{ fontSize: 12, color: "var(--text)", lineHeight: 1.4 }}><span style={{ color: "var(--accent)", fontWeight: 700 }}>✔ </span>{f.recommendation}{f.reference && <span style={{ color: "var(--text-dim)" }}> · 📎 {f.reference}</span>}</div>
+                  <div style={{ fontSize: 12, color: "var(--text)", lineHeight: 1.4 }}><span style={{ color: "var(--accent)", fontWeight: 700 }}><Check size={14} /> </span>{f.recommendation}{f.reference && <span style={{ color: "var(--text-dim)" }}> · <Paperclip size={14} /> {f.reference}</span>}</div>
                 </div>
               );
             })}
