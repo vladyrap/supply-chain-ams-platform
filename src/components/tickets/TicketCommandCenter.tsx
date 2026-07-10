@@ -258,6 +258,15 @@ export default function TicketCommandCenter({ ticket, onTicketUpdated }: Props) 
     return () => { cancelled = true; };
   }, [ticket.key, ticket.sapModule, ticket.title, ticket.description]);
 
+  // Hidratar el audit trail del caso desde el backend al abrir/cambiar de ticket.
+  // Sin esto la sección "AUDITORÍA · TIMELINE" solo muestra los eventos que grabó
+  // ESTE navegador en localStorage (vacío tras el login por el clear de aislamiento);
+  // el backend es la fuente de verdad del historial del caso.
+  const { refreshFromBackend: refreshAuditFromBackend } = audit;
+  useEffect(() => {
+    void refreshAuditFromBackend(ticket.key);
+  }, [ticket.key, refreshAuditFromBackend]);
+
   // Datos cruzados
   const ticketDocs = docs.documents.filter((d) => d.sourceId === ticket.key);
   const ticketEscalations = escalation.records.filter((e) => e.incidentId === ticket.key);
