@@ -105,7 +105,14 @@ export default function InvestigationPanel({ ticketKey, intelligence, actor, onP
         enrichedBy: actor ?? intelligence?.enrichedBy,
       };
       try {
-        await updateTicketIntelligence(ticketKey, merged);
+        const saved = await updateTicketIntelligence(ticketKey, merged);
+        // El backend puede rechazar la escritura (200 + conflict): por evidencia
+        // sin cambios (idempotente, benigno) o por versión desactualizada (otro
+        // escritor ganó). Sólo avisamos en el segundo caso — el resultado fresco
+        // ya está a la vista, pero no quedó persistido como versión nueva.
+        if ("success" in saved && saved.success && saved.conflict?.reason === "stale_analysis_version") {
+          setFallback("La investigación se ejecutó, pero otra sesión actualizó el ticket. Refrescá para guardarla como versión nueva.");
+        }
         onPersisted?.();
       } catch {
         /* persistencia best-effort — el resultado ya se muestra */

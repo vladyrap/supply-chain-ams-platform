@@ -35,7 +35,10 @@ function LoginInner() {
       // navigate → la página carga fresca (sin singletons module-level viejos) y
       // AuthProvider trae al nuevo usuario limpio.
       clearRoccoClientState();
-      const next = search.get("next") || "/dashboard";
+      // Seguridad: sólo permitir paths internos (evita open-redirect a evil.com
+      // o javascript: via ?next=). Si no es un path relativo simple → /dashboard.
+      const raw = search.get("next") || "/dashboard";
+      const next = raw.startsWith("/") && !raw.startsWith("//") && !raw.startsWith("/\\") ? raw : "/dashboard";
       window.location.assign(next);
     } else {
       // FIX v1.2.5: mejorar mensaje según el tipo de error.
