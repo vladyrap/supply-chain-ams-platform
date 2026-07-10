@@ -5,9 +5,30 @@
 
 import { useEffect, useMemo, useState } from "react";
 import { listIncidents, type IncidentSummary } from "@/services/agent.api";
+import { listTickets, type Ticket } from "@/services/tickets.api";
 import type { UseEscalation } from "@/hooks/useEscalation";
 import EscalationStatusBadge from "./EscalationStatusBadge";
 import EscalationModal from "./EscalationModal";
+
+// Proyecta un ticket administrado (/tickets) a la forma IncidentSummary que
+// consume el motor de escalamiento. Usa ticket.key como id → consistente con
+// cómo los registros de escalación referencian el caso (incidentId === ticket.key).
+function ticketToIncident(t: Ticket): IncidentSummary {
+  return {
+    id: t.key,
+    user_name: t.assignee ?? null,
+    client_name: t.reporter ?? null,
+    sap_module: t.sapModule ?? null,
+    environment: t.environment ?? null,
+    message: `${t.title}\n\n${t.description}`,
+    response: null,
+    confidence: null,
+    model: null,
+    attachments: [],
+    estimatedResolution: t.estimatedResolution ?? null,
+    created_at: t.created,
+  };
+}
 
 interface Props {
   escalation: UseEscalation;
@@ -20,18 +41,31 @@ export default function EscalationInbox({ escalation, actingUserId }: Props) {
   const [error, setError] = useState<string | null>(null);
   const [filterModule, setFilterModule] = useState<string>("");
   const [filterEnv, setFilterEnv] = useState<string>("");
-  const [onlyCandidates, setOnlyCandidates] = useState(true);
+  const [onlyCandidates, setOnlyCandidates] = useState(false);
   const [selected, setSelected] = useState<IncidentSummary | null>(null);
 
   useEffect(() => {
     let mounted = true;
-    listIncidents({ limit: 100 })
-      .then((res) => {
+    // Escalamiento opera sobre TODOS los casos: los tickets administrados (los
+    // que ves en /tickets) + los incidentes generados por el agente. Antes solo
+    // leía incidentes (store distinto), por eso "no salían todos los tickets".
+    Promise.all([
+      listTickets().catch(() => ({ success: false as const, error: "tickets" })),
+      listIncidents({ limit: 200 }).catch(() => ({ ok: false as const, error: "incidents" })),
+    ])
+      .then(([tkRes, incRes]) => {
         if (!mounted) return;
-        if (res.ok) setIncidents(res.incidents);
-        else        setError(res.error);
+        const tickets = tkRes.success ? tkRes.tickets : [];
+        const incs = incRes.ok ? incRes.incidents : [];
+        // Dedupe por id; los tickets administrados primero (ganan si colisiona).
+        const byId = new Map<string, IncidentSummary>();
+        for (const t of tickets) byId.set(t.key, ticketToIncident(t));
+        for (const i of incs) if (!byId.has(i.id)) byId.set(i.id, i);
+        setIncidents([...byId.values()]);
+        if (tickets.length === 0 && incs.length === 0) {
+          setError("No se pudieron cargar tickets ni incidentes.");
+        }
       })
-      .catch((e) => { if (mounted) setError(String(e?.message || e)); })
       .finally(() => { if (mounted) setLoading(false); });
     return () => { mounted = false; };
   }, []);
@@ -60,7 +94,7 @@ export default function EscalationInbox({ escalation, actingUserId }: Props) {
           mostrar solo candidatos a escalar
         </label>
         <div style={{ marginLeft: "auto", fontSize: 11.5, color: "var(--text-dim)" }}>
-          {loading ? "cargando…" : `${candidates.length} de ${incidents.length} incidentes`}
+          {loading ? "cargando…" : `${candidates.length} de ${incidents.length} casos (tickets + incidentes)`}
         </div>
       </div>
 
@@ -89,7 +123,7 @@ export default function EscalationInbox({ escalation, actingUserId }: Props) {
           </thead>
           <tbody>
             {candidates.length === 0 && !loading && (
-              <tr><td colSpan={11} style={{ padding: 20, textAlign: "center", color: "var(--text-dim)" }}>(sin incidentes para los filtros actuales)</td></tr>
+              <tr><td colSpan={11} style={{ padding: 20, textAlign: "center", color: "var(--text-dim)" }}>(sin casos para los filtros actuales)</td></tr>
             )}
             {candidates.map((c) => {
               const inc = incidents.find((i) => i.id === c.incidentId)!;
