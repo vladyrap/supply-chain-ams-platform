@@ -1031,6 +1031,12 @@ export default function TicketCommandCenter({ ticket, onTicketUpdated }: Props) 
         </div>
       )}
 
+      {/* Contenido de la vista "Centro de Comando". Va gateado por tab: en el
+          tab "Case Timeline" estas secciones se ocultan (antes se renderizaban
+          siempre y dejaban el timeline enterrado abajo → parecía que el tab no
+          funcionaba). */}
+      {tccTab === "command" && (
+      <>
       {/* DH v0.9 — Intelligence Summary Card (orquestador unificado)
           AIE v0.10: usa analysis cacheado del pipeline si existe; si no, live. */}
       <AmsIntelligenceSummaryCard analysis={cachedAnalysis ?? liveAnalysis} />
@@ -1084,6 +1090,8 @@ export default function TicketCommandCenter({ ticket, onTicketUpdated }: Props) 
           notify(`🚀 Escalado a N2 con paquete completo (${payload.n1ActionsTaken.length} acciones registradas)`);
         }}
       />
+      </>
+      )}
 
       {/* Sección 1: Resumen / descripción */}
       {/* Case Timeline (F1) — tab shell: Centro de Comando · Case Timeline */}
