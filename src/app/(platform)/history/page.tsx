@@ -4,6 +4,8 @@ import { useEffect, useMemo, useState } from "react";
 import Badge from "@/components/ui/Badge";
 import MarkdownView from "@/components/agent/MarkdownView";
 import { listIncidents, getIncident, type IncidentSummary, type IncidentDetail } from "@/services/agent.api";
+import { listTickets } from "@/services/tickets.api";
+import { ticketToIncident, incidentMatchesFilters } from "@/lib/ticket-to-incident";
 import KnowledgeQuickActions from "@/components/knowledge/KnowledgeQuickActions";
 import EscalationQuickAction from "@/components/escalation/EscalationQuickAction";
 import TicketEstimateBadge from "@/components/estimation/TicketEstimateBadge";
@@ -39,6 +41,7 @@ function HistoryPageInner() {
   const [filterHasImg, setFilterHasImg] = useState<"any" | "yes" | "no">("any");
 
   const [incidents, setIncidents] = useState<IncidentSummary[]>([]);
+  const [ticketIds, setTicketIds] = useState<Set<string>>(new Set());
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [selectedId, setSelectedId] = useState<string | null>(null);
@@ -58,9 +61,24 @@ function HistoryPageInner() {
   async function load() {
     setLoading(true);
     setError(null);
-    const res = await listIncidents(filters);
-    if (res.ok) setIncidents(res.incidents);
-    else        setError(res.error);
+    const [incRes, tkRes] = await Promise.all([
+      listIncidents(filters),
+      listTickets().catch(() => ({ success: false as const, error: "tickets" })),
+    ]);
+    const incs = incRes.ok ? incRes.incidents : [];
+    // Unir tus tickets administrados (/tickets) como casos del historial: se
+    // mapean a la forma incidente y se les aplican los MISMOS filtros que a los
+    // incidentes del agente (que filtran server-side).
+    const mappedTickets = (tkRes.success ? tkRes.tickets : [])
+      .map(ticketToIncident)
+      .filter((t) => incidentMatchesFilters(t, filters));
+    const byId = new Map<string, IncidentSummary>();
+    for (const i of incs) byId.set(i.id, i);
+    for (const t of mappedTickets) if (!byId.has(t.id)) byId.set(t.id, t);
+    const merged = [...byId.values()].sort((a, b) => (a.created_at < b.created_at ? 1 : -1));
+    setIncidents(merged);
+    setTicketIds(new Set(mappedTickets.map((t) => t.id)));
+    if (!incRes.ok && !tkRes.success) setError(incRes.error);
     setLoading(false);
   }
 
@@ -73,6 +91,16 @@ function HistoryPageInner() {
 
   useEffect(() => {
     if (!selectedId) { setDetail(null); return; }
+    // Si el ítem es un ticket administrado (no un incidente del agente), armamos
+    // el detalle desde la lista — getIncident buscaría en el store de incidentes
+    // y no lo encontraría (404).
+    if (ticketIds.has(selectedId)) {
+      const it = incidents.find((i) => i.id === selectedId);
+      setDetail(it ? ({ ...it, attachments: [] } as IncidentDetail) : null);
+      setDetailError(null);
+      setDetailLoading(false);
+      return;
+    }
     let cancelled = false;
     setDetailLoading(true);
     setDetailError(null);
@@ -84,13 +112,14 @@ function HistoryPageInner() {
       setDetailLoading(false);
     });
     return () => { cancelled = true; };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [selectedId]);
 
   return (
     <div>
       <div className="page-title">
-        <h1>Historial de incidentes</h1>
-        <p>Consulta y filtra los incidentes registrados por el agente.</p>
+        <h1>Historial de casos</h1>
+        <p>Consulta y filtra tus tickets y los incidentes registrados por el agente.</p>
       </div>
 
       {/* Filtros */}
@@ -136,12 +165,12 @@ function HistoryPageInner() {
       <div style={{ display: "grid", gridTemplateColumns: "1fr 1.4fr", gap: 14 }}>
         <div className="card" style={{ padding: 0, overflow: "hidden" }}>
           <div style={{ padding: "10px 14px", borderBottom: "1px solid var(--border-soft)", fontSize: 12.5, color: "var(--text-soft)" }}>
-            {loading ? "Cargando…" : `${incidents.length} incidente${incidents.length === 1 ? "" : "s"}`}
+            {loading ? "Cargando…" : `${incidents.length} caso${incidents.length === 1 ? "" : "s"}`}
           </div>
           <div style={{ maxHeight: "70vh", overflowY: "auto" }}>
             {incidents.length === 0 && !loading && (
               <div style={{ padding: 14, color: "var(--text-dim)", fontSize: 13 }}>
-                Sin incidentes con esos filtros.
+                Sin casos con esos filtros.
               </div>
             )}
             {incidents.map((inc) => {

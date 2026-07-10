@@ -5,30 +5,11 @@
 
 import { useEffect, useMemo, useState } from "react";
 import { listIncidents, type IncidentSummary } from "@/services/agent.api";
-import { listTickets, type Ticket } from "@/services/tickets.api";
+import { listTickets } from "@/services/tickets.api";
+import { ticketToIncident } from "@/lib/ticket-to-incident";
 import type { UseEscalation } from "@/hooks/useEscalation";
 import EscalationStatusBadge from "./EscalationStatusBadge";
 import EscalationModal from "./EscalationModal";
-
-// Proyecta un ticket administrado (/tickets) a la forma IncidentSummary que
-// consume el motor de escalamiento. Usa ticket.key como id → consistente con
-// cómo los registros de escalación referencian el caso (incidentId === ticket.key).
-function ticketToIncident(t: Ticket): IncidentSummary {
-  return {
-    id: t.key,
-    user_name: t.assignee ?? null,
-    client_name: t.reporter ?? null,
-    sap_module: t.sapModule ?? null,
-    environment: t.environment ?? null,
-    message: `${t.title}\n\n${t.description}`,
-    response: null,
-    confidence: null,
-    model: null,
-    attachments: [],
-    estimatedResolution: t.estimatedResolution ?? null,
-    created_at: t.created,
-  };
-}
 
 interface Props {
   escalation: UseEscalation;
