@@ -75,7 +75,12 @@ export default function InvestigationPanel({ ticketKey, intelligence, actor, onP
     try {
       const res = await investigateTicket(ticketKey, true);
       if (!res.success) {
-        setError(res.error || "No se pudo reinvestigar");
+        // El fetch aborta con "signal is aborted without reason" cuando expira
+        // el timeout: traducilo a algo accionable.
+        const raw = res.error || "";
+        setError(/abort|timeout|tard/i.test(raw)
+          ? "La reinvestigación tardó demasiado (el modelo se demoró). Reintentá en unos segundos."
+          : (raw || "No se pudo reinvestigar"));
         return;
       }
       if (!res.ok || !res.investigation) {
