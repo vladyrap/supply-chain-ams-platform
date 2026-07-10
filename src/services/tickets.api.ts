@@ -316,9 +316,10 @@ export async function investigateTicket(key: string, force = true) {
   return call<InvestigateResponse | { success: false; error: string }>(
     `/api/tickets/${encodeURIComponent(key)}/investigate`,
     // La reinvestigación es una llamada LLM pesada (Gemini estructurado, ~6k
-    // tokens, sin cache): sube el timeout muy por encima del default de 30s para
-    // no abortarla a mitad ("signal is aborted without reason").
-    { method: "POST", body: { force }, timeoutMs: 150_000 },
+    // tokens, sin cache) que puede razonar por varios minutos. SIN timeout
+    // (timeoutMs: null): que se demore lo que deba, sin abortar el fetch. El
+    // backend siempre responde (éxito o fallback determinístico), no queda colgado.
+    { method: "POST", body: { force }, timeoutMs: null },
   );
 }
 
