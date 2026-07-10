@@ -12,6 +12,7 @@
 import { createContext, useCallback, useContext, useEffect, useState } from "react";
 import { getMyTenant, type Tenant } from "../services/tenants.api";
 import { setTenantOverride } from "../services/_http";
+import { useAuth } from "./AuthContext";
 
 interface TenantContextValue {
   tenant: Tenant | null;
@@ -38,6 +39,8 @@ export function TenantProvider({ children }: { children: React.ReactNode }) {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [override, setOverrideState] = useState<string | null>(null);
+  // Aislamiento por usuario: el tenant debe recargarse cuando cambia el usuario.
+  const { user } = useAuth();
 
   const reload = useCallback(async () => {
     setLoading(true);
@@ -62,9 +65,14 @@ export function TenantProvider({ children }: { children: React.ReactNode }) {
     setTenantOverride(tenantId);
   }, []);
 
+  // Recarga el tenant y resetea el override cada vez que cambia el usuario
+  // (evita arrastrar tenant/override del usuario anterior).
   useEffect(() => {
+    setTenant(null);
+    setOverrideState(null);
+    setTenantOverride(null);
     void reload();
-  }, [reload]);
+  }, [user?.id, reload]);
 
   return (
     <TenantContext.Provider value={{ tenant, loading, error, reload, setOverride, override }}>

@@ -1,10 +1,10 @@
 "use client";
 
 import { Suspense, useState } from "react";
-import { useRouter, useSearchParams } from "next/navigation";
+import { useSearchParams } from "next/navigation";
 import Link from "next/link";
 import { login } from "@/services/auth.api";
-import { useAuth } from "@/context/AuthContext";
+import { clearRoccoClientState } from "@/lib/clearClientState";
 import AuthShowcase from "@/components/auth/AuthShowcase";
 import { useMagnetic } from "@/hooks/useMagnetic";
 
@@ -21,9 +21,7 @@ function LoginInner() {
   const [password, setPassword] = useState("");
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
-  const router = useRouter();
   const search = useSearchParams();
-  const { refresh } = useAuth();
   const submitRef = useMagnetic<HTMLButtonElement>(14);
 
   async function handleSubmit(e: React.FormEvent) {
@@ -33,9 +31,12 @@ function LoginInner() {
     const res = await login(email.trim(), password);
     setLoading(false);
     if ("success" in res && res.success) {
-      await refresh();
+      // Aislamiento: limpiar todo estado del usuario anterior y hacer un HARD
+      // navigate → la página carga fresca (sin singletons module-level viejos) y
+      // AuthProvider trae al nuevo usuario limpio.
+      clearRoccoClientState();
       const next = search.get("next") || "/dashboard";
-      router.replace(next);
+      window.location.assign(next);
     } else {
       // FIX v1.2.5: mejorar mensaje según el tipo de error.
       // 401 = credenciales mal | 5xx = problema del servicio
